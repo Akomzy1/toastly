@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.vscode/
+.idea/
+
+# Node
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+yarn-error.log*
