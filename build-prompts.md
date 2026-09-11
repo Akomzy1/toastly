@@ -4,7 +4,7 @@ Run these **in order**, one per session or one per major work block. Each assume
 
 **Before running any of these:** confirm the ten prototype files are in `/design/prototype/`:
 
-`Toastly_Design_System.html` (read first — tokens), `Toastly_Home__1_.html`, `Toastly_Features__1_.html`, `Toastly_How_It_Works__1_.html`, `Toastly_Pricing.html`, `Toastly_Safety.html`, `Toastly_Diaspora__1_.html`, `Toastly_Stories__1_.html`, `Toastly_Locked_Inbox.html` (in-app, not marketing), `Toastly_Brand_-_The_Stake.html`.
+`design-system.slim.html` (read first — tokens), `home.slim.html`, `features.slim.html`, `how-it-works.slim.html`, `pricing.slim.html`, `safety.slim.html`, `diaspora.slim.html`, `stories.slim.html`, `locked-inbox.slim.html` (in-app, not marketing), `brand-the-stake.slim.html`.
 
 If they aren't there, stop — several of these prompts are meaningless without them, and Claude Code will otherwise invent UI that was never approved.
 
@@ -18,7 +18,7 @@ Read `CLAUDE.md`, `SKILL.md`, and `PRD.md` in the repo root before doing anythin
 
 Then scaffold the project: Next.js 14 App Router, TypeScript, Tailwind, shadcn/ui, Supabase client setup, PWA manifest and service worker configured for installability. Do not build any feature UI yet — scaffold only.
 
-**Prototype alignment:** open `/design/prototype/Toastly_Design_System.html` before writing any Tailwind config and encode its tokens in `tailwind.config.ts` as named values. Do not use Tailwind defaults or invent a palette. The tokens are:
+**Prototype alignment:** open `/design/prototype/design-system.slim.html` before writing any Tailwind config and encode its tokens in `tailwind.config.ts` as named values. Do not use Tailwind defaults or invent a palette. The tokens are:
 
 - Deep green surface `#001F1B`; teal `#00695C` (deeper `#005449`, lighter `#4C968C`)
 - Amber CTA `#FFB300` (hover `#FFC94C`, dark `#CC8F00`)
@@ -43,7 +43,7 @@ Flag explicitly (do not silently invent) any component the prototype doesn't cov
 
 ## PROMPT 2 — Marketing site pages
 
-Build the public marketing pages, each against its own prototype file: Home (`Toastly_Home__1_.html`), Features (`Toastly_Features__1_.html`), How It Works (`Toastly_How_It_Works__1_.html`), Pricing (`Toastly_Pricing.html`), Safety & Trust (`Toastly_Safety.html`), Diaspora (`Toastly_Diaspora__1_.html`), Stories (`Toastly_Stories__1_.html`). Open the file for the page you are building — do not infer one page's layout from another's.
+Build the public marketing pages, each against its own prototype file: Home (`home.slim.html`), Features (`features.slim.html`), How It Works (`how-it-works.slim.html`), Pricing (`pricing.slim.html`), Safety & Trust (`safety.slim.html`), Diaspora (`diaspora.slim.html`), Stories (`stories.slim.html`). Open the file for the page you are building — do not infer one page's layout from another's.
 
 **Alignment requirements — check each against the prototype before considering the page done:**
 - Section order, heading hierarchy, and layout rhythm must match the prototype. Do not substitute a repeating icon-card grid for the prototype's varied section layouts — that generic pattern was explicitly designed against.
@@ -65,7 +65,7 @@ Build Supabase auth, the user profile model, and the tiered verification flow: p
 - The relationship-history field defaults to **private/revealed-on-match**, not public on the feed card.
 - The intent selector (casual → marriage-minded) is collected but **never blocks signup**.
 
-Match the prototype's form styling (`Toastly_Design_System.html` for inputs, `Toastly_Safety.html` for verification content) and flag any screen the prototype doesn't cover.
+Match the prototype's form styling (`design-system.slim.html` for inputs, `safety.slim.html` for verification content) and flag any screen the prototype doesn't cover.
 
 - **Optional verified profession and education fields** (`PRD.md` §5.2.2) follow the same rules: optional, display-only, user-controlled visibility, never a gate. Do not down-rank or hide users who leave them blank. Any "verified profession" badge is a quiet secondary mark subordinate to "Verified Real" — it unlocks nothing and must not use prestige iconography.
 - **Community standard (`PRD.md` §5.2.1):** "user is married" must be a **first-class report category**. Never build or imply a marital-status verification check — it is enforced by report-and-remove only.
@@ -110,7 +110,7 @@ Build messaging with the **asymmetric Starter entitlement** — this is easy to 
 - Paid tiers: unlimited send and receive.
 - **Never scan, parse, or flag free-text message content for phone numbers or contact info.** This is a hard privacy boundary — do not add content moderation for this purpose.
 
-Build this against `/design/prototype/Toastly_Locked_Inbox.html` — note it is an **in-app** screen, not a marketing page, so its layout rules differ from the seven marketing pages.
+Build this against `/design/prototype/locked-inbox.slim.html` — note it is an **in-app** screen, not a marketing page, so its layout rules differ from the seven marketing pages.
 
 ---
 
