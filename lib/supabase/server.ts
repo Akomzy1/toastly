@@ -1,0 +1,40 @@
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+/**
+ * Supabase client for Server Components, Route Handlers and Server Actions.
+ *
+ * Entitlement checks (tier gating, Gist caps, Starter chat asymmetry) must be
+ * enforced server-side through this client — CLAUDE.md requires them at the
+ * access-control layer, not in UI copy.
+ */
+export function createClient() {
+  const cookieStore = cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch {
+            // Called from a Server Component — refreshing sessions is handled
+            // by middleware, so this can be safely ignored.
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch {
+            // See above.
+          }
+        },
+      },
+    },
+  );
+}

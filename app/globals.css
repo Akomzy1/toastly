@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * shadcn/ui reads these CSS variables. They are wired to the Toastly
+ * prototype palette so shadcn primitives inherit the brand instead of
+ * shipping their default slate/zinc look — SKILL.md lists "accepting
+ * shadcn/ui default styling" as a named failure mode.
+ *
+ * Values are HSL triplets (no hsl() wrapper) because that is the format
+ * shadcn's generated components expect.
+ */
+@layer base {
+  :root {
+    --background: 40 33% 96%;        /* paper   #F6F2EA */
+    --foreground: 270 50% 3%;        /* ink 900 #050309 */
+
+    --card: 0 0% 100%;               /* white   #FFFFFF */
+    --card-foreground: 270 50% 3%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 270 50% 3%;
+
+    --primary: 173 100% 21%;         /* green 500 #00695C */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 48% 80%;         /* champagne #EBD9AE */
+    --secondary-foreground: 270 50% 3%;
+
+    --muted: 0 0% 85%;               /* grey 200  #D9D9DA */
+    --muted-foreground: 280 2% 32%;  /* grey 600  #504E52 */
+
+    --accent: 42 100% 50%;           /* gold 500  #FFB300 */
+    --accent-foreground: 44 100% 25%;/* gold 800  #4C3500 */
+
+    --destructive: 337 78% 34%;      /* error     #9B1348 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 173 100% 21%;
+
+    --radius: 12px;
+  }
+
+  .dark {
+    /* The deep-green surface is the brand's dark ground, not a neutral black. */
+    --background: 172 100% 6%;       /* green 800 #001F1B */
+    --foreground: 0 0% 100%;
+
+    --card: 173 100% 9%;             /* green 700 #002A24 */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 173 100% 9%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 42 100% 50%;          /* gold 500 leads on dark */
+    --primary-foreground: 44 100% 25%;
+
+    --secondary: 173 33% 44%;        /* green 300 #4C968C */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 173 100% 9%;
+    --muted-foreground: 40 48% 80%;
+
+    --accent: 42 100% 50%;
+    --accent-foreground: 44 100% 25%;
+
+    --destructive: 337 78% 34%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 173 62% 15%;
+    --input: 173 62% 15%;
+    --ring: 42 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-grey-200;
+  }
+  body {
+    @apply bg-paper text-ink-900 font-sans;
+    text-wrap: pretty;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
