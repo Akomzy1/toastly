@@ -15,3 +15,7 @@ build/
 !.env.example
 npm-debug.log*
 yarn-error.log*
+
+# Extracted prototype assets — regenerate with: python slim_prototypes.py design/prototype/
+# (the images already live inside the original bundled HTML for browser viewing)
+design/prototype/assets/

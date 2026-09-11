@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/bb8f1338-ff25-482c-a5a1-bcdcba0fba64.js"></script>
+</head>
+<body>
+
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/21c7039f-a988-43aa-b9a9-b5ea734465f8.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Aleo;src:url("assets/2ef5698e-c2fd-461b-9da9-3315c579f6bb.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Aleo;src:url("assets/07f7ac88-079f-4f1b-956d-cf06b3cabc45.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/9532baa8-b725-45d9-a413-b8562b78a1ac.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/160d1027-4997-4209-8d4d-64a6f401478e.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/8bf56cd7-d04c-462f-bc8a-01021e9ffba7.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/7546192a-cfed-4cf0-85c9-a966e014ed89.woff2") format("woff2");font-weight:700;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+<main style="background:#F6F2EA">
+  <section style="background:#001F1B;color:#FFFFFF;padding:clamp(56px,8vw,110px) clamp(20px,5vw,64px) clamp(48px,6vw,80px)">
+    <div style="max-width:1180px;margin:0 auto;display:grid;gap:28px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="28" height="28" sc-camel-view-box="0 0 34 34" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="9" fill="none" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="20" cy="13" r="9" fill="none" stroke="#FFB300" stroke-width="3"></circle><rect x="3" y="26" width="22" height="2.2" rx="1.1" fill="#EBD9AE"></rect></svg>
+          <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:25px;letter-spacing:-0.01em;color:#FFFFFF">Toastly</span>
+        </div>
+        <span style="width:1px;height:26px;background:rgba(235,217,174,0.3)"></span>
+        <span style="font-size:13px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#EBD9AE">Design system v1.0</span>
+      </div>
+      <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(44px,7vw,72px);line-height:1.04;letter-spacing:-0.02em;max-width:20ch">A jewel-toned system for intentional dating.</h1>
+      <p style="margin:0;max-width:62ch;font-size:clamp(17px,2vw,22px);line-height:1.6;color:rgba(255,255,255,0.74)">Deep green, ink and champagne. An editorial serif with a quiet sans. Every token, mark and component below is what the Toastly product and marketing pages are built from — no swipe cards, no flame gradients, no candy pink.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px">
+        <a href="Toastly Home.dc.html" style="padding:14px 24px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s ease" style-hover="background:#FFC94C">View the Home page</a>
+        <a href="Toastly Pricing.dc.html" style="padding:14px 24px;border-radius:12px;border:1px solid rgba(235,217,174,0.4);color:#EBD9AE;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s ease" style-hover="background:rgba(235,217,174,0.1)">Pricing tracks</a>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ds-color" style="max-width:1180px;margin:0 auto;padding:clamp(48px,7vw,96px) clamp(20px,5vw,64px)">
+    <p style="margin:0 0 12px;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">01 — Colour</p>
+    <h2 id="ds-color" style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,52px);line-height:1.12;letter-spacing:-0.01em">Palettes</h2>
+    <p style="margin:0 0 40px;max-width:66ch;font-size:18px;line-height:1.65;color:#504E52">Primary is a deep jewel green carried from the brand's Blue Stone ramp; secondary is gold to champagne. Ink neutrals do the structural work. Semantic colours stay inside the jewel family so warnings never read as a hookup app's alerts.</p>
+    <div style="display:grid;gap:32px">
+      <div>
+        <h3 style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">Primary — Deep Green</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+          <sc-for list="{{ green }}" as="c" hint-placeholder-count="7">
+            <div style="border:1px solid rgba(5,3,9,0.1);border-radius:16px;overflow:hidden;background:#FFFFFF">
+              <div style="height:88px;background:{{ c.hex }}"></div>
+              <div style="padding:10px 12px 12px">
+                <p style="margin:0;font-size:13px;font-weight:600">{{ c.name }}</p>
+                <p style="margin:2px 0 0;font-size:12px;color:#828184;font-variant-numeric:tabular-nums">{{ c.hex }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">Secondary — Gold &amp; Champagne</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+          <sc-for list="{{ gold }}" as="c" hint-placeholder-count="7">
+            <div style="border:1px solid rgba(5,3,9,0.1);border-radius:16px;overflow:hidden;background:#FFFFFF">
+              <div style="height:88px;background:{{ c.hex }}"></div>
+              <div style="padding:10px 12px 12px">
+                <p style="margin:0;font-size:13px;font-weight:600">{{ c.name }}</p>
+                <p style="margin:2px 0 0;font-size:12px;color:#828184;font-variant-numeric:tabular-nums">{{ c.hex }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">Neutral — Ink &amp; Paper</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+          <sc-for list="{{ neutral }}" as="c" hint-placeholder-count="8">
+            <div style="border:1px solid rgba(5,3,9,0.1);border-radius:16px;overflow:hidden;background:#FFFFFF">
+              <div style="height:88px;background:{{ c.hex }}"></div>
+              <div style="padding:10px 12px 12px">
+                <p style="margin:0;font-size:13px;font-weight:600">{{ c.name }}</p>
+                <p style="margin:2px 0 0;font-size:12px;color:#828184;font-variant-numeric:tabular-nums">{{ c.hex }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">Semantic</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+          <sc-for list="{{ semantic }}" as="c" hint-placeholder-count="4">
+            <div style="border:1px solid rgba(5,3,9,0.1);border-radius:16px;background:#FFFFFF;padding:16px;display:flex;gap:14px;align-items:center">
+              <span style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:{{ c.hex }}"></span>
+              <div>
+                <p style="margin:0;font-size:14px;font-weight:600">{{ c.name }}</p>
+                <p style="margin:2px 0 0;font-size:12px;color:#828184;font-variant-numeric:tabular-nums">{{ c.hex }}</p>
+                <p style="margin:4px 0 0;font-size:12px;color:#504E52">{{ c.use }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:28px;padding:20px 22px;border-left:2px solid #00695C;background:#FFFFFF;border-radius:0 16px 16px 0">
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52"><strong style="color:#050309">Contrast.</strong> Body copy on Deep Green 700 (#001F1B) uses white at 74% or higher (7:1+). Gold #FFB300 is never used for body text on white — only on ink/green backgrounds or as a fill behind ink text. Champagne #EBD9AE is a dark-background-only text colour.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="ds-type" style="background:#FFFFFF;border-top:1px solid rgba(5,3,9,0.08);border-bottom:1px solid rgba(5,3,9,0.08)">
+    <div style="max-width:1180px;margin:0 auto;padding:clamp(48px,7vw,96px) clamp(20px,5vw,64px)">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">02 — Typography</p>
+      <h2 id="ds-type" style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,52px);line-height:1.12;letter-spacing:-0.01em">Aleo &amp; Inter</h2>
+      <p style="margin:0 0 40px;max-width:66ch;font-size:18px;line-height:1.65;color:#504E52">Aleo 700 sets every heading: a slab-edged serif with enough contrast to read as invitation stationery and enough weight to stay confident. Headings run tight (-0.02em, 1.04–1.2 line height). Inter carries all body, UI and numeric text.</p>
+      <div style="display:grid;gap:0;border-top:1px solid rgba(5,3,9,0.1)">
+        <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px 32px;padding:22px 0;border-bottom:1px solid rgba(5,3,9,0.1);align-items:baseline">
+            <div>
+              <p style="margin:0;font-size:14px;font-weight:600">{{ t.label }}</p>
+              <p style="margin:3px 0 0;font-size:12px;color:#828184">{{ t.meta }}</p>
+            </div>
+            <p style="margin:0;grid-column:span 2;font-family:{{ t.family }};font-weight:{{ t.weight }};font-size:{{ t.size }};line-height:{{ t.lh }};letter-spacing:{{ t.ls }};color:#050309">{{ t.sample }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ds-marks" style="max-width:1180px;margin:0 auto;padding:clamp(48px,7vw,96px) clamp(20px,5vw,64px)">
+    <p style="margin:0 0 12px;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">03 — Marks &amp; iconography</p>
+    <h2 id="ds-marks" style="margin:0 0 14px;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,52px);line-height:1.12;letter-spacing:-0.01em">Three proprietary marks</h2>
+    <p style="margin:0 0 40px;max-width:66ch;font-size:18px;line-height:1.65;color:#504E52">The system has no swipe card, no flame, no generic video-call glyph. Three marks do the differentiating work and recur on every page.</p>
+    <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr))">
+      <article style="background:#001F1B;border-radius:16px;padding:28px;color:#FFFFFF;display:grid;gap:18px;align-content:start">
+        <svg width="72" height="72" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.1" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <div>
+          <h3 style="margin:0 0 8px;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700">Verified Real seal</h3>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.72)">A notched champagne seal, not a blue tick. Phone + selfie liveness is mandatory; NIN/BVN adds a second ring. Appears at 16px inline, 24px on profiles, 72px as a section mark.</p>
+        </div>
+      </article>
+      <article style="background:#001F1B;border-radius:16px;padding:28px;color:#FFFFFF;display:grid;gap:18px;align-content:start">
+        <svg width="72" height="72" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="2.1" fill="#FFB300"></circle><path d="M7.4 8.4a6.4 6.4 0 0 0 0 7.2M4.3 5.6a10.6 10.6 0 0 0 0 12.8" stroke="#FFB300" stroke-width="1.3" stroke-linecap="round"></path><path d="M16.6 8.4a6.4 6.4 0 0 1 0 7.2M19.7 5.6a10.6 10.6 0 0 1 0 12.8" stroke="#EBD9AE" stroke-width="1.3" stroke-linecap="round"></path></svg>
+        <div>
+          <h3 style="margin:0 0 8px;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700">Gist waves</h3>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.72)">Two voices, facing each other — gold for you, champagne for them. Structured voice-first sessions. Never a camera or a phone handset; video is a premium state shown by a third outer arc.</p>
+        </div>
+      </article>
+      <article style="background:#001F1B;border-radius:16px;padding:28px;color:#FFFFFF;display:grid;gap:18px;align-content:start">
+        <svg width="72" height="72" sc-camel-view-box="0 0 96 60" fill="none" aria-hidden="true"><path d="M6 48C28 48 24 14 48 14s20 34 42 34" stroke="#EBD9AE" stroke-width="1.4" stroke-dasharray="4 5"></path><circle cx="6" cy="48" r="4" fill="#FFB300"></circle><circle cx="30" cy="24" r="4" fill="#FFB300"></circle><circle cx="66" cy="24" r="4" fill="#FFB300"></circle><path d="M88 41.5 90.5 47l5.5.6-4 4 1 5.4-5-2.6-5 2.6 1-5.4-4-4 5.5-.6z" fill="#FFB300"></path></svg>
+        <div>
+          <h3 style="margin:0 0 8px;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700">The Journey arc</h3>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.72)">A rising, dotted path with four stations that ends on a star, not a heart: Match → Gist → Couple Mode → AriyaPlanner. The arc is the brand's structural signature and always gets its own full-width band.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="ds-comp" style="background:#FFFFFF;border-top:1px solid rgba(5,3,9,0.08)">
+    <div style="max-width:1180px;margin:0 auto;padding:clamp(48px,7vw,96px) clamp(20px,5vw,64px)">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">04 — Components</p>
+      <h2 id="ds-comp" style="margin:0 0 40px;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,52px);line-height:1.12;letter-spacing:-0.01em">Library</h2>
+
+      <h3 style="margin:0 0 16px;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#828184">Buttons — radius 12px</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <button type="button" style="padding:14px 24px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;transition:background .2s ease,transform .2s ease" style-hover="background:#005449;transform:translateY(-1px)">Get verified</button>
+        <button type="button" style="padding:14px 24px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;transition:background .2s ease,transform .2s ease" style-hover="background:#FFC94C;transform:translateY(-1px)">Start a Gist</button>
+        <button type="button" style="padding:14px 24px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;transition:border-color .2s ease,background .2s ease" style-hover="border-color:#00695C;background:#E5F0EE">See how it works</button>
+        <button type="button" style="padding:14px 8px;border:0;border-radius:12px;background:transparent;color:#00695C;font-family:Inter,sans-serif;font-size:15px;font-weight:600;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px">Read the guide</button>
+        <button type="button" disabled="disabled" style="padding:14px 24px;border:0;border-radius:12px;background:#D9D9DA;color:#828184;font-family:Inter,sans-serif;font-size:15px;font-weight:600">Unavailable</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;padding:20px;border-radius:16px;background:#001F1B;margin-bottom:44px">
+        <button type="button" style="padding:14px 24px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600" style-hover="background:#FFC94C">On dark — primary</button>
+        <button type="button" style="padding:14px 24px;border:1px solid rgba(235,217,174,0.42);border-radius:12px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:15px;font-weight:600" style-hover="background:rgba(235,217,174,0.12)">On dark — secondary</button>
+      </div>
+
+      <h3 style="margin:0 0 16px;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#828184">Badges &amp; chips — radius 6px / pill</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:44px">
+        <span style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#E5F0EE;border:1px solid rgba(0,105,92,0.24);font-size:13px;font-weight:600;color:#00453C">
+          <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#00695C" stroke-width="1.4" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#00695C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Verified Real
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#FFF7E5;border:1px solid rgba(204,143,0,0.3);font-size:13px;font-weight:600;color:#4C3500">NIN confirmed</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;background:#050309;color:#FFFFFF;font-size:12px;font-weight:600;letter-spacing:0.04em">₦ Nigeria track</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;background:#00695C;color:#FFFFFF;font-size:12px;font-weight:600;letter-spacing:0.04em">$ Diaspora track</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;border:1px dashed rgba(5,3,9,0.28);font-size:12px;font-weight:500;color:#504E52">Yoruba · optional</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;border:1px dashed rgba(5,3,9,0.28);font-size:12px;font-weight:500;color:#504E52">Christian · optional</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700;letter-spacing:0.04em">Premium Plus</span>
+      </div>
+
+      <h3 style="margin:0 0 16px;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#828184">Cards — outlined, radius 16px</h3>
+      <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));margin-bottom:44px">
+        <article style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;padding:26px;background:#FFFFFF;display:grid;gap:12px;align-content:start;transition:border-color .25s ease,transform .25s ease,box-shadow .25s ease" style-hover="border-color:rgba(0,105,92,0.5);transform:translateY(-3px);box-shadow:0 18px 40px -28px rgba(5,3,9,0.5)">
+          <svg width="30" height="30" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="2.1" fill="#00695C"></circle><path d="M7.4 8.4a6.4 6.4 0 0 0 0 7.2M4.3 5.6a10.6 10.6 0 0 0 0 12.8" stroke="#00695C" stroke-width="1.3" stroke-linecap="round"></path><path d="M16.6 8.4a6.4 6.4 0 0 1 0 7.2M19.7 5.6a10.6 10.6 0 0 1 0 12.8" stroke="#4C968C" stroke-width="1.3" stroke-linecap="round"></path></svg>
+          <h4 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">Feature card</h4>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52">Icon, title, two lines. Border lifts to green on hover, never a shadow at rest.</p>
+        </article>
+        <article style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;overflow:hidden;background:#FFFFFF;display:grid;align-content:start">
+          <div style="aspect-ratio:16/10;background:#001F1B;overflow:hidden"><img src="assets/29fad9eb-c797-41dc-9b56-07f8204fd8ac.jpg" alt="Placeholder: Nigerian couple laughing together at home in Lagos" style="width:100%;height:100%;object-fit:cover;opacity:.9"></div>
+          <div style="padding:22px;display:grid;gap:10px">
+            <h4 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">Media card</h4>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52">Image fills the top edge to edge, 16:10. Text block sits below on paper.</p>
+          </div>
+        </article>
+        <article style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;padding:26px;background:#F6F2EA;display:grid;gap:14px;align-content:start">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:20px;line-height:1.45;font-weight:400">"We gisted for three weeks before we ever met. By then I already knew."</p>
+          <div style="display:flex;align-items:center;gap:12px">
+            <img src="assets/3a493035-7d92-471e-bcdd-280cd09b1108.jpg" alt="Placeholder portrait: Toastly member in Lagos" style="width:44px;height:44px;border-radius:999px;object-fit:cover">
+            <div>
+              <p style="margin:0;font-size:14px;font-weight:600">Chiamaka O.</p>
+              <p style="margin:1px 0 0;font-size:13px;color:#828184">Lagos · married 2025</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <h3 style="margin:0 0 16px;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#828184">Form inputs — radius 12px</h3>
+      <div style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));margin-bottom:44px;max-width:820px">
+        <label style="display:grid;gap:7px;font-size:14px;font-weight:500;color:#050309">Phone number
+          <input type="tel" value="+234 802 000 0000" style="padding:13px 15px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;font-family:Inter,sans-serif;font-size:15px;color:#050309;background:#FFFFFF" style-focus="outline:none;border-color:#00695C;box-shadow:0 0 0 3px rgba(0,105,92,0.16)">
+        </label>
+        <label style="display:grid;gap:7px;font-size:14px;font-weight:500;color:#050309">City
+          <sc-raw-select style="padding:13px 15px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;font-family:Inter,sans-serif;font-size:15px;color:#050309;background:#FFFFFF" style-focus="outline:none;border-color:#00695C;box-shadow:0 0 0 3px rgba(0,105,92,0.16)">
+            <option>Lagos</option><option>Abuja</option><option>Port Harcourt</option><option>Ibadan</option>
+          </sc-raw-select>
+        </label>
+        <label style="display:grid;gap:7px;font-size:14px;font-weight:500;color:#050309;grid-column:1/-1">Your prompt answer
+          <textarea rows="3" style="padding:13px 15px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;font-family:Inter,sans-serif;font-size:15px;line-height:1.6;color:#050309;background:#FFFFFF;resize:vertical" style-focus="outline:none;border-color:#00695C;box-shadow:0 0 0 3px rgba(0,105,92,0.16)">The way to my heart is a quiet Sunday and jollof that doesn't need pepper soup to defend it.</textarea>
+        </label>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:20px">
+          <p style="margin:0;display:flex;align-items:center;gap:9px;font-size:14px;color:#2F8F5B;font-weight:500">
+            <svg width="16" height="16" sc-camel-view-box="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="#2F8F5B" stroke-width="1.3"></circle><path d="m5 8.2 2 2 4-4.4" stroke="#2F8F5B" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            Liveness check passed
+          </p>
+          <p style="margin:0;display:flex;align-items:center;gap:9px;font-size:14px;color:#9B1348;font-weight:500">
+            <svg width="16" height="16" sc-camel-view-box="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="#9B1348" stroke-width="1.3"></circle><path d="M8 4.6v4.2M8 11.2v.6" stroke="#9B1348" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            That number is already verified
+          </p>
+        </div>
+      </div>
+
+      <h3 style="margin:0 0 16px;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#828184">Pricing card &amp; FAQ accordion</h3>
+      <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">
+        <article style="border:1px solid #00695C;border-radius:16px;background:#001F1B;color:#FFFFFF;padding:28px;display:grid;gap:16px;align-content:start">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+            <div>
+              <h4 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700">Premium</h4>
+              <p style="margin:4px 0 0;font-size:14px;color:rgba(255,255,255,0.62)">Nigeria track</p>
+            </div>
+            <span style="padding:6px 12px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700">Most chosen</span>
+          </div>
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:40px;font-weight:700;letter-spacing:-0.01em">₦3,500<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:400;color:rgba(255,255,255,0.6)"> /month</span></p>
+          <ul style="margin:0;padding:0;list-style:none;display:grid;gap:10px">
+            <li style="display:flex;gap:10px;font-size:15px;color:rgba(255,255,255,0.8)"><span style="color:#FFB300">✓</span>Unlimited Gist sessions</li>
+            <li style="display:flex;gap:10px;font-size:15px;color:rgba(255,255,255,0.8)"><span style="color:#FFB300">✓</span>Priority match feed</li>
+            <li style="display:flex;gap:10px;font-size:15px;color:rgba(255,255,255,0.8)"><span style="color:#FFB300">✓</span>Read receipts</li>
+          </ul>
+          <button type="button" style="margin-top:4px;padding:14px 24px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600" style-hover="background:#FFC94C">Choose Premium</button>
+        </article>
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;overflow:hidden">
+          <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="3">
+            <div style="border-bottom:1px solid rgba(5,3,9,0.08)">
+              <button type="button" sc-camel-on-click="{{ f.toggle }}" aria-expanded="{{ f.open }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 22px;background:transparent;border:0;text-align:left;font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#050309" style-hover="background:#F6F2EA">
+                {{ f.q }}
+                <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(5,3,9,0.2);font-size:15px;color:#00695C">{{ f.sign }}</span>
+              </button>
+              <sc-if value="{{ f.open }}">
+                <p style="margin:0;padding:0 22px 22px;font-size:15px;line-height:1.65;color:#504E52;max-width:60ch">{{ f.a }}</p>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ds-motion" style="background:#001F1B;color:#FFFFFF">
+    <div style="max-width:1180px;margin:0 auto;padding:clamp(48px,7vw,96px) clamp(20px,5vw,64px);display:grid;gap:36px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">
+      <div style="grid-column:1/-1">
+        <p style="margin:0 0 12px;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#EBD9AE">05 — Motion, imagery, accessibility</p>
+        <h2 id="ds-motion" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,52px);line-height:1.12;letter-spacing:-0.01em">Rules of restraint</h2>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;color:#EBD9AE">Motion</h3>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.74)">Section reveals: 24px rise, 0.7s, cubic-bezier(.16,.84,.44,1), staggered 80ms. Hover: 1px border shift or a 1px lift over 200ms. The Verified seal draws its check once on first view. Nothing bounces, nothing spins, no card ever flies off screen. All motion respects <em>prefers-reduced-motion</em>.</p>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;color:#EBD9AE">Imagery direction</h3>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.74)">Real Nigerian couples in real Nigerian light: Lekki balconies at golden hour, Abuja rooftops, aso-oke and agbada at introduction ceremonies, danfo-yellow and ochre walls. Warm skin tones held true, never blue-filtered. Photos are graded toward the green/champagne palette at 90% opacity over ink. <strong style="color:#FFFFFF">The photos in this prototype are placeholders</strong> — commission local photographers in Lagos, Abuja, Port Harcourt and Ibadan; never license generic "diverse couple" stock.</p>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;color:#EBD9AE">Weight &amp; access</h3>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.74)">Two fonts, seven weights, no icon library, no hero video — the whole system is SVG and type. Every page keeps one h1 and a sequential heading order, 44px minimum touch targets, alt text on every image, and 4.5:1 minimum contrast for body copy.</p>
+      </div>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{}">
+class Component extends DCLogic {
+  state = { open: 0 };
+  renderVals() {
+    const mk = (name, hex) => ({ name, hex });
+    const faqData = [
+      ["Is verification really mandatory?", "Yes. Phone plus a selfie-liveness check before your profile goes live. NIN or BVN is optional and adds a second ring to your seal."],
+      ["What happens to my coin deposit?", "Both of you stake a small deposit when a date is confirmed. You both show up, you both get it back. Cancel with notice and there is no penalty at all."],
+      ["Do religion and tribe affect my matches?", "Never. They are display fields you choose to show. Toastly is non-religious and does not filter your feed on them."]
+    ];
+    return {
+      green: [mk("Green 50", "#E5F0EE"), mk("Green 100", "#CCE1DE"), mk("Green 300", "#4C968C"), mk("Green 500 · primary", "#00695C"), mk("Green 600", "#005449"), mk("Green 700", "#002A24"), mk("Green 800 · base", "#001F1B")],
+      gold: [mk("Gold 50", "#FFF7E5"), mk("Gold 100", "#FFEFCC"), mk("Champagne 200", "#EBD9AE"), mk("Gold 300", "#FFC94C"), mk("Gold 500 · accent", "#FFB300"), mk("Gold 600", "#CC8F00"), mk("Gold 800", "#4C3500")],
+      neutral: [mk("Paper", "#F6F2EA"), mk("White", "#FFFFFF"), mk("Grey 100", "#F2F2F2"), mk("Grey 200", "#D9D9DA"), mk("Grey 400", "#828184"), mk("Grey 600", "#504E52"), mk("Ink 800", "#1E1C21"), mk("Ink 900 · text", "#050309")],
+      semantic: [
+        { name: "Success", hex: "#2F8F5B", use: "Verification passed, deposit returned" },
+        { name: "Warning", hex: "#CC8F00", use: "Session expiring, incomplete profile" },
+        { name: "Error", hex: "#9B1348", use: "Failed check, reported account" },
+        { name: "Info", hex: "#4C968C", use: "Neutral system notes" }
+      ],
+      typeScale: [
+        { label: "H1 / Display", meta: "Aleo 700 · 72/44px · -0.02em", family: "Aleo,Georgia,serif", weight: 700, size: "clamp(44px,7vw,72px)", lh: "1.04", ls: "-0.02em", sample: "Done wasting time" },
+        { label: "H2", meta: "Aleo 700 · 52/40px", family: "Aleo,Georgia,serif", weight: 700, size: "clamp(40px,5vw,52px)", lh: "1.12", ls: "-0.01em", sample: "From match to marriage" },
+        { label: "H3", meta: "Aleo 700 · 44/32px", family: "Aleo,Georgia,serif", weight: 700, size: "clamp(32px,4vw,44px)", lh: "1.16", ls: "-0.01em", sample: "Verified Real, from day one" },
+        { label: "H4", meta: "Aleo 700 · 36/24px", family: "Aleo,Georgia,serif", weight: 700, size: "clamp(24px,3vw,36px)", lh: "1.25", ls: "0", sample: "Gist before you go out" },
+        { label: "H5", meta: "Aleo 700 · 28/20px", family: "Aleo,Georgia,serif", weight: 700, size: "clamp(20px,2.4vw,28px)", lh: "1.3", ls: "0", sample: "Couple Mode" },
+        { label: "H6 / Eyebrow", meta: "Aleo 700 · 22/18px · 0.08em caps", family: "Aleo,Georgia,serif", weight: 700, size: "clamp(18px,2vw,22px)", lh: "1.4", ls: "0.02em", sample: "AriyaPlanner handoff" },
+        { label: "Body large", meta: "Inter 400 · 22/18px · 1.6", family: "Inter,sans-serif", weight: 400, size: "clamp(18px,2vw,22px)", lh: "1.6", ls: "0", sample: "Verified people, real intentions — all the way to the aisle." },
+        { label: "Body regular", meta: "Inter 400 · 16px · 1.65", family: "Inter,sans-serif", weight: 400, size: "16px", lh: "1.65", ls: "0", sample: "Both of you stake a small deposit before the date. Show up and it comes straight back." },
+        { label: "Caption", meta: "Inter 500 · 13px · 0.06em caps", family: "Inter,sans-serif", weight: 500, size: "13px", lh: "1.5", ls: "0.06em", sample: "LAGOS · MARRIED 2025" },
+        { label: "Button", meta: "Inter 600 · 15px", family: "Inter,sans-serif", weight: 600, size: "15px", lh: "1.2", ls: "0.01em", sample: "Get verified" }
+      ],
+      faqs: faqData.map(([q, a], i) => ({
+        q, a,
+        open: this.state.open === i,
+        sign: this.state.open === i ? "−" : "+",
+        toggle: () => this.setState(s => ({ open: s.open === i ? -1 : i }))
+      }))
+    };
+  }
+}
+</script>
+
+
+</body></html>

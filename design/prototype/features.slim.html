@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/d5800f55-cfc6-4445-abd0-33bd113ad4be.js"></script>
+
+
+
+
+
+
+
+</head>
+<body>
+
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/cb84a7ca-4fbe-4c02-9d12-9d18d2dd8643.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Aleo;src:url("assets/092f45e6-37a4-4fe3-8604-cfac5ea72af7.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/6472e32b-9537-4c0c-b06e-7f0ea2781c13.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/5b5acf2a-7701-4b75-8120-d67cf2b91ccb.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/51907f11-8841-424f-a26e-703ee1a37679.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+<header style="position:sticky;top:0;z-index:50;background:rgba(0,31,27,0.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(235,217,174,0.16);font-family:Inter,system-ui,sans-serif">
+  <nav aria-label="Primary" style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,40px);height:74px;display:flex;align-items:center;gap:clamp(16px,3vw,40px)">
+    <a href="Toastly Home.dc.html" aria-label="Toastly home" style="display:flex;align-items:center;gap:10px;flex-shrink:0;text-decoration:none">
+      <svg width="26" height="26" sc-camel-view-box="0 0 34 34" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="9" fill="none" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="20" cy="13" r="9" fill="none" stroke="#FFB300" stroke-width="3"></circle><rect x="3" y="26" width="22" height="2.2" rx="1.1" fill="#EBD9AE"></rect></svg>
+      <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:23px;letter-spacing:-0.01em;color:#FFFFFF">Toastly</span>
+    </a>
+    <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+      <ul style="display:flex;align-items:center;gap:clamp(14px,2vw,30px);list-style:none;margin:0;padding:0;flex:1">
+        <sc-for list="{{ links }}" as="link" hint-placeholder-count="6">
+          <li style="position:relative">
+            <a href="{{ link.href }}" style="display:block;padding:6px 0;font-size:15px;font-weight:500;letter-spacing:0.01em;color:rgba(255,255,255,0.74);text-decoration:none;transition:color .2s ease" style-hover="color:#FFFFFF">{{ link.label }}</a>
+            <sc-if value="{{ link.active }}">
+              <span aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#FFB300;border-radius:2px"></span>
+            </sc-if>
+          </li>
+        </sc-for>
+      </ul>
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
+        <a href="Toastly Safety.dc.html" style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:500;color:#EBD9AE;text-decoration:none;transition:opacity .2s ease" style-hover="opacity:.75">
+          <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Verified Real
+        </a>
+        <a href="Toastly Pricing.dc.html" style="padding:11px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:14px;font-weight:600;letter-spacing:0.01em;text-decoration:none;transition:background .2s ease,transform .2s ease" style-hover="background:#FFC94C;transform:translateY(-1px)">Get verified</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isMobile }}">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+        <a href="Toastly Pricing.dc.html" style="padding:10px 16px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:14px;font-weight:600;text-decoration:none">Get verified</a>
+        <button type="button" aria-label="Toggle menu" aria-expanded="{{ open }}" sc-camel-on-click="{{ toggle }}" style="width:44px;height:44px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:0 11px;background:transparent;border:1px solid rgba(235,217,174,0.3);border-radius:12px">
+          <span aria-hidden="true" style="display:block;height:1.5px;background:#EBD9AE"></span>
+          <span aria-hidden="true" style="display:block;height:1.5px;background:#EBD9AE"></span>
+        </button>
+      </div>
+    </sc-if>
+  </nav>
+  <sc-if value="{{ showPanel }}">
+    <ul style="list-style:none;margin:0;padding:8px clamp(20px,4vw,40px) 24px;display:grid;gap:2px;border-top:1px solid rgba(235,217,174,0.14)">
+      <sc-for list="{{ links }}" as="link" hint-placeholder-count="6">
+        <li><a href="{{ link.href }}" style="display:block;padding:14px 0;font-size:17px;font-weight:500;color:rgba(255,255,255,0.86);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08)">{{ link.label }}</a></li>
+      </sc-for>
+    </ul>
+  </sc-if>
+</header>
+
+<main>
+  <section data-screen-label="Features header" style="background:#001F1B;color:#FFFFFF">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,8vw,116px) clamp(20px,5vw,48px);display:grid;gap:clamp(32px,4vw,56px);grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));align-items:end">
+      <div style="display:grid;gap:22px;max-width:620px">
+        <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#EBD9AE">Features</p>
+        <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(40px,6vw,68px);line-height:1.04;letter-spacing:-0.025em">Every feature designed to move you from match to marriage.</h1>
+        <p style="margin:0;max-width:54ch;font-size:clamp(17px,2vw,21px);line-height:1.6;color:rgba(255,255,255,0.76)">Nothing here exists to keep you scrolling. Each one exists to get you to a real conversation, a real date, and — if it's right — a real wedding.</p>
+      </div>
+      <ul style="margin:0;padding:0;list-style:none;display:grid;gap:2px">
+        <sc-for list="{{ toc }}" as="t" hint-placeholder-count="5">
+          <li style="padding:15px 0;border-top:1px solid rgba(255,255,255,0.14);display:flex;gap:16px;align-items:baseline">
+            <span style="font-size:12px;font-weight:600;letter-spacing:0.1em;color:#FFB300;min-width:26px">{{ t.n }}</span>
+            <span style="font-size:16px;color:rgba(255,255,255,0.8)">{{ t.label }}</span>
+          </li>
+        </sc-for>
+      </ul>
+    </div>
+  </section>
+
+  <section data-screen-label="Trust layer" aria-labelledby="f-trust" style="background:#FFFFFF">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,8vw,104px) clamp(20px,5vw,48px);display:grid;gap:clamp(28px,4vw,44px)">
+      <div data-reveal="1" style="display:grid;gap:18px;max-width:640px">
+        <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">01 — The trust layer</p>
+        <h2 id="f-trust" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,50px);line-height:1.1;letter-spacing:-0.015em">Verified Real, on every single profile.</h2>
+        <p style="margin:0;font-size:clamp(16px,1.8vw,19px);line-height:1.65;color:#504E52">Verification is not a badge you can buy or a step you can skip. It is the front door.</p>
+      </div>
+      <div data-reveal="1" style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))">
+        <sc-for list="{{ trust }}" as="c" hint-placeholder-count="3">
+          <article style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;padding:26px;background:#F6F2EA;display:grid;gap:14px;align-content:start;transition:border-color .25s ease,transform .25s ease" style-hover="border-color:rgba(0,105,92,0.5);transform:translateY(-3px)">
+            <svg width="34" height="34" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#00695C" stroke-width="1.2" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#00695C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">{{ c.title }}</h3>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52">{{ c.body }}</p>
+            <p style="margin:0;font-size:13px;font-weight:600;color:#00695C">{{ c.tag }}</p>
+          </article>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <sc-for list="{{ deepDives }}" as="d" hint-placeholder-count="6">
+    <section data-screen-label="Feature deep dive" style="background:{{ d.bg }};color:{{ d.fg }};border-top:1px solid {{ d.rule }}">
+      <div data-reveal="1" style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,100px) clamp(20px,5vw,48px);display:grid;gap:clamp(32px,5vw,64px);grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));align-items:center">
+        <div style="order:{{ d.textOrder }};display:grid;gap:20px;max-width:560px">
+          <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:{{ d.eyebrow }}">{{ d.n }} — {{ d.kicker }}</p>
+          <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(30px,4.2vw,48px);line-height:1.1;letter-spacing:-0.015em">{{ d.title }}</h2>
+          <p style="margin:0;font-size:clamp(16px,1.8vw,19px);line-height:1.65;color:{{ d.body }}">{{ d.lede }}</p>
+          <ul style="margin:0;padding:0;list-style:none;display:grid;gap:12px">
+            <sc-for list="{{ d.points }}" as="p" hint-placeholder-count="3">
+              <li style="display:grid;grid-template-columns:auto 1fr;gap:12px;font-size:16px;line-height:1.6"><span style="color:{{ d.eyebrow }};font-weight:700">—</span><span>{{ p }}</span></li>
+            </sc-for>
+          </ul>
+        </div>
+        <div style="order:{{ d.imgOrder }};border-radius:16px;overflow:hidden;aspect-ratio:{{ d.ratio }};background:#001F1B">
+          <img src="{{ d.img }}" alt="{{ d.alt }}" style="width:100%;height:100%;object-fit:cover;opacity:.92">
+        </div>
+      </div>
+    </section>
+  </sc-for>
+
+  <section data-screen-label="Secondary features" aria-labelledby="f-more" style="background:#002A24;color:#FFFFFF">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,8vw,104px) clamp(20px,5vw,48px);display:grid;gap:clamp(28px,4vw,44px)">
+      <div data-reveal="1" style="display:grid;gap:16px;max-width:600px">
+        <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#EBD9AE">Also included</p>
+        <h2 id="f-more" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,50px);line-height:1.1;letter-spacing:-0.015em">The quieter details</h2>
+      </div>
+      <div data-reveal="1" style="display:grid;gap:2px">
+        <sc-for list="{{ minor }}" as="m" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:8px 40px;padding:22px 0;border-top:1px solid rgba(255,255,255,0.14)">
+            <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:20px;font-weight:700">{{ m.title }}</h3>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.72);grid-column:span 2">{{ m.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="CTA" style="background:#F6F2EA">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(48px,7vw,96px) clamp(20px,5vw,48px)">
+      <div data-reveal="1" style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:clamp(32px,5vw,64px);display:grid;gap:22px;justify-items:start">
+        <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(30px,4vw,44px);line-height:1.1;letter-spacing:-0.015em;max-width:26ch">See it working, not described.</h2>
+        <p style="margin:0;max-width:56ch;font-size:clamp(16px,1.8vw,19px);line-height:1.6;color:#504E52">Get verified in about four minutes and your first six matches arrive tomorrow morning.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a href="Toastly Pricing.dc.html" style="padding:16px 28px;border-radius:12px;background:#00695C;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none" style-hover="background:#005449">Start verification</a>
+          <a href="Toastly How It Works.dc.html" style="padding:16px 28px;border-radius:12px;border:1px solid rgba(5,3,9,0.2);color:#050309;font-size:15px;font-weight:600;text-decoration:none" style-hover="border-color:#00695C;background:#E5F0EE">How it works</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer style="background:#001F1B;color:#FFFFFF;font-family:Inter,system-ui,sans-serif;border-top:1px solid rgba(235,217,174,0.16)">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,88px) clamp(20px,4vw,40px) 40px;display:grid;gap:clamp(40px,5vw,72px);grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+    <div style="display:grid;gap:20px;align-content:start;max-width:340px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="28" height="28" sc-camel-view-box="0 0 34 34" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="9" fill="none" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="20" cy="13" r="9" fill="none" stroke="#FFB300" stroke-width="3"></circle><rect x="3" y="26" width="22" height="2.2" rx="1.1" fill="#EBD9AE"></rect></svg>
+        <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:25px;letter-spacing:-0.01em;color:#FFFFFF">Toastly</span>
+      </div>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:rgba(255,255,255,0.7);text-wrap:pretty">Verified people, real intentions — all the way to the aisle. Built in Lagos for Nigerians who are done wasting time.</p>
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 14px;border:1px solid rgba(235,217,174,0.28);border-radius:999px;justify-self:start">
+        <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span style="font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:#EBD9AE">Verified Real</span>
+      </div>
+    </div>
+    <nav aria-label="Product" style="display:grid;gap:14px;align-content:start">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EBD9AE">Product</h2>
+      <a href="Toastly Features.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Features</a>
+      <a href="Toastly How It Works.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">How it works</a>
+      <a href="Toastly Pricing.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Pricing</a>
+      <a href="Toastly Diaspora.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Diaspora</a>
+    </nav>
+    <nav aria-label="Trust" style="display:grid;gap:14px;align-content:start">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EBD9AE">Trust</h2>
+      <a href="Toastly Safety.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Safety &amp; Trust</a>
+      <a href="Toastly Safety.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Verification process</a>
+      <a href="Toastly Stories.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Stories</a>
+      <a href="Toastly Design System.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Design system</a>
+    </nav>
+    <div style="display:grid;gap:16px;align-content:start;max-width:360px">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EBD9AE">Planning a wedding?</h2>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.7)">AriyaPlanner takes couples from introduction ceremony to white wedding.</p>
+      <a href="Toastly How It Works.dc.html" style="display:inline-flex;align-items:center;gap:8px;justify-self:start;padding:12px 20px;border:1px solid #EBD9AE;border-radius:12px;color:#EBD9AE;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s ease,color .2s ease" style-hover="background:#EBD9AE;color:#001F1B">Explore AriyaPlanner
+        <svg width="15" height="15" sc-camel-view-box="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9m-3.5-4L12.5 8 8.5 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </a>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:24px clamp(20px,4vw,40px) 44px;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between">
+    <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.5)">© 2026 Toastly Technologies Ltd. Lagos, Nigeria.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+      <a href="Toastly Safety.dc.html" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none" style-hover="color:#EBD9AE">Privacy</a>
+      <a href="Toastly Safety.dc.html" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none" style-hover="color:#EBD9AE">Terms</a>
+      <a href="Toastly Safety.dc.html" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none" style-hover="color:#EBD9AE">Community guidelines</a>
+    </div>
+  </div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{}">
+class Component extends DCLogic {
+  state = { navOpen: false, isDesktop: true };
+  componentDidMount() {
+    const mq = window.matchMedia("(min-width: 980px)");
+    this._navH = () => this.setState({ isDesktop: mq.matches, navOpen: false });
+    mq.addEventListener("change", this._navH);
+    this._mq = mq;
+    if (!mq.matches) this.setState({ isDesktop: false });
+    const els = Array.from(document.querySelectorAll("[data-reveal]"));
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    els.forEach(el => { el.style.opacity = "0"; el.style.transform = "translateY(24px)"; el.style.transition = "opacity .7s cubic-bezier(.16,.84,.44,1), transform .7s cubic-bezier(.16,.84,.44,1)"; });
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = "1"; e.target.style.transform = "none"; io.unobserve(e.target); } }), { rootMargin: "0px 0px -12% 0px", threshold: 0.06 });
+    els.forEach(el => io.observe(el));
+    this._io = io;
+  }
+  componentWillUnmount() { if (this._io) this._io.disconnect(); if (this._mq) this._mq.removeEventListener("change", this._navH); }
+  renderVals() {
+    const res = n => (window.__resources && window.__resources[n]) || ("assets/img/" + n + ".jpeg");
+    const light = { bg: "#FFFFFF", fg: "#050309", body: "#504E52", eyebrow: "#00695C", rule: "rgba(5,3,9,0.08)" };
+    const paper = { bg: "#F6F2EA", fg: "#050309", body: "#504E52", eyebrow: "#00695C", rule: "rgba(5,3,9,0.08)" };
+    const dark = { bg: "#001F1B", fg: "#FFFFFF", body: "rgba(255,255,255,0.76)", eyebrow: "#EBD9AE", rule: "rgba(235,217,174,0.16)" };
+    const dives = [
+      { ...paper, n: "02", kicker: "Matching", title: "Six people a day, no deck to shuffle.", lede: "Your feed is curated from prompt answers and arrives once a day. There is no swipe gesture anywhere in Toastly.", points: ["Prompts you both answered sit on the card, above the photos.", "Replies start on a specific answer, so first messages have somewhere to go.", "When the six are done for the day, the app tells you to go and live."], img: res("feature-matching"), alt: "Two people talking across a café table in warm evening light", ratio: "4/3" },
+      { ...light, n: "03", kicker: "Gist", title: "Voice-first sessions with a shape.", lede: "A Gist has a start, an end, and something to talk about. Live video unlocks on Premium Plus when you both agree to it.", points: ["Guided prompts drawn from your own profiles.", "18-minute default, extendable once.", "Audio compressed for Nigerian data — about a quarter of a normal call."], img: res("feature-gist"), alt: "A woman laughing during a voice call on her sofa at home", ratio: "4/3" },
+      { ...paper, n: "04", kicker: "Date commitment", title: "Coins as a promise, not a punishment.", lede: "Both people stake a small deposit when a date is confirmed. Show up, get it back. Cancel with notice, get it back.", points: ["The date is not confirmed until both stakes are down.", "No-show deposits go to a charity the other person chooses.", "Toastly takes nothing from a stake, ever."], img: res("feature-coins"), alt: "Two people greeting each other at a rooftop bar at sunset in Lagos", ratio: "4/3" },
+      { ...light, n: "05", kicker: "Culture, optional", title: "Tribe, language and faith — displayed, never used to filter.", lede: "These fields exist because they matter to Nigerian families. They sit on your profile only if you put them there.", points: ["Toastly is not a religious platform.", "No field here ever gates or narrows anybody's feed.", "One toggle hides any of them, at any time."], img: res("feature-culture"), alt: "Four friends talking and laughing around a table in a warm wood-panelled café", ratio: "4/3" },
+      { ...paper, n: "06", kicker: "Work, optional", title: "Your work, verified — if you want it there.", lede: "Profession and education are optional fields you can add and verify. They sit on your profile only if you put them there, and they are never used to filter anyone out of anyone's feed.", points: ["Verified profession and education carry the same privacy control as tribe, language and faith — you choose whether they are visible.", "Verification is a trust signal, not a status symbol: someone who invents a job usually cannot verify one.", "You can filter your own search by profession. Nobody is ever hidden from you, or from anyone else, for leaving it blank."], img: res("feature-work"), alt: "A woman sketching ideas on a pinboard in her studio in warm afternoon light", ratio: "4/3" },
+      { ...dark, n: "07", kicker: "The journey", title: "Match, Gist, Couple Mode, AriyaPlanner.", lede: "The four stations that make Toastly a marriage track rather than a messaging app. Couple Mode is a shared private space; AriyaPlanner takes it from there.", points: ["Couple Mode: milestones, shared plans, and a private timeline for two.", "AriyaPlanner handoff covers introduction, traditional and white wedding.", "Included on Premium Plus in both pricing tracks."], img: res("feature-journey"), alt: "A couple planning together over a notebook and map at their dining table", ratio: "4/3" },
+      { ...paper, n: "08", kicker: "Diaspora & devices", title: "Back home, or right where you are.", lede: "Choose your matching pool — Nigeria, your diaspora community, or both. The whole thing runs as a 4MB installable app with no store account.", points: ["Separate USD track for members abroad, Naira track at home.", "Time-zone aware Gist scheduling.", "Works on low-end Android and over 3G."], img: res("feature-diaspora"), alt: "A woman smiling at her phone while walking a city street at dusk", ratio: "4/3" }
+    ].map(d => ({ ...d, textOrder: 1, imgOrder: 2 }));
+    dives[1].textOrder = 2; dives[1].imgOrder = 1;
+    dives[3].textOrder = 2; dives[3].imgOrder = 1;
+    dives[5].textOrder = 2; dives[5].imgOrder = 1;
+    const navLinks = [["Features","Toastly Features.dc.html"],["How it works","Toastly How It Works.dc.html"],["Pricing","Toastly Pricing.dc.html"],["Safety & Trust","Toastly Safety.dc.html"],["Diaspora","Toastly Diaspora.dc.html"],["Stories","Toastly Stories.dc.html"]].map(([label, href]) => ({ label, href, active: label === "Features" }));
+    return {
+      links: navLinks,
+      isDesktop: this.state.isDesktop,
+      isMobile: !this.state.isDesktop,
+      open: this.state.navOpen,
+      showPanel: !this.state.isDesktop && this.state.navOpen,
+      toggle: () => this.setState(s => ({ navOpen: !s.navOpen })),
+      toc: [
+        { n: "01", label: "Verified Real trust layer" },
+        { n: "02", label: "Prompt matching, no swiping" },
+        { n: "03", label: "Gist voice sessions" },
+        { n: "04", label: "Coin-deposit date commitment" },
+        { n: "05", label: "Optional culture fields" },
+        { n: "06", label: "Optional verified profession" },
+        { n: "07", label: "Couple Mode & AriyaPlanner" },
+        { n: "08", label: "Diaspora bridge & 4MB PWA" }
+      ],
+      trust: [
+        { title: "Phone, once", body: "One number, one account. Blocking somebody actually blocks them, because they cannot spin up a second profile.", tag: "Mandatory" },
+        { title: "Selfie liveness", body: "A three-second head turn, checked against your profile photos. A saved picture does not pass.", tag: "Mandatory" },
+        { title: "NIN or BVN", body: "For members who want maximum trust. Adds a second ring to your seal; the number itself is never shown to anyone.", tag: "Optional" }
+      ],
+      deepDives: dives,
+      minor: [
+        { title: "Profile prompts", body: "Forty-odd prompts written for Nigerian dating, from family expectations to how you handle money." },
+        { title: "Icebreakers", body: "If a Gist stalls, the session offers one question. It never fills the silence for you." },
+        { title: "Privacy controls", body: "Hide your city to neighbourhood level, hide culture fields, pause your profile without losing your seal." },
+        { title: "Notification preferences", body: "Daily feed time is yours to set. No streaks, no nudges, no 'someone liked you' bait." },
+        { title: "Reporting & blocking", body: "Report from any screen. Reports on verified accounts are reviewed by a human within 24 hours." },
+        { title: "Data saver", body: "Photos load at low resolution until tapped, and Gist audio drops bitrate automatically on 3G." }
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>

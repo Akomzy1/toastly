@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/275b316e-5459-42ca-9181-cb9d7b9bb692.js"></script>
+</head>
+<body>
+
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/e1e8497c-cc92-4f6a-b2f5-e8a7f6d4449f.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Aleo;src:url("assets/17fcffa5-e29d-498c-a798-fe88f5b502a2.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/c94042c3-e65a-4013-921d-e366b081cea7.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/34fee90d-da13-494a-b112-0bb83e42ec68.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/c40d68b8-ff64-4bc2-a361-e555219d6a29.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+<header style="position:sticky;top:0;z-index:50;background:rgba(0,31,27,0.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(235,217,174,0.16);font-family:Inter,system-ui,sans-serif">
+  <nav aria-label="Primary" style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,40px);height:74px;display:flex;align-items:center;gap:clamp(16px,3vw,40px)">
+    <a href="Toastly Home.dc.html" aria-label="Toastly home" style="display:flex;align-items:center;gap:10px;flex-shrink:0;text-decoration:none">
+      <svg width="26" height="26" sc-camel-view-box="0 0 34 34" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="9" fill="none" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="20" cy="13" r="9" fill="none" stroke="#FFB300" stroke-width="3"></circle><rect x="3" y="26" width="22" height="2.2" rx="1.1" fill="#EBD9AE"></rect></svg>
+      <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:23px;letter-spacing:-0.01em;color:#FFFFFF">Toastly</span>
+    </a>
+    <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+      <ul style="display:flex;align-items:center;gap:clamp(14px,2vw,30px);list-style:none;margin:0;padding:0;flex:1">
+        <sc-for list="{{ links }}" as="link" hint-placeholder-count="6">
+          <li style="position:relative">
+            <a href="{{ link.href }}" style="display:block;padding:6px 0;font-size:15px;font-weight:500;letter-spacing:0.01em;color:rgba(255,255,255,0.74);text-decoration:none;transition:color .2s ease" style-hover="color:#FFFFFF">{{ link.label }}</a>
+            <sc-if value="{{ link.active }}">
+              <span aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#FFB300;border-radius:2px"></span>
+            </sc-if>
+          </li>
+        </sc-for>
+      </ul>
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
+        <a href="Toastly Safety.dc.html" style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:500;color:#EBD9AE;text-decoration:none;transition:opacity .2s ease" style-hover="opacity:.75">
+          <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Verified Real
+        </a>
+        <a href="Toastly Pricing.dc.html" style="padding:11px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:14px;font-weight:600;letter-spacing:0.01em;text-decoration:none;transition:background .2s ease,transform .2s ease" style-hover="background:#FFC94C;transform:translateY(-1px)">Get verified</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isMobile }}">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+        <a href="Toastly Pricing.dc.html" style="padding:10px 16px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:14px;font-weight:600;text-decoration:none">Get verified</a>
+        <button type="button" aria-label="Toggle menu" aria-expanded="{{ open }}" sc-camel-on-click="{{ toggle }}" style="width:44px;height:44px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:0 11px;background:transparent;border:1px solid rgba(235,217,174,0.3);border-radius:12px">
+          <span aria-hidden="true" style="display:block;height:1.5px;background:#EBD9AE"></span>
+          <span aria-hidden="true" style="display:block;height:1.5px;background:#EBD9AE"></span>
+        </button>
+      </div>
+    </sc-if>
+  </nav>
+  <sc-if value="{{ showPanel }}">
+    <ul style="list-style:none;margin:0;padding:8px clamp(20px,4vw,40px) 24px;display:grid;gap:2px;border-top:1px solid rgba(235,217,174,0.14)">
+      <sc-for list="{{ links }}" as="link" hint-placeholder-count="6">
+        <li><a href="{{ link.href }}" style="display:block;padding:14px 0;font-size:17px;font-weight:500;color:rgba(255,255,255,0.86);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08)">{{ link.label }}</a></li>
+      </sc-for>
+    </ul>
+  </sc-if>
+</header>
+
+<main>
+  <section data-screen-label="Pricing header" style="background:#001F1B;color:#FFFFFF">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,8vw,112px) clamp(20px,5vw,48px) clamp(44px,6vw,80px);display:grid;gap:22px;max-width:860px">
+      <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#EBD9AE">Pricing</p>
+      <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(40px,6vw,68px);line-height:1.04;letter-spacing:-0.025em">Simple, honest pricing — no games, no hidden fees.</h1>
+      <p style="margin:0;max-width:58ch;font-size:clamp(17px,2vw,21px);line-height:1.6;color:rgba(255,255,255,0.76)">Two separate tracks: Naira for members in Nigeria, USD for the diaspora. Coins for date commitments are bought separately and are never a subscription — they come back to you when you show up.</p>
+    </div>
+  </section>
+
+  <section data-screen-label="Nigeria pricing" aria-labelledby="p-ng" style="background:#FFFFFF">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,96px) clamp(20px,5vw,48px);display:grid;gap:clamp(28px,4vw,40px)">
+      <div data-reveal="1" style="display:flex;flex-wrap:wrap;gap:20px;align-items:end;justify-content:space-between">
+        <div style="display:grid;gap:14px;max-width:600px">
+          <span style="justify-self:start;padding:6px 13px;border-radius:6px;background:#050309;color:#FFFFFF;font-size:12px;font-weight:600;letter-spacing:0.05em">₦ NIGERIA TRACK</span>
+          <h2 id="p-ng" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,50px);line-height:1.1;letter-spacing:-0.015em">For members at home</h2>
+          <p style="margin:0;font-size:17px;line-height:1.65;color:#504E52">Billed in Naira by card, bank transfer or USSD. Cancel from the app, no phone call required.</p>
+        </div>
+      </div>
+      <div data-reveal="1" style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));align-items:start">
+        <sc-for list="{{ ngTiers }}" as="t" hint-placeholder-count="3">
+          <article style="border:1px solid {{ t.border }};border-radius:16px;background:{{ t.bg }};color:{{ t.fg }};padding:clamp(24px,3vw,32px);display:grid;gap:18px;align-content:start">
+            <div style="display:flex;align-items:start;justify-content:space-between;gap:12px">
+              <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:26px;font-weight:700">{{ t.name }}</h3>
+              <sc-if value="{{ t.flag }}">
+                <span style="padding:6px 12px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700;white-space:nowrap">Most chosen</span>
+              </sc-if>
+            </div>
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(34px,4vw,44px);font-weight:700;letter-spacing:-0.015em;line-height:1">{{ t.price }}<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:400;color:{{ t.muted }}">{{ t.per }}</span></p>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:{{ t.muted }}">{{ t.for }}</p>
+            <ul style="margin:0;padding:18px 0 0;border-top:1px solid {{ t.rule }};list-style:none;display:grid;gap:11px">
+              <sc-for list="{{ t.features }}" as="f" hint-placeholder-count="4">
+                <li style="display:grid;grid-template-columns:auto 1fr;gap:11px;font-size:15px;line-height:1.55"><span style="color:{{ t.tick }};font-weight:700">✓</span><span>{{ f }}</span></li>
+              </sc-for>
+            </ul>
+            <a href="Toastly How It Works.dc.html" style="margin-top:4px;padding:15px 24px;border-radius:12px;background:{{ t.btnBg }};color:{{ t.btnFg }};border:1px solid {{ t.btnBorder }};font-size:15px;font-weight:600;text-decoration:none;text-align:center">{{ t.cta }}</a>
+          </article>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Diaspora pricing" aria-labelledby="p-dia" style="background:#002A24;color:#FFFFFF">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,96px) clamp(20px,5vw,48px);display:grid;gap:clamp(28px,4vw,40px)">
+      <div data-reveal="1" style="display:grid;gap:14px;max-width:620px">
+        <span style="justify-self:start;padding:6px 13px;border-radius:6px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:600;letter-spacing:0.05em">$ DIASPORA TRACK</span>
+        <h2 id="p-dia" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,50px);line-height:1.1;letter-spacing:-0.015em">For Nigerians abroad</h2>
+        <p style="margin:0;font-size:17px;line-height:1.65;color:rgba(255,255,255,0.74)">Billed in USD by card or Apple Pay. Includes both matching pools — back home and within your diaspora community — and time-zone aware Gist scheduling.</p>
+      </div>
+      <div data-reveal="1" style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:start">
+        <sc-for list="{{ dpTiers }}" as="t" hint-placeholder-count="2">
+          <article style="border:1px solid {{ t.border }};border-radius:16px;background:{{ t.bg }};color:{{ t.fg }};padding:clamp(24px,3vw,32px);display:grid;gap:18px;align-content:start">
+            <div style="display:flex;align-items:start;justify-content:space-between;gap:12px">
+              <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:26px;font-weight:700">{{ t.name }}</h3>
+              <sc-if value="{{ t.flag }}">
+                <span style="padding:6px 12px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700;white-space:nowrap">Marriage track</span>
+              </sc-if>
+            </div>
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(34px,4vw,44px);font-weight:700;letter-spacing:-0.015em;line-height:1">{{ t.price }}<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:400;color:{{ t.muted }}">{{ t.per }}</span></p>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:{{ t.muted }}">{{ t.for }}</p>
+            <ul style="margin:0;padding:18px 0 0;border-top:1px solid {{ t.rule }};list-style:none;display:grid;gap:11px">
+              <sc-for list="{{ t.features }}" as="f" hint-placeholder-count="4">
+                <li style="display:grid;grid-template-columns:auto 1fr;gap:11px;font-size:15px;line-height:1.55"><span style="color:{{ t.tick }};font-weight:700">✓</span><span>{{ f }}</span></li>
+              </sc-for>
+            </ul>
+            <a href="Toastly Diaspora.dc.html" style="margin-top:4px;padding:15px 24px;border-radius:12px;background:{{ t.btnBg }};color:{{ t.btnFg }};border:1px solid {{ t.btnBorder }};font-size:15px;font-weight:600;text-decoration:none;text-align:center">{{ t.cta }}</a>
+          </article>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Women's launch offer" aria-labelledby="p-women" style="background:#001F1B;color:#FFFFFF;border-top:1px solid rgba(235,217,174,0.25);border-bottom:1px solid rgba(235,217,174,0.25)">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,88px) clamp(20px,5vw,48px);display:grid;gap:clamp(32px,4vw,56px);grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));align-items:start">
+      <div data-reveal="1" style="display:grid;gap:18px;max-width:560px">
+        <span style="display:inline-flex;align-items:center;gap:9px;justify-self:start;padding:8px 15px;border:1px solid rgba(235,217,174,0.34);border-radius:999px;font-size:13px;font-weight:500;letter-spacing:0.05em;color:#EBD9AE">
+          <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          For women, from day one
+        </span>
+        <h2 id="p-women" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(30px,4.2vw,46px);line-height:1.1;letter-spacing:-0.015em">30 days of Premium Plus. On us.</h2>
+        <p style="margin:0;font-size:clamp(16px,1.8vw,19px);line-height:1.65;color:rgba(255,255,255,0.78)">Full access to live-video Gist and incognito mode, active on your account from the day you verify — no card, no code, nothing to cancel.</p>
+        <p style="margin:0;font-size:15px;line-height:1.65;color:rgba(255,255,255,0.6)">It's part of how we think about safety and comfort for women getting started here, the same way verification and Coins are — not a coupon, just how the first 30 days work.</p>
+      </div>
+      <div data-reveal="1" style="border:1px solid rgba(235,217,174,0.3);border-radius:16px;background:rgba(0,42,36,0.5);overflow:hidden">
+        <button type="button" sc-camel-on-click="{{ womenFaqToggle }}" aria-expanded="{{ womenFaqOpen }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 24px;background:transparent;border:0;text-align:left;font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#FFFFFF" style-hover="background:rgba(235,217,174,0.08)">
+          How does the women's free offer work?
+          <span aria-hidden="true" style="flex-shrink:0;width:24px;height:24px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(235,217,174,0.35);font-size:16px;color:#EBD9AE">{{ womenFaqSign }}</span>
+        </button>
+        <sc-if value="{{ womenFaqOpen }}">
+          <p style="margin:0;padding:0 24px 24px;font-size:15.5px;line-height:1.65;color:rgba(255,255,255,0.74)">When you verify as a woman, your account starts with 30 days of Premium Plus already active — live-video Gist and incognito mode included, no payment method on file. It ends automatically after 30 days; from there you can move to any paid tier or drop back to Starter, free forever.</p>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Coins" aria-labelledby="p-coins" style="background:#F6F2EA">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,96px) clamp(20px,5vw,48px);display:grid;gap:clamp(30px,4vw,52px);grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));align-items:center">
+      <div data-reveal="1" style="display:grid;gap:20px;max-width:560px">
+        <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">Coins</p>
+        <h2 id="p-coins" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(30px,4.2vw,48px);line-height:1.1;letter-spacing:-0.015em">Showing up for each other.</h2>
+        <p style="margin:0;font-size:clamp(16px,1.8vw,19px);line-height:1.65;color:#504E52">Coins are not a subscription and they are not a fee. When a date is confirmed, you each stake a few. You both turn up, you both get them straight back. Somebody's plans change and they say so — everything comes back, no questions.</p>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:#504E52">On a genuine no-show, the coins that were staked go to a charity <em>the other person</em> chooses. Toastly does not keep a single kobo of it. This is a mutual promise about each other's time, not a penalty system.</p>
+      </div>
+      <div data-reveal="1" style="display:grid;gap:14px">
+        <sc-for list="{{ coinPacks }}" as="c" hint-placeholder-count="3">
+          <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:22px 24px;border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF">
+            <div>
+              <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700">{{ c.name }}</p>
+              <p style="margin:4px 0 0;font-size:14px;color:#504E52">{{ c.note }}</p>
+            </div>
+            <p style="margin:0;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums">{{ c.price }}</p>
+          </div>
+        </sc-for>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52">Unused coins never expire. Refundable to your original payment method on request.</p>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Comparison" aria-labelledby="p-compare" style="background:#FFFFFF;border-top:1px solid rgba(5,3,9,0.08)">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,96px) clamp(20px,5vw,48px);display:grid;gap:clamp(24px,3vw,36px)">
+      <div data-reveal="1" style="display:flex;flex-wrap:wrap;gap:20px;align-items:end;justify-content:space-between">
+        <div style="display:grid;gap:14px;max-width:560px">
+          <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">Compare</p>
+          <h2 id="p-compare" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(30px,4.2vw,48px);line-height:1.1;letter-spacing:-0.015em">Feature by feature, one track at a time.</h2>
+        </div>
+        <div role="tablist" aria-label="Pricing track" style="display:flex;gap:6px;padding:5px;border:1px solid rgba(5,3,9,0.14);border-radius:12px;background:#F6F2EA">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+            <button type="button" role="tab" aria-selected="{{ t.on }}" sc-camel-on-click="{{ t.select }}" style="padding:11px 20px;border:0;border-radius:9px;background:{{ t.bg }};color:{{ t.fg }};font-family:Inter,sans-serif;font-size:14px;font-weight:600">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div data-reveal="1" style="overflow-x:auto;border:1px solid rgba(5,3,9,0.12);border-radius:16px">
+        <sc-raw-table style="width:100%;min-width:640px;border-collapse:collapse;font-size:15px">
+          <sc-raw-caption style="text-align:left;padding:20px 22px 0;font-size:14px;color:#504E52">{{ tableCaption }}</sc-raw-caption>
+          <sc-raw-thead>
+            <sc-raw-tr>
+              <sc-raw-th scope="col" style="text-align:left;padding:18px 22px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#828184">Feature</sc-raw-th>
+              <sc-for list="{{ compareCols }}" as="c" hint-placeholder-count="3">
+                <sc-raw-th scope="col" style="text-align:left;padding:18px 22px;font-family:Aleo,Georgia,serif;font-size:17px;font-weight:700;white-space:nowrap">{{ c }}</sc-raw-th>
+              </sc-for>
+            </sc-raw-tr>
+          </sc-raw-thead>
+          <sc-raw-tbody>
+            <sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="9">
+              <sc-raw-tr style="border-top:1px solid rgba(5,3,9,0.08)">
+                <sc-raw-th scope="row" style="text-align:left;padding:16px 22px;font-weight:500;color:#050309">{{ r.label }}</sc-raw-th>
+                <sc-for list="{{ r.cells }}" as="v" hint-placeholder-count="3">
+                  <sc-raw-td style="padding:16px 22px;color:#504E52">{{ v }}</sc-raw-td>
+                </sc-for>
+              </sc-raw-tr>
+            </sc-for>
+          </sc-raw-tbody>
+        </sc-raw-table>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Why pay" aria-labelledby="p-why" style="background:#F6F2EA">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(52px,7vw,96px) clamp(20px,5vw,48px);display:grid;gap:clamp(24px,3vw,40px)">
+      <div data-reveal="1" style="display:grid;gap:16px;max-width:640px">
+        <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">Why pay</p>
+        <h2 id="p-why" style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(30px,4.2vw,48px);line-height:1.1;letter-spacing:-0.015em">Free gets you verified. Paid gets you further, faster.</h2>
+      </div>
+      <div data-reveal="1" style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+        <sc-for list="{{ why }}" as="w" hint-placeholder-count="3">
+          <article style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:26px;display:grid;gap:12px;align-content:start">
+            <h3 style="margin:0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700">{{ w.title }}</h3>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52">{{ w.body }}</p>
+          </article>
+        </sc-for>
+      </div>
+      <p data-reveal="1" style="margin:0;font-size:16px;line-height:1.65;color:#504E52;max-width:70ch">No tier buys you visibility, boosts your position in anybody's feed, or unlocks a person. Every member is verified on every tier — that part is never for sale.</p>
+    </div>
+  </section>
+
+  <section data-screen-label="CTA" style="background:#001F1B;color:#FFFFFF">
+    <div data-reveal="1" style="max-width:960px;margin:0 auto;padding:clamp(56px,8vw,116px) clamp(20px,5vw,48px);display:grid;gap:26px;justify-items:center;text-align:center">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-weight:700;font-size:clamp(32px,4.6vw,52px);line-height:1.08;letter-spacing:-0.02em;max-width:26ch">Start your journey today — your person is already verified.</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">
+        <a href="Toastly How It Works.dc.html" style="padding:16px 30px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none" style-hover="background:#FFC94C">Get started in Nigeria (₦)</a>
+        <a href="Toastly Diaspora.dc.html" style="padding:16px 30px;border-radius:12px;border:1px solid rgba(235,217,174,0.4);color:#EBD9AE;font-size:15px;font-weight:600;text-decoration:none" style-hover="background:rgba(235,217,174,0.12)">Get started abroad ($)</a>
+      </div>
+      <a href="Toastly Safety.dc.html" style="font-size:15px;color:rgba(255,255,255,0.7);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.3);padding-bottom:2px">Read how verification works first</a>
+    </div>
+  </section>
+</main>
+<footer style="background:#001F1B;color:#FFFFFF;font-family:Inter,system-ui,sans-serif;border-top:1px solid rgba(235,217,174,0.16)">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,88px) clamp(20px,4vw,40px) 40px;display:grid;gap:clamp(40px,5vw,72px);grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+    <div style="display:grid;gap:20px;align-content:start;max-width:340px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="28" height="28" sc-camel-view-box="0 0 34 34" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="9" fill="none" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="20" cy="13" r="9" fill="none" stroke="#FFB300" stroke-width="3"></circle><rect x="3" y="26" width="22" height="2.2" rx="1.1" fill="#EBD9AE"></rect></svg>
+        <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:25px;letter-spacing:-0.01em;color:#FFFFFF">Toastly</span>
+      </div>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:rgba(255,255,255,0.7);text-wrap:pretty">Verified people, real intentions — all the way to the aisle. Built in Lagos for Nigerians who are done wasting time.</p>
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 14px;border:1px solid rgba(235,217,174,0.28);border-radius:999px;justify-self:start">
+        <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span style="font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:#EBD9AE">Verified Real</span>
+      </div>
+    </div>
+    <nav aria-label="Product" style="display:grid;gap:14px;align-content:start">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EBD9AE">Product</h2>
+      <a href="Toastly Features.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Features</a>
+      <a href="Toastly How It Works.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">How it works</a>
+      <a href="Toastly Pricing.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Pricing</a>
+      <a href="Toastly Diaspora.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Diaspora</a>
+    </nav>
+    <nav aria-label="Trust" style="display:grid;gap:14px;align-content:start">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EBD9AE">Trust</h2>
+      <a href="Toastly Safety.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Safety &amp; Trust</a>
+      <a href="Toastly Safety.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Verification process</a>
+      <a href="Toastly Stories.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Stories</a>
+      <a href="Toastly Design System.dc.html" style="font-size:15px;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Design system</a>
+    </nav>
+    <div style="display:grid;gap:16px;align-content:start;max-width:360px">
+      <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#EBD9AE">Planning a wedding?</h2>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.7)">AriyaPlanner takes couples from introduction ceremony to white wedding.</p>
+      <a href="Toastly How It Works.dc.html" style="display:inline-flex;align-items:center;gap:8px;justify-self:start;padding:12px 20px;border:1px solid #EBD9AE;border-radius:12px;color:#EBD9AE;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s ease,color .2s ease" style-hover="background:#EBD9AE;color:#001F1B">Explore AriyaPlanner
+        <svg width="15" height="15" sc-camel-view-box="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9m-3.5-4L12.5 8 8.5 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </a>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:24px clamp(20px,4vw,40px) 44px;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between">
+    <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.5)">© 2026 Toastly Technologies Ltd. Lagos, Nigeria.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+      <a href="Toastly Safety.dc.html" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none" style-hover="color:#EBD9AE">Privacy</a>
+      <a href="Toastly Safety.dc.html" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none" style-hover="color:#EBD9AE">Terms</a>
+      <a href="Toastly Safety.dc.html" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none" style-hover="color:#EBD9AE">Community guidelines</a>
+    </div>
+  </div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{}">
+class Component extends DCLogic {
+  state = { track: 0, womenFaqOpen: false, navOpen: false, isDesktop: true };
+  componentDidMount() {
+    const mq = window.matchMedia("(min-width: 980px)");
+    this._navH = () => this.setState({ isDesktop: mq.matches, navOpen: false });
+    mq.addEventListener("change", this._navH);
+    this._mq = mq;
+    if (!mq.matches) this.setState({ isDesktop: false });
+    const els = Array.from(document.querySelectorAll("[data-reveal]"));
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    els.forEach(el => { el.style.opacity = "0"; el.style.transform = "translateY(24px)"; el.style.transition = "opacity .7s cubic-bezier(.16,.84,.44,1), transform .7s cubic-bezier(.16,.84,.44,1)"; });
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = "1"; e.target.style.transform = "none"; io.unobserve(e.target); } }), { rootMargin: "0px 0px -12% 0px", threshold: 0.06 });
+    els.forEach(el => io.observe(el));
+    this._io = io;
+  }
+  componentWillUnmount() { if (this._io) this._io.disconnect(); if (this._mq) this._mq.removeEventListener("change", this._navH); }
+  renderVals() {
+    const navLinks = [["Features","Toastly Features.dc.html"],["How it works","Toastly How It Works.dc.html"],["Pricing","Toastly Pricing.dc.html"],["Safety & Trust","Toastly Safety.dc.html"],["Diaspora","Toastly Diaspora.dc.html"],["Stories","Toastly Stories.dc.html"]].map(([label, href]) => ({ label, href, active: label === "Pricing" }));
+    const navVals = { links: navLinks, isDesktop: this.state.isDesktop, isMobile: !this.state.isDesktop, open: this.state.navOpen, showPanel: !this.state.isDesktop && this.state.navOpen, toggle: () => this.setState(s => ({ navOpen: !s.navOpen })) };
+    const lightCard = { bg: "#FFFFFF", fg: "#050309", muted: "#504E52", rule: "rgba(5,3,9,0.1)", border: "rgba(5,3,9,0.14)", tick: "#00695C", btnBg: "transparent", btnFg: "#050309", btnBorder: "rgba(5,3,9,0.2)" };
+    const darkCard = { bg: "#001F1B", fg: "#FFFFFF", muted: "rgba(255,255,255,0.66)", rule: "rgba(255,255,255,0.14)", border: "#00695C", tick: "#FFB300", btnBg: "#FFB300", btnFg: "#001F1B", btnBorder: "#FFB300" };
+    const glassCard = { bg: "rgba(0,31,27,0.45)", fg: "#FFFFFF", muted: "rgba(255,255,255,0.66)", rule: "rgba(255,255,255,0.14)", border: "rgba(235,217,174,0.28)", tick: "#EBD9AE", btnBg: "transparent", btnFg: "#EBD9AE", btnBorder: "rgba(235,217,174,0.4)" };
+    const ngTiers = [
+      { ...lightCard, name: "Starter", price: "Free", per: " forever", for: "A real first look — upgrade when you're ready to talk.", features: ["Verified Real profile", "Six matches a day", "2 Gist sessions a month", "Receive messages (unlock to read with Premium)", "Coin-deposit dates", "Couple Mode + AriyaPlanner handoff"], cta: "Start free", flag: false },
+      { ...darkCard, name: "Premium", price: "₦3,500", per: " /month", for: "For when you're actively looking and want the pace to match.", features: ["Everything in Starter, plus:", "Unlimited Gist sessions", "Priority match feed — still 6 a day, just better matched", "Advanced filters — city, language, intentions"], cta: "Choose Premium", flag: true },
+      { ...lightCard, name: "Premium Plus", price: "₦7,000", per: " /month", for: "For the marriage track, all the way to the wedding.", features: ["Everything in Premium, plus:", "Live-video Gist sessions", "Unlimited voice notes", "Priority support from Lagos"], cta: "Choose Premium Plus", flag: false }
+    ];
+    const dpTiers = [
+      { ...glassCard, name: "Diaspora", price: "$15", per: " /month", for: "For Nigerians abroad matching back home or within their community.", features: ["Verified Real profile", "Both matching pools", "Unlimited Gist sessions", "Time-zone aware scheduling", "Couple Mode + AriyaPlanner handoff"], cta: "Join the diaspora track", flag: false },
+      { ...darkCard, name: "Diaspora Plus", price: "$30", per: " /month", for: "For diaspora couples heading toward a Nigerian wedding abroad.", features: ["Everything in Diaspora, plus:", "Live-video Gist sessions", "Advanced filters", "Priority support"], cta: "Join Diaspora Plus", flag: true }
+    ];
+    const ngRows = [
+      ["Verified Real (phone + liveness)", ["Included", "Included", "Included"]],
+      ["Daily match feed", ["6 a day", "6 a day, priority", "6 a day, priority"]],
+      ["Gist sessions (audio)", ["2 a month", "Unlimited", "Unlimited"]],
+      ["Live-video Gist", ["—", "—", "Included"]],
+      ["Advanced filters", ["—", "City, language, intentions", "City, language, intentions"]],
+      ["Couple Mode", ["Included", "Included", "Included"]],
+      ["AriyaPlanner handoff", ["Included", "Included", "Included"]],
+      ["Priority support", ["—", "48 hours", "Same day"]],
+      ["Data-light PWA", ["Included", "Included", "Included"]]
+    ];
+    const dpRows = [
+      ["Verified Real (phone + liveness)", ["Included", "Included"]],
+      ["Matching pools", ["Back home + diaspora", "Back home + diaspora"]],
+      ["Gist sessions (audio)", ["Unlimited", "Unlimited"]],
+      ["Live-video Gist", ["—", "Included"]],
+      ["Time-zone smart scheduling", ["Included", "Included"]],
+      ["Advanced filters", ["—", "City, language, intentions"]],
+      ["Couple Mode", ["Included", "Included"]],
+      ["AriyaPlanner handoff", ["Included", "Included, incl. weddings abroad"]],
+      ["Priority support", ["72 hours", "Same day"]]
+    ];
+    const isNg = this.state.track === 0;
+    return {
+      ...navVals,
+      ngTiers, dpTiers,
+      womenFaqOpen: this.state.womenFaqOpen,
+      womenFaqSign: this.state.womenFaqOpen ? "−" : "+",
+      womenFaqToggle: () => this.setState(s => ({ womenFaqOpen: !s.womenFaqOpen })),
+      coinPacks: [
+        { name: "10 coins", note: "Two date commitments, roughly", price: "₦1,000" },
+        { name: "30 coins", note: "Most-used pack", price: "₦2,700" },
+        { name: "Diaspora pack — 30 coins", note: "Billed in USD", price: "$6" }
+      ],
+      tabs: ["Nigeria (₦)", "Diaspora ($)"].map((label, i) => ({
+        label,
+        on: this.state.track === i,
+        bg: this.state.track === i ? "#001F1B" : "transparent",
+        fg: this.state.track === i ? "#FFFFFF" : "#504E52",
+        select: () => this.setState({ track: i })
+      })),
+      tableCaption: isNg ? "Nigeria track — billed in Naira by card, transfer or USSD." : "Diaspora track — billed in USD by card or Apple Pay.",
+      compareCols: isNg ? ["Starter", "Premium", "Premium Plus"] : ["Diaspora", "Diaspora Plus"],
+      compareRows: (isNg ? ngRows : dpRows).map(([label, cells]) => ({ label, cells })),
+      why: [
+        { title: "Premium buys pace", body: "Unlimited Gist sessions and a priority feed, for the months when you are genuinely looking." },
+        { title: "Premium Plus buys the track", body: "Live video, Couple Mode and the AriyaPlanner handoff — the part no other app has." },
+        { title: "Nothing buys attention", body: "There is no boost, no super-like, no paid placement in anybody's six." }
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/92624e58-348e-48f6-a790-8022c14662ae.js"></script>
+</head>
+<body>
+
+<x-dc>
+
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/2e54d6c6-9cb3-46ca-88f9-1b3fd1f99e6a.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/6730ec8e-046a-4015-9292-3f05d0c05d49.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/68cead68-dac4-4391-b071-d52c23df8c48.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/4729f573-a23c-45c1-b4be-6c4b49587ae9.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:56px 24px;display:flex;flex-direction:column;align-items:center;gap:40px">
+  <div style="max-width:600px;text-align:center;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">Component state</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(26px,3vw,32px);font-weight:700">Locked inbox — Starter tier</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52">Starter members can receive messages but not read them. Tap the locked row to see what unlocking looks like.</p>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:48px;justify-content:center;align-items:flex-start">
+    <div style="display:grid;gap:14px;justify-items:center;padding-top:8px">
+      <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#828184">Tab bar badge</p>
+      <div style="width:88px;height:88px;border-radius:20px;background:#001F1B;display:grid;place-items:center;position:relative">
+        <svg width="30" height="30" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 1 1 3.5 6.6L4 20l1.2-3.8A7.9 7.9 0 0 1 4 12Z" stroke="#EBD9AE" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+        <span style="position:absolute;top:8px;right:8px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:11px;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums">{{ unreadCount }}</span>
+      </div>
+      <p style="margin:0;font-size:12px;color:#828184;max-width:110px;text-align:center">Count only — no preview</p>
+    </div>
+
+    <x-import component-from-global-scope="IOSDevice" from="assets/885117c4-cbcd-4923-8dd6-86cc2b7362e3.jsx#/ios-frame.jsx" hint-size="402px,874px">
+      <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ true }}">
+        <div style="height:100%;display:flex;flex-direction:column;background:#F6F2EA">
+          <div style="padding:62px 20px 16px;background:#001F1B;flex-shrink:0">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;color:#FFFFFF">Inbox</p>
+          </div>
+          <div style="flex:1;overflow:auto;padding:14px;display:grid;gap:10px;align-content:start">
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+              <sc-if value="{{ r.notLocked }}">
+                <div style="display:flex;gap:12px;align-items:center;padding:14px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.1);border-radius:14px">
+                  <div style="width:40px;height:40px;border-radius:999px;background:#E5F0EE;display:grid;place-items:center;flex-shrink:0">
+                    <svg width="17" height="17" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4 10-11" stroke="#00695C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <p style="margin:0;font-size:14.5px;font-weight:600;color:#050309">{{ r.title }}</p>
+                    <p style="margin:2px 0 0;font-size:13px;color:#828184">{{ r.sub }}</p>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ r.locked }}">
+                <button type="button" sc-camel-on-click="{{ openLocked }}" style="display:flex;gap:12px;align-items:center;padding:14px;background:#FFFFFF;border:1px solid rgba(235,217,174,0.55);border-radius:14px;text-align:left;width:100%;cursor:pointer" style-hover="border-color:#FFB300">
+                  <div style="width:40px;height:40px;border-radius:999px;background:#001F1B;display:grid;place-items:center;flex-shrink:0">
+                    <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#FFB300" stroke-width="1.6"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round"></path></svg>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <p style="margin:0;font-size:14.5px;font-weight:600;color:#050309">{{ lockedLabel }}</p>
+                    <p style="margin:2px 0 0;font-size:13px;color:#828184">Unlock with Premium to view</p>
+                  </div>
+                  <span aria-hidden="true" style="color:#828184;font-size:16px;flex-shrink:0">›</span>
+                </button>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isUpgrade }}">
+        <div style="height:100%;display:flex;flex-direction:column;background:#001F1B;color:#FFFFFF">
+          <div style="padding:62px 16px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <button type="button" sc-camel-on-click="{{ backToInbox }}" aria-label="Back to inbox" style="background:transparent;border:0;color:#EBD9AE;font-size:20px;line-height:1;cursor:pointer;padding:4px 6px">‹</button>
+            <p style="margin:0;font-size:14px;font-weight:600;color:rgba(255,255,255,0.7)">Inbox</p>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 32px;gap:20px;text-align:center">
+            <div style="width:60px;height:60px;border-radius:999px;border:1px solid rgba(235,217,174,0.4);display:grid;place-items:center;flex-shrink:0">
+              <svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#FFB300" stroke-width="1.6"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round"></path></svg>
+            </div>
+            <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:23px;font-weight:700;line-height:1.2">New message waiting.</h2>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.76);max-width:270px">Premium unlocks your inbox — see who's messaged you and reply, with unlimited Gist sessions too.</p>
+            <a href="Toastly Pricing.dc.html" style="width:100%;padding:15px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;text-align:center;box-sizing:border-box" style-hover="background:#FFC94C">Unlock with Premium</a>
+            <button type="button" sc-camel-on-click="{{ backToInbox }}" style="background:transparent;border:0;color:rgba(255,255,255,0.6);font-size:14px;font-family:Inter,sans-serif;cursor:pointer;padding:4px">Not now</button>
+          </div>
+        </div>
+      </sc-if>
+    </x-import>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:760},&quot;lockedCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:1,&quot;max&quot;:9,&quot;unit&quot;:&quot; unread&quot;}}">
+class Component extends DCLogic {
+  state = { view: "inbox" };
+  renderVals() {
+    const lockedCount = this.props.lockedCount ?? 3;
+    const rows = [
+      { locked: false, notLocked: true, title: "Gist session confirmed", sub: "Tomorrow, 7:30pm · Voice" },
+      { locked: false, notLocked: true, title: "Coins returned", sub: "Both of you showed up — coins are back" },
+      { locked: true, notLocked: false }
+    ];
+    return {
+      unreadCount: lockedCount,
+      lockedLabel: lockedCount === 1 ? "1 new message" : lockedCount + " new messages",
+      rows,
+      isInbox: this.state.view === "inbox",
+      isUpgrade: this.state.view === "upgrade",
+      openLocked: () => this.setState({ view: "upgrade" }),
+      backToInbox: () => this.setState({ view: "inbox" })
+    };
+  }
+}
+
+</script>
+
+
+</body></html>
