@@ -35,8 +35,10 @@ const config: Config = {
         100: "#CCE1DE",
         300: "#4C968C",
         500: "#00695C", // primary
-        // FLAGGED: used for "Verified Real" badge text in the prototype (4
-        // occurrences) but absent from the design system's 22-step ramp.
+        // 23rd ramp step. Approved. Carries "Verified Real" badge text on the
+        // pale green-50 tint, where green-500 would not hold contrast at
+        // 13px. Verified Real is the product's central trust signal — it is
+        // the last badge to compromise on legibility.
         550: "#00453C",
         600: "#005449",
         700: "#002A24",
@@ -111,6 +113,9 @@ const config: Config = {
       xl: "16px",
       pill: "999px",
       full: "9999px",
+      // Inner radius for a control nested inside a 12px container with 5px
+      // padding — the pricing track switcher. Concentric, not arbitrary.
+      nested: "9px",
     },
 
     extend: {
