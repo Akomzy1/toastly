@@ -9,9 +9,14 @@ import { cn } from "@/lib/utils";
  *
  * "Nothing bounces, nothing spins, no card ever flies off screen."
  *
- * Respects prefers-reduced-motion by rendering the final state immediately —
- * and renders content visible when JS has not run, so a slow connection
- * never leaves a blank section.
+ * Content starts VISIBLE and is only hidden once this component has mounted
+ * and is about to animate it in. That ordering matters: an earlier version
+ * rendered at opacity-0 on the server, so if JavaScript never ran — or the
+ * IntersectionObserver never fired, as happens in a full-page screenshot
+ * that does not scroll — whole sections stayed permanently invisible with no
+ * error anywhere. A reveal animation must never be able to eat the content.
+ *
+ * Reduced motion skips the animation entirely and leaves everything visible.
  */
 export function Reveal({
   children,
@@ -24,7 +29,8 @@ export function Reveal({
   className?: string;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [shown, setShown] = React.useState(false);
+  // `null` = not yet decided (server render and first paint): show content.
+  const [shown, setShown] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -35,6 +41,15 @@ export function Reveal({
       setShown(true);
       return;
     }
+
+    // Anything already on screen is revealed immediately; only off-screen
+    // content is hidden, so nothing visible flashes out and back.
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      setShown(true);
+      return;
+    }
+    setShown(false);
 
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -50,13 +65,15 @@ export function Reveal({
     return () => io.disconnect();
   }, []);
 
+  const hidden = shown === false;
+
   return (
     <div
       ref={ref}
       className={cn(
-        "motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none",
-        shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
         "transition-[opacity,transform] duration-700 ease-reveal",
+        hidden ? "translate-y-6 opacity-0" : "translate-y-0 opacity-100",
+        "motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none",
         className,
       )}
       style={{ transitionDelay: shown ? `${index * 80}ms` : "0ms" }}

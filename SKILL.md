@@ -85,9 +85,12 @@ A pre-build audit found these. **`PRD.md` wins on content; the prototype wins on
 These are not in any prototype. They are recorded so they read as decisions
 rather than as fidelity, and so they can go back through the design pipeline.
 
-- **Footer link groupings** (Product / Trust / Company, and the links in
-  each). The footer's *styling* is transcribed from `home.slim.html`; the
-  grouping is not — the prototype has no footer columns.
+- ~~Footer link groupings~~ — **withdrawn, this was wrong.** The prototype
+  *does* group the footer: Product (Features, How it works, Pricing,
+  Diaspora), Trust (Safety & Trust, Verification process, Stories), then a
+  "Planning a wedding?" AriyaPlanner block, with Privacy / Terms / Community
+  guidelines on the bottom rule. The headings sit in the markup as `h2`s and
+  were missed by a data-array search. Transcribed now.
 - **Route paths** behind the nav and footer links.
 
 Deferred on purpose, to be built against the screen that needs them rather
