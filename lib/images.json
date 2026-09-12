@@ -1,0 +1,426 @@
+[
+  {
+    "page": "diaspora",
+    "id": "home-feature-section-15",
+    "src": "/img/diaspora/home-feature-section-15.webp",
+    "width": 1600,
+    "height": 1200,
+    "alt": ""
+  },
+  {
+    "page": "diaspora",
+    "id": "diaspora-back-home",
+    "src": "/img/diaspora/diaspora-back-home.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "A woman laughing during an evening video call at her desk, city lights behind her"
+  },
+  {
+    "page": "diaspora",
+    "id": "couple-chidi-ngozi",
+    "src": "/img/diaspora/couple-chidi-ngozi.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Chidi and Ngozi sitting together at home, smiling at the camera"
+  },
+  {
+    "page": "diaspora",
+    "id": "couple-bola-tunde",
+    "src": "/img/diaspora/couple-bola-tunde.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Bola and Tunde laughing together on a London street"
+  },
+  {
+    "page": "diaspora",
+    "id": "member-ifeanyi",
+    "src": "/img/diaspora/member-ifeanyi.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Ifeanyi smiling outdoors on a Calgary street in autumn"
+  },
+  {
+    "page": "diaspora",
+    "id": "diaspora-usd",
+    "src": "/img/diaspora/diaspora-usd.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Four friends talking over coffee around a kitchen island in a flat abroad"
+  },
+  {
+    "page": "diaspora",
+    "id": "diaspora-community",
+    "src": "/img/diaspora/diaspora-community.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "A man and woman laughing together on a sofa at home, city skyline through the window"
+  },
+  {
+    "page": "diaspora",
+    "id": "diaspora-language-tribe",
+    "src": "/img/diaspora/diaspora-language-tribe.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Three generations of a family laughing around a shared evening meal in a flat abroad"
+  },
+  {
+    "page": "diaspora",
+    "id": "diaspora-ariya",
+    "src": "/img/diaspora/diaspora-ariya.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Guests in aso ebi and gele at an outdoor wedding reception under string lights"
+  },
+  {
+    "page": "diaspora",
+    "id": "hero-bg",
+    "src": "/img/diaspora/hero-bg.webp",
+    "width": 1600,
+    "height": 1200,
+    "alt": ""
+  },
+  {
+    "page": "features",
+    "id": "feature-work",
+    "src": "/img/features/feature-work.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A woman sketching ideas on a pinboard in her studio in warm afternoon light"
+  },
+  {
+    "page": "features",
+    "id": "feature-diaspora",
+    "src": "/img/features/feature-diaspora.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A woman smiling at her phone while walking a city street at dusk"
+  },
+  {
+    "page": "features",
+    "id": "feature-gist",
+    "src": "/img/features/feature-gist.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A woman laughing during a voice call on her sofa at home"
+  },
+  {
+    "page": "features",
+    "id": "feature-matching",
+    "src": "/img/features/feature-matching.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Two people talking across a café table in warm evening light"
+  },
+  {
+    "page": "features",
+    "id": "feature-coins",
+    "src": "/img/features/feature-coins.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Two people greeting each other at a rooftop bar at sunset in Lagos"
+  },
+  {
+    "page": "features",
+    "id": "feature-journey",
+    "src": "/img/features/feature-journey.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A couple planning together over a notebook and map at their dining table"
+  },
+  {
+    "page": "features",
+    "id": "feature-culture",
+    "src": "/img/features/feature-culture.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Four friends talking and laughing around a table in a warm wood-panelled café"
+  },
+  {
+    "page": "home",
+    "id": "member-tobi",
+    "src": "/img/home/member-tobi.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Portrait: Tobi, a Toastly member in Abuja, outdoors at golden hour"
+  },
+  {
+    "page": "home",
+    "id": "home-testimonial-section-0",
+    "src": "/img/home/home-testimonial-section-0.webp",
+    "width": 1200,
+    "height": 1200,
+    "alt": "Placeholder portrait: Toastly member in Lagos"
+  },
+  {
+    "page": "home",
+    "id": "couple-seyi-damilola-2",
+    "src": "/img/home/couple-seyi-damilola-2.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Portrait: Seyi and Damilola, diaspora Toastly couple on a UK street"
+  },
+  {
+    "page": "home",
+    "id": "gist-call",
+    "src": "/img/home/gist-call.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Woman laughing during a voice call on a rooftop terrace at sunset"
+  },
+  {
+    "page": "home",
+    "id": "diaspora-call",
+    "src": "/img/home/diaspora-call.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": ""
+  },
+  {
+    "page": "home",
+    "id": "couple-chiamaka-emeka-2",
+    "src": "/img/home/couple-chiamaka-emeka-2.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Portrait: Chiamaka and Emeka, married Toastly couple in Lagos"
+  },
+  {
+    "page": "home",
+    "id": "member-ifeoma",
+    "src": "/img/home/member-ifeoma.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Portrait: Ifeoma, a Toastly member in Port Harcourt, outdoors at golden hour"
+  },
+  {
+    "page": "home",
+    "id": "match-rooftop",
+    "src": "/img/home/match-rooftop.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Man reading his daily matches on his phone at a rooftop café at sunset"
+  },
+  {
+    "page": "home",
+    "id": "couple-halima-yusuf-2",
+    "src": "/img/home/couple-halima-yusuf-2.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Portrait: Halima and Yusuf, engaged Toastly couple in Abuja"
+  },
+  {
+    "page": "home",
+    "id": "blog-catfish",
+    "src": "/img/home/blog-catfish.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "A phone lying face-down on a dark wooden table in a shaft of light"
+  },
+  {
+    "page": "home",
+    "id": "verify-selfie",
+    "src": "/img/home/verify-selfie.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Woman holding her phone up for a selfie liveness check at home"
+  },
+  {
+    "page": "home",
+    "id": "blog-marriage-track",
+    "src": "/img/home/blog-marriage-track.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "Overhead view of two coffees and two people's hands across a wooden table"
+  },
+  {
+    "page": "home",
+    "id": "blog-culture-guide",
+    "src": "/img/home/blog-culture-guide.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "Traditional Nigerian wedding textiles, gele and gold jewellery laid out"
+  },
+  {
+    "page": "home",
+    "id": "cta-final-bg",
+    "src": "/img/home/cta-final-bg.webp",
+    "width": 1600,
+    "height": 600,
+    "alt": ""
+  },
+  {
+    "page": "home",
+    "id": "cta-mid-bg",
+    "src": "/img/home/cta-mid-bg.webp",
+    "width": 1600,
+    "height": 600,
+    "alt": ""
+  },
+  {
+    "page": "home",
+    "id": "hero-verification",
+    "src": "/img/home/hero-verification.webp",
+    "width": 1600,
+    "height": 1200,
+    "alt": "Placeholder: a young Nigerian woman on a Lagos street, phone in hand, mid-verification"
+  },
+  {
+    "page": "how-it-works",
+    "id": "step-gisting",
+    "src": "/img/how-it-works/step-gisting.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "A woman laughing during a voice gist session on her sofa at home"
+  },
+  {
+    "page": "how-it-works",
+    "id": "verify-selfie",
+    "src": "/img/how-it-works/verify-selfie.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Woman holding her phone up for a selfie liveness check at home"
+  },
+  {
+    "page": "how-it-works",
+    "id": "step-daily-matches",
+    "src": "/img/how-it-works/step-daily-matches.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "A man reading his daily matches on his phone at a café"
+  },
+  {
+    "page": "how-it-works",
+    "id": "step-couple-mode",
+    "src": "/img/how-it-works/step-couple-mode.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "A couple sitting close on a sofa looking through a photo album"
+  },
+  {
+    "page": "how-it-works",
+    "id": "step-commit-date",
+    "src": "/img/how-it-works/step-commit-date.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "Two people greeting each other at a rooftop café at sunset"
+  },
+  {
+    "page": "how-it-works",
+    "id": "step-plan-wedding",
+    "src": "/img/how-it-works/step-plan-wedding.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "Guests in aso ebi at a rooftop wedding celebration at sunset"
+  },
+  {
+    "page": "safety",
+    "id": "member-amaka",
+    "src": "/img/safety/member-amaka.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Amaka smiling outdoors in Lagos at golden hour"
+  },
+  {
+    "page": "safety",
+    "id": "member-kelechi",
+    "src": "/img/safety/member-kelechi.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Kelechi smiling outdoors on an Abuja street at golden hour"
+  },
+  {
+    "page": "safety",
+    "id": "member-zainab",
+    "src": "/img/safety/member-zainab.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Zainab in a green headwrap, seated outdoors at golden hour in Ibadan"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-first-date-abuja",
+    "src": "/img/stories/gallery-first-date-abuja.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Two people laughing over drinks on a sofa in a warm-lit bar"
+  },
+  {
+    "page": "stories",
+    "id": "couple-seyi-damilola-2",
+    "src": "/img/stories/couple-seyi-damilola-2.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Seyi and Damilola embracing on an autumn street in Manchester"
+  },
+  {
+    "page": "stories",
+    "id": "couple-chiamaka-emeka-2",
+    "src": "/img/stories/couple-chiamaka-emeka-2.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Chiamaka and Emeka smiling together outdoors at golden hour in Lagos"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-couple-mode-lagos",
+    "src": "/img/stories/gallery-couple-mode-lagos.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A couple on a sofa at home looking through a photo album together"
+  },
+  {
+    "page": "stories",
+    "id": "couple-halima-yusuf-2",
+    "src": "/img/stories/couple-halima-yusuf-2.webp",
+    "width": 1024,
+    "height": 1024,
+    "alt": "Halima and Yusuf sitting together in a garden courtyard in Abuja at golden hour"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-engagement-ph",
+    "src": "/img/stories/gallery-engagement-ph.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A woman walking a busy street at golden hour, smiling at her ring"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-planning-croydon",
+    "src": "/img/stories/gallery-planning-croydon.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "A family around a table choosing aso ebi fabrics and colour swatches"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-introduction-ibadan",
+    "src": "/img/stories/gallery-introduction-ibadan.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Both families seated together in aso ebi at an introduction ceremony"
+  },
+  {
+    "page": "stories",
+    "id": "couple-ifeoma-dapo",
+    "src": "/img/stories/couple-ifeoma-dapo.webp",
+    "width": 1200,
+    "height": 670,
+    "alt": "Ifeoma and Dapo laughing together outdoors in Port Harcourt at golden hour"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-white-wedding-lekki",
+    "src": "/img/stories/gallery-white-wedding-lekki.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Bride and groom dancing among guests at an outdoor evening reception under string lights"
+  },
+  {
+    "page": "stories",
+    "id": "gallery-friends-coffee",
+    "src": "/img/stories/gallery-friends-coffee.webp",
+    "width": 1200,
+    "height": 896,
+    "alt": "Five friends talking over coffee in a sunlit sitting room"
+  }
+]
