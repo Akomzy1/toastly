@@ -35,6 +35,9 @@ const config: Config = {
         100: "#CCE1DE",
         300: "#4C968C",
         500: "#00695C", // primary
+        // FLAGGED: used for "Verified Real" badge text in the prototype (4
+        // occurrences) but absent from the design system's 22-step ramp.
+        550: "#00453C",
         600: "#005449",
         700: "#002A24",
         800: "#001F1B", // base deep-green surface
@@ -90,6 +93,14 @@ const config: Config = {
       body: ["16px", { lineHeight: "1.65", letterSpacing: "0" }],
       caption: ["13px", { lineHeight: "1.5", letterSpacing: "0.06em", fontWeight: "500" }],
       button: ["15px", { lineHeight: "1.2", letterSpacing: "0.01em", fontWeight: "600" }],
+
+      // UI sizes the prototype uses outside the display scale. Named rather
+      // than numbered so there is still no generic `text-xs` to reach for --
+      // replacing fontSize means an undefined size emits nothing at all.
+      chip: ["12px", { lineHeight: "1.4" }],      // chips, track labels
+      nav: ["14px", { lineHeight: "1.4" }],       // secondary nav, footer meta
+      ui: ["15px", { lineHeight: "1.5" }],        // inputs, links, list copy
+      "nav-lg": ["17px", { lineHeight: "1.4" }],  // mobile nav links
     },
 
     borderRadius: {
@@ -115,8 +126,31 @@ const config: Config = {
         measure: "640px",
       },
       transitionTimingFunction: {
-        // SKILL.md: motion is subtle and editorial — no bounce, no spring.
-        editorial: "cubic-bezier(0.22, 1, 0.36, 1)",
+        // The prototype's own reveal curve (design-system.slim.html, §05).
+        // Nothing bounces, nothing spins, no card ever flies off screen.
+        reveal: "cubic-bezier(.16,.84,.44,1)",
+      },
+      transitionDuration: {
+        // Card hover is .25s in the prototype. It must be a NAMED token:
+        // tailwindcss-animate shadows the core `duration` utility, so
+        // arbitrary `duration-[250ms]` silently generates no CSS at all
+        // (verified). Named values still resolve. Add the value here rather
+        // than reaching for an arbitrary one.
+        250: "250ms",
+      },
+      boxShadow: {
+        // The only shadow in the system: card hover. Never a shadow at rest.
+        lift: "0 18px 40px -28px rgba(5,3,9,0.5)",
+      },
+      keyframes: {
+        reveal: {
+          from: { opacity: "0", transform: "translateY(24px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        // Section reveals: 24px rise, 0.7s. Stagger 80ms at the call site.
+        reveal: "reveal .7s cubic-bezier(.16,.84,.44,1) both",
       },
     },
   },
