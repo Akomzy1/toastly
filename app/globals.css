@@ -44,8 +44,21 @@
     --radius: 12px;
   }
 
+  /*
+   * PARKED — Toastly has no dark theme. Decided, not an oversight.
+   *
+   * The prototype has dark SECTIONS on light pages, and the brand system
+   * treats deep green as a ground, not a mode. Do not extend these values,
+   * do not test against them, and do not add `dark:` variants to any
+   * component. If a dark theme is ever wanted it goes through the design
+   * pipeline properly rather than being inferred from section backgrounds.
+   *
+   * Parking is self-enforcing: Tailwind purges this whole rule while nothing
+   * uses the `dark` class, so it currently ships zero bytes. Adding a single
+   * `dark` class anywhere brings it back into the bundle -- which is the
+   * signal that someone has started building a theme that was not approved.
+   */
   .dark {
-    /* The deep-green surface is the brand's dark ground, not a neutral black. */
     --background: 172 100% 6%;       /* green 800 #001F1B */
     --foreground: 0 0% 100%;
 
