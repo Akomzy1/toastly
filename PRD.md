@@ -86,6 +86,9 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 
 ### 5.5 Coin-Deposit Date-Commitment
 - Both parties stake a small coin deposit ahead of a confirmed date; a no-show forfeits.
+- **Where a forfeited coin goes (ratified):** it becomes a **stake credit for the person who showed up** — non-withdrawable, not cash, usable only as the deposit on a future date. Toastly does not keep it and does not pay it out.
+  - *Why this and not the alternatives:* Toastly keeping it would give Toastly an interest in no-shows. Paying cash to the person who showed up invites bait-farming. A credit usable only as a future stake rewards the wronged party in the one currency that cannot be gamed — it simply puts them back in the game for free.
+  - *Supersedes:* the Claude Design prototype's Pricing page described forfeited coins going to a charity chosen by the other person. **That was never ratified and is not to be built or displayed** — it would commit Toastly to charity partnerships, disbursement rails, receipts, an audit trail, and questions about holding and redirecting user funds in Nigeria, all at launch. Remove the copy as well as the mechanic: shipping the claim without the pipeline is a public promise about where users' money goes.
 - Framed warmly ("showing up for each other"), never punitively (contrast with MyPerson's escrow/forfeit language).
 - Paired with a **lightweight date-spot suggestion** (maps-API lookup of nearby public venues, not a curated directory at MVP) surfaced after a strong Gist — doubles as a soft safety signal (public-venue nudge).
 
