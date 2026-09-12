@@ -20,12 +20,16 @@ Then scaffold the project: Next.js 14 App Router, TypeScript, Tailwind, shadcn/u
 
 **Prototype alignment:** open `/design/prototype/design-system.slim.html` before writing any Tailwind config and encode its tokens in `tailwind.config.ts` as named values. Do not use Tailwind defaults or invent a palette. The tokens are:
 
-- Deep green surface `#001F1B`; teal `#00695C` (deeper `#005449`, lighter `#4C968C`)
-- Amber CTA `#FFB300` (hover `#FFC94C`, dark `#CC8F00`)
-- Champagne `#EBD9AE`; cream surface `#F6F2EA` (tints `#FFF7E5`, `#E5F0EE`)
-- Ink `#050309`; muted `#504E52`, `#828184`, `#D9D9DA`; white `#FFFFFF`
+- Deep green ground `#001F1B`; forest `#002A24`; teal `#00695C` (deeper `#005449`, lighter `#4C968C`, tint `#CCE1DE`)
+- Amber action `#FFB300` (hover `#FFC94C`, deep `#CC8F00`, tint `#FFEFCC`, shade `#4C3500`)
+- Sand `#EBD9AE`; paper `#F6F2EA` (tints `#FFF7E5`, `#E5F0EE`)
+- Ink `#050309`, `#1E1C21`; muted `#504E52`, `#828184`, `#D9D9DA`, `#F2F2F2`; white `#FFFFFF`
 - Accents `#9B1348` (deep rose), `#2F8F5B` (green)
-- Type: **Aleo** serif for headings (fallback Georgia), **Inter** sans for body/UI
+- Type: **Aleo** serif for headings/wordmark (fallback Georgia), **Inter** sans for body/UI
+
+**The design-system file defines the full ramp (22 steps) — all of it is approved.** Encode the whole ramp, and **replace `theme.colors` rather than extending it**, so no unapproved colour is reachable — note that `@apply` of one is a build error, but an unapproved class in markup silently emits nothing rather than failing. **Do not build a dark theme:** deep green is a ground, not a mode; leave any `.dark` values provisional and add no `dark:` variants.
+
+Also read `/design/prototype/brand-the-stake.slim.html` — the adopted brand mark, with fixed geometry and assigned palette roles. Treat it as binding alongside the design system.
 
 Extract the type scale, spacing rhythm and border-radius conventions from the same file. If anything is ambiguous, ask rather than guessing.
 
