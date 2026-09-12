@@ -25,6 +25,7 @@ Located in `/design/prototype/`:
 | `stories.slim.html` | Testimonials, gallery, community |
 | `locked-inbox.slim.html` | **In-app** locked inbox state (not marketing) |
 | `brand-the-stake.slim.html` | Brand voice / positioning reference |
+| `brand-assets.slim.html` | **Production brand assets.** PWA icons, favicons, vector masters, social exports, splash. The mark's 48-unit geometry is fixed — never redraw it |
 
 Open the specific file for the page you are building. Building the Pricing page from the Home page's components is not fidelity.
 

@@ -25,6 +25,24 @@ export const metadata: Metadata = {
   },
   description: "Verified people, real intentions — all the way to the aisle.",
   manifest: "/manifest.webmanifest",
+  // Icon set from design/prototype/brand-assets.slim.html ("The Stake").
+  // The 48-unit geometry is fixed — each export is the same mark at a
+  // different scale and ground, so do not redraw or substitute these.
+  icons: {
+    icon: [
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    // No dedicated 180x180 in the set; 192 is the nearest approved export.
+    apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Toastly",
+    title: "Toastly",
+    description: "Verified people, real intentions — all the way to the aisle.",
+    images: [{ url: "/og-1200x630.png", width: 1200, height: 630 }],
+  },
   appleWebApp: {
     capable: true,
     title: "Toastly",

@@ -33,3 +33,4 @@ Two forms of each page live in [design/prototype/](design/prototype/):
 | Locked Inbox | [locked-inbox.slim.html](design/prototype/locked-inbox.slim.html) |
 | Design System | [design-system.slim.html](design/prototype/design-system.slim.html) |
 | Brand — The Stake | [brand-the-stake.slim.html](design/prototype/brand-the-stake.slim.html) |
+| Brand Assets | [brand-assets.slim.html](design/prototype/brand-assets.slim.html) |
