@@ -10,7 +10,7 @@ for (let i = 0; i < n; i++) {
   if (h <= 0) break;
   await sharp(src)
     .extract({ left: 0, top, width, height: h })
-    .resize({ width: 430 })
+    .resize({ width: 900 })
     .png()
     .toFile(`${outPrefix}-${i + 1}.png`);
   console.log(`${outPrefix}-${i + 1}.png  (rows ${top}-${top + h})`);
