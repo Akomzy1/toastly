@@ -18,8 +18,25 @@ export type VerifyState = { error?: string; ok?: string } | null;
  * identifier next to a dating profile for no product reason.
  */
 function hashPhone(e164: string) {
-  const pepper = process.env.PHONE_HASH_PEPPER ?? "";
-  return createHash("sha256").update(`${e164}:${pepper}`).digest("hex");
+  const pepper = process.env.PHONE_HASH_PEPPER;
+
+  // Without a pepper this is a plain SHA-256 of a phone number, and the
+  // phone-number space is small enough to enumerate exhaustively — anyone
+  // who could read phone_identities could recover every member's number.
+  // Refusing to run is the correct behaviour: a silently weak hash is worse
+  // than a loud failure, because nobody finds out until it matters.
+  if (!pepper) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "PHONE_HASH_PEPPER is not set. Refusing to hash phone numbers without it.",
+      );
+    }
+    console.warn(
+      "[verify] PHONE_HASH_PEPPER is not set — phone hashes are unsalted. Development only.",
+    );
+  }
+
+  return createHash("sha256").update(`${e164}:${pepper ?? ""}`).digest("hex");
 }
 
 /** Very light E.164 normalisation for NG and common diaspora codes. */
