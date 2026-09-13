@@ -1,0 +1,156 @@
+/**
+ * Product-constraint checks.
+ *
+ * CLAUDE.md lists rules that are "not just product decisions — they have
+ * direct technical implications. Do not implement around them." Several are
+ * the kind of thing reintroduced by accident months later, by someone who
+ * never read the doc. These assert a few of them mechanically.
+ *
+ *   node scripts/check-constraints.mjs
+ *
+ * A failure here is a product violation, not a style nit.
+ */
+import fs from "node:fs";
+import path from "node:path";
+
+const ROOTS = ["app", "components", "lib", "supabase"];
+const failures = [];
+
+function walk(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walk(p, out);
+    else if (/\.(tsx?|sql)$/.test(p)) out.push(p);
+  }
+  return out;
+}
+
+const files = ROOTS.flatMap((r) => walk(r));
+
+/** Strip comments, so a rule written ABOUT a banned word doesn't trip it. */
+function stripComments(src, file) {
+  if (file.endsWith(".sql")) return src.replace(/--[^\n]*/g, "");
+  return src
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/[^\n]*/gm, "");
+}
+
+/** Strip string literals, leaving only code. */
+function stripStrings(src) {
+  return src
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''")
+    .replace(/`(?:[^`\\]|\\.)*`/g, "``");
+}
+
+/** Pull the double-quoted string literals out of a source file. */
+function stringsIn(src) {
+  return src.match(/"(?:[^"\\\n]|\\.)*"/g) ?? [];
+}
+
+function check(name, test) {
+  const hits = [];
+  for (const f of files) {
+    const src = stripComments(fs.readFileSync(f, "utf8"), f);
+    const hit = test(src, f);
+    if (hit) hits.push(`${f}${hit === true ? "" : ` — ${hit}`}`);
+  }
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
+// --- No swipe mechanic ----------------------------------------------------
+//
+// Copy may SAY "swipe": the marketing pages argue against swiping at length
+// ("Nothing to swipe", "not another swipe deck"). What must not exist is a
+// swipe MECHANIC, so string literals are stripped and only code identifiers
+// and imports are examined.
+// JSX prose is bare text in the source, not a string literal, so stripping
+// strings is not enough — "Nothing to swipe" survives it. A real swipe
+// mechanic looks like an identifier, a handler or an import, so match those
+// shapes rather than the bare word.
+const SWIPE_MECHANIC =
+  /\bon[A-Z]\w*Swipe\w*|\bSwipe[A-Z]\w*|\bswipe[A-Z]\w*|\buse\w*Swipe\w*|\bswipeable\b|from\s+["'][^"']*(swipe|tinder-card|use-gesture)/i;
+
+check("no swipe mechanic or swipe gesture handling", (s) =>
+  SWIPE_MECHANIC.test(stripStrings(s)),
+);
+
+check("no heart / flame / super-like iconography", (s) =>
+  /superlike|super_like|flame/i.test(stripStrings(s)),
+);
+
+// --- The daily feed is six, on every tier --------------------------------
+check("daily match count is not derived from tier or entitlement", (s) => {
+  if (!/daily_match_count|DAILY_MATCH_COUNT/.test(s)) return false;
+  return /daily_match_count\s*\([^)]*tier|DAILY_MATCH_COUNT\s*[*+]|limit\s+\w*tier/i.test(
+    s,
+  );
+});
+
+check("feed query does not filter on optional display-only fields", (s, f) => {
+  if (!f.endsWith(".sql") || !/build_daily_feed/.test(s)) return false;
+  const body = s.slice(s.indexOf("build_daily_feed"));
+  const where = body.slice(body.indexOf("where"), body.indexOf("order by"));
+  const banned = [
+    "religion",
+    "tribe",
+    "languages",
+    "history",
+    "has_children",
+    "profession",
+    "education",
+  ].filter((c) => new RegExp(`\\b${c}\\b`).test(where));
+  return banned.length ? `filters on ${banned.join(", ")}` : false;
+});
+
+// --- Money copy -----------------------------------------------------------
+check("no charity destination copy for forfeited stakes", (s) =>
+  /charity/i.test(s),
+);
+
+// CLAUDE.md rules out "forfeit" and "penalty" as FRAMING for the coin
+// deposit. Using either word to DENY it is the approved copy, so approved
+// negations are listed explicitly: a new punitive string still fails.
+const APPROVED_NEGATIONS = [
+  "not a penalty system", // Pricing: "a mutual promise... not a penalty system"
+  "Penalty for saying so", // Home coin card, whose stat is "0"
+  "not a punishment", // Features: "Coins as a promise, not a punishment"
+];
+
+check("coin copy avoids punitive framing", (s) => {
+  const bad = stringsIn(s)
+    .filter((t) => /\bforfeits?\b|\bpenalt(y|ies)\b/i.test(t))
+    .filter((t) => !APPROVED_NEGATIONS.some((ok) => t.includes(ok)));
+  return bad.length ? bad[0].slice(0, 70) : false;
+});
+
+// --- Verification is never paywalled -------------------------------------
+check("verification path reads no tier or entitlement", (s, f) => {
+  if (!/verify/.test(f.replace(/\\/g, "/"))) return false;
+  return /current_tier|entitlements|\btier\b/i.test(stripStrings(s));
+});
+
+// --- Marital status is never presented as verifiable ---------------------
+check("no marital-status verification", (s) =>
+  /marital_status_verified|verified_single|maritalStatusVerified/i.test(s),
+);
+
+// --- Report categories ---------------------------------------------------
+check("'user is married' is a first-class report reason", (s) => {
+  if (!/create type report_reason/.test(s)) return false;
+  return /user_is_married/.test(s) ? false : "missing from report_reason enum";
+});
+
+console.log("");
+if (failures.length) {
+  console.log("CONSTRAINT VIOLATIONS:\n");
+  for (const f of failures) {
+    console.log(`  ${f.name}`);
+    for (const h of f.hits) console.log(`      ${h}`);
+  }
+  process.exit(1);
+}
+console.log("all product constraints hold");
