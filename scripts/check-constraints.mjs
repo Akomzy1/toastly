@@ -180,6 +180,53 @@ check("no carrier number or real phone number in the call path", (s, f) => {
   );
 });
 
+// --- The locked inbox ----------------------------------------------------
+//
+// A locked inbox must be representable ONLY as a number. If the type ever
+// grows an optional sender, preview or blurred body, the leak has already
+// happened in the payload — redaction at render time is not a lock.
+check("locked inbox type cannot carry sender or preview", (s, f) => {
+  if (!/type LockedInbox/.test(s)) return false;
+  const t = s.slice(s.indexOf("type LockedInbox"));
+  const body = t.slice(0, t.indexOf("};") + 2);
+  const leak = /sender|preview|avatar|initial|snippet|blur|body/i.exec(body);
+  return leak ? `LockedInbox mentions "${leak[0]}"` : false;
+});
+
+// The locked branch must not merely discard message rows — it must not ask
+// for them. RLS would refuse them anyway; not querying is the second lock,
+// and it keeps bodies out of the RSC payload entirely.
+check("locked inbox branch queries no message rows", (s, f) => {
+  if (!/canReadInbox/.test(s) || !/unread_count/.test(s)) return false;
+  const start = s.indexOf("if (!canReadInbox");
+  if (start < 0) return false;
+  const locked = s.slice(start, s.indexOf("} else {", start));
+  return /from\(["']messages["']\)|from\(["']threads["']\)/.test(locked)
+    ? "locked branch selects message or thread rows"
+    : false;
+});
+
+// CLAUDE.md: message content is NEVER scanned, parsed or flagged for phone
+// numbers or contact info. This is a hard privacy boundary, not a soft
+// preference — no moderation hook may be added for that purpose.
+check("no scanning of message content for contact info", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/(inbox|messag)/i.test(p)) return false;
+  const code = stripStrings(stripComments(s, f));
+  return /\b(detect|scan|extract|redact|flag)\w*(Phone|Contact|Number)|phoneRegex|\\d\{7,\}/i.test(
+    code,
+  );
+});
+
+// No countdown timers, no fabricated scarcity in the upgrade prompt.
+check("locked inbox copy uses no fake scarcity", (s, f) => {
+  if (!/LOCKED_COPY/.test(s)) return false;
+  const hit = /expires? (in|soon)|only \d+ (hours?|days?) left|countdown|hurry|act now/i.exec(
+    s,
+  );
+  return hit ? hit[0] : false;
+});
+
 // --- Marital status is never presented as verifiable ---------------------
 check("no marital-status verification", (s) =>
   /marital_status_verified|verified_single|maritalStatusVerified/i.test(s),
