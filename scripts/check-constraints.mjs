@@ -230,6 +230,61 @@ check("pricing-integrity signals trigger no automatic consequence", (s, f) => {
     : false;
 });
 
+// --- Couple Mode ----------------------------------------------------------
+//
+// Free on every tier. The Couple Mode surface must not read a tier at all:
+// the moment it does, an upgrade prompt is one edit away, and that is the
+// error three separate prototype pages made.
+check("Couple Mode surface reads no tier or entitlement", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/\/couple\/|lib\/couple\.ts$|couple_mode/.test(p)) return false;
+  return /current_tier|capabilities\(|premium|\btier\b/i.test(
+    stripStrings(stripComments(s, f)),
+  );
+});
+
+// Couple data never gates matching (Prompt 8). None of these tables may be
+// consulted while building someone's feed.
+check("feed does not consult couple data", (s, f) => {
+  if (!f.endsWith(".sql") || !/build_daily_feed/.test(s)) return false;
+  const body = s.slice(s.indexOf("build_daily_feed"));
+  const fn = body.slice(0, body.indexOf("$$;"));
+  const hit = /couples|couple_briefs|couple_milestones/.exec(fn);
+  return hit ? `feed references ${hit[0]}` : false;
+});
+
+// The live AriyaPlanner integration is explicitly out of MVP scope and needs
+// an explicit decision before any of it is written. The contract may exist;
+// a client, endpoint or outbound call may not.
+check("no live AriyaPlanner integration code", (s, f) => {
+  // Identify AriyaPlanner code from the RAW source and the filename: an
+  // endpoint usually lives in a string literal, so stripping strings first
+  // would delete the very evidence that this file is the integration.
+  const relevant = /ariya/i.test(s) || /ariya/i.test(f);
+  if (!relevant) return false;
+
+  // Then look for an outbound call in the CODE, so prose and comments about
+  // the handoff stay legal.
+  const code = stripStrings(stripComments(s, f));
+  const hit = /\bfetch\s*\(|\baxios\b|new\s+\w*Client\s*\(|\.post\s*\(|\.send\s*\(/.exec(
+    code,
+  );
+  return hit ? `outbound call in AriyaPlanner code: ${hit[0].trim()}` : false;
+});
+
+// A brief is assembled only with both consents. Typed as literal `true` so an
+// unconsented brief is not representable.
+check("couple brief cannot be assembled without both consents", (s, f) => {
+  if (!/lib[\\/]couple\.ts$/.test(f)) return false;
+  const literal = /bothConsented:\s*true;/.test(s);
+  const guard = /if\s*\(!source\.aConsentedAt \|\| !source\.bConsentedAt\)\s*return null;/.test(
+    s,
+  );
+  if (!literal) return "bothConsented is not a literal true in the type";
+  if (!guard) return "assembleBrief does not refuse without both consents";
+  return false;
+});
+
 // --- The locked inbox ----------------------------------------------------
 //
 // A locked inbox must be representable ONLY as a number. If the type ever
