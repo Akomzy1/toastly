@@ -118,7 +118,7 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 
 | Layer | Mechanism | Notes |
 |---|---|---|
-| Domestic coins | ₦500–₦5,000 packs via Paystack/Flutterwave/USSD/bank transfer/OPay | Boosts, Super Likes, unlock "who liked you," reveals |
+| Domestic coins | ₦500–₦5,000 packs via Paystack/Flutterwave/USSD/bank transfer/OPay | Date stakes, unlocking the locked inbox, additional Gist sessions, unlock "who liked you." **No Boosts, no Super Likes** — see §7.2 |
 | Domestic subscription | Premium ~₦3,500/mo; Premium Plus ~₦7,000/mo (unlocks live-video Gist, advanced filters, incognito) | Benchmarked directly against MyPerson's published pricing |
 | Diaspora subscription | ~$15–30/mo via card/Apple Pay | Covers both back-home and diaspora-to-diaspora matching |
 | AriyaPlanner wedding funnel | Multiple ₦50,000 Event Passes per graduated couple | LTV engine, not launch revenue |
@@ -140,7 +140,7 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | **Couple Mode + AriyaPlanner handoff** | ✅ **Free/universal — moved here, not tier-gated** | ✅ | ✅ |
 | Advanced filters (tribe, religion, state, diaspora, intent) | ❌ | ✅ | ✅ |
 | Incognito mode | ❌ | ❌ | ✅ |
-| Boosts / Super Likes / see-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included |
+| See-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included |
 | Priority support | ❌ | ❌ | ✅ ("from Lagos") |
 | Read receipts | N/A on Starter (no chat to have receipts on) — **still flagged, not decided for paid tiers** | | |
 
@@ -160,6 +160,18 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Priority support | ❌ | ✅ |
 
 **Rationale for unlimited voice Gist on Diaspora ($15), not a numeric cap:** the original "10/month" placeholder created a hidden pricing inconsistency worth catching — domestic Premium at ₦3,500/mo already gets unlimited voice Gist, and Diaspora at $15/mo is priced far above domestic Premium (~₦25,000+ equivalent), making it diaspora's *Premium* tier, not its *Starter* tier. Capping it below what domestic Premium gets meant a diaspora user would pay roughly 7x more for a strictly worse Gist allowance — undermining trust with exactly the users the ARPU model depends on most. Diaspora ($15) now has parity with domestic Premium on Gist; the only differentiation between Diaspora and Diaspora Plus is live video, consistent with the video-always-gated-at-top-tier rule used everywhere else.
+
+### 7.2 No Boosts, no Super Likes (decided — corrects an earlier PRD error)
+
+Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That was a carry-over from the Tinder/Bumble/Badoo teardown and does not survive contact with Toastly's own mechanic.** With a fixed six-a-day feed, a Boost can only mean appearing in more people's six — which is buying attention, the precise thing the brand is built against. Super Likes are already denied by shipped copy on Home: *"no streaks, no 'you've been super-liked'."*
+
+**Coins therefore have four honest jobs, none of which buy placement in anyone else's feed:**
+1. Date stakes (the coin-deposit commitment)
+2. Unlocking the locked Starter inbox
+3. Additional Gist sessions beyond the tier allowance
+4. Unlocking see-who-liked-you (the user's own data about themselves — it changes nothing in another user's feed)
+
+**Shipped Pricing copy (ratified):** *"Nobody buys your place in the six… paying can improve how well those six are matched to you, it never buys you more of them."* This is now literally true. Paid tiers may improve **match quality and ordering within a user's own six**; nothing a user buys inserts them into another user's six.
 
 **Corrections made to the first design pass:**
 1. **Couple Mode + AriyaPlanner handoff must be free/universal, not locked behind Premium Plus / Diaspora Plus.** This is Toastly's core differentiator and its actual LTV engine (Part 4 of the strategy doc) — gating the entry point to the wedding funnel behind the top subscription tier means a couple who falls for each other on Starter or base Premium never reaches AriyaPlanner unless they happen to upgrade at exactly the right moment. If a paywall belongs anywhere near this feature, it goes on *enhanced* Couple Mode extras, never on the bridge itself.
