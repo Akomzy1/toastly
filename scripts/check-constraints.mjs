@@ -133,6 +133,31 @@ check("verification path reads no tier or entitlement", (s, f) => {
   return /current_tier|entitlements|\btier\b/i.test(stripStrings(s));
 });
 
+// --- Gist: video is top-tier only, and calls are VoIP --------------------
+check("live video Gist is gated to Premium Plus / Diaspora Plus only", (s) => {
+  if (!/can_use_video_gist/.test(s) || !/create or replace function/.test(s)) {
+    return false;
+  }
+  const fn = s.slice(s.indexOf("function public.can_use_video_gist"));
+  const body = fn.slice(0, fn.indexOf("$$;", fn.indexOf("$$") + 2));
+  const ok =
+    /premium_plus/.test(body) &&
+    /diaspora_plus/.test(body) &&
+    !/'starter'|'premium'\s*[,)]|'diaspora'\s*[,)]/.test(body);
+  return ok ? false : "video entitlement includes a tier it should not";
+});
+
+// The pages SAY "nobody sees anybody's phone number" — that is the promise,
+// and JSX prose is bare text rather than a string literal, so match the
+// shapes a real telephony integration would take instead of the bare word.
+check("no carrier number or real phone number in the call path", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/(gist|livekit)/i.test(p)) return false;
+  return /\bphone_number\b|\bphoneNumber\b|\bmsisdn\b|\bdialOut\b|from\s+["'][^"']*(twilio|vonage|africastalking)/i.test(
+    stripStrings(s),
+  );
+});
+
 // --- Marital status is never presented as verifiable ---------------------
 check("no marital-status verification", (s) =>
   /marital_status_verified|verified_single|maritalStatusVerified/i.test(s),
