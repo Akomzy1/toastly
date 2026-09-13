@@ -94,6 +94,17 @@ rather than as fidelity, and so they can go back through the design pipeline.
   were missed by a data-array search. Transcribed now.
 - **Route paths** behind the nav and footer links.
 
+**App-surface screens built in Prompt 3, none of which the prototype covers.**
+The only in-app screen in the design is `locked-inbox.slim.html`, and that is
+a component-state demo — a tab-bar badge and a list row — not a shell. These
+were built from design-system tokens and should go through the design
+pipeline before launch: sign-up, sign-in, the auth shell, the verification
+flow (phone / liveness / optional NIN), the in-app header, and the profile
+editor. Two new components came with them, also unapproved: a block-level
+`Notice` (the system has field-level messages only) and a `Stepper`, drawn as
+rings filling along a rule so it borrows the mark's own logic rather than
+inventing a new one.
+
 Deferred on purpose, to be built against the screen that needs them rather
 than guessed in the abstract: toast/notification, modal, pagination,
 skeleton/loading, empty states. None appear on a marketing page — they are

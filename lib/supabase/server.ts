@@ -8,6 +8,21 @@ import { cookies } from "next/headers";
  * enforced server-side through this client — CLAUDE.md requires them at the
  * access-control layer, not in UI copy.
  */
+/**
+ * True when Supabase credentials are present.
+ *
+ * Callers should check this before creating a client on a route that would
+ * otherwise 500 on a fresh clone. The marketing site needs no Supabase at
+ * all; the app routes need it, and should say so plainly rather than
+ * crashing with a library error.
+ */
+export function isSupabaseConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
+}
+
 export function createClient() {
   const cookieStore = cookies();
 
