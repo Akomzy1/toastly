@@ -1,3 +1,4 @@
+import { capabilities } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
 
 /**
@@ -34,7 +35,7 @@ export type OpenInbox = {
 export type Inbox = LockedInbox | OpenInbox;
 
 export function canReadInbox(tier: Tier): boolean {
-  return tier !== "starter";
+  return capabilities(tier).readInbox;
 }
 
 /** "1 new message" / "3 new messages". The prototype's exact wording. */

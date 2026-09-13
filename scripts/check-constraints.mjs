@@ -180,6 +180,56 @@ check("no carrier number or real phone number in the call path", (s, f) => {
   );
 });
 
+// --- Free on every tier ---------------------------------------------------
+//
+// Couple Mode and the AriyaPlanner handoff are the platform's core LTV
+// mechanic and are free on EVERY tier including Starter. Three separate
+// prototype pages sold them as a Premium Plus feature, so this asserts the
+// entitlement table cannot quietly acquire a false.
+const TIER_COUNT = 5;
+for (const [cap, label] of [
+  ["coupleMode", "Couple Mode"],
+  ["ariyaHandoff", "AriyaPlanner handoff"],
+  ["verification", "verification"],
+  ["safetyTools", "safety tools"],
+]) {
+  check(`${label} is free on every tier`, (s, f) => {
+    if (!/lib[\\/]entitlements\.ts$/.test(f)) return false;
+    const trues = (s.match(new RegExp(`${cap}:\\s*true`, "g")) ?? []).length;
+    const falses = (s.match(new RegExp(`${cap}:\\s*false`, "g")) ?? []).length;
+    if (falses > 0) return `${cap} is false on ${falses} tier(s)`;
+    return trues >= TIER_COUNT ? false : `${cap} set on only ${trues} tiers`;
+  });
+}
+
+check("daily matches is 6 on every tier in the entitlement table", (s, f) => {
+  if (!/lib[\\/]entitlements\.ts$/.test(f)) return false;
+  const values = (s.match(/dailyMatches:\s*(\d+)/g) ?? []).map((m) =>
+    Number(m.split(":")[1]),
+  );
+  if (values.length < TIER_COUNT) return `only ${values.length} tiers listed`;
+  return values.every((v) => v === 6) ? false : `found ${values.join(", ")}`;
+});
+
+// --- Stake credits --------------------------------------------------------
+check("stake credits can never be withdrawable", (s, f) => {
+  if (!/coin_entry_kind|stake_credit/.test(s) || !f.endsWith(".sql")) return false;
+  const hasConstraint = /kind <> 'stake_credit' or withdrawable = false/.test(s);
+  const excluded = /withdrawable_balance[\s\S]*?withdrawable = true/.test(s);
+  if (!hasConstraint) return "no constraint forcing stake credits non-withdrawable";
+  if (!excluded) return "withdrawable_balance does not exclude locked entries";
+  return false;
+});
+
+check("pricing-integrity signals trigger no automatic consequence", (s, f) => {
+  if (!/integrity_(signal|reviews)/.test(s)) return false;
+  return /auto_?(suspend|ban|lock)|suspend\(\)|autoSuspend/i.test(
+    stripStrings(stripComments(s, f)),
+  )
+    ? "found an automatic action on an integrity signal"
+    : false;
+});
+
 // --- The locked inbox ----------------------------------------------------
 //
 // A locked inbox must be representable ONLY as a number. If the type ever

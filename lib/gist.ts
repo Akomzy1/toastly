@@ -1,3 +1,4 @@
+import { capabilities } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
 
 /**
@@ -36,12 +37,12 @@ export type GistStatus =
  * exists so the UI can explain the rule before the member hits it.
  */
 export function canUseVideo(tier: Tier): boolean {
-  return tier === "premium_plus" || tier === "diaspora_plus";
+  return capabilities(tier).liveVideoGist;
 }
 
 /** null means unlimited. */
 export function voiceAllowance(tier: Tier): number | null {
-  return tier === "starter" ? STARTER_VOICE_GISTS_PER_MONTH : null;
+  return capabilities(tier).voiceGistsPerMonth;
 }
 
 export function voiceRemaining(tier: Tier, usedThisMonth: number): number | null {

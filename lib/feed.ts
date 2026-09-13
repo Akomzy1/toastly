@@ -1,3 +1,4 @@
+import { capabilities } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
 
 /**
@@ -30,7 +31,7 @@ export type FeedCandidate = {
  * question, so it is answered from the tier and enforced server-side.
  */
 export function canSendText(tier: Tier): boolean {
-  return tier !== "starter";
+  return capabilities(tier).sendText;
 }
 
 export function replyKindFor(tier: Tier): "text" | "gist_invite" {
