@@ -26,3 +26,6 @@ out/
 next-env.d.ts
 .vercel
 *.tsbuildinfo
+
+# Review screenshots — regenerate with: node scripts/shot.mjs <url> <out.png> [width]
+screenshots/
