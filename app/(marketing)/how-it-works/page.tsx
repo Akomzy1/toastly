@@ -11,7 +11,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { JsonLd } from "@/components/json-ld";
 import { Reveal } from "@/components/reveal";
+import { faqPageSchema } from "@/lib/schema";
 import { benefits, faqs, steps } from "@/lib/how-it-works-content";
 
 export const metadata: Metadata = {
@@ -24,6 +26,8 @@ export const metadata: Metadata = {
 export default function HowItWorksPage() {
   return (
     <>
+      {/* Only the questions this page actually renders. */}
+      <JsonLd data={faqPageSchema(faqs)} />
       {/* 1 — Header */}
       <section className="bg-green-800 text-white">
         <div className="mx-auto max-w-container px-5 py-section-y-lg md:px-10">

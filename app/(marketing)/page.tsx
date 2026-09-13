@@ -24,7 +24,11 @@ import {
 } from "@/lib/home-content";
 
 export const metadata: Metadata = {
-  title: "Toastly — verified Nigerian dating, all the way to the aisle",
+  // `absolute` bypasses the root "%s · Toastly" template — without it the
+  // home page reads "Toastly — ... · Toastly".
+  title: {
+    absolute: "Toastly — verified Nigerian dating, all the way to the aisle",
+  },
   description:
     "Verified people, real intentions. Voice-first Gist sessions, six matches a day, no swiping — and a path that runs from your first Gist to AriyaPlanner when it's time to plan the wedding.",
   alternates: { canonical: "/" },

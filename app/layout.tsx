@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Aleo, Inter } from "next/font/google";
+import { JsonLd } from "@/components/json-ld";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { organizationSchema, softwareApplicationSchema, SITE_URL } from "@/lib/schema";
 import "./globals.css";
 
 // Editorial serif for headings, clean sans for body/UI — design-system.slim.html.
@@ -19,6 +21,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  // Required for the per-page `alternates.canonical` paths to resolve to
+  // absolute URLs. Set NEXT_PUBLIC_SITE_URL per environment.
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Toastly",
     template: "%s · Toastly",
@@ -39,7 +44,11 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Toastly",
-    title: "Toastly",
+    // Deliberately no `title` here. An openGraph.title set at the root wins
+    // over every page's own title, so a shared /pricing link would read just
+    // "Toastly"; an openGraph.title *template* does not help either, because
+    // it only applies to pages that set their own openGraph.title. Omitting
+    // it lets Next fall back to each page's resolved <title>.
     description: "Verified people, real intentions — all the way to the aisle.",
     images: [{ url: "/og-1200x630.png", width: 1200, height: 630 }],
   },
@@ -66,6 +75,10 @@ export default function RootLayout({
       <body>
         {children}
         <ServiceWorkerRegistration />
+        {/* Site-wide structured data. Page-specific FAQPage lives on the
+            pages that actually render those questions. */}
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={softwareApplicationSchema()} />
       </body>
     </html>
   );
