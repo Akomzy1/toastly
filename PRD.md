@@ -79,7 +79,7 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 - Users filter on it; brand leans intentional without amputating top-of-funnel liquidity.
 
 ### 5.4 Gist — Structured Compatibility Sessions
-- **Voice-first by default** (structured question deck, 5–7 min, mutual opt-in, double opt-in "continue?" exit, no dead air).
+- **Voice-first by default** (structured question deck, **18-minute time-box, extendable once**, mutual opt-in, double opt-in "continue?" exit, no dead air). *An earlier 5–7 minute figure here is superseded: it was calibrated before Starter dropped to 2 sessions/month, and at 7 minutes a free member gets ~14 minutes of conversation a month against ~180 possible matches — too little to carry the deck's subject matter. 18 minutes is what the approved prototypes specify and what is already shipped in public copy on Home, How It Works and Features.*
 - **Live video as a premium upgrade**, gated at the upper pricing tier, not the base tier (see §7). Auto-degrades to audio on weak connections.
 - No mic/camera activates until both parties opt in. Screenshot/screen-record blocking on the video tier.
 - Session data feeds the AriyaPlanner warm brief (see §6).

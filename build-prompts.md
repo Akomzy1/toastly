@@ -94,7 +94,7 @@ Build the Gist compatibility-session feature on a single WebRTC provider (LiveKi
 
 **Requirements:**
 - **Voice is the default and free-tier path.** Live video is entitled to Premium Plus and Diaspora Plus only — enforce at the entitlement/access-control layer, not just UI.
-- Mutual opt-in before any mic/camera activates. 5–7 minute time-box. Shared structured question deck, escalating playful → real. Private double-opt-in "continue?" at the end.
+- Mutual opt-in before any mic/camera activates. **18-minute time-box, extendable once** (PRD §5.4 — an earlier 5–7 minute figure in this document was wrong and is superseded; 18 is shipped in public copy on Home, How It Works and Features). Shared structured question deck, escalating playful → real. Private double-opt-in "continue?" at the end.
 - **Never route through a carrier number or expose either party's real phone number** — VoIP only.
 - Auto-degrade video to audio on weak connections rather than freezing.
 - Screenshot/screen-record blocking on the video tier (best effort).

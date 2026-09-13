@@ -3,22 +3,17 @@ import type { Tier } from "@/lib/types/profile";
 /**
  * Gist session rules.
  *
- * DURATION IS UNRESOLVED — flagged, not silently decided.
+ * DURATION IS SETTLED: 18 minutes, extendable once (PRD §5.4, CLAUDE.md).
  *
- * build-prompts.md (Prompt 5) specifies a "5-7 minute time-box". The approved
- * prototypes say something different and more specific: an 18-minute default,
- * extendable once — and that figure is already shipped in public copy on
- * Home, How It Works and Features.
- *
- * PRD.md says nothing about duration at all, so the usual "PRD wins on
- * content" tie-break does not apply here. Rather than quietly contradict
- * live marketing copy, the default below matches what is shipped, and both
- * candidate values are named so changing it is one line and one deploy.
+ * The 5–7 minute figure that appeared in earlier drafts is superseded and is
+ * deliberately NOT defined here, so it cannot be reintroduced by autocomplete
+ * or by someone reading an old draft. It was calibrated before Starter
+ * dropped to 2 sessions a month: at 7 minutes a free member would get about
+ * 14 minutes of conversation a month against ~180 possible matches, which
+ * cannot carry the question deck's subject matter.
  */
 export const GIST_DEFAULT_MINUTES = 18;
 export const GIST_EXTENSION_MINUTES = 18;
-/** The alternative from build-prompts.md, kept visible for the decision. */
-export const GIST_SHORT_TIMEBOX_MINUTES = 7;
 
 /** Starter's monthly voice allowance. Not 5, 8 or 10 — those are superseded. */
 export const STARTER_VOICE_GISTS_PER_MONTH = 2;

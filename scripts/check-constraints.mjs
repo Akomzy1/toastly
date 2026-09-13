@@ -82,6 +82,28 @@ check("no heart / flame / super-like iconography", (s) =>
   /superlike|super_like|flame/i.test(stripStrings(s)),
 );
 
+// PRD §7.2: Boosts and Super Likes are cut from the product. With a fixed
+// six-a-day feed a Boost can only mean appearing in more people's six, which
+// is buying attention — the thing the brand is built against. Coins buy
+// exactly four things, none of which raise a member's visibility to others.
+check("no Boost or paid-visibility purchase", (s) =>
+  /\bboost(s|ed|ing|Count|Credits?)?\b|paidPlacement|promoteProfile/i.test(
+    stripStrings(s),
+  ),
+);
+
+// PRD §5.4: 18 minutes, extendable once. The superseded 5–7 minute figure
+// must not reappear as a constant.
+check("Gist time-box is not a superseded short value", (s, f) => {
+  if (!/GIST_\w*MINUTES/.test(s)) return false;
+  const bad = s.match(/GIST_\w*MINUTES\s*=\s*(\d+)/g) ?? [];
+  const offending = bad.filter((m) => {
+    const n = Number(m.match(/(\d+)$/)?.[1]);
+    return n < 18;
+  });
+  return offending.length ? offending.join(", ") : false;
+});
+
 // --- The daily feed is six, on every tier --------------------------------
 check("daily match count is not derived from tier or entitlement", (s) => {
   if (!/daily_match_count|DAILY_MATCH_COUNT/.test(s)) return false;
