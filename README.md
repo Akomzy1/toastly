@@ -4,6 +4,24 @@ A verification-first dating-to-marriage platform for Nigerian Gen Z — Nigeria-
 
 This repository currently holds product documentation and static HTML page prototypes. Application code has not started yet.
 
+## Local development
+
+```bash
+cp .env.example .env.local   # nothing is required for the marketing site
+npm install
+npm run dev
+npm run verify               # typecheck, lint, product-constraint checks, build
+node scripts/audit-mobile.mjs http://localhost:3000 360   # overflow + touch targets
+```
+
+**Don't develop inside a OneDrive-synced folder.** OneDrive treats a rebuild
+overwriting `.next` as a sync conflict and renames build files with the
+machine name (`BUILD_ID-<machine>`, `build-manifest-<machine>.json`). Next can
+no longer find its own manifests, so `next start` fails with
+`Error: UNKNOWN: unknown error, read` — and retrying never fixes it. It also
+makes `npm install` take many minutes. Clone somewhere unsynced, or exclude
+`.next` and `node_modules` from sync.
+
 ## Documentation
 
 | File | What it covers |
