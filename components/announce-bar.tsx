@@ -30,7 +30,7 @@ export function AnnounceBar() {
   if (dismissed) return null;
 
   return (
-    <div className="relative bg-green-700 px-10 py-2.5">
+    <div className="relative bg-green-700 px-12 py-2.5">
       <p className="text-center text-caption leading-normal tracking-normal text-champagne">
         Women get <strong className="font-semibold">30 days free Premium Plus</strong>{" "}
         at signup — no card needed.{" "}
@@ -52,7 +52,7 @@ export function AnnounceBar() {
             /* Private window — dismissal just won't persist. */
           }
         }}
-        className="absolute right-3.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-pill text-champagne transition-colors duration-200 hover:bg-white/10"
+        className="absolute right-0.5 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-pill text-champagne transition-colors duration-200 hover:bg-white/10"
       >
         <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true">
           <path

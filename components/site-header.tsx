@@ -38,7 +38,7 @@ export function SiteHeader() {
         aria-label="Primary"
         className="mx-auto flex h-[74px] max-w-container items-center gap-4 px-5 sm:gap-8 md:px-10"
       >
-        <Link href="/" className="flex-shrink-0 no-underline">
+        <Link href="/" className="flex min-h-11 flex-shrink-0 items-center no-underline">
           <BrandLockup tone="dark" size={26} />
         </Link>
 
@@ -73,14 +73,14 @@ export function SiteHeader() {
         <div className="ml-auto hidden flex-shrink-0 items-center gap-3.5 lg:flex">
           <Link
             href="/verify"
-            className="flex items-center gap-[7px] text-nav font-medium text-champagne no-underline transition-opacity duration-200 hover:opacity-75"
+            className="flex min-h-11 items-center gap-[7px] text-nav font-medium text-champagne no-underline transition-opacity duration-200 hover:opacity-75"
           >
             <VerifiedSeal />
             Get verified
           </Link>
           <Link
             href="/pricing"
-            className="rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline transition-colors duration-200 hover:bg-gold-300"
+            className="inline-flex min-h-11 items-center rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline transition-colors duration-200 hover:bg-gold-300"
           >
             Join Toastly
           </Link>
@@ -90,7 +90,7 @@ export function SiteHeader() {
         <div className="ml-auto flex flex-shrink-0 items-center gap-3 lg:hidden">
           <Link
             href="/pricing"
-            className="rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline"
+            className="inline-flex min-h-11 items-center rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline"
           >
             Get verified
           </Link>

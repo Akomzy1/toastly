@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
+import { SafetyActions } from "@/components/safety/safety-actions";
 import { ReadyForm } from "./ready-form";
 import { OutcomeForm } from "./outcome-form";
 import {
@@ -60,6 +61,15 @@ export default async function GistSessionPage({
     ? Boolean(session.invitee_ready_at)
     : Boolean(session.proposer_ready_at);
   const joinable = isJoinable(session);
+
+  // The other participant, for the report and block action below.
+  const otherId: string = isProposer ? session.invitee_id : session.proposer_id;
+  const { data: other } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", otherId)
+    .maybeSingle();
+  const otherName = other?.display_name ?? "this member";
 
   // Video is only ever offered when the entitlement allows it AND the session
   // was proposed as video. The token itself withholds camera publish rights
@@ -158,6 +168,12 @@ export default async function GistSessionPage({
       (session.status as GistStatus) === "completed" ? (
         <OutcomeForm sessionId={session.id} />
       ) : null}
+
+      {/* Safety & Trust promises "every screen has a report action, including
+          inside a Gist session". Until now this screen had none. Never behind
+          a plan: a voice Gist is a Starter member's only conversation channel,
+          so this is exactly where a free member most needs it. */}
+      <SafetyActions memberId={otherId} name={otherName} />
     </div>
   );
 }

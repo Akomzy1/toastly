@@ -63,12 +63,12 @@ export function SiteFooter() {
               <h2 className="font-sans text-caption font-semibold uppercase text-champagne">
                 {group.heading}
               </h2>
-              <ul className="grid list-none gap-2.5 p-0">
+              <ul className="grid list-none p-0">
                 {group.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-ui text-white/[.72] no-underline transition-colors duration-200 hover:text-white"
+                      className="inline-flex min-h-11 items-center text-ui text-white/[.72] no-underline transition-colors duration-200 hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -88,7 +88,7 @@ export function SiteFooter() {
           </p>
           <Link
             href="/ariyaplanner"
-            className="justify-self-start text-ui font-semibold text-gold-500 no-underline underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center justify-self-start text-ui font-semibold text-gold-500 no-underline underline-offset-4 hover:underline"
           >
             Explore AriyaPlanner
           </Link>
@@ -100,12 +100,12 @@ export function SiteFooter() {
           &copy; {new Date().getFullYear()} Toastly Technologies Ltd. Lagos,
           Nigeria.
         </p>
-        <ul className="flex list-none flex-wrap gap-5 p-0">
+        <ul className="flex list-none flex-wrap gap-x-5 p-0">
           {LEGAL.map((l) => (
             <li key={l.href}>
               <Link
                 href={l.href}
-                className="text-nav text-white/60 no-underline transition-colors duration-200 hover:text-white"
+                className="inline-flex min-h-11 items-center text-nav text-white/60 no-underline transition-colors duration-200 hover:text-white"
               >
                 {l.label}
               </Link>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { Textarea } from "@/components/ui/field";
+import { SafetyActions } from "@/components/safety/safety-actions";
 import type { FeedCandidate } from "@/lib/feed";
 
 function Submit({ label }: { label: string }) {
@@ -131,6 +132,10 @@ export function MatchCard({
           <Submit label={canSendText ? "Send reply" : "Invite to a Gist"} />
         </form>
       ) : null}
+
+      {/* Report and block, on every card, for every member. This component
+          takes no plan and must never be given one. */}
+      <SafetyActions memberId={candidate.id} name={candidate.display_name} />
     </Card>
   );
 }

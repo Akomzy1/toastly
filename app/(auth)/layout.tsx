@@ -16,7 +16,7 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen bg-paper">
       <div className="bg-green-800 px-5 py-5 md:px-10">
-        <Link href="/" className="no-underline">
+        <Link href="/" className="inline-flex min-h-11 items-center no-underline">
           <BrandLockup tone="dark" size={24} />
         </Link>
       </div>

@@ -332,6 +332,56 @@ check("locked inbox copy uses no fake scarcity", (s, f) => {
   return hit ? hit[0] : false;
 });
 
+// --- The safety kit -------------------------------------------------------
+//
+// Prompt 9: confirm none of the safety kit is paywalled at any tier,
+// "including via a shared component that's gated for unrelated reasons".
+// The kit's files must not read a plan at all.
+check("safety kit reads no tier or entitlement", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/safety-kit|components\/safety\/|lib\/safety(-actions)?\.ts$|0007_safety/.test(p)) {
+    return false;
+  }
+  return /current_tier|capabilities\(|can_read_inbox|entitlement|\btier\b|premium/i.test(
+    stripStrings(s),
+  );
+});
+
+// Unsolicited-image protection hides EVERY image and lets the recipient
+// choose. It must never classify content: PRD 5.1 says chat is never
+// scanned, and an image classifier is a scanner.
+check("image protection never classifies content", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/components\/safety\/|lib\/safety|message_attachments/.test(p)) return false;
+  return /nsfw|classif(y|ier)|detectNudity|moderat(e|ion)Image|nudenet|rekognition|safeSearch|tensorflow/i.test(
+    stripStrings(s),
+  );
+});
+
+// PRD 5.1: a number-sharing affordance is withheld until a trust threshold
+// (completed video Gist + mutual continue, or Couple Mode entry). None is
+// built yet. When one is, replace this with a check that asserts the gate.
+check("no contact-sharing affordance ahead of the trust threshold", (s) =>
+  /shareContact|share_contact|revealPhone|exchangeNumbers/i.test(stripStrings(s)),
+);
+
+// Photo reveal is enforced by the database AND the files are in a private
+// bucket — row-level security on a table is decorative if the image files
+// themselves are publicly fetchable.
+check("photo reveal enforced in RLS, with private storage", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.profile_photos/.test(s)) return false;
+  if (!/can_see_photos\(auth\.uid\(\)/.test(s)) {
+    return "profile_photos select policy does not use can_see_photos";
+  }
+  if (/'profile-photos'\s*,\s*'profile-photos'\s*,\s*true/.test(s)) {
+    return "profile-photos bucket is public";
+  }
+  if (!/on storage\.objects for select/.test(s)) {
+    return "no storage.objects policy guarding the photo files";
+  }
+  return false;
+});
+
 // --- Marital status is never presented as verifiable ---------------------
 check("no marital-status verification", (s) =>
   /marital_status_verified|verified_single|maritalStatusVerified/i.test(s),

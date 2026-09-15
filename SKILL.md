@@ -105,6 +105,16 @@ editor. Two new components came with them, also unapproved: a block-level
 rings filling along a rule so it borrows the mark's own logic rather than
 inventing a new one.
 
+**App-surface screens built in Prompts 4–9, also outside the prototype.**
+The match card (feed), the Gist session list and room, the inbox list, the
+wallet, Couple Mode, and the safety kit at `/safety-kit` (`/safety` is the
+marketing page). The inbox's locked row follows `locked-inbox.slim.html`; the
+list around it does not. New components with them: `SafetyActions` (the
+report/block disclosure), `ReportForm`, `BlockButton`, `BlurredImage`,
+`ShareDate` (panic plus share-your-date) and `SafetySettings`. The panic
+button uses the `error` token (`#9B1348`, deep rose) as a button ground — no
+variant in the design system does, so treat it as an unapproved variant.
+
 Deferred on purpose, to be built against the screen that needs them rather
 than guessed in the abstract: toast/notification, modal, pagination,
 skeleton/loading, empty states. None appear on a marketing page — they are
