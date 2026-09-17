@@ -79,7 +79,9 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 - Users filter on it; brand leans intentional without amputating top-of-funnel liquidity.
 
 ### 5.4 Gist — Structured Compatibility Sessions
-- **Voice-first by default** (structured question deck, **18-minute time-box, extendable once**, mutual opt-in, double opt-in "continue?" exit, no dead air). *An earlier 5–7 minute figure here is superseded: it was calibrated before Starter dropped to 2 sessions/month, and at 7 minutes a free member gets ~14 minutes of conversation a month against ~180 possible matches — too little to carry the deck's subject matter. 18 minutes is what the approved prototypes specify and what is already shipped in public copy on Home, How It Works and Features.*
+- **Voice-first by default** (structured question deck, **18-minute time-box extendable once**, mutual opt-in, double opt-in "continue?" exit, no dead air).
+
+**Session length — 18 minutes, extendable once (decided; corrects an earlier PRD-side error).** Earlier drafts and build Prompt 5 specified a 5–7 minute box. That figure was calibrated before Starter dropped to 2 sessions/month and is incoherent with the product as built: at 7 minutes a free user gets ~14 minutes of conversation per month against ~180 possible matches, which cannot carry marriage intent, family expectations, money attitudes or japa plans. Three further reasons the longer box is correct: (a) the structured question deck — not brevity — is the real mitigation for dead air, so length stops being a risk once scaffolding exists; (b) shipped How It Works copy ("three of them tells you more than a month of texting") is only credible at 18 minutes; (c) a short timed call sits in speed-dating territory — MyPerson runs 60-second Spark dates — whereas 18 minutes extendable is the slow-dating position Toastly actually holds. **18 is already shipped in public copy on Home, How It Works and Features; those pages are correct and must not be edited down.** Data cost (~9–18 MB per session, ~36 MB/month at the Starter cap) is accepted, mitigated by voice-first default and auto-degrade to audio on weak connections.
 - **Live video as a premium upgrade**, gated at the upper pricing tier, not the base tier (see §7). Auto-degrades to audio on weak connections.
 - No mic/camera activates until both parties opt in. Screenshot/screen-record blocking on the video tier.
 - Session data feeds the AriyaPlanner warm brief (see §6).
@@ -109,7 +111,7 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 
 ## 6. AriyaPlanner Integration (strategic core, not a bolt-on)
 
-- Toastly and AriyaPlanner share one spine: **Next.js 14 PWA + Supabase + Claude API + Paystack + WhatsApp Business Cloud API**.
+- Toastly and AriyaPlanner share one spine: **Next.js 14 PWA + Supabase + Claude API + Paystack**. (WhatsApp Business Cloud API was considered for notifications and dropped — Meta's business verification process is unnecessary friction pre-launch; notifications run on Resend/email and in-app push instead. Revisit post-launch if a WhatsApp-native touchpoint becomes a real product need, not a nice-to-have.)
 - Toastly is the acquisition engine; AriyaPlanner is the LTV engine. A single graduated couple can trigger multiple AriyaPlanner Event Passes (introduction ceremony, traditional wedding, white wedding, anniversaries, diaspora-abroad wedding variant).
 - **Sequencing honesty:** wedding revenue is long-tail (Nigerian courtship-to-wedding runs 1–4 years) — it is the LTV/moat story, not the launch P&L. Near-term revenue runs on domestic coins + diaspora subscriptions.
 - Integration point: a shared identity/account layer enabling the warm handoff. This is a **later phase**, not part of Toastly's MVP scope — MVP should be built with the handoff *contract* in mind (what data Couple Mode captures, in what shape) even before the live integration exists.

@@ -12,7 +12,7 @@ Toastly is a premium, verification-first dating-to-marriage platform for Nigeria
 - **Database/Auth:** Supabase
 - **AI:** Claude API (use tiered model selection — Haiku for cheap/high-volume tasks, Sonnet for general logic, Opus only where genuinely needed — do not default to the most expensive model everywhere)
 - **Payments:** Paystack (NGN domestic) + Stripe (USD diaspora) — see `PRD.md` §7 for the pricing-integrity/anti-arbitrage requirements; payment-geography signals used there must be implemented as part of the payment flow, not bolted on separately
-- **Messaging:** WhatsApp Business Cloud API (WhatsApp-native touchpoints where relevant — e.g., notifications, not in-app chat replacement)
+- **Messaging:** Resend (transactional email) + in-app push for notifications. **No WhatsApp Business Cloud API** — dropped (PRD §6) due to Meta's business-verification overhead pre-launch. Do not add WhatsApp integration without an explicit decision to revisit this.
 - **Realtime/video:** WebRTC-based provider (LiveKit/Daily/Agora — pick one and use consistently; do not mix providers) for Gist voice/video sessions. VoIP-based — **never** route calls through a carrier number or expose either party's real phone number as part of the calling mechanism.
 - **UI:** shadcn/ui + Tailwind
 - **Analytics:** PostHog
