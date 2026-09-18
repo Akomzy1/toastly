@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/97678b9c-5b69-4ed9-8faf-2e39e041e9e2.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/da71917c-ba32-4ab4-b804-17b197d7f37d.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/1d7f1bbe-a561-426c-8001-f5839ee1f508.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/4b53ddf5-d752-4bc9-9916-6d8132d11535.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/623d248d-b9ea-4179-882d-6f8e3951a57c.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Diaspora</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Time-zone select</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">One screen, one field. Pre-filled from the device, confirmable, and editable later in settings. The select is 48px tall and the buttons 48px; the confirmation line wraps to three lines at 320px and stays at 14px.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Time zone</p>
+      </div>
+
+      <div style="padding:16px 14px 22px;display:grid;gap:16px;align-content:start">
+
+        <label style="display:grid;gap:7px;font-size:14px;font-weight:500;color:#050309">Your time zone
+          <sc-raw-select value="{{ zone }}" sc-camel-on-change="{{ onZone }}" style="width:100%;min-height:48px;padding:13px 15px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;font-family:Inter,sans-serif;font-size:15px;color:#050309;background:#FFFFFF" style-focus="outline:none;border-color:#00695C;box-shadow:0 0 0 3px rgba(0,105,92,0.16)">
+            <sc-for list="{{ zones }}" as="z" hint-placeholder-count="5">
+              <option value="{{ z.id }}">{{ z.label }}</option>
+            </sc-for>
+          </sc-raw-select>
+        </label>
+
+        <sc-if value="{{ isDetected }}" hint-placeholder-val="{{ true }}">
+          <span style="justify-self:start;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#E5F0EE;border:1px solid rgba(0,105,92,0.24);font-size:13px;font-weight:600;color:#00453C">
+            <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.4" stroke="#00695C" stroke-width="1.5"></circle><path d="M12 7.6V12l3 2" stroke="#00695C" stroke-width="1.6" stroke-linecap="round"></path></svg>
+            Detected from your device
+          </span>
+        </sc-if>
+        <sc-if value="{{ isChanged }}">
+          <p style="margin:0;display:flex;gap:8px;align-items:flex-start;font-size:13.5px;line-height:1.55;color:#504E52">
+            <span aria-hidden="true" style="flex-shrink:0;margin-top:3px">
+              <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none"><path d="M4 9h12a4 4 0 0 1 0 8H9" stroke="#828184" stroke-width="1.6" stroke-linecap="round"></path><path d="m7 6 3 3-3 3" stroke="#828184" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </span>
+            Changed from your detected zone, {{ detectedShort }}.
+          </p>
+        </sc-if>
+        <sc-if value="{{ isSaved }}">
+          <p style="margin:0;display:flex;gap:8px;align-items:center;font-size:14px;font-weight:500;color:#2F8F5B">
+            <svg width="16" height="16" sc-camel-view-box="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="#2F8F5B" stroke-width="1.3"></circle><path d="m5 8.2 2 2 4-4.4" stroke="#2F8F5B" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            Saved — {{ zoneShort }}
+          </p>
+        </sc-if>
+
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52;max-width:46ch">We'll use this so Gist times show correctly for both of you.</p>
+
+        <sc-if value="{{ showPrimary }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:10px">
+            <button type="button" sc-camel-on-click="{{ save }}" style="min-height:48px;padding:14px 24px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">{{ primaryLabel }}</button>
+            <sc-if value="{{ isChanged }}">
+              <button type="button" sc-camel-on-click="{{ reset }}" style="min-height:44px;padding:10px;border:0;background:transparent;color:#00695C;font-family:Inter,sans-serif;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:4px;cursor:pointer">Use detected zone</button>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isSaved }}">
+          <div style="display:grid;gap:10px">
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:14px;background:#FFFFFF;padding:15px;display:grid;gap:6px">
+              <p style="margin:0;font-size:13.5px;color:#828184">Next Gist window, both sides</p>
+              <p style="margin:0;font-size:15px;font-weight:600;color:#050309">7:30 pm you · 6:30 pm Amaka, London</p>
+            </div>
+            <button type="button" sc-camel-on-click="{{ edit }}" style="min-height:48px;padding:14px 24px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Change time zone</button>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:760},&quot;detectedZone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;waft&quot;,&quot;lon&quot;,&quot;est&quot;,&quot;cst&quot;,&quot;pst&quot;,&quot;gst&quot;],&quot;default&quot;:&quot;waft&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behaviour&quot;}}">
+const ZONES = [
+  { id: "waft", label: "(GMT+1) West Africa — Lagos", short: "West Africa (GMT+1)" },
+  { id: "lon", label: "(GMT+1) United Kingdom — London", short: "United Kingdom (GMT+1)" },
+  { id: "cet", label: "(GMT+2) Central Europe — Berlin", short: "Central Europe (GMT+2)" },
+  { id: "est", label: "(GMT−4) Eastern — New York, Toronto", short: "Eastern (GMT−4)" },
+  { id: "cst", label: "(GMT−5) Central — Houston, Chicago", short: "Central (GMT−5)" },
+  { id: "pst", label: "(GMT−7) Pacific — Los Angeles", short: "Pacific (GMT−7)" },
+  { id: "gst", label: "(GMT+4) Gulf — Dubai", short: "Gulf (GMT+4)" }
+];
+
+class Component extends DCLogic {
+  state = { zone: null, saved: false, w: "360px" };
+
+  chip(label, active, pick) {
+    return {
+      label, pick,
+      bg: active ? "#001F1B" : "#FFFFFF",
+      fg: active ? "#FFFFFF" : "#504E52",
+      border: active ? "#001F1B" : "rgba(5,3,9,0.18)"
+    };
+  }
+
+  renderVals() {
+    const detected = this.props.detectedZone ?? "waft";
+    const zone = this.state.zone ?? detected;
+    const changed = zone !== detected;
+    const saved = this.state.saved;
+    const find = id => ZONES.find(z => z.id === id) ?? ZONES[0];
+
+    return {
+      frameW: this.state.w,
+      widths: [
+        this.chip("360px", this.state.w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", this.state.w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", this.state.w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [
+        this.chip("Pre-filled", !saved && !changed, () => this.setState({ zone: null, saved: false })),
+        this.chip("Changed", !saved && changed, () => this.setState({ zone: "lon", saved: false })),
+        this.chip("Saved", saved, () => this.setState({ zone: "lon", saved: true }))
+      ],
+      zones: ZONES,
+      zone,
+      onZone: e => this.setState({ zone: e.target.value, saved: false }),
+      isDetected: !changed && !saved,
+      isChanged: changed && !saved,
+      isSaved: saved,
+      showPrimary: !saved,
+      primaryLabel: changed ? "Save time zone" : "Confirm",
+      detectedShort: find(detected).short,
+      zoneShort: find(zone).short,
+      save: () => this.setState({ saved: true }),
+      reset: () => this.setState({ zone: null, saved: false }),
+      edit: () => this.setState({ saved: false })
+    };
+  }
+}
+
+</script>
+
+
+</body></html>

@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { capture } from "@/lib/analytics";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
@@ -149,6 +150,10 @@ export async function recordLiveness(
       liveness_verified_at: new Date().toISOString(),
     })
     .eq("id", user.id);
+
+  // Funnel step two. The badge is the product's central claim, so the drop-off
+  // between signup and this event is the number that matters most.
+  await capture("verification_complete", user.id, { stage: "verified_real" });
 
   revalidatePath("/verify");
   return { ok: "Liveness passed. Your Verified Real seal is live." };

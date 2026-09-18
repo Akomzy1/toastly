@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LockedRow } from "./locked-row";
+import { BlindSafety } from "@/components/safety/blind-safety";
 import {
   canReadInbox,
   lockedLabel,
@@ -96,8 +97,15 @@ export default async function InboxPage() {
           </Card>
         ) : (
           /* A bare count, and a row carrying no sender, no initial, no
-             snippet. There is nothing to reconstruct an identity from. */
-          <LockedRow label={lockedLabel(inbox.unreadCount)} />
+             snippet. There is nothing to reconstruct an identity from.
+
+             Below it: report and block, free, without ever naming a sender
+             (decision (a)). Reading a message is a paid feature; being
+             protected from one is not. */
+          <>
+            <LockedRow label={lockedLabel(inbox.unreadCount)} />
+            <BlindSafety />
+          </>
         )
       ) : !inbox.threads.length ? (
         <Card className="grid gap-3 p-[26px]">

@@ -46,6 +46,45 @@
 - Women's safety kit: photo-reveal control, share-your-date/panic feature, unsolicited-image blur, report/block.
 - No phone number is ever required to talk, call, or Gist in-app (VoIP-based calling). Any number-sharing affordance (e.g., a "share contact" button) is withheld until a trust threshold (completed video Gist + mutual "continue," or Couple Mode entry) — but free-text chat is never scanned, blocked, or policed.
 
+### 5.1.1 Trust Sentinel — behavioural anti-scam agent (decided; Phase 1 signals, Phase 2 agent)
+
+**What it is.** Verification today is a one-time gate — selfie liveness, optional NIN/BVN. A romance scammer passes that gate and then *behaves* like a scammer. The Trust Sentinel is an agent that watches behaviour over time and routes suspicious patterns to a **human review queue**. It turns "Verified Real" from a badge into a living system, and it is the one trust feature a competitor cannot copy quickly.
+
+**Governing principle — agents in the infrastructure, never in the intimacy.** The Sentinel protects users; it never speaks for them, never coaches a conversation, never writes a message. That line is not negotiable and applies to every future agent in this product.
+
+**Signals it uses — behavioural metadata only, never message content:**
+
+| Signal | Why it matters |
+|---|---|
+| **Gist refusal pattern** — repeatedly declining or cancelling Gist while continuing to message | Scammers avoid live, structured, voice interaction. This is the strongest single signal and was already identified as a passive filter (§5.4); the Sentinel makes it active |
+| **Escalation velocity** — unusually fast progression from match to Couple Mode requests, date requests, or off-platform contact affordances | Love-bombing cadence; genuine intent moves slower |
+| **Profile-vs-Gist inconsistency** — self-reported profession, location or intent contradicted by Gist session outcomes (from the structured deck, not free speech) | Fabricated profiles are hard to sustain across an 18-minute structured conversation |
+| **Report clustering** — multiple independent reports, especially in the "married" or "scam" first-class categories, within a short window | Corroboration across unrelated users |
+| **Verification drift** — a verified selfie that no longer matches subsequent uploaded photos; NIN/BVN mismatch on re-check | Account handover or shared-account fraud |
+| **Cross-tier arbitrage overlap** — payment-geography and phone-origin mismatches already captured for pricing integrity (§7) | Same signals, same queue; do not build two pipelines |
+| **Coin-deposit no-show pattern** — repeated forfeits as the *absent* party | Correlates with accounts not operated in good faith |
+
+**Signals it must never use:**
+- **Message content.** The Sentinel does not read, parse, classify or score free-text chat. This extends the existing hard boundary in CLAUDE.md ("never scan chat for phone numbers") to *all* content analysis. Behaviour, not words.
+- **Gist audio or transcripts.** Session *outcomes* from the structured deck (which questions were answered, the double-opt-in result) are usable. Raw audio and any transcript are not — and are not retained.
+- **Protected attributes.** Tribe, religion, language, relationship history, profession and diaspora status are never inputs. A signal that would correlate with any of these (e.g. "diaspora accounts flagged more often") is a defect to be corrected, not a finding.
+
+**Review-queue design:**
+1. **Score, don't decide.** The Sentinel produces a confidence score and a plain-language reason ("declined 4 Gist invitations in 6 days while sending 40+ messages; 2 independent scam reports"). It never takes action on an account.
+2. **Human review is mandatory.** A reviewer sees the reason, the signal history, and the account's verification record — never message content. Outcomes: clear, request re-verification, restrict (cannot initiate new matches pending re-verification), or remove.
+3. **Never auto-ban.** Same rule as pricing-integrity signals. A false positive on a genuine user — a shy person who keeps postponing Gist — costs more trust than a delayed catch of a scammer. Restriction pending re-verification is the strongest automated step, and only above a high threshold.
+4. **The flagged user is told something happened.** "We've asked you to re-verify" with a reason category — never silent shadow-restriction. Consistent with the transparency rule on the locked inbox: never present a restriction as a bug or an unexplained state.
+5. **Audit trail.** Every score, every reviewer decision, every outcome — logged and reviewable. This is what makes the system defensible if challenged and improvable over time.
+6. **Feedback loop.** Reviewer decisions retrain thresholds. The Sentinel gets better because humans correct it, not because it trusts itself more.
+
+**Model use.** Claude API, tiered per the stack: Haiku for continuous signal scoring (cheap, high volume); Sonnet for composing the reviewer-facing reason and for the profile-vs-Gist consistency check. Opus is not required. This is an infrastructure cost, not a per-user feature cost, and it is **never paywalled** — protection applies to every tier including Starter.
+
+**Success signal.** Scam-related reports per 1,000 active users falls after launch; false-positive rate on manual review stays below a threshold to be set from the first cohort (target: under 1 in 5 flags cleared as false positives, reviewed monthly). If the false-positive rate is high, loosen thresholds before adding signals.
+
+**Phasing.** Phase 1 (MVP): capture every signal above as structured events — this is instrumentation and costs little. Phase 2: the scoring agent and review queue, once there is enough behavioural data to set thresholds from evidence rather than guesses. Building the agent before the data exists produces thresholds invented from nothing.
+
+**What comes after (not now).** Two further agents follow the same infrastructure-not-intimacy line and are deferred until real session data exists: an adaptive Gist deck with a private per-person debrief (both-party consent, no transcript retention), and an autonomous AriyaPlanner handoff that assembles the wedding brief on engagement. Both are recorded in §11 as intent, not commitment.
+
 ### 5.2 Matching Mechanic
 - Prompt-based profiles (Hinge-style), not infinite swipe. Curated daily match feed.
 - **Intent selector on a spectrum** (see §5.3) — filterable, never a signup gate.
@@ -192,8 +231,10 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 
 ## 9. Phasing
 
-- **Phase 1 (launch):** Verification/trust layer, prompt-based matching, intent spectrum, voice Gist (default), coin-deposit date commitment, lightweight date-spot suggestion, Couple Mode (data capture only), women's safety kit, PWA, domestic coins + subscription, "back home" diaspora matching + diaspora subscription. Launch in Lagos only.
-- **Phase 2:** 1:1 live video Gist (premium), hosted live-streaming/matchmaker channel (once verified liquidity exists — MyPerson already runs this live, so this should not be pushed indefinitely), diaspora-to-diaspora matching unlocked per qualifying city.
+> **Build-sequence note:** the Claude Code build sequence (`build-prompts.md`) implements Phase 1 across Prompts 0–12. A post-build audit found Prompts 0–9 omitted three Phase 1 items — diaspora matching pools, date-spot suggestion, and time-zone-aware Gist scheduling — now covered by Prompts 10–11, with Prompt 12 handling the domain change to **trytoastly.com**, app icons, stubbed-integration checklist and WhatsApp removal. Live video Gist transport was built in Prompt 5 ahead of its Phase 2 slot; nothing is owed there beyond credentials.
+
+- **Phase 1 (launch):** Verification/trust layer, **Trust Sentinel signal instrumentation (events only, no agent — §5.1.1)**, prompt-based matching, intent spectrum, voice Gist (default), coin-deposit date commitment, lightweight date-spot suggestion, Couple Mode (data capture only), women's safety kit, PWA, domestic coins + subscription, "back home" diaspora matching + diaspora subscription. Launch in Lagos only.
+- **Phase 2:** **Trust Sentinel scoring agent + human review queue (§5.1.1)**, 1:1 live video Gist (premium), hosted live-streaming/matchmaker channel (once verified liquidity exists — MyPerson already runs this live, so this should not be pushed indefinitely), diaspora-to-diaspora matching unlocked per qualifying city.
 - **Later phase:** Live AriyaPlanner handoff integration (shared identity/account layer), fuller curated date-venue directory (if usage justifies content-ops investment), public/host matchmaker partnerships (bringing existing Facebook/TikTok matchmakers on as ambassadors).
 
 ## 10. Risks & Mitigations
@@ -212,6 +253,8 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 | Diaspora pricing arbitrage | Signal-stacking + manual review, not aggressive auto-enforcement |
 
 ## 11. Open Questions (not yet decided — do not assume answers)
+- Trust Sentinel false-positive threshold — set from the first cohort's review outcomes, not pre-launch (§5.1.1).
+- Two follow-on agents are recorded as **intent, not commitment**: an adaptive Gist deck with private per-person debrief (both-party consent, no transcript retention), and an autonomous AriyaPlanner handoff that drafts the wedding brief on engagement. Neither is scoped, costed or scheduled.
 - ~~Free-tier limit on voice Gist sessions~~ — **decided:** Starter = 8/month, Diaspora = unlimited (see §7.1).
 - Handoff-conversion rate assumptions for the AriyaPlanner funnel (strategic thesis, not yet evidenced — validate with first cohort).
 - Exact city-unlock threshold for diaspora-to-diaspora matching and for Phase 2 live-streaming.

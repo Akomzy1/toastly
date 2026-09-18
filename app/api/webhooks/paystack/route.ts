@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyCharge } from "@/lib/payments-notify";
 
 /**
  * Paystack webhook — NGN only.
@@ -30,12 +32,22 @@ export async function POST(request: NextRequest) {
 
   const event = JSON.parse(raw) as { event: string; data: { reference: string } };
 
+  // A webhook has no session, so resolving a reference to a member needs the
+  // service role. Narrow and deliberate: read the payment row, nothing else.
+  const admin = createAdminClient();
+
   // Only NGN reaches this endpoint. A USD charge arriving here is a routing
   // bug or an arbitrage attempt; the payments table refuses the pairing.
   switch (event.event) {
     case "charge.success":
       // TODO: record the payment, credit coins or grant the subscription
       // entitlement. Not implemented — no live credentials in this build.
+      //
+      // The receipt and the funnel events below are real code on an inert
+      // path: they look the payment up by reference, and nothing writes
+      // payment rows yet. Whoever builds the payment loop gets both for free
+      // by inserting the row before this runs.
+      await notifyCharge(admin, event.data.reference, "paystack");
       break;
     default:
       break;

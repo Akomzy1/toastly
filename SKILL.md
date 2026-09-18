@@ -24,6 +24,11 @@ Located in `/design/prototype/`:
 | `diaspora.slim.html` | Diaspora — both matching pools |
 | `stories.slim.html` | Testimonials, gallery, community |
 | `locked-inbox.slim.html` | **In-app** locked inbox state (not marketing) |
+| `city-picker.slim.html` | **In-app** — diaspora metro picker, grouped by country, search-as-you-type. 52px rows, 44px clear control |
+| `time-zone.slim.html` | **In-app** — single-select time zone, pre-filled from the device and confirmable |
+| `feed-fallback-notice.slim.html` | **In-app** — band above the feed when a city pool isn't open; the six are still shown |
+| `both-clocks.slim.html` | **In-app** — Gist scheduling with both local times; offers tomorrow rather than a 3am slot |
+| `date-spot.slim.html` | **In-app** — post-Gist venue suggestion; cafés and restaurants, books nothing |
 | `brand-the-stake.slim.html` | **Adopted brand mark ("The Stake") — binding.** Mark geometry, palette roles, lockups, do/don't |
 | `brand-assets.slim.html` | **Production brand assets.** PWA icons, favicons, vector masters, social exports, splash |
 
@@ -114,6 +119,17 @@ report/block disclosure), `ReportForm`, `BlockButton`, `BlurredImage`,
 `ShareDate` (panic plus share-your-date) and `SafetySettings`. The panic
 button uses the `error` token (`#9B1348`, deep rose) as a button ground — no
 variant in the design system does, so treat it as an unapproved variant.
+
+**Five of these gaps are now closed.** The diaspora city picker, the
+time-zone field, the feed fallback band, the both-clocks display and the
+date-spot card were built ahead of their designs and have since been exported
+as prototypes — `city-picker`, `time-zone`, `feed-fallback-notice`,
+`both-clocks` and `date-spot` (all `.slim.html`, listed in the table above).
+Each has been rebuilt against its own file and is no longer invented UI. Three
+deviations are recorded in `FINAL-REVIEW.md` §1: the date-spot photo and
+distance panel are omitted for want of data, three prototype colours fall
+outside the approved ramp and use `green-550`, and the both-clocks window
+picker has no home until a propose-a-time screen exists.
 
 Deferred on purpose, to be built against the screen that needs them rather
 than guessed in the abstract: toast/notification, modal, pagination,

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
+import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
 import { MatchCard } from "./match-card";
 import { canSendText, DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
 import {
@@ -56,6 +57,13 @@ export default async function FeedPage() {
   // Builds today's six if they don't exist yet, and returns the same six on
   // every subsequent load — refreshing never re-rolls the deck.
   const { data: feed } = await supabase.rpc("build_daily_feed", {
+    p_profile_id: user.id,
+  });
+
+  // Non-null when the member asked for diaspora matching but their city
+  // hasn't opened yet, so the six came from the back-home pool instead. The
+  // substitution is never silent (PRD §5.6).
+  const { data: fallbackCity } = await supabase.rpc("pool_fallback_city", {
     p_profile_id: user.id,
   });
 
@@ -116,6 +124,11 @@ export default async function FeedPage() {
         never changes. Paying improves how well the {DAILY_MATCH_COUNT} are
         matched to you, never how many there are.
       </Notice>
+
+      {/* Built against design/prototype/feed-fallback-notice.slim.html. Says
+          plainly which pool the six came from, and why, rather than leaving a
+          diaspora member to wonder why everyone is in Lagos. */}
+      {fallbackCity ? <FeedFallbackNotice city={String(fallbackCity)} /> : null}
 
       {cards.length === 0 ? (
         /* Empty state. NOT IN THE PROTOTYPE — flagged. */

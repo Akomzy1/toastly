@@ -1,10 +1,12 @@
 # Toastly — Claude Code Build Prompt Sequence
 
-Run these **in order**, one per session or one per major work block. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
+Run these **in order**, one per session or one per major work block. **Phase 1 is Prompts 0–12** — 0–9 build the core, 10–12 close gaps found in a post-build audit (diaspora pools, date-spot and time-zone scheduling, domain/icons/housekeeping). Phase 2 items are listed at the end and are not to be started before launch. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
 
-**Before running any of these:** confirm the eleven prototype files are in `/design/prototype/`:
+**Before running any of these:** confirm the sixteen prototype files are in `/design/prototype/`:
 
 `design-system.slim.html` (read first — tokens), `home.slim.html`, `features.slim.html`, `how-it-works.slim.html`, `pricing.slim.html`, `safety.slim.html`, `diaspora.slim.html`, `stories.slim.html`, `locked-inbox.slim.html` (in-app, not marketing), `brand-the-stake.slim.html`, `brand-assets.slim.html` (icons, vector masters, social exports).
+
+Five further **in-app** surfaces, exported after Prompts 10–12 were built: `city-picker.slim.html`, `time-zone.slim.html`, `feed-fallback-notice.slim.html`, `both-clocks.slim.html`, `date-spot.slim.html`. Each has its own layout rules, like the locked inbox — they are not marketing pages.
 
 If they aren't there, stop — several of these prompts are meaningless without them, and Claude Code will otherwise invent UI that was never approved.
 
@@ -27,7 +29,7 @@ Then scaffold the project: Next.js 14 App Router, TypeScript, Tailwind, shadcn/u
 - Accents `#9B1348` (deep rose), `#2F8F5B` (green)
 - Type: **Aleo** serif for headings/wordmark (fallback Georgia), **Inter** sans for body/UI
 
-**The design-system file defines the full ramp (22 steps) — all of it is approved.** Encode the whole ramp, and **replace `theme.colors` rather than extending it**, so no unapproved colour is reachable — note that `@apply` of one is a build error, but an unapproved class in markup silently emits nothing rather than failing. **Do not build a dark theme:** deep green is a ground, not a mode; leave any `.dark` values provisional and add no `dark:` variants.
+**The design-system file defines the full ramp (23 steps — the 23rd, `green-550 #00453C`, was ratified after the export) — all of it is approved.** Encode the whole ramp, and **replace `theme.colors` rather than extending it**, so no unapproved colour is reachable — note that `@apply` of one is a build error, but an unapproved class in markup silently emits nothing rather than failing. **Do not build a dark theme:** deep green is a ground, not a mode; leave any `.dark` values provisional and add no `dark:` variants.
 
 Also read `/design/prototype/brand-the-stake.slim.html` — the adopted brand mark, with fixed geometry and assigned palette roles. Treat it as binding alongside the design system.
 
@@ -157,4 +159,75 @@ Then run a final review pass against `SKILL.md` and report:
 
 ---
 
-*End of sequence.*
+## PROMPT 10 — Diaspora matching pools (Phase 1 gap)
+
+Prompts 0–9 sold a diaspora tier with no matching logic behind it. Build it now, against `PRD.md` §5.6 and the Diaspora page (`diaspora.slim.html`) for the user-facing copy.
+
+**Two pools, not one:**
+- **"Back home"** — a diaspora user matched into the Nigeria-based pool. This inherits domestic liquidity and launches first.
+- **Diaspora-to-diaspora** — a diaspora user matched within their own diaspora city or across diaspora cities. This needs its own liquidity per city and is **feature-flagged per city**, off by default at launch.
+
+**Requirements:**
+- Add a **location-intent** field to the profile: `back_home`, `my_diaspora`, or `either`. Diaspora users must set it; Nigeria-based users see no such choice. It is filterable and changeable; it is never a signup gate.
+- The six-a-day feed respects the pool. A `back_home` user's six come from Nigeria-based verified profiles; a `my_diaspora` user's six come from the diaspora pool *only if their city's flag is on* — if the flag is off, fall back to `back_home` and tell the user plainly ("Matching within [city] isn't open yet — showing you back-home matches for now"). Never silently show an empty feed.
+- Diaspora city is a structured field (not free text) so the per-city flag can key off it. Seed the list with US, UK, Canada metros; make it extensible.
+- Per-city flags live in config/DB, not code, so a city can be opened without a deploy.
+- The **6/day count does not change** by pool — same scarcity rule.
+- Diaspora tier entitlement (Prompt 7) gates access to both pools; a Starter user in the UK is still a Starter user and cannot match at all beyond Starter rules.
+- Emit Sentinel events for pool selection changes (a user flipping pools rapidly is a weak but real signal — PRD §5.1.1).
+
+**Prototype alignment:** the Diaspora page names both pools explicitly. Any in-app copy about pools must match that framing; do not invent a third pool or collapse the two into one.
+
+---
+
+## PROMPT 11 — Date-spot suggestion + time-zone-aware Gist scheduling (Phase 1 gap)
+
+Two features promised in the PRD and, for the second, already in public copy on the Diaspora page — neither built.
+
+**Date-spot suggestion (`PRD.md` §5.5):**
+- After a Gist ends with a mutual "continue", offer both users a **date-spot suggestion**: a maps-API lookup of nearby public venues (cafés, restaurants — never bars/lounges as the default category). Use one provider (Google Places or equivalent); do not build a curated venue database — that is explicitly deferred.
+- Suggest spots roughly **mid-point** between the two users where both are in the same city; for back-home matches where one party is abroad, suggest near the Nigeria-based user and note it.
+- Surface it as a suggestion the users can accept, swap, or ignore — never an automatic booking. This is a soft safety signal (public venue) and pairs with the coin-deposit flow: accept a spot → propose a time → both stake.
+- Lagos-specific: bias toward areas reachable for both given the users' stated neighbourhoods; do not attempt live traffic estimation in MVP.
+- Copy stays warm, per the deposit rule — "showing up for each other", never "forfeit".
+
+**Time-zone-aware Gist scheduling:**
+- Every user has a resolved time zone (from device, confirmable in settings). For a cross-time-zone pair, the scheduling UI shows **both local times side by side** and proposes windows that fall within reasonable waking hours for both (roughly 08:00–22:00 local each side).
+- The 18-minute box and extend-once rule are unchanged.
+- If no mutual waking-hours window exists on a given day, say so and offer the next day — never offer a 3am slot silently.
+- This is a scheduling aid, not an agent: it proposes windows, it does not book, remind on its own behalf, or message anyone (CLAUDE.md's infrastructure-not-intimacy rule).
+
+---
+
+## PROMPT 12 — Domain, icons and housekeeping pass (Phase 1 gap)
+
+Three things drifted during the build. Fix them in one pass and report each.
+
+**1. Domain is now `trytoastly.com`, not `toastly.ng`.** Find and replace across the codebase: `next.config`, environment templates, `site.webmanifest`, canonical/OG tags, `llms.txt`, schema.org markup, email footers and transactional templates (Resend), sitemap, robots. Do **not** edit the prototype HTML files — they are frozen design reference — but do report every place `toastly.ng` still appears in them so the copy can be re-exported from Claude Design. Brand name stays "Toastly"; only the domain changes.
+
+**2. App icons.** Check `public/icons/`. If The Stake artwork (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, favicon) has landed, wire it into the manifest and verify PWA installability passes. If it has not landed, say so plainly and leave the placeholder — do not generate an icon (SKILL.md).
+
+**3. Stubbed connections.** Produce a single checklist of every integration that is currently stubbed or reading from an empty env var — LiveKit, liveness provider, Paystack, Stripe, Resend, Supabase production, Google Places (from Prompt 11), PostHog — with the exact env var names each needs. This is the go-live credentials list; it should be complete enough that someone can fill it in without reading code.
+
+**4. Remove any remaining WhatsApp residue.** `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, and any client code — WhatsApp was dropped from the stack (PRD §6, CLAUDE.md).
+
+**5. Re-run the Prompt 9 audit** after the above and report: deviations from the prototype, invented UI, PRD-vs-prototype conflicts, any entitlement check that could gate verification, safety, Couple Mode or the 6-a-day feed, and mobile verification at narrow viewports.
+
+---
+
+## PHASE 2 — not yet due; do not run until Phase 1 is live and there is real usage data
+
+These are recorded so the sequence is honest about what remains. None should be started before launch.
+
+- **P2-A · Trust Sentinel scoring agent + human review queue** (`PRD.md` §5.1.1). Consumes the events instrumented in Phase 1. Thresholds are set from the first cohort's data, not guessed. All six constraints in CLAUDE.md apply: behavioural events only, no protected attributes, score-never-act, no auto-ban, audit-logged, never paywalled.
+- **P2-B · Hosted live-streaming / matchmaker channel** (`PRD.md` §9, strategy doc Part 5.5). Verified participants only; structured question deck from Gist; clearly separated in tone from the private core. MyPerson already runs this live, so it should not be pushed indefinitely — but it needs verified liquidity to be worth opening.
+- **P2-C · Diaspora-to-diaspora per-city activation.** Flip the per-city flags built in Prompt 10 as each city reaches a verified-user threshold (set from data).
+- **P2-D · Live video Gist transport.** Already built in Prompt 5 ahead of phase — nothing owed here beyond connecting LiveKit credentials.
+
+## LATER — correctly not scoped
+
+Live AriyaPlanner handoff integration (shared identity layer) · curated/partnered venue directory · Facebook/TikTok matchmaker partnerships · the two follow-on agents recorded as intent in `PRD.md` §11 (adaptive Gist deck with private debrief; autonomous wedding-brief drafting).
+
+---
+
+*End of sequence. Phase 1 = Prompts 0–12. Prompts 0–9 alone are not a complete Phase 1.*

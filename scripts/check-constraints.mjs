@@ -211,9 +211,141 @@ check("daily matches is 6 on every tier in the entitlement table", (s, f) => {
   return values.every((v) => v === 6) ? false : `found ${values.join(", ")}`;
 });
 
+// --- SMS stays out of the call path ---------------------------------------
+//
+// SMS exists for emergency-contact confirmation and panic alerts only. The
+// moment Gist or LiveKit code can reach it, "no carrier number in the call
+// path" depends on someone remembering rather than on structure.
+check("SMS is never reachable from the call path", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/(gist|livekit)/i.test(p)) return false;
+  return /@\/lib\/sms|termii|twilio/i.test(stripStrings(stripComments(s, f)))
+    ? "call-path code can reach SMS"
+    : false;
+});
+
+// --- Blind report and block -----------------------------------------------
+//
+// The whole point is that the reporting member never learns who sent it. A
+// function taking a sender id, or returning anything at all, hands the client
+// something to read.
+check("blind report and block disclose no sender", (s, f) => {
+  if (!f.endsWith(".sql") || !/blind_report_locked/.test(s)) return false;
+  const report = /create or replace function public\.blind_report_locked\(([\s\S]*?)\)\s*returns\s+(\w+)/.exec(s);
+  const block = /create or replace function public\.blind_block_locked\(([\s\S]*?)\)\s*returns\s+(\w+)/.exec(s);
+  if (!report || !block) return "one of the blind functions is missing";
+  if (/uuid/i.test(report[1]) || /uuid/i.test(block[1])) {
+    return "a blind function takes a member id";
+  }
+  if (report[2] !== "void" || block[2] !== "void") {
+    return "a blind function returns something the client could read";
+  }
+  return false;
+});
+
+// --- Analytics boundary ---------------------------------------------------
+//
+// Sentinel events live in Supabase because they feed an auditable human
+// review queue. Mirroring them into an analytics tool would put safety
+// signals somewhere with none of those guarantees.
+check("Sentinel events never go to the analytics tool", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/lib\/analytics\.ts$/.test(p)) return false;
+  if (/trust_event|gist_invitation_|report_filed|verification_recheck|stake_forfeited/.test(s)) {
+    return "a Sentinel event name appears in the analytics module";
+  }
+  const union = /export type AnalyticsEvent =([\s\S]*?);/.exec(s);
+  if (!union) return "the event union is missing";
+  const count = (union[1].match(/"/g) ?? []).length / 2;
+  return count > 6 ? `${count} analytics events — keep the set small` : false;
+});
+
+// --- The emergency contact is not a matching input ------------------------
+// Scoped to the FUNCTION BODY, not the file. 0012 both rewrites the feed and
+// creates the emergency_contacts table, and a file-level selector failed it
+// for that co-location alone — the check being wrong about the file rather
+// than the file being wrong.
+check("the emergency contact never reaches matching", (s, f) => {
+  if (!f.endsWith(".sql") || !/build_daily_feed/.test(s)) return false;
+  const fn = s.slice(s.indexOf("function public.build_daily_feed"));
+  const body = fn.slice(0, fn.indexOf("$$;", fn.indexOf("$$") + 2));
+  return /emergency_contacts/.test(body)
+    ? "the feed can see emergency contacts"
+    : false;
+});
+
+// --- Date spots -----------------------------------------------------------
+//
+// PRD §5.5 calls the public-venue nudge a soft safety signal, so "never a
+// bar or lounge" is an allowlist in both the enum and the provider mapping —
+// not something that depends on remembering to omit a query parameter.
+check("date spot categories exclude drinking venues", (s, f) => {
+  if (f.endsWith(".sql")) {
+    const m = /create type date_spot_category as enum \(([\s\S]*?)\);/.exec(s);
+    if (!m) return false;
+    return /bar|lounge|club|casino|liquor/i.test(m[1])
+      ? "a drinking venue is in the category enum"
+      : false;
+  }
+  if (!/lib\/places\.ts$/.test(f.replace(/\\/g, "/"))) return false;
+  const map = /const TYPE_MAP[\s\S]*?\};/.exec(s);
+  if (!map) return "TYPE_MAP is missing from places.ts";
+  return /bar|night_club|lounge|casino|liquor/i.test(map[0])
+    ? "a drinking venue type is mapped"
+    : false;
+});
+
+// A suggestion before both answers would disclose the other person's private
+// "continue" — which 0003 exists to protect.
+check("a date spot needs a mutual continue first", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.date_spots/.test(s)) {
+    return false;
+  }
+  return /gist_mutual_continue\(/.test(s) &&
+    /before insert on public\.date_spots/.test(s)
+    ? false
+    : "nothing requires a mutual continue before a suggestion";
+});
+
+// A browser-visible maps key is billable by anyone who finds it.
+check("the maps key is never exposed to the browser", (s) => {
+  return /NEXT_PUBLIC_[A-Z_]*PLACES|NEXT_PUBLIC_[A-Z_]*MAPS/.test(s)
+    ? "a maps key carries the NEXT_PUBLIC_ prefix"
+    : false;
+});
+
+// --- Diaspora pools -------------------------------------------------------
+//
+// PRD §5.6: diaspora-to-diaspora "unlocked per diaspora city only once that
+// city has enough verified users, not switched on globally at launch". The
+// pre-0010 feed opened every city at once by matching on country.
+check("diaspora-to-diaspora is per-city and off by default", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.diaspora_cities/.test(s)) {
+    return false;
+  }
+  if (!/active boolean not null default false/.test(s)) {
+    return "cities are not seeded closed";
+  }
+  const seed = /insert into public\.diaspora_cities[\s\S]*?;/.exec(s);
+  if (seed && /\btrue\b/.test(seed[0])) return "a city is seeded already open";
+  return false;
+});
+
+// Pools change who the six are drawn from. They must never change the six.
+check("pool choice never changes the daily count", (s, f) => {
+  if (!f.endsWith(".sql") || !/build_daily_feed/.test(s)) return false;
+  return /limit daily_match_count\(\)/.test(s)
+    ? false
+    : "the feed limit is not daily_match_count()";
+});
+
 // --- Stake credits --------------------------------------------------------
+// Selects on the ledger TABLE, not on the words "stake_credit". 0009 names
+// stake_credit_received as a trust-event kind and creates no ledger row at
+// all; the older selector failed it for the mere mention, which is the check
+// being wrong about the file rather than the file being wrong.
 check("stake credits can never be withdrawable", (s, f) => {
-  if (!/coin_entry_kind|stake_credit/.test(s) || !f.endsWith(".sql")) return false;
+  if (!f.endsWith(".sql") || !/coin_ledger/.test(s)) return false;
   const hasConstraint = /kind <> 'stake_credit' or withdrawable = false/.test(s);
   const excluded = /withdrawable_balance[\s\S]*?withdrawable = true/.test(s);
   if (!hasConstraint) return "no constraint forcing stake credits non-withdrawable";
@@ -380,6 +512,52 @@ check("photo reveal enforced in RLS, with private storage", (s, f) => {
     return "no storage.objects policy guarding the photo files";
   }
   return false;
+});
+
+// --- Agents in the infrastructure, never in the intimacy ------------------
+//
+// CLAUDE.md's governing rule for every AI agent in this product: none writes
+// messages for members, suggests replies, coaches a live conversation, or
+// speaks as a member. Matched as identifiers so that prose about the rule,
+// and the Gist question deck (shared questions, not written replies), stay
+// legal.
+check("no AI that writes, suggests or coaches messages", (s, f) => {
+  const code = stripStrings(stripComments(s, f));
+  const hit =
+    /\b(suggestRepl|smartRepl|composeMessage|draftMessage|generateMessage|messageSuggestion|replySuggestion|coachConversation|autoReply|aiReply|rewriteMessage)\w*/i.exec(
+      code,
+    );
+  return hit ? `found ${hit[0]}` : false;
+});
+
+// --- Trust Sentinel, Phase 1 ----------------------------------------------
+//
+// The Sentinel reasons about behaviour, never words, and never about
+// protected attributes. Both are enforced by a CHECK on the event metadata
+// rather than by convention.
+check("trust events cannot carry content or protected attributes", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.trust_events/.test(s)) return false;
+  if (!/trust_meta_is_clean/.test(s)) return "no metadata guard function";
+  if (!/check \(public\.trust_meta_is_clean\(meta\)\)/.test(s)) {
+    return "trust_events has no CHECK using the guard";
+  }
+  for (const key of ["body", "transcript", "audio", "tribe", "religion", "profession"]) {
+    if (!new RegExp(`'${key}'`).test(s)) return `guard does not reject '${key}'`;
+  }
+  return false;
+});
+
+// PRD §5.1.1 phases this deliberately: instrumentation now, the scoring agent
+// only once there is data to set thresholds from. Scoring in Phase 1 would
+// mean thresholds invented from nothing.
+check("trust instrumentation stays events-only (no Phase 2 scoring)", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/trust[-_]events/.test(p)) return false;
+  const code = stripStrings(stripComments(s, f));
+  const hit = /\b(risk_?score|trust_?score|threshold|confidence_?score|auto_?restrict|auto_?ban)\w*/i.exec(
+    code,
+  );
+  return hit ? `found ${hit[0]} — that is Phase 2` : false;
 });
 
 // --- Marital status is never presented as verifiable ---------------------

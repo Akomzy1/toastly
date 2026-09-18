@@ -11,6 +11,8 @@ import { VerifiedSeal } from "@/components/ui/verified-seal";
 import { PhoneStep } from "./phone-step";
 import { LivenessStep } from "./liveness-step";
 import { IdStep } from "./id-step";
+import { PhotosStep } from "./photos-step";
+import type { PhotoReveal } from "@/lib/safety";
 import type { VerificationStage } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
@@ -44,7 +46,7 @@ export default async function VerifyPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("stage, display_name")
+    .select("stage, display_name, photo_reveal")
     .eq("id", user.id)
     .single();
 
@@ -92,6 +94,14 @@ export default async function VerifyPage() {
 
       {stage === "unverified" ? <PhoneStep /> : null}
       {stage === "phone_verified" ? <LivenessStep /> : null}
+
+      {/* Decision (c): every member is offered the photo choice during
+          onboarding, with the visible default already selected. */}
+      {verified ? (
+        <PhotosStep
+          current={(profile?.photo_reveal as PhotoReveal | null) ?? "verified_members"}
+        />
+      ) : null}
 
       {/* The optional second ring stays available after verification, and is
           never presented as something missing. */}

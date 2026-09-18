@@ -12,6 +12,7 @@ import {
   voiceRemaining,
   type GistStatus,
 } from "@/lib/gist";
+import { BothClocks } from "@/components/gist/both-clocks";
 import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
@@ -53,6 +54,29 @@ export default async function GistPage() {
     .or(`proposer_id.eq.${user.id},invitee_id.eq.${user.id}`)
     .order("created_at", { ascending: false })
     .limit(20);
+
+  // Both clocks, where the pair is split across zones. The Diaspora page
+  // promises this in public copy; without it a scheduled time is shown in
+  // whichever zone the browser happens to be in and the other side guesses.
+  const counterpartIds = Array.from(
+    new Set(
+      (sessions ?? []).map((s) =>
+        s.proposer_id === user.id ? s.invitee_id : s.proposer_id,
+      ),
+    ),
+  );
+
+  const { data: zonePeople } = counterpartIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, time_zone, city, display_name")
+        .in("id", [...counterpartIds, user.id])
+    : { data: [] };
+
+  const personOf = (id: string) => (zonePeople ?? []).find((p) => p.id === id);
+  const zoneOf = (id: string) => personOf(id)?.time_zone ?? null;
+  const myZone = zoneOf(user.id);
+  const myCity = personOf(user.id)?.city ?? null;
 
   return (
     <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
@@ -121,11 +145,26 @@ export default async function GistPage() {
                       {STATUS_LABEL[s.status as GistStatus]}
                     </span>
                   </span>
-                  <p className="text-ui text-ink-900">
-                    {s.scheduled_for
-                      ? new Date(s.scheduled_for).toLocaleString()
-                      : "Not scheduled yet"}
-                  </p>
+                  {(() => {
+                    if (!s.scheduled_for) {
+                      return (
+                        <p className="text-ui text-ink-900">Not scheduled yet</p>
+                      );
+                    }
+                    const otherId =
+                      s.proposer_id === user.id ? s.invitee_id : s.proposer_id;
+                    const other = personOf(otherId);
+                    return (
+                      <BothClocks
+                        instant={new Date(s.scheduled_for)}
+                        yourZone={myZone}
+                        yourCity={myCity}
+                        theirZone={other?.time_zone ?? null}
+                        theirCity={other?.city ?? null}
+                        theirName={other?.display_name ?? "They"}
+                      />
+                    );
+                  })()}
                 </div>
                 <Button variant="outline" asChild>
                   <Link href={`/gist/${s.id}`}>Open</Link>

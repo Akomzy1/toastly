@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyCharge } from "@/lib/payments-notify";
 
 /**
  * Stripe webhook — USD only, for the diaspora track.
@@ -39,5 +41,22 @@ export async function POST(request: NextRequest) {
 
   // TODO: record the payment and grant the subscription entitlement. Not
   // implemented — no live credentials in this build.
+  //
+  // The receipt and funnel events below are real code on an inert path: they
+  // resolve the charge by provider reference, and nothing writes payment rows
+  // yet. See lib/payments-notify.ts.
+  const event = JSON.parse(raw) as {
+    type: string;
+    data: { object: { id?: string } };
+  };
+
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "invoice.paid" ||
+    event.type === "payment_intent.succeeded"
+  ) {
+    await notifyCharge(createAdminClient(), event.data.object.id ?? "", "stripe");
+  }
+
   return NextResponse.json({ received: true });
 }

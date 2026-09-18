@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label, Select, Textarea } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
+import { CityPicker, type PickerCity } from "@/components/app/city-picker";
+import { TimeZoneField } from "@/components/app/time-zone-field";
 import {
   HISTORY_LABELS,
   INTENT_LABELS,
@@ -61,7 +63,13 @@ function Visibility({
  *   - relationship history defaults to revealed-on-match, not public;
  *   - intent is collected but never required.
  */
-export function ProfileForm({ profile }: { profile: Profile }) {
+export function ProfileForm({
+  profile,
+  cities,
+}: {
+  profile: Profile;
+  cities: PickerCity[];
+}) {
   const [state, action] = useFormState(saveProfile, null);
 
   return (
@@ -113,6 +121,24 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             ))}
           </Select>
         </Label>
+
+        {/* Only members abroad choose a diaspora city; it is what the
+            per-city opening keys off. Nigeria-based members never see it,
+            and the database refuses to store one for them. */}
+        {/* Both built against their own prototypes — city-picker.slim.html
+            and time-zone.slim.html. */}
+        {profile.country_code !== "NG" ? (
+          <div className="grid gap-2">
+            <CityPicker cities={cities} defaultValue={profile.diaspora_city} />
+            <span className="text-caption text-grey-600">
+              Matching within a diaspora city opens one city at a time, as
+              each has enough verified members to be worth opening. Until
+              yours does, back-home matches carry on as normal.
+            </span>
+          </div>
+        ) : null}
+
+        <TimeZoneField defaultValue={profile.time_zone} />
       </Card>
 
       <Card className="grid gap-5 p-[26px]">

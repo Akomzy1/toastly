@@ -54,6 +54,19 @@ export async function saveProfile(
     .map((s) => s.trim())
     .filter(Boolean);
 
+  // A Nigeria-based member has no diaspora city — the column is for choosing
+  // a diaspora-to-diaspora pool, and 0010 enforces the same rule as a CHECK.
+  // Read rather than trusted from the form: country lives on the profile.
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("country_code")
+    .eq("id", user.id)
+    .single();
+  const diasporaCity =
+    me?.country_code && me.country_code !== "NG"
+      ? optional(formData, "diaspora_city")
+      : null;
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -61,6 +74,8 @@ export async function saveProfile(
       city: optional(formData, "city"),
       bio: optional(formData, "bio"),
       pool: String(formData.get("pool") ?? "back_home"),
+      diaspora_city: diasporaCity,
+      time_zone: optional(formData, "time_zone"),
 
       // Never a gate: stored when offered, null when not.
       intent: intent || null,

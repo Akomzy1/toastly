@@ -47,6 +47,20 @@ export type Profile = {
   /** Collected, filterable, never a gate. */
   intent: IntentLevel | null;
   pool: MatchPool;
+  /**
+   * Structured city abroad, and the key the per-city opening of
+   * diaspora-to-diaspora matching reads (PRD §5.6). Null for Nigeria-based
+   * members — 0010 enforces that as a CHECK. `city` above stays free text
+   * for display and is never matched on.
+   */
+  diaspora_city: string | null;
+  /**
+   * IANA time zone, for showing both local times when a pair is scheduling
+   * across zones (PRD §5.6, Prompt 11). Display only, never a matching
+   * input, and null is fine — an unset zone shows one clock, it never blocks
+   * scheduling.
+   */
+  time_zone: string | null;
 
   // Optional, display-only. Never used to exclude anyone from anyone's feed.
   religion: string | null;

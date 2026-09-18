@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { ShareDate } from "@/components/safety/share-date";
 import { SafetySettings } from "@/components/safety/safety-settings";
+import { EmergencyContact } from "@/components/safety/emergency-contact";
 import { emergencyNumbersFor, type PhotoReveal } from "@/lib/safety";
 
 export const metadata: Metadata = {
@@ -37,6 +38,22 @@ export default async function SafetyKitPage() {
 
   const numbers = emergencyNumbersFor(me?.country_code ?? "NG");
 
+  // Decision (d). Only the last four digits reach the client: the full number
+  // has no reason to sit in a page payload.
+  const { data: contactRow } = await supabase
+    .from("emergency_contacts")
+    .select("label, phone_e164, confirmed_at")
+    .eq("profile_id", user.id)
+    .maybeSingle();
+
+  const contact = contactRow
+    ? {
+        label: contactRow.label,
+        lastFour: String(contactRow.phone_e164).slice(-4),
+        confirmed: Boolean(contactRow.confirmed_at),
+      }
+    : null;
+
   return (
     <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
       <div className="grid gap-2">
@@ -49,6 +66,8 @@ export default async function SafetyKitPage() {
       </div>
 
       <ShareDate firstName={me?.display_name ?? "a Toastly member"} numbers={numbers} />
+
+      <EmergencyContact contact={contact} />
 
       <SafetySettings
         photoReveal={(me?.photo_reveal as PhotoReveal | null) ?? "verified_members"}

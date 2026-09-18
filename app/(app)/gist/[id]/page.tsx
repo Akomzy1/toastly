@@ -9,6 +9,8 @@ import { Notice } from "@/components/ui/notice";
 import { SafetyActions } from "@/components/safety/safety-actions";
 import { ReadyForm } from "./ready-form";
 import { OutcomeForm } from "./outcome-form";
+import { SpotSuggestions, type Spot } from "./spot-suggestions";
+import { placesConfigured } from "@/lib/places";
 import {
   canUseVideo,
   GIST_DEFAULT_MINUTES,
@@ -70,6 +72,21 @@ export default async function GistSessionPage({
     .eq("id", otherId)
     .maybeSingle();
   const otherName = other?.display_name ?? "this member";
+
+  // Date spots exist only after both people privately said continue — the
+  // database refuses to store one before that (0011), and this page shows
+  // nothing at all until then.
+  const { data: mutual } = await supabase.rpc("gist_mutual_continue", {
+    p_session_id: params.id,
+  });
+
+  const { data: spots } = mutual
+    ? await supabase
+        .from("date_spots")
+        .select("id, name, address, category, anchor, status")
+        .eq("session_id", params.id)
+        .order("created_at", { ascending: false })
+    : { data: [] };
 
   // Video is only ever offered when the entitlement allows it AND the session
   // was proposed as video. The token itself withholds camera publish rights
@@ -168,6 +185,14 @@ export default async function GistSessionPage({
       (session.status as GistStatus) === "completed" ? (
         <OutcomeForm sessionId={session.id} />
       ) : null}
+
+      <SpotSuggestions
+        sessionId={session.id}
+        spots={(spots ?? []) as Spot[]}
+        mutual={Boolean(mutual)}
+        configured={placesConfigured()}
+        matchFirst={otherName.split(" ")[0]}
+      />
 
       {/* Safety & Trust promises "every screen has a report action, including
           inside a Gist session". Until now this screen had none. Never behind

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { capture } from "@/lib/analytics";
 
 export type AuthState = { error?: string } | null;
 
@@ -31,7 +32,7 @@ export async function signUp(
   }
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -41,6 +42,13 @@ export async function signUp(
   });
 
   if (error) return { error: error.message };
+
+  // Funnel step one. No email, no name, no gender — the distinct id is the
+  // profile UUID and nothing else goes with it. Awaited before the redirect
+  // because redirect() throws to unwind.
+  if (data.user?.id) {
+    await capture("signup", data.user.id);
+  }
 
   redirect("/verify");
 }

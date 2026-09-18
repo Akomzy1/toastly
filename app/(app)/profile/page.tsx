@@ -24,6 +24,31 @@ export default async function ProfilePage() {
 
   if (!profile) redirect("/verify");
 
+  // Closed cities are listed too. A member may pick a city that hasn't opened
+  // yet — the option is honest about it, and the feed explains the fallback
+  // rather than the choice quietly doing nothing.
+  const { data: cities } = await supabase
+    .from("diaspora_cities")
+    .select("slug, label, country_code, active")
+    .order("label");
+
+  // The picker groups by country name, the way the prototype does. The table
+  // stores an ISO code, and has no region column — so region is null rather
+  // than a guess at what "NY · metro area" would be for every city.
+  const COUNTRY_NAMES: Record<string, string> = {
+    US: "United States",
+    GB: "United Kingdom",
+    CA: "Canada",
+  };
+
+  const cityOptions = (cities ?? []).map((c) => ({
+    slug: c.slug,
+    label: c.label,
+    country: COUNTRY_NAMES[c.country_code] ?? c.country_code,
+    region: null,
+    active: c.active,
+  }));
+
   return (
     <div className="mx-auto grid max-w-[720px] gap-6 px-5 py-section-y">
       <div className="grid gap-2">
@@ -33,7 +58,7 @@ export default async function ProfilePage() {
           basics is optional.
         </p>
       </div>
-      <ProfileForm profile={profile} />
+      <ProfileForm profile={profile} cities={cityOptions} />
     </div>
   );
 }

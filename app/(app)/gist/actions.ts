@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canUseVideo, type GistMedium } from "@/lib/gist";
+import { capture } from "@/lib/analytics";
 import type { Tier } from "@/lib/types/profile";
 
 export type GistState = { error?: string; ok?: string } | null;
@@ -72,6 +73,16 @@ export async function proposeGist(
       return { error: "Live video Gist is part of Premium Plus." };
     }
     return { error: error.message };
+  }
+
+  // Funnel step three: the first real conversation. Counted after the insert,
+  // so "1" means this one.
+  const { count } = await supabase
+    .from("gist_sessions")
+    .select("id", { count: "exact", head: true })
+    .or(`proposer_id.eq.${user.id},invitee_id.eq.${user.id}`);
+  if ((count ?? 0) <= 1) {
+    await capture("first_gist", user.id, { medium });
   }
 
   revalidatePath("/gist");

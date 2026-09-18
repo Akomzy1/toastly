@@ -91,6 +91,65 @@ export async function blockMember(
   };
 }
 
+/**
+ * Blind report — decision (a).
+ *
+ * A Starter member being harassed can see that messages arrived but not who
+ * sent them. Until now that meant they could not report without paying, which
+ * gated safety behind a plan. This sends no sender id, because the client
+ * doesn't have one and must never be given one: the database resolves
+ * "whoever is messaging me" under security definer.
+ *
+ * The reviewer sees full identity. The blindness is on this side only.
+ */
+export async function blindReportLocked(
+  _prev: SafetyState,
+  formData: FormData,
+): Promise<SafetyState> {
+  const { supabase, user } = await signedIn();
+  if (!user) return { error: "Please sign in again." };
+
+  const reason = String(formData.get("reason") ?? "");
+  if (!REPORT_REASONS.some((r) => r.value === reason)) {
+    return { error: "Choose what happened." };
+  }
+  const detail = String(formData.get("detail") ?? "").trim();
+
+  const { error } = await supabase.rpc("blind_report_locked", {
+    p_reason: reason,
+    p_detail: detail || null,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/inbox");
+  return {
+    ok: "Reported. Our team can see who sent them even though you can't, and a person reviews it within 24 hours.",
+  };
+}
+
+/**
+ * Blind block — decision (a).
+ *
+ * Blocks everyone whose unread messages are sitting in the locked inbox. The
+ * UI states the trade plainly before this runs: blocks are permanent, and
+ * somebody harmless may be caught alongside whoever is being a problem.
+ */
+export async function blindBlockLocked(
+  _prev: SafetyState,
+  _formData: FormData,
+): Promise<SafetyState> {
+  const { supabase, user } = await signedIn();
+  if (!user) return { error: "Please sign in again." };
+
+  const { error } = await supabase.rpc("blind_block_locked");
+  if (error) return { error: error.message };
+
+  revalidatePath("/inbox");
+  return {
+    ok: "Blocked. They aren't told, and you won't appear to each other again.",
+  };
+}
+
 export async function setPhotoReveal(
   _prev: SafetyState,
   formData: FormData,

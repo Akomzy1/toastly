@@ -27,6 +27,13 @@ export type Capabilities = {
   advancedFilters: boolean;
   incognito: boolean;
   prioritySupport: boolean;
+  /**
+   * Diaspora-to-diaspora matching (decision (b)). A free member abroad
+   * matches into the back-home pool — where the liquidity is — and the paid
+   * Diaspora tiers unlock matching within a diaspora city, on top of the
+   * per-city opening from 0010. This changes WHICH pool, never the six.
+   */
+  diasporaPools: boolean;
   /** Free on EVERY tier, including Starter. Never gate this. */
   coupleMode: true;
   ariyaHandoff: true;
@@ -45,6 +52,8 @@ const TABLE: Record<Tier, Capabilities> = {
     advancedFilters: false,
     incognito: false,
     prioritySupport: false,
+    // A free member abroad is a Starter member: back-home pool only.
+    diasporaPools: false,
     coupleMode: true,
     ariyaHandoff: true,
     verification: true,
@@ -59,6 +68,8 @@ const TABLE: Record<Tier, Capabilities> = {
     advancedFilters: true,
     incognito: false,
     prioritySupport: false,
+    // The domestic tiers are Nigeria-based; diaspora pools aren't theirs.
+    diasporaPools: false,
     coupleMode: true,
     ariyaHandoff: true,
     verification: true,
@@ -73,6 +84,7 @@ const TABLE: Record<Tier, Capabilities> = {
     advancedFilters: true,
     incognito: true,
     prioritySupport: true,
+    diasporaPools: false,
     coupleMode: true,
     ariyaHandoff: true,
     verification: true,
@@ -90,6 +102,8 @@ const TABLE: Record<Tier, Capabilities> = {
     advancedFilters: true,
     incognito: false,
     prioritySupport: false,
+    // What the paid Diaspora tier buys, on top of the per-city opening.
+    diasporaPools: true,
     coupleMode: true,
     ariyaHandoff: true,
     verification: true,
@@ -104,6 +118,7 @@ const TABLE: Record<Tier, Capabilities> = {
     advancedFilters: true,
     incognito: false,
     prioritySupport: true,
+    diasporaPools: true,
     coupleMode: true,
     ariyaHandoff: true,
     verification: true,
