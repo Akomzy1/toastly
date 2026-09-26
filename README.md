@@ -2,7 +2,10 @@
 
 A verification-first dating-to-marriage platform for Nigerian Gen Z — Nigeria-domestic-led, with a diaspora bridge for Nigerians abroad.
 
-This repository currently holds product documentation and static HTML page prototypes. Application code has not started yet.
+Next.js 14 (App Router) + Supabase. Phase 1 is built through Prompt 12 —
+see [FINAL-REVIEW.md](FINAL-REVIEW.md) for what exists, what is stubbed, and
+what is still a decision, and [GO-LIVE.md](GO-LIVE.md) for the credentials
+list.
 
 ## Local development
 
@@ -11,8 +14,25 @@ cp .env.example .env.local   # nothing is required for the marketing site
 npm install
 npm run dev
 npm run verify               # typecheck, lint, product-constraint checks, build
-node scripts/audit-mobile.mjs http://localhost:3000 360   # overflow + touch targets
 ```
+
+## Mobile audit
+
+Every route at 320×568 and 360×640: overflow, 44px targets, 12px text, and a
+full-page screenshot each. The in-app surfaces are behind auth, so they are
+measured through `/audit/*` harness routes that render the real components
+with mock data — those routes 404 unless the server is started with
+`AUDIT_HARNESS=1`.
+
+```bash
+npx playwright install chromium          # once
+npm run build
+AUDIT_HARNESS=1 npm start                # PowerShell: $env:AUDIT_HARNESS='1'; npm start
+npm run audit:mobile                     # in another terminal
+```
+
+Report: `audit/MOBILE-AUDIT.md`. Screenshots: `audit/mobile/` (gitignored).
+Exits 1 on any failure, so it can gate CI.
 
 **Don't develop inside a OneDrive-synced folder.** OneDrive treats a rebuild
 overwriting `.next` as a sync conflict and renames build files with the

@@ -1,9 +1,10 @@
 # Toastly — final review (Prompts 0–9)
 
-Build complete through Prompt 9. `main` at `b476074`, working tree clean.
+Phase 1 complete through Prompt 12. Work happens in `C:\dev\toastly`;
+the OneDrive copy is stale.
 `npm run verify` passes: typecheck, lint, 44 product-constraint checks, build.
-Every route audits at **0 failures, 0 warnings at 360px and 320px**, no
-horizontal overflow.
+The mobile audit passes: **26 route × width combinations, 0 failures** at
+320×568 and 360×640 — see §5.
 
 ---
 
@@ -83,15 +84,56 @@ One real accidental gate found — see Decision 1.
 
 ## 5. Mobile
 
-17 routes at 360px and 320px: 0 failures, 0 warnings, no overflow.
-Fixed: footer links (19px tall), dismiss button (24×24), header wordmark
-(34px), mobile CTA (40px), auth wordmark (32px), "Terms" (41px wide).
+**Re-run 18 September 2026 from `C:\dev\toastly`, outside OneDrive**, with
+the Playwright audit in `scripts/mobile-audit.mjs` (`npm run audit:mobile`).
+13 routes × 2 widths (320×568, 360×640) = **26 combinations, 0 failures**: no
+horizontal overflow, every visible interactive element at least 44×44px, no
+text under 12px, and the network settles on every page. Report in
+`audit/MOBILE-AUDIT.md`; screenshots in `audit/mobile/` (gitignored,
+regenerable).
 
-**Two limits on that result:**
+The seven marketing pages are measured directly. The locked inbox and the
+five newly designed surfaces sit behind auth, so they are measured through
+`/audit/*` harness routes that render the real components with mock data.
+Those routes 404 unless `AUDIT_HARNESS=1` is set on the server — verified in
+the same run: without the flag, `GET /audit/city-picker` → 404.
 
-- App screens were measured only in their "Supabase isn't configured" state.
-  The real feed, inbox and safety kit need a Supabase project with data.
-- Chrome mobile emulation, not a real low-end Android handset.
+**What the audit found, and what changed:**
+
+- **A dead link on Stories.** "Share your story" pointed at `/stories/share`,
+  which was never built. Next prefetches links, the prefetch of the 404 hung,
+  and the page never reached network-idle — the first run reported it as a
+  timeout. `stories.slim.html` points that button at Pricing, so it is now
+  `/pricing`. If the product wants a real submission flow, that is a route to
+  design, not a link to restore.
+- **Three inline links measured 17px tall** — the announcement bar's "Learn
+  more" (all seven pages), Home's "See how it works", and the fallback band's
+  "Change your city". All three are links inside running text, which the
+  prototypes draw exactly that way and WCAG 2.5.8 exempts. Rather than enlarge
+  them visibly, each anchor gained vertical padding (13.5–14.5px): on a
+  `display:inline` element that extends the hit area without touching the
+  line box, and with no background it is invisible. The announcement link's
+  hairline moved onto an inner span so it stays on the text rather than
+  dropping with the padding. No layout changed; this is CSS-spec behaviour,
+  not a visual approximation.
+- **Nothing else.** Every surface rebuilt against the new prototypes passed
+  first time on all three checks.
+
+**Two limits on the result:**
+
+- Chrome mobile emulation via Playwright, not a real low-end Android handset.
+- Base state only. Controls that appear after interaction — the city picker's
+  44px clear button, the locked row's upgrade panel — were not measured.
+
+**Two fidelity notes from the screenshots — observations, not failures:**
+
+- In the city picker at 320px, a region label wraps to a third line when the
+  "Pool not open" chip is present ("DC ·" / "metro area"). The prototype says
+  the row "holds its two lines"; whether its own render wraps there too is
+  unverified.
+- Stories' prototype carries a second CTA, "Already a member? Share yours"
+  (→ Home), which the build never had. Recorded here, not added — outside
+  this pass's scope.
 
 ---
 
@@ -264,11 +306,11 @@ unconfigured" unless you check.
 `components/safety/share-date.tsx` still uses `wa.me` deep links, which is the
 device's own share sheet and not the Business API — kept deliberately.
 
-**5. Audit re-run — partial, and here's what's missing.** Constraint checks
-(44), typecheck and lint all pass.
-**The mobile audit was not re-run**: it needs a built app served from outside
-OneDrive. Five surfaces built since Prompt 9 have therefore **never been
-measured at 320/360px**:
+**5. Audit re-run — now complete.** Constraint checks (44), typecheck and
+lint all pass, and **the mobile audit has been run** from a build outside
+OneDrive — 26 combinations, 0 failures. Details, findings and limits are in
+§5 Mobile above. The five surfaces below were measured through the `/audit/*`
+harness at both widths and passed every check first time.
 
 - the diaspora city picker and time-zone select (profile)
 - the pool-fallback notice (feed)
@@ -284,9 +326,8 @@ defaults to cafés and books nothing.
 
 The prototypes *specify* the targets — 52px city rows, 48px inputs and
 buttons, 44px dismiss and clear controls, two clock columns holding side by
-side at 320px — and the build matches those numbers. **Specified is not
-measured:** the audit still has to run before any of it is confirmed on a real
-narrow viewport.
+side at 320px — and the audit has now **measured** them: pass on every check
+at both widths, in Chrome mobile emulation.
 
 ## Integrations wired, and four decisions implemented
 
@@ -336,6 +377,7 @@ yet. Whoever builds the payment loop gets both by inserting the row first.
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →
 `BUILD_ID-Oludayo`), so `next start` fails with `UNKNOWN: unknown error,
-read` and retrying never helps. The Prompt 9 mobile audit only ran once the
-app was built outside OneDrive. Move the repo somewhere unsynced, or exclude
-`.next` and `node_modules` from sync. README documents this.
+read` and retrying never helps. **The repo now lives at `C:\dev\toastly`**,
+outside OneDrive; the build there produces a clean `BUILD_ID` and `next start`
+is ready in two seconds. The OneDrive copy is stale from `800d235` onward and
+should not be edited. README documents this.

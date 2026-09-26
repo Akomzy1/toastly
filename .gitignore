@@ -29,3 +29,9 @@ next-env.d.ts
 
 # Review screenshots — regenerate with: node scripts/shot.mjs <url> <out.png> [width]
 screenshots/
+
+# Mobile audit evidence (26 full-page PNGs, ~26 MB) — regenerate with:
+#   AUDIT_HARNESS=1 npm start   then   npm run audit:mobile
+# The report, audit/MOBILE-AUDIT.md, IS committed.
+audit/mobile/
+audit/mobile-audit.json

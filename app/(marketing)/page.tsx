@@ -457,7 +457,8 @@ export default function HomePage() {
           <p className="text-nav text-champagne">
             Women get 30 days of Premium Plus free at signup — full Gist video
             and incognito mode, no card needed.{" "}
-            <Link href="/how-it-works" className="underline underline-offset-4">
+            {/* py-[13.5px]: 44px hit area on an inline link, no visual change. */}
+            <Link href="/how-it-works" className="py-[13.5px] underline underline-offset-4">
               See how it works
             </Link>
           </p>

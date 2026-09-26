@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "check:constraints": "node scripts/check-constraints.mjs",
+    "audit:mobile": "node scripts/mobile-audit.mjs",
     "verify": "npm run typecheck && npm run lint && npm run check:constraints && npm run build"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/node": "^20.16.11",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",

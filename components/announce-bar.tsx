@@ -34,11 +34,13 @@ export function AnnounceBar() {
       <p className="text-center text-caption leading-normal tracking-normal text-champagne">
         Women get <strong className="font-semibold">30 days free Premium Plus</strong>{" "}
         at signup — no card needed.{" "}
-        <Link
-          href="/pricing#women"
-          className="border-b border-champagne/40 text-champagne no-underline"
-        >
-          Learn more
+        {/* The anchor carries the hit area — a 13px caption's inline box is
+            ~15.7px, plus 14.5px padding each way clears 44px (13.5 measured
+            43). Invisible on an inline element with no background. The
+            hairline lives on an inner span so it hugs the text rather than
+            dropping with the padding. Pixel-identical to the prototype. */}
+        <Link href="/pricing#women" className="py-[14.5px] text-champagne no-underline">
+          <span className="border-b border-champagne/40">Learn more</span>
         </Link>
       </p>
       <button

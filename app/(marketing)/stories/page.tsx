@@ -64,8 +64,13 @@ export default function StoriesPage() {
               here is from a member who chose to share it, with the city and the
               milestone they were at when they wrote it.
             </p>
+            {/* stories.slim.html points this at the Pricing page. It used to
+                point at /stories/share, which was never built: the 404'd
+                prefetch hung every load of this page. If the product wants a
+                real submission flow, that is a route to design, not a link
+                to restore. */}
             <Button variant="onDarkPrimary" asChild className="justify-self-start">
-              <Link href="/stories/share">Share your story</Link>
+              <Link href="/pricing">Share your story</Link>
             </Button>
           </div>
         </div>

@@ -82,5 +82,36 @@ Nothing in the codebase reads these. Setting them changes nothing today.
 - **PWA installability** has been verified statically — name, short name,
   start URL, standalone display, 192/512 icons, a maskable icon and a theme
   colour are all present and the service worker registers. The live Lighthouse
-  check still needs a build served from **outside OneDrive**, which renames
-  Next's output and breaks `next start`.
+  check has not been run.
+
+---
+
+## 7. Dependency advisories — unresolved, and why
+
+`npm audit` reports 5 findings (4 high, 1 critical). **All five are `next`
+itself** plus `postcss` nested under it. Installed `next` is `14.2.35`, which
+is the newest 14.2.x that exists; the vulnerable range is
+`9.3.4-canary.0 – 16.3.0-preview.10`, so no 14.x or 15.x release fixes them.
+The only fix npm offers is `next@16.3.5` — a major upgrade, ruled out for this
+pass.
+
+| Package | Ships to users? | Verdict |
+|---|---|---|
+| `next` 14.2.35 | **Yes** — the server and client runtime | **Real.** 24 advisories, including unauthenticated RCE on Windows-hosted servers (GHSA-p293-qw3h-jr36), RCE in the Image Optimization API when AVIF is processed (GHSA-2xp9-vwfh-vxw4), cache poisoning, SSRF and DoS. Unfixable without Next 16. |
+| `postcss` ≤8.5.22 (under `next/node_modules`) | No — build-time CSS processing | Dev/build-only. Resolves with the same upgrade. |
+| `@playwright/test` (added for the mobile audit) | No — devDependency | Not in the report. |
+
+**Interim mitigations that need no upgrade — decisions, not applied:**
+
+1. **Remove `image/avif` from `images.formats` in `next.config.mjs`.** The AVIF
+   advisory is patched only in 15.5.24 and 16.3.3 and triggers "when AVIF files
+   are optimized"; the config opts into AVIF output. Cost: marginally larger
+   images on AVIF-capable browsers, against PRD §5.8's data-light rule — which
+   is why it is a decision rather than a change.
+2. **Production is Vercel (Linux).** The Windows RCE applies to Windows-hosted
+   servers — local development, not the deployment.
+3. **`images.remotePatterns` is unset**, so the optimizer only processes files
+   under `public/`, none of which are AVIF.
+
+**The Next 16 upgrade is a piece of work in its own right** and should be
+scheduled before launch — it is the only thing that clears the report.

@@ -54,7 +54,14 @@ export function FeedFallbackNotice({ city }: { city: string }) {
         <p className="text-nav leading-relaxed text-green-550">
           You still get six people a day. When the {city} pool opens we&rsquo;ll
           start mixing them in here.{" "}
-          <Link href="/profile" className="font-semibold text-green-550 underline underline-offset-2">
+          {/* py-[13.5px] takes the 17px inline box to 44px. Vertical padding
+              on a display:inline element extends the hit area without moving
+              the line, and with no background it is invisible — the
+              prototype's inline link, unchanged to the eye, meets the bar. */}
+          <Link
+            href="/profile"
+            className="py-[13.5px] font-semibold text-green-550 underline underline-offset-2"
+          >
             Change your city
           </Link>
         </p>
