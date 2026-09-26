@@ -66,8 +66,6 @@ export type Profile = {
   religion: string | null;
   tribe: string | null;
   languages: string[];
-  history: RelationshipHistory | null;
-  has_children: boolean | null;
   profession: string | null;
   education: string | null;
 
@@ -76,8 +74,6 @@ export type Profile = {
   languages_visibility: FieldVisibility;
   profession_visibility: FieldVisibility;
   education_visibility: FieldVisibility;
-  /** Defaults to on_match — never public on the feed card by default. */
-  history_visibility: FieldVisibility;
 
   stage: VerificationStage;
   phone_verified_at: string | null;
@@ -89,6 +85,17 @@ export type Profile = {
 };
 
 /** The "Verified Real" badge: phone + liveness. NIN/BVN is a second ring. */
+/**
+ * Relationship history and children — in their own table since 0013, because
+ * `profiles` rows are readable by every verified member. RLS there enforces
+ * `visibility`; it defaults to on_match, never public.
+ */
+export type ProfileHistory = {
+  history: RelationshipHistory | null;
+  has_children: boolean | null;
+  visibility: FieldVisibility;
+};
+
 export function isVerifiedReal(p: Pick<Profile, "stage">): boolean {
   return p.stage === "verified_real" || p.stage === "id_confirmed";
 }

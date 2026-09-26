@@ -44,6 +44,13 @@ const ROUTES = [
   { route: "/audit/feed-fallback", label: "Feed fallback notice" },
   { route: "/audit/both-clocks", label: "Both-clocks display" },
   { route: "/audit/date-spot", label: "Date-spot card" },
+  // Genotype — one route per prototype state
+  { route: "/audit/genotype-consent", label: "Genotype consent" },
+  { route: "/audit/genotype-entry", label: "Genotype entry" },
+  { route: "/audit/genotype-visibility", label: "Genotype visibility" },
+  { route: "/audit/genotype-settings", label: "Genotype settings row" },
+  { route: "/audit/genotype-delete", label: "Genotype delete sheet" },
+  { route: "/audit/genotype-display", label: "Genotype on a match card" },
 ];
 
 const VIEWPORTS = [
@@ -103,6 +110,20 @@ function inspect({ minTarget, minFont }) {
     if (!visible(el)) continue;
     const r = el.getBoundingClientRect();
     if (r.width >= minTarget && r.height >= minTarget) continue;
+
+    // A checkbox or radio wrapped in a <label>, or named by <label for>, is
+    // activated by clicking anywhere on that label (HTML spec), and WCAG
+    // 2.5.8 measures the region that activates the control. So the label's
+    // box is the target, not the 16px input. Only exempted when that label
+    // itself clears the bar — a small label around a small input still fails.
+    if (el.tagName === "INPUT") {
+      const labels = [el.closest("label"), ...(el.labels ? Array.from(el.labels) : [])].filter(Boolean);
+      const bigLabel = labels.some((l) => {
+        const lr = l.getBoundingClientRect();
+        return lr.width >= minTarget && lr.height >= minTarget;
+      });
+      if (bigLabel) continue;
+    }
 
     // An <a> flowing inline inside a sentence. WCAG 2.5.8 exempts these; the
     // table still lists them, flagged, so the decision is visible rather than

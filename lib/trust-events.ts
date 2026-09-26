@@ -23,7 +23,8 @@
  *     behaviour, not words. This extends the existing "never scan chat"
  *     boundary to all content analysis.
  *   - Protected attributes: tribe, religion, language, relationship history,
- *     profession, diaspora status. A signal correlating with any of these is
+ *     profession, genotype, diaspora status. A signal correlating with any
+ *     of these is
  *     a defect to be corrected, not a finding.
  */
 

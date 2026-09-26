@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-09-18 17:18 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-09-26 21:25 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -34,7 +34,23 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/both-clocks` | 360 | pass | pass | pass | pass | `mobile\audit-both-clocks-360.png` |
 | `/audit/date-spot` | 320 | pass | pass | pass | pass | `mobile\audit-date-spot-320.png` |
 | `/audit/date-spot` | 360 | pass | pass | pass | pass | `mobile\audit-date-spot-360.png` |
+| `/audit/genotype-consent` | 320 | pass | pass | pass | pass | `mobile\audit-genotype-consent-320.png` |
+| `/audit/genotype-consent` | 360 | pass | pass | pass | pass | `mobile\audit-genotype-consent-360.png` |
+| `/audit/genotype-entry` | 320 | pass | pass | pass | pass | `mobile\audit-genotype-entry-320.png` |
+| `/audit/genotype-entry` | 360 | pass | pass | pass | pass | `mobile\audit-genotype-entry-360.png` |
+| `/audit/genotype-visibility` | 320 | pass | pass | **FAIL** (1) | pass | `mobile\audit-genotype-visibility-320.png` |
+| `/audit/genotype-visibility` | 360 | pass | pass | **FAIL** (1) | pass | `mobile\audit-genotype-visibility-360.png` |
+| `/audit/genotype-settings` | 320 | pass | pass | pass | pass | `mobile\audit-genotype-settings-320.png` |
+| `/audit/genotype-settings` | 360 | pass | pass | pass | pass | `mobile\audit-genotype-settings-360.png` |
+| `/audit/genotype-delete` | 320 | pass | pass | pass | pass | `mobile\audit-genotype-delete-320.png` |
+| `/audit/genotype-delete` | 360 | pass | pass | pass | pass | `mobile\audit-genotype-delete-360.png` |
+| `/audit/genotype-display` | 320 | pass | pass | pass | pass | `mobile\audit-genotype-display-320.png` |
+| `/audit/genotype-display` | 360 | pass | pass | pass | pass | `mobile\audit-genotype-display-360.png` |
 
 ## Failures
 
-None.
+### `/audit/genotype-visibility` at 320px
+- **Text 11.5px:** `button.flex.min-h-[64px]:nth-of-type(1) > span.grid.min-w-0:nth-of-type(2) > span.flex.flex-wrap:nth-of-type(1) > span.rounded-sm.border:nth-of-type(2)` “Default”
+
+### `/audit/genotype-visibility` at 360px
+- **Text 11.5px:** `button.flex.min-h-[64px]:nth-of-type(1) > span.grid.min-w-0:nth-of-type(2) > span.flex.flex-wrap:nth-of-type(1) > span.rounded-sm.border:nth-of-type(2)` “Default”

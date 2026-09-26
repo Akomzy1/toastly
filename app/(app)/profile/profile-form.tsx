@@ -15,6 +15,7 @@ import {
   POOL_LABELS,
   VISIBILITY_LABELS,
   type Profile,
+  type ProfileHistory,
 } from "@/lib/types/profile";
 
 function Submit() {
@@ -65,9 +66,11 @@ function Visibility({
  */
 export function ProfileForm({
   profile,
+  history,
   cities,
 }: {
   profile: Profile;
+  history: ProfileHistory;
   cities: PickerCity[];
 }) {
   const [state, action] = useFormState(saveProfile, null);
@@ -281,7 +284,7 @@ export function ProfileForm({
             <Select
               id="history"
               name="history"
-              defaultValue={profile.history ?? ""}
+              defaultValue={history.history ?? ""}
             >
               <option value="">Rather not say</option>
               {(["single", "divorced", "widowed", "single_parent"] as const).map(
@@ -302,9 +305,9 @@ export function ProfileForm({
               id="has_children"
               name="has_children"
               defaultValue={
-                profile.has_children === null
+                history.has_children === null
                   ? ""
-                  : profile.has_children
+                  : history.has_children
                     ? "yes"
                     : "no"
               }
@@ -319,7 +322,7 @@ export function ProfileForm({
         {/* Defaults to on_match. "public" is offered, never preselected. */}
         <Visibility
           name="history_visibility"
-          value={profile.history_visibility}
+          value={history.visibility}
         />
       </Card>
 

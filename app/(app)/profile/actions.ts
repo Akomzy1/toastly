@@ -83,8 +83,6 @@ export async function saveProfile(
       religion: optional(formData, "religion"),
       tribe: optional(formData, "tribe"),
       languages,
-      history: history || null,
-      has_children: hasChildren === "" ? null : hasChildren === "yes",
       profession: optional(formData, "profession"),
       education: optional(formData, "education"),
 
@@ -93,14 +91,24 @@ export async function saveProfile(
       languages_visibility: vis(formData, "languages_visibility", "public"),
       profession_visibility: vis(formData, "profession_visibility", "public"),
       education_visibility: vis(formData, "education_visibility", "public"),
-      // Falls back to on_match, never public — the DB default says the same.
-      history_visibility: vis(formData, "history_visibility", "on_match"),
 
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
 
   if (error) return { error: error.message };
+
+  // Relationship history lives in its own table since 0013, where RLS
+  // enforces the member's visibility choice. Falls back to on_match, never
+  // public — the database default says the same.
+  const { error: historyError } = await supabase.from("profile_history").upsert({
+    profile_id: user.id,
+    history: history || null,
+    has_children: hasChildren === "" ? null : hasChildren === "yes",
+    visibility: vis(formData, "history_visibility", "on_match"),
+    updated_at: new Date().toISOString(),
+  });
+  if (historyError) return { error: historyError.message };
 
   revalidatePath("/profile");
   return { ok: "Saved." };

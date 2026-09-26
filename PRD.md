@@ -67,7 +67,7 @@
 **Signals it must never use:**
 - **Message content.** The Sentinel does not read, parse, classify or score free-text chat. This extends the existing hard boundary in CLAUDE.md ("never scan chat for phone numbers") to *all* content analysis. Behaviour, not words.
 - **Gist audio or transcripts.** Session *outcomes* from the structured deck (which questions were answered, the double-opt-in result) are usable. Raw audio and any transcript are not — and are not retained.
-- **Protected attributes.** Tribe, religion, language, relationship history, profession and diaspora status are never inputs. A signal that would correlate with any of these (e.g. "diaspora accounts flagged more often") is a defect to be corrected, not a finding.
+- **Protected attributes.** Tribe, religion, language, relationship history, profession, genotype and diaspora status are never inputs. A signal that would correlate with any of these (e.g. "diaspora accounts flagged more often") is a defect to be corrected, not a finding.
 
 **Review-queue design:**
 1. **Score, don't decide.** The Sentinel produces a confidence score and a plain-language reason ("declined 4 Gist invitations in 6 days while sending 40+ messages; 2 independent scam reports"). It never takes action on an account.
@@ -90,6 +90,14 @@
 - **Intent selector on a spectrum** (see §5.3) — filterable, never a signup gate.
 - Optional display fields, all display-only and never matching gates: religion, tribe/ethnicity, language.
 - **Optional relationship-history field** (single, divorced, widowed, single parent + optional "has children" flag) — **user-controlled visibility** (default private/revealed-on-match, not public on the feed card, given real stigma in Nigerian culture); optional filters for/against.
+- **Optional genotype field (decided)** — AA, AS, AC, SS, SC, or "I don't know yet". Included because genotype compatibility is a routine pre-marriage question in Nigerian families (two AS carriers risk an SS child), which makes it native to a dating-to-marriage product. **It is health data** — sensitive personal data under Nigeria's NDPA 2023 and special-category data under UK GDPR for diaspora users — so it is handled more strictly than any other optional field:
+  - **Explicit consent at entry**, separate from general signup consent, stating what it is used for and who can see it. Deletable at any time, with deletion honoured fully.
+  - **Private by default.** The user chooses to reveal it — to all matches, only after a Gist, or only in Couple Mode. Never shown on the public feed card by default. SS and SC individuals face real stigma; exposure must be their choice.
+  - **Self-reported, never labelled verified.** No badge, no "confirmed" wording. Copy nudges users to confirm with a proper test if unsure.
+  - **No automated compatibility verdict.** Toastly shows each person's stated genotype (where both have chosen to share) and links to plain-language information on what combinations mean. It does not label a pair "compatible" or "incompatible" — that is medical interpretation from self-reported data, and a wrong verdict in either direction causes real harm.
+  - **No genotype filter (decided — corrects an earlier spec contradiction).** A filter was originally specified, but it cannot coexist with private-by-default: filtering the six-a-day feed would exclude members using health data they chose to keep hidden, and toggling it would let users infer private values. There is no search screen and none is planned. **Mutual reveal is the mechanism** — two people choose to share, then decide for themselves.
+  - **Never an input to any model or agent** — not the Trust Sentinel, not matching, not any future agent.
+  - **Excluded from the AriyaPlanner handoff brief.** Wedding planning does not need it; health data does not cross the product boundary.
 
 ### 5.2.2 Professional layer — a feature, never a barrier (decided)
 
@@ -97,6 +105,7 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 
 - **Optional verified profession and education fields**, following the exact same pattern as religion, tribe, language and relationship history: optional, display-only, **user-controlled visibility**, and **never a matching gate**. A user without these fields is never down-ranked, hidden, or excluded from anyone's feed by default.
 - **Verification is a trust-layer extension, not a status marker.** An optional "verified profession" badge sits alongside "Verified Real" as an *additional* signal — meaningful because it is expensive to fake and tedious to maintain, which makes it one of the sharpest available anti-scam signals in a market shaped by romance fraud. It must never be styled or worded as a prestige/elite marker.
+
 - **Filters are opt-in and self-applied only.** A user may choose to filter their own search by profession or education; the platform must never silently exclude non-professional users from anyone's visibility.
 - **Reach professionals through acquisition, not exclusion.** Professional targeting belongs in GTM — alumni networks, young-professional communities in Lekki and Wuse, Lagos corporate circles — not in product gating.
 

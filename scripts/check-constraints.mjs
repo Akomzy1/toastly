@@ -211,6 +211,125 @@ check("daily matches is 6 on every tier in the entitlement table", (s, f) => {
   return values.every((v) => v === 6) ? false : `found ${values.join(", ")}`;
 });
 
+// --- Genotype (PRD §5.2) --------------------------------------------------
+//
+// Health data, and the strictest-handled field in the product. The only code
+// allowed to touch its storage is the display path below. Matching, ranking,
+// the feed, the Sentinel, the AriyaPlanner brief, analytics or a model
+// reading it is a bug, and this fails the build.
+const GENOTYPE_DISPLAY_PATH = [
+  "supabase/migrations/0014_genotype.sql",
+  "lib/genotype.ts",
+  "lib/genotype-actions.ts",
+  "components/genotype/",
+];
+const onGenotypePath = (f) => {
+  const p = f.replace(/\\/g, "/");
+  return GENOTYPE_DISPLAY_PATH.some((a) => (a.endsWith("/") ? p.startsWith(a) : p === a));
+};
+// String literals are deliberately NOT stripped for TS: an RPC name is one.
+const GENOTYPE_STORAGE =
+  /\b(genotypes|genotype_consents|get_genotype_for|get_own_genotype|set_genotype\w*|record_genotype_consent|delete_genotype|can_see_genotype|genotype_key)\b/;
+
+check("genotype is read only on the display path", (s, f) => {
+  if (onGenotypePath(f)) return false;
+  const hit = f.endsWith(".sql") ? /\bgenotype\w*/i.exec(s) : GENOTYPE_STORAGE.exec(s);
+  return hit ? `found ${hit[0]} outside the display path` : false;
+});
+
+check("genotype has no compatibility verdict and no verified badge", (s, f) => {
+  if (!onGenotypePath(f)) return false;
+  const code = f.endsWith(".sql") ? s : stripStrings(s);
+  const hit =
+    /\b\w*compatib\w*\s*[(:=]|\bverdict\w*|\bis_?verified\b|\bgenotype_?verified\w*|\bverified_?genotype\w*|\b(risk|carrier)_?(score|match|level)\w*/i.exec(code) ||
+    /variant=["']verified["']/.exec(s);
+  return hit ? `found ${hit[0]}` : false;
+});
+
+check("genotype is stored encrypted, behind no client policy or trigger", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.genotypes/.test(s)) return false;
+  const table = /create table public\.genotypes \(([\s\S]*?)\n\);/.exec(s)?.[1] ?? "";
+  if (!/ciphertext bytea not null/.test(table)) return "no ciphertext column";
+  if (/\b(value|genotype|plaintext)\s+(text|varchar|char)/i.test(table)) {
+    return "a plaintext genotype column exists";
+  }
+  if (/create policy[^;]*on public\.(genotypes|genotype_consents)/i.test(s)) {
+    return "a client policy exposes a genotype table";
+  }
+  if (/create trigger[^;]*on public\.(genotypes|genotype_consents)/i.test(s)) {
+    return "a trigger watches genotype — event streams must never see it";
+  }
+  if (!/revoke all on function public\.genotype_key\(\) from public, anon, authenticated/.test(s)) {
+    return "the key function is callable by clients";
+  }
+  if (!/revoke all on function public\.can_see_genotype\(uuid, uuid\) from public, anon, authenticated/.test(s)) {
+    return "the permission check is callable by clients";
+  }
+  return false;
+});
+
+check("the Sentinel and analytics guards reject genotype", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (p.endsWith("lib/analytics.ts")) {
+    return /FORBIDDEN_PROPERTIES[\s\S]*?"genotype"[\s\S]*?\];/.test(s)
+      ? false
+      : "analytics does not drop a genotype property";
+  }
+  if (p.endsWith("0014_genotype.sql")) {
+    return /function public\.trust_meta_is_clean[\s\S]*?'genotype'/.test(s)
+      ? false
+      : "the Sentinel metadata guard does not reject genotype";
+  }
+  return false;
+});
+
+// --- Relationship history is enforced where it lives ----------------------
+//
+// "Revealed when we match" was promised in the profile form and enforced
+// nowhere: profiles rows are readable by every verified member. 0013 moves
+// history into its own table behind RLS.
+check("relationship history is enforced by RLS, not by omission", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.profile_history/.test(s)) return false;
+  if (!/drop column history,/.test(s) || !/drop column has_children,/.test(s)) {
+    return "history still lives on the readable profiles table";
+  }
+  if (!/alter table public\.profile_history enable row level security/.test(s)) {
+    return "profile_history has no RLS";
+  }
+  if (!/for select using \(history_visible_to_me\(profile_id, visibility\)\)/.test(s)) {
+    return "no select policy enforcing the owner's choice";
+  }
+  if (!/revoke all on function public\.are_matched\(uuid, uuid\) from public, anon, authenticated/.test(s)) {
+    return "are_matched is callable by clients";
+  }
+  return false;
+});
+
+check("relationship history is never read from profiles", (s, f) => {
+  if (f.endsWith(".sql")) return false;
+  return /from\(["']profiles["']\)[^;]*?select\(["'][^"']*\b(history|has_children|history_visibility)\b/.test(s)
+    ? "a profiles query selects relationship history"
+    : false;
+});
+
+// The consent wording the app shows must be the one the database accepts.
+{
+  const name = "genotype consent version matches between app and database";
+  let hit = null;
+  try {
+    const ts = fs.readFileSync("lib/genotype.ts", "utf8");
+    const sql = fs.readFileSync("supabase/migrations/0014_genotype.sql", "utf8");
+    const app = /GENOTYPE_CONSENT_VERSION = "([^"]+)"/.exec(ts)?.[1];
+    const db = /function public\.genotype_consent_version\(\)[\s\S]*?select '([^']+)'/.exec(sql)?.[1];
+    if (!app || !db) hit = "version not found in lib/genotype.ts or migration 0014";
+    else if (app !== db) hit = `app says ${app}, database says ${db}`;
+  } catch (e) {
+    hit = String(e.message);
+  }
+  if (hit) failures.push({ name, hits: [hit] });
+  console.log(`${hit ? "FAIL" : "ok  "}  ${name}`);
+}
+
 // --- SMS stays out of the call path ---------------------------------------
 //
 // SMS exists for emergency-contact confirmation and panic alerts only. The

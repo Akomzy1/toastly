@@ -1,3 +1,4 @@
+import type { GenotypeValue } from "@/lib/genotype";
 import { capabilities } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
 
@@ -20,6 +21,8 @@ export type FeedCandidate = {
   answers: { id: string; prompt: string; answer: string }[];
   /** Optional, display-only, shown only if this member chose to show it. */
   tags: string[];
+  /** Present only when both have chosen to share (0014). Never a placeholder. */
+  genotype?: GenotypeValue | null;
 };
 
 /**

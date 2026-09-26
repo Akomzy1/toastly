@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
-import type { Profile } from "@/lib/types/profile";
+import { GenotypeSection } from "@/components/genotype/genotype-section";
+import type { Profile, ProfileHistory } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
   title: "Your profile",
@@ -23,6 +24,19 @@ export default async function ProfilePage() {
     .single<Profile>();
 
   if (!profile) redirect("/verify");
+
+  // Own row only — RLS on profile_history (0013) enforces who else may read it.
+  const { data: historyRow } = await supabase
+    .from("profile_history")
+    .select("history, has_children, visibility")
+    .eq("profile_id", user.id)
+    .maybeSingle<ProfileHistory>();
+
+  const history: ProfileHistory = historyRow ?? {
+    history: null,
+    has_children: null,
+    visibility: "on_match",
+  };
 
   // Closed cities are listed too. A member may pick a city that hasn't opened
   // yet — the option is honest about it, and the feed explains the fallback
@@ -58,7 +72,10 @@ export default async function ProfilePage() {
           basics is optional.
         </p>
       </div>
-      <ProfileForm profile={profile} cities={cityOptions} />
+      <ProfileForm profile={profile} history={history} cities={cityOptions} />
+      {/* Separate from the form on purpose: genotype has its own consent
+          step and its own save, and never travels with other fields. */}
+      <GenotypeSection />
     </div>
   );
 }

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/4bd93c04-b521-4fd6-9b6e-95c154ebe3fd.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/f20aeb1e-289f-44f8-8464-9df63f26c6f3.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/a43e1de3-9a35-41cb-a846-4cd0597133c5.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/0fb8ec88-4d4e-4a9b-aa71-d760b7ad74e3.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/bd4d4651-da6c-4734-a442-97fd7d230c19.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Genotype 4 of 5</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">How it appears on a profile</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">When both people have chosen to share, the genotype sits among the other profile facts as one more chip, in exactly their style. When they haven't, the chip is simply not there. "Private", "Not entered" and "Not shared back" render the same profile, so a viewer can't tell them apart.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="4">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ isShared }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <span style="font-size:13px;color:#828184;margin-right:2px">Value</span>
+        <sc-for list="{{ values }}" as="s" hint-placeholder-count="5">
+          <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Today's matches</p>
+      </div>
+
+      <div style="padding:14px;display:grid;gap:12px;align-content:start">
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;overflow:hidden">
+          <div style="aspect-ratio:4/3;background:#001F1B;overflow:hidden">
+            <img src="assets/b9187adc-fd2a-4134-b497-09f08952a6d1.jpg" alt="Placeholder: profile photo of Amaka" style="width:100%;height:100%;object-fit:cover;opacity:.96">
+          </div>
+          <div style="padding:16px 15px 18px;display:grid;gap:14px">
+            <div style="display:grid;gap:4px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;line-height:1.2;color:#050309">Amaka, 29</h2>
+              <p style="margin:0;font-size:13.5px;color:#504E52">Victoria Island, Lagos</p>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <span style="padding:7px 12px;border-radius:999px;background:#F6F2EA;font-size:13.5px;font-weight:500;color:#1E1C21">Product manager</span>
+              <span style="padding:7px 12px;border-radius:999px;background:#F6F2EA;font-size:13.5px;font-weight:500;color:#1E1C21">Christian</span>
+              <span style="padding:7px 12px;border-radius:999px;background:#F6F2EA;font-size:13.5px;font-weight:500;color:#1E1C21">Wants children</span>
+              <sc-if value="{{ isShared }}" hint-placeholder-val="{{ true }}">
+                <span style="padding:7px 12px;border-radius:999px;background:#F6F2EA;font-size:13.5px;font-weight:500;color:#1E1C21">Genotype: {{ value }}</span>
+              </sc-if>
+            </div>
+
+            <div style="display:grid;gap:6px">
+              <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">About</p>
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Sunday jollof is non-negotiable. I'd rather talk for an hour than text for a week.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:700px;display:grid;gap:12px;padding-top:8px;border-top:1px solid rgba(5,3,9,0.12)">
+    <p style="margin:12px 0 0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Every value, one style</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ allValues }}" as="v" hint-placeholder-count="5">
+        <span style="padding:7px 12px;border-radius:999px;background:#FFFFFF;font-size:13.5px;font-weight:500;color:#1E1C21">Genotype: {{ v }}</span>
+      </sc-for>
+    </div>
+    <p style="margin:0;font-size:13.5px;line-height:1.6;color:#504E52;max-width:60ch">Fact-chip style: 13.5px Inter 500, ink 800 on paper. No icon, no colour change, nothing placed beside it. On the white card the chip ground is paper; shown here on white for contrast with this page.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1100}}">
+const VALUES = ["AA", "AS", "AC", "SS", "SC"];
+
+class Component extends DCLogic {
+  state = { w: "360px", view: "shared", v: 1 };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, view, v } = this.state;
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [
+        ["shared", "Both shared"], ["private", "Private"], ["empty", "Not entered"], ["oneway", "Not shared back"]
+      ].map(([k, l]) => this.chip(l, view === k, () => this.setState({ view: k }))),
+      values: VALUES.map((l, i) => this.chip(l, v === i, () => this.setState({ v: i }))),
+      isShared: view === "shared",
+      value: VALUES[v],
+      allValues: VALUES
+    };
+  }
+}
+</script>
+
+
+</body></html>

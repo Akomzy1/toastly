@@ -11,6 +11,8 @@ import {
   MILESTONE_LABELS,
   type MilestoneKind,
 } from "@/lib/couple";
+import { GenotypeChip } from "@/components/genotype/genotype-chip";
+import { getVisibleGenotype } from "@/components/genotype/genotype-data";
 
 export const metadata: Metadata = {
   title: "Couple Mode",
@@ -40,6 +42,14 @@ export default async function CouplePage() {
     .select("id, status, started_at, member_a, member_b")
     .in("status", ["proposed", "active"])
     .maybeSingle();
+
+  // Only in an active couple, and only if both have chosen to share.
+  const partnerGenotype =
+    couple?.status === "active"
+      ? await getVisibleGenotype(
+          couple.member_a === user.id ? couple.member_b : couple.member_a,
+        )
+      : null;
 
   const { data: milestones } = couple
     ? await supabase
@@ -116,6 +126,12 @@ export default async function CouplePage() {
           profile is paused until you both agree.
         </Notice>
       )}
+
+      {partnerGenotype ? (
+        <div className="flex flex-wrap gap-2">
+          <GenotypeChip value={partnerGenotype} ground="paper" />
+        </div>
+      ) : null}
 
       <Card className="grid gap-4 p-[26px]">
         <h2 className="text-h5 text-ink-900">Your timeline</h2>

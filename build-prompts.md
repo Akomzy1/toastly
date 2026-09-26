@@ -2,11 +2,11 @@
 
 Run these **in order**, one per session or one per major work block. **Phase 1 is Prompts 0–12** — 0–9 build the core, 10–12 close gaps found in a post-build audit (diaspora pools, date-spot and time-zone scheduling, domain/icons/housekeeping). Phase 2 items are listed at the end and are not to be started before launch. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
 
-**Before running any of these:** confirm the sixteen prototype files are in `/design/prototype/`:
+**Before running any of these:** confirm the twenty-one prototype files are in `/design/prototype/`:
 
 `design-system.slim.html` (read first — tokens), `home.slim.html`, `features.slim.html`, `how-it-works.slim.html`, `pricing.slim.html`, `safety.slim.html`, `diaspora.slim.html`, `stories.slim.html`, `locked-inbox.slim.html` (in-app, not marketing), `brand-the-stake.slim.html`, `brand-assets.slim.html` (icons, vector masters, social exports).
 
-Five further **in-app** surfaces, exported after Prompts 10–12 were built: `city-picker.slim.html`, `time-zone.slim.html`, `feed-fallback-notice.slim.html`, `both-clocks.slim.html`, `date-spot.slim.html`. Each has its own layout rules, like the locked inbox — they are not marketing pages.
+Five further **in-app** surfaces, exported after Prompts 10–12 were built: `city-picker.slim.html`, `time-zone.slim.html`, `feed-fallback-notice.slim.html`, `both-clocks.slim.html`, `date-spot.slim.html`. Each has its own layout rules, like the locked inbox — they are not marketing pages. Five genotype screens followed: `genotype-consent.slim.html`, `genotype-entry.slim.html`, `genotype-visibility.slim.html`, `genotype-display.slim.html`, `genotype-settings.slim.html`.
 
 If they aren't there, stop — several of these prompts are meaningless without them, and Claude Code will otherwise invent UI that was never approved.
 

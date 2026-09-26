@@ -15,7 +15,8 @@
  *   - Message content, Gist audio, transcripts. Same boundary as everywhere
  *     else: behaviour, never words.
  *   - Protected attributes — tribe, religion, language, relationship history,
- *     profession, diaspora status. Never inputs, and never properties.
+ *     profession, genotype, diaspora status. Never inputs, and never
+ *     properties.
  *   - Phone numbers, emails, names, or anything else that identifies a member
  *     to a human reading a dashboard. The distinct id is the profile UUID.
  *
@@ -35,7 +36,7 @@ const FORBIDDEN_PROPERTIES = [
   "body", "message", "text", "content", "snippet", "preview",
   "transcript", "audio", "recording",
   "tribe", "religion", "language", "languages", "history",
-  "relationship_history", "profession", "education", "diaspora",
+  "relationship_history", "profession", "education", "diaspora", "genotype",
   "phone", "phone_number", "email", "display_name", "name",
 ];
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
+import { getVisibleGenotypes } from "@/components/genotype/genotype-data";
 import { MatchCard } from "./match-card";
 import { canSendText, DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
 import {
@@ -85,6 +86,11 @@ export default async function FeedPage() {
         .in("profile_id", ids)
     : { data: [] };
 
+  // Present only where both have chosen to share (0014). Under the match
+  // definition that is rare in the daily six — but this is where
+  // genotype-display.slim.html puts it.
+  const sharedGenotypes = await getVisibleGenotypes(ids);
+
   const cards: FeedCandidate[] = (feed ?? []).map(
     (f: { candidate_id: string }) => {
       const c = (candidates ?? []).find((x) => x.id === f.candidate_id);
@@ -102,6 +108,7 @@ export default async function FeedPage() {
             answer: a.answer,
           })),
         tags: visibleTags(c ?? {}),
+        genotype: sharedGenotypes[f.candidate_id] ?? null,
       };
     },
   );

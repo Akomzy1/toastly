@@ -84,6 +84,15 @@ One real accidental gate found — see Decision 1.
 
 ## 5. Mobile
 
+**Update, 26 September 2026:** the audit now covers 19 routes — the six
+genotype states added — for 38 combinations: **36 pass; 2 fail**, both the
+visibility screen's 11.5px "Default" tag, which is the prototype's own size
+and awaits a decision (see the genotype section). The target check now
+treats a checkbox or radio inside a label of at least 44×44px as meeting the
+bar, because clicking the label activates it (HTML spec) and WCAG 2.5.8
+measures the activating region. That removed exactly one finding — the
+report form's "Also block" box — and nothing else.
+
 **Re-run 18 September 2026 from `C:\dev\toastly`, outside OneDrive**, with
 the Playwright audit in `scripts/mobile-audit.mjs` (`npm run audit:mobile`).
 13 routes × 2 widths (320×568, 360×640) = **26 combinations, 0 failures**: no
@@ -372,6 +381,95 @@ provider the flow refuses rather than storing a number it cannot reach.
 **Inert by design:** the receipt and the `first_deposit`/`upgrade` events
 resolve a charge by provider reference, and nothing writes `payments` rows
 yet. Whoever builds the payment loop gets both by inserting the row first.
+
+## Genotype (PRD §5.2) — built against its prototypes, not yet live
+
+**Migration order matters.** `0013_relationship_history.sql` is the history
+fix and has no Vault dependency. `0014_genotype.sql` is genotype and **must
+not run against production until Supabase Vault is confirmed working** — it
+checks for Vault and for 0013 at the top and refuses to run otherwise. (The
+genotype migration was 0013 in the earlier draft; it moved to 0014 so the
+shared match definition could ship ahead of the Vault hold.)
+
+**Built against `genotype-consent`, `-entry`, `-visibility`, `-display` and
+`-settings` (`.slim.html`).** Consent in headed sections with "Agree"
+disabled until ticked and "Not now" at equal weight; six same-weight values
+with nothing preselected; four visibility options with a "Default" tag on
+"Only me"; the display as one neutral fact chip ("Genotype: AS") with nothing
+at all when not shared; a settings row with equal Edit and Delete, a bottom
+sheet to confirm, and a "Genotype deleted" toast. Every value renders in the
+same style — no colour-coding, which the prototype names as the most
+important visual rule.
+
+**How it's stored.** Two tables with RLS on and no policies; the value is
+`pgp_sym_encrypt`ed with a key generated into Supabase Vault; every access
+goes through a security-definer function; deletion removes the value and the
+consent together with no tombstone. Reads are reciprocal — a value appears
+only when both have chosen to share with each other — and "private", "not
+entered" and "not shared back" are indistinguishable.
+
+**Your decisions, applied.**
+
+1. Consent copy approved and in place. **Backup retention could not be
+   verified from here** — it depends on the Supabase plan: Free has no
+   backups, Pro keeps 7 days, Team 14, Enterprise 30, and PITR 7/14/28. "7
+   days" is right only on Pro without PITR; it is one constant,
+   `GENOTYPE_BACKUP_RETENTION_DAYS`.
+2. **Filter dropped.** CLAUDE.md and PRD.md now say "no filter of any kind";
+   nothing was built.
+3. Match definition stands — now one function, `are_matched()`, in 0013.
+4. **Relationship history enforced** — see the next section.
+5. **Consent version enforced in the database.** `record_genotype_consent()`
+   accepts only the current wording; `set_genotype()` requires consent to it.
+   Deleting is always allowed. A constraint check fails the build if the
+   app's version and the database's drift.
+6. Info link left empty; "What do genotypes mean?" renders once it's set.
+7. Six harness routes put every genotype state into the mobile audit.
+
+**Blocked: the privacy-policy link.** No `/privacy` page exists — the footer
+and signup's "Privacy Policy" link already point to one that 404s — and no
+data-rights contact address exists anywhere in the project. I would not put a
+dead link inside a legal consent step. The line is written and renders the
+moment `GENOTYPE_PRIVACY_URL` is set; its wording is new and needs your review.
+
+**Decision needed: the "Default" tag is 11.5px** in the visibility prototype,
+under the audit's 12px floor. Built as designed; it is the only audit failure.
+The city picker already rounds its 11px "Pool not open" chip up to 12px, so
+the precedent points to 12 — but that is your call.
+
+**Flagged, not decided:**
+- The prototype places the chip on a match's profile card. Under the match
+  definition, members in the daily six are rarely matched yet, so it will
+  seldom appear there; it also renders on the Gist session and Couple Mode
+  pages, where matched members actually meet.
+- The chip's paper-pill style differs from the match card's dashed optional
+  badges beside it. The display prototype draws every fact as a paper pill,
+  which would mean restyling the card's other facts too — out of scope here.
+- A shared "I don't know yet" has no designed chip state; it reads "Genotype:
+  not known yet".
+- Inline on the profile page there is no app-bar back chevron, so entry has
+  a quiet "Cancel" and visibility a quiet "Back" — neither is in the
+  prototype.
+- A consent to an older wording still permits *display*; it blocks editing
+  only. Say if an outdated consent should hide the value too.
+
+## Relationship history — now enforced
+
+`profiles` rows are readable by every verified member, so "Revealed when we
+match" was enforced nowhere: anyone could read anyone's relationship history
+through the API. `0013` moves `history`, `has_children` and the visibility
+setting into `profile_history`, copies existing answers across, drops the
+columns from `profiles`, and adds an RLS policy that applies the owner's
+choice using the shared match definition. Two checks guard it: the table
+must keep its policy, and no code may select history from `profiles` again.
+
+No screen shows another member's history yet, so nothing visible changes —
+the promise is now true at the database rather than by omission.
+
+**Known residual, pre-existing since 0007:** a function used inside an RLS
+policy must be callable by the member, and one that includes a block check
+lets a determined member infer that they have been blocked. Photo reveal has
+had the same property since 0007.
 
 ## Environment
 

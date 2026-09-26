@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { SafetyActions } from "@/components/safety/safety-actions";
+import { GenotypeChip } from "@/components/genotype/genotype-chip";
+import { getVisibleGenotype } from "@/components/genotype/genotype-data";
 import { ReadyForm } from "./ready-form";
 import { OutcomeForm } from "./outcome-form";
 import { SpotSuggestions, type Spot } from "./spot-suggestions";
@@ -73,6 +75,9 @@ export default async function GistSessionPage({
     .maybeSingle();
   const otherName = other?.display_name ?? "this member";
 
+  // Null unless both have chosen to share with each other (0014).
+  const otherGenotype = await getVisibleGenotype(otherId);
+
   // Date spots exist only after both people privately said continue — the
   // database refuses to store one before that (0011), and this page shows
   // nothing at all until then.
@@ -107,6 +112,13 @@ export default async function GistSessionPage({
           {GIST_EXTENSION_MINUTES}. Nobody sees anybody&rsquo;s phone number —
           the call runs inside Toastly.
         </p>
+        {/* genotype-display.slim.html: one quiet fact chip, or nothing
+            at all — never a "hidden" label or a placeholder. */}
+        {otherGenotype ? (
+          <div className="flex flex-wrap gap-2">
+            <GenotypeChip value={otherGenotype} ground="paper" />
+          </div>
+        ) : null}
       </div>
 
       {/* Mutual opt-in. Nothing touches a microphone or camera until both

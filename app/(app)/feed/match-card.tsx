@@ -10,6 +10,7 @@ import { Notice } from "@/components/ui/notice";
 import { Textarea } from "@/components/ui/field";
 import { SafetyActions } from "@/components/safety/safety-actions";
 import type { FeedCandidate } from "@/lib/feed";
+import { GenotypeChip } from "@/components/genotype/genotype-chip";
 
 function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -89,13 +90,16 @@ export function MatchCard({
         })}
       </ul>
 
-      {candidate.tags.length ? (
+      {candidate.tags.length || candidate.genotype ? (
         <div className="flex flex-wrap gap-2">
           {candidate.tags.map((t) => (
             <Badge key={t} variant="optional">
               {t}
             </Badge>
           ))}
+          {candidate.genotype ? (
+            <GenotypeChip value={candidate.genotype} ground="white" />
+          ) : null}
         </div>
       ) : null}
 

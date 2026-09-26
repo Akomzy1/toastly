@@ -15,7 +15,7 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All eleven migrations are applied. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Migrations 0001–0012 are applied. **0013** (relationship history) drops columns the currently deployed code still writes — run it as the new code deploys, not before. **0014** (genotype) must wait until Supabase Vault is confirmed working; it refuses to run without Vault or without 0013. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
 
 **Still to do on Supabase even though it works:** add
 `https://trytoastly.com` to Authentication → URL Configuration (Site URL and
@@ -76,6 +76,12 @@ Nothing in the codebase reads these. Setting them changes nothing today.
 
 ## 6. Not a credential, but on the same list
 
+- **A privacy policy page.** `/privacy` does not exist, yet the footer and
+  the signup page link to it. The genotype consent step also needs it, with
+  a data-rights contact address — none exists in the project yet.
+- **Backup retention on the Supabase plan.** The genotype consent copy says
+  deleted values leave encrypted backups "within 7 days". That is true only
+  on Pro without PITR; change `GENOTYPE_BACKUP_RETENTION_DAYS` if not.
 - **Emergency numbers** (112, 767 Lagos, 999, 911) are marked
   VERIFY BEFORE LAUNCH in `lib/safety.ts`. A wrong number on a safety screen
   is worse than no number.

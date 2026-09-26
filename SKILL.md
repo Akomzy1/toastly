@@ -29,6 +29,11 @@ Located in `/design/prototype/`:
 | `feed-fallback-notice.slim.html` | **In-app** — band above the feed when a city pool isn't open; the six are still shown |
 | `both-clocks.slim.html` | **In-app** — Gist scheduling with both local times; offers tomorrow rather than a 3am slot |
 | `date-spot.slim.html` | **In-app** — post-Gist venue suggestion; cafés and restaurants, books nothing |
+| `genotype-consent.slim.html` | **In-app** — the separate permission step; Agree disabled until ticked, Not now at equal weight |
+| `genotype-entry.slim.html` | **In-app** — six same-weight values, nothing preselected |
+| `genotype-visibility.slim.html` | **In-app** — four options, "Only me" default and tagged |
+| `genotype-display.slim.html` | **In-app** — one neutral fact chip, or nothing at all; never colour-coded |
+| `genotype-settings.slim.html` | **In-app** — settings row, bottom-sheet delete, toast |
 | `brand-the-stake.slim.html` | **Adopted brand mark ("The Stake") — binding.** Mark geometry, palette roles, lockups, do/don't |
 | `brand-assets.slim.html` | **Production brand assets.** PWA icons, favicons, vector masters, social exports, splash |
 
@@ -130,6 +135,13 @@ deviations are recorded in `FINAL-REVIEW.md` §1: the date-spot photo and
 distance panel are omitted for want of data, three prototype colours fall
 outside the approved ramp and use `green-550`, and the both-clocks window
 picker has no home until a propose-a-time screen exists.
+
+**Genotype UI — now covered.** The five genotype screens were exported as
+prototypes (listed above) and `components/genotype/` is built against them.
+The rule that governs all five: **no value is ever shown in a different
+colour, style or weight from another** — a coloured SS or a green AA is a
+compatibility verdict by other means. Deviations are recorded in
+`FINAL-REVIEW.md`.
 
 Deferred on purpose, to be built against the screen that needs them rather
 than guessed in the abstract: toast/notification, modal, pagination,
