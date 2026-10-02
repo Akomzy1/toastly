@@ -572,6 +572,16 @@ overlay shows only its camera.
 - **Screens:** the overview follows `verify-overview.slim.html`; the other
   five are built from it and are not design-approved (SKILL.md).
 
+## Profiles read policy — fixed (0017)
+
+The 0001 policy "verified members see other verified profiles" queried
+`profiles` inside a policy on `profiles`. Postgres rejected every read of the
+table by a member or visitor with `42P17` (infinite recursion). It surfaced on
+the first real sign-up after production was connected: the verify page could
+not read the member's stage and showed the phone step. 0017 moves the viewer
+check into a security-definer function, `viewer_is_verified()`; visibility is
+unchanged. A constraint check now fails if any policy reads its own table.
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

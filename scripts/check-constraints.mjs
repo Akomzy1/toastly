@@ -806,6 +806,28 @@ check("Smile ID path reads no tier or entitlement", (s, f) => {
   return /current_tier|entitlements|\btier\b/i.test(stripStrings(s));
 });
 
+// --- RLS: a policy must never query its own table ------------------------
+// 0001's profiles policy did, and Postgres rejected every read of profiles
+// with 42P17 (infinite recursion). Fixed in 0017. A policy that needs the
+// viewer's own row calls a security-definer function instead.
+{
+  const all = files.filter((f) => f.endsWith(".sql")).sort();
+  const latest = new Map();
+  for (const f of all) {
+    const src = fs.readFileSync(f, "utf8").replace(/--[^\n]*/g, "");
+    for (const m of src.matchAll(/(?:drop policy if exists|create policy)\s+"([^"]+)"\s+on\s+(?:public\.)?(\w+)([\s\S]*?);/g)) {
+      const key = `${m[2]}|${m[1]}`;
+      if (/^drop/.test(m[0])) latest.delete(key);
+      else latest.set(key, { file: f, table: m[2], body: m[3] });
+    }
+  }
+  const hits = [...latest.values()]
+    .filter((p) => new RegExp(`from\\s+(public\\.)?${p.table}\\b`).test(p.body))
+    .map((p) => `${p.file} — policy on ${p.table} reads ${p.table}`);
+  if (hits.length) failures.push({ name: "no RLS policy queries its own table", hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  no RLS policy queries its own table`);
+}
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");
