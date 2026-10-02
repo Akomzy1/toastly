@@ -382,12 +382,15 @@ provider the flow refuses rather than storing a number it cannot reach.
 resolve a charge by provider reference, and nothing writes `payments` rows
 yet. Whoever builds the payment loop gets both by inserting the row first.
 
-## Genotype (PRD §5.2) — built against its prototypes, not yet live
+## Genotype (PRD §5.2) — built against its prototypes, live
 
 **Migration order matters.** `0013_relationship_history.sql` is the history
-fix and has no Vault dependency. `0014_genotype.sql` is genotype and **must
-not run against production until Supabase Vault is confirmed working** — it
-checks for Vault and for 0013 at the top and refuses to run otherwise. (The
+fix and has no Vault dependency — **applied 26 September 2026**, after the
+deploy. `0014_genotype.sql` is genotype — **applied 26 September
+2026**, after Vault passed a store-and-read round trip and pgcrypto an
+encrypt-and-decrypt check. It checks for both, and for 0013, before creating
+anything. Afterwards the `genotype_key` secret was confirmed present in Vault.
+**Never delete or rotate it:** it is the only way to read stored genotypes. (The
 genotype migration was 0013 in the earlier draft; it moved to 0014 so the
 shared match definition could ship ahead of the Vault hold.)
 

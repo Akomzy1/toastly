@@ -15,7 +15,7 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Migrations 0001–0012 are applied. **0013** (relationship history) drops columns the currently deployed code still writes — run it as the new code deploys, not before. **0014** (genotype) must wait until Supabase Vault is confirmed working; it refuses to run without Vault or without 0013. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All fourteen migrations are applied. 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
 
 **Still to do on Supabase even though it works:** add
 `https://trytoastly.com` to Authentication → URL Configuration (Site URL and
