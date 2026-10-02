@@ -435,10 +435,9 @@ data-rights contact address exists anywhere in the project. I would not put a
 dead link inside a legal consent step. The line is written and renders the
 moment `GENOTYPE_PRIVACY_URL` is set; its wording is new and needs your review.
 
-**Decision needed: the "Default" tag is 11.5px** in the visibility prototype,
-under the audit's 12px floor. Built as designed; it is the only audit failure.
-The city picker already rounds its 11px "Pool not open" chip up to 12px, so
-the precedent points to 12 — but that is your call.
+**Decided: the "Default" tag is 12px**, rounded up from the visibility
+prototype's 11.5px to meet the audit's 12px legibility floor. Recorded in
+SKILL.md as a deliberate deviation. The mobile audit is now fully clean.
 
 **Flagged, not decided:**
 - The prototype places the chip on a match's profile card. Under the match
@@ -476,13 +475,23 @@ had the same property since 0007.
 
 ## Privacy policy and account lifecycle
 
-**The page publishes itself once its placeholders are filled.** `/privacy`
-renders the supplied policy from `lib/privacy-content.ts`. While any
-`[placeholder]` remains, it returns 404, stays out of the sitemap, and the
-genotype consent step shows no link. A constraint check keeps that gate in
-place. Still to fill: the effective date, the backup window (`[7]`, twice),
-safety-record retention (`[2]`), the response time (`[30]`), financial-record
-retention (`[6]`) and the processing countries.
+**Published 2 October 2026.** Every placeholder is filled: effective date
+2 October 2026; backups overwritten within 7 days (true on Free and Pro);
+safety records 2 years; payment records 6 years; data requests answered
+"within one month" (UK GDPR's calendar-month deadline, shorter than 30 days
+in February). Section 9's countries were measured, not assumed: the database
+host is in AWS eu-west-1 (Ireland) and functions run in Vercel's iad1
+(Washington, D.C.). The publication gate stays in place: a placeholder added
+later withdraws the page again.
+
+**Production is not connected to Supabase.** Found while measuring regions:
+`www.trytoastly.com` has no `NEXT_PUBLIC_SUPABASE_URL` or
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`, so every signed-in page shows "Supabase
+isn't configured" and nobody can sign up on the live site. The migrations
+have all run against the database; the deployed app simply isn't pointed at
+it. Earlier notes calling genotype "live for members" meant the database
+side only. Paystack and Stripe are also unconfigured in production (their
+webhooks answer 503).
 
 **Built so the policy is true** (migration `0015_account_lifecycle.sql`):
 

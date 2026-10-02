@@ -8,11 +8,21 @@
  *
  * Every other claim has been checked against the build (October 2026). If
  * the product changes what it collects or keeps, change this text with it.
+ *
+ * Section 9's countries were MEASURED, not assumed (2 October 2026): the
+ * Supabase database host resolves to AWS eu-west-1 (Ireland), and the
+ * x-vercel-id header shows functions running in iad1 (Washington, D.C.). No
+ * third-party processor was configured in production at the time. When one
+ * is switched on in Vercel, add its country to section 9 before it is.
+ *
+ * "Within one month", not 30 days: UK GDPR's deadline is one calendar
+ * month, which is shorter than 30 days in February.
  */
 
 export const PRIVACY_CONTACT = "support@trytoastly.com";
 
-export const PRIVACY_EFFECTIVE_DATE = "[DATE]";
+// The date this version was deployed and published.
+export const PRIVACY_EFFECTIVE_DATE = "2 October 2026";
 
 export type PrivacyBlock =
   | { kind: "p"; lead?: string; text: string }
@@ -264,8 +274,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Your account and profile: while your account is open. When you delete your account in your settings, your data is deleted straight away, except what this section says we keep, and backup copies are overwritten within 7 days.",
           "Genotype: until you delete it or your account, as in section 5.",
           "Verification results: for as long as your account is open.",
-          "Safety records (reports about an account, and their outcome): up to [2] years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number for that time, so it can't simply sign up again.",
-          "Payment and financial records: [6] years, as tax law requires.",
+          "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number for that time, so it can't simply sign up again.",
+          "Payment and financial records: 6 years, as tax law requires.",
         ],
       },
     ],
@@ -276,7 +286,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     blocks: [
       {
         kind: "p",
-        text: "We're based in Nigeria and serve members abroad. Our providers may process your data in other countries, including [the United States and the European Union]. Where data leaves Nigeria or the UK, we rely on appropriate safeguards required by law, such as contractual protections with our providers.",
+        text: "We're based in Nigeria and serve members abroad. Our database is hosted in Ireland, in the European Union, and our app runs in the United States; other providers may process your data in further countries. Where data leaves Nigeria or the UK, we rely on appropriate safeguards required by law, such as contractual protections with our providers.",
       },
     ],
   },
@@ -299,7 +309,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        text: `Many of these you can do directly in your settings. Otherwise, email ${PRIVACY_CONTACT} and we'll respond within [30] days. We may need to confirm your identity first.`,
+        text: `Many of these you can do directly in your settings. Otherwise, email ${PRIVACY_CONTACT} and we'll respond within one month. We may need to confirm your identity first.`,
       },
       {
         kind: "p",

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { getOwnGenotypeForExport } from "@/components/genotype/genotype-data";
 import { PRIVACY_CONTACT } from "@/lib/privacy-content";
 
@@ -19,6 +19,10 @@ export const dynamic = "force-dynamic";
  *   - other members' private data, including who reported you.
  */
 export async function GET() {
+  // Without credentials createClient() throws, which surfaced as a bare 500.
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: "Not available yet." }, { status: 503 });
+  }
   const supabase = createClient();
   const {
     data: { user },

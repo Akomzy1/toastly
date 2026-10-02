@@ -143,6 +143,13 @@ colour, style or weight from another** — a coloured SS or a green AA is a
 compatibility verdict by other means. Deviations are recorded in
 `FINAL-REVIEW.md`.
 
+**Deliberate deviation — the "Default" tag is 12px, not 11.5px.** The
+visibility prototype sets the tag on "Only me" at 11.5px, below the 12px
+minimum the mobile audit enforces for legible text on low-end Android. It
+is rounded up to the `chip` token (12px), the same call already made for the
+city picker's 11px "Pool not open" chip. Decided by the product owner,
+2 October 2026. Do not restore 11.5px to match the prototype.
+
 Deferred on purpose, to be built against the screen that needs them rather
 than guessed in the abstract: toast/notification, modal, pagination,
 skeleton/loading, empty states. None appear on a marketing page — they are

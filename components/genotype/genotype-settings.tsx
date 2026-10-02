@@ -421,10 +421,11 @@ export function GenotypeSettings({
                             {o.label}
                           </span>
                           {/* "Only me" keeps its Default tag even when another
-                              option is chosen. 11.5px is the prototype's size —
-                              below the audit's 12px floor; see FINAL-REVIEW. */}
+                              option is chosen. 12px, not the prototype's 11.5px —
+                              a deliberate deviation for the 12px legibility
+                              floor (SKILL.md). */}
                           {i === 0 ? (
-                            <span className="rounded-sm border border-green-500/30 bg-white px-2 py-[3px] text-[11.5px] font-semibold text-green-550">
+                            <span className="rounded-sm border border-green-500/30 bg-white px-2 py-[3px] text-chip font-semibold text-green-550">
                               Default
                             </span>
                           ) : null}

@@ -11,15 +11,22 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 ---
 
-## 1. Already working
+## 1. The database — ready, but production isn't connected to it
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All fifteen migrations are applied (0015, account lifecycle, on 2 October 2026). Expired retention records are purged nightly only if **pg_cron** is enabled — check with `select jobname from cron.job where jobname = 'toastly-purge-retention';`. 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All fifteen migrations are applied (0015, account lifecycle, on 2 October 2026). pg_cron is enabled and the nightly purge of expired retention records is scheduled (job `toastly-purge-retention`, 03:17 UTC, set up 2 October 2026). 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. **Not set in Vercel production** (checked 2 October 2026): every signed-in page on www.trytoastly.com shows "Supabase isn't configured", so nobody can sign up on the live site. Set both in Vercel and redeploy. |
 
-**Still to do on Supabase even though it works:** add
-`https://trytoastly.com` to Authentication → URL Configuration (Site URL and
-Redirect URLs), or email sign-in links will point at localhost.
+**Still to do on Supabase:** add `https://www.trytoastly.com` (the host
+production actually serves — see below) to Authentication → URL
+Configuration (Site URL and Redirect URLs), or email sign-in links will point
+at localhost.
+
+**The bare domain redirects to www.** `trytoastly.com` answers every request
+with a 308 redirect to `www.trytoastly.com`. Either make the bare domain the
+primary in Vercel → Domains, or set `NEXT_PUBLIC_SITE_URL` to
+`https://www.trytoastly.com` — today every canonical URL and sitemap entry
+points at a redirect.
 
 ---
 
@@ -46,9 +53,11 @@ machine; the check itself is missing and deliberately not faked.
 | **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Same: signature and replay window verified, **no entitlement granted**. |
 | **LiveKit** (Gist calls) | `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | Tokens are minted server-side with camera withheld unless entitled. The **client transport is not wired**, so the session page shows a "Join session" button with nothing behind it once credentials are set. |
 
-**Webhook URLs to register with each provider:**
-`https://trytoastly.com/api/webhooks/paystack` ·
-`https://trytoastly.com/api/webhooks/stripe`
+**Webhook URLs to register with each provider** — on `www`, because the bare
+domain answers with a redirect and payment providers don't follow redirects
+on webhooks:
+`https://www.trytoastly.com/api/webhooks/paystack` ·
+`https://www.trytoastly.com/api/webhooks/stripe`
 
 ---
 
@@ -76,10 +85,10 @@ Nothing in the codebase reads these. Setting them changes nothing today.
 
 ## 6. Not a credential, but on the same list
 
-- **The privacy policy's placeholders.** `/privacy` is built but returns 404
-  until the effective date, retention periods, response time and processing
-  countries are filled in (`lib/privacy-content.ts`). A lawyer should review
-  it first. `/terms` still has no page.
+- **The privacy policy is published** (2 October 2026). Before switching on
+  any third-party processor in Vercel, add the country it processes data in
+  to section 9 of `lib/privacy-content.ts`. A lawyer should still review
+  the policy. `/terms` still has no page.
 - **Supabase plan: Free, by decision, until the project gains traction.**
   The Free plan keeps **no backups** — a mistaken delete or a database fault
   loses every member, match and payment record for good — and pauses the
