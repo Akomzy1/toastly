@@ -3,7 +3,6 @@
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { capture } from "@/lib/analytics";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
@@ -125,84 +124,5 @@ export async function confirmPhoneCode(
   return { ok: "Phone confirmed." };
 }
 
-/**
- * Liveness.
- *
- * NOT IMPLEMENTED — this records the result, it does not perform the check.
- * A three-second liveness capture matched against profile photos needs a
- * vendor SDK and a server-side decision; wiring one is its own piece of work
- * and is not something to fake. The screen and the state machine are real so
- * the rest of the flow can be built and tested; the capture itself must be
- * replaced before launch.
- */
-export async function recordLiveness(
-  _prev: VerifyState,
-  _formData: FormData,
-): Promise<VerifyState> {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Please sign in again." };
-
-  if (process.env.NODE_ENV === "production") {
-    return {
-      error:
-        "Liveness checks aren't connected yet. This step can't be completed.",
-    };
-  }
-
-  await supabase
-    .from("profiles")
-    .update({
-      stage: "verified_real",
-      liveness_verified_at: new Date().toISOString(),
-    })
-    .eq("id", user.id);
-
-  // Funnel step two. The badge is the product's central claim, so the drop-off
-  // between signup and this event is the number that matters most.
-  await capture("verification_complete", user.id, { stage: "verified_real" });
-
-  revalidatePath("/verify");
-  return { ok: "Liveness passed. Your Verified Real seal is live." };
-}
-
-/**
- * NIN / BVN — the optional second ring.
- *
- * Optional forever. A member is fully functional on phone and liveness
- * alone, and the number is never displayed to anyone. Like liveness, the
- * check itself is not implemented here.
- */
-export async function submitIdNumber(
-  _prev: VerifyState,
-  formData: FormData,
-): Promise<VerifyState> {
-  const value = String(formData.get("id_number") ?? "").replace(/\D/g, "");
-  if (value.length !== 11) {
-    return { error: "A NIN or BVN is 11 digits." };
-  }
-
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Please sign in again." };
-
-  if (process.env.NODE_ENV === "production") {
-    return { error: "ID confirmation isn't connected yet." };
-  }
-
-  // The number itself is deliberately not stored: only the fact of a pass.
-  await supabase
-    .from("profiles")
-    .update({
-      stage: "id_confirmed",
-      id_confirmed_at: new Date().toISOString(),
-    })
-    .eq("id", user.id);
-
-  revalidatePath("/verify");
-  return { ok: "Second ring added to your seal." };
-}
+// Liveness and the ID check run through Smile ID: see app/api/smile-id/.
+// Their results are written only by the signed callback, never by an action.

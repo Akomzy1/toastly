@@ -55,6 +55,23 @@ const ROUTES = [
   { route: "/audit/genotype-display", label: "Genotype on a match card" },
   { route: "/audit/account-data", label: "Your data" },
   { route: "/audit/account-delete", label: "Delete account sheet" },
+  // Verification — every state of the Smile ID flow
+  { route: "/audit/verify/start", label: "Verify · start" },
+  { route: "/audit/verify/before-selfie", label: "Verify · before-selfie" },
+  { route: "/audit/verify/checking", label: "Verify · checking" },
+  { route: "/audit/verify/review", label: "Verify · review" },
+  { route: "/audit/verify/retry-spoof", label: "Verify · retry-spoof" },
+  { route: "/audit/verify/retry-image", label: "Verify · retry-image" },
+  { route: "/audit/verify/retry-error", label: "Verify · retry-error" },
+  { route: "/audit/verify/passed", label: "Verify · passed" },
+  { route: "/audit/verify/id-form", label: "Verify · id-form" },
+  { route: "/audit/verify/id-checking", label: "Verify · id-checking" },
+  { route: "/audit/verify/id-review", label: "Verify · id-review" },
+  { route: "/audit/verify/id-not-found", label: "Verify · id-not-found" },
+  { route: "/audit/verify/id-face", label: "Verify · id-face" },
+  { route: "/audit/verify/id-used", label: "Verify · id-used" },
+  { route: "/audit/verify/id-error", label: "Verify · id-error" },
+  { route: "/audit/verify/both", label: "Verify · both" },
 ];
 
 const VIEWPORTS = [

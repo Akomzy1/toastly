@@ -158,8 +158,8 @@ Each needs building, or the copy softening.
 
 ## Not connected (launch blockers)
 
-Liveness and NIN/BVN vendor · LiveKit calling · Paystack/Stripe webhooks
-granting entitlements · moderation queue tooling · photo upload UI · image
+Smile ID production cut-over (integrated in sandbox — GO-LIVE §1a) · LiveKit
+calling · Paystack/Stripe webhooks granting entitlements · moderation queue tooling · photo upload UI · image
 message UI.
 
 ## Trust Sentinel — Phase 1 (instrumentation only)
@@ -476,7 +476,8 @@ had the same property since 0007.
 ## Privacy policy and account lifecycle
 
 **Published 2 October 2026.** Every placeholder is filled: effective date
-2 October 2026; backups overwritten within 7 days (true on Free and Pro);
+2 October 2026; backups overwritten within 7 days (true on the project's Pro
+plan, with point-in-time recovery off);
 safety records 2 years; payment records 6 years; data requests answered
 "within one month" (UK GDPR's calendar-month deadline, shorter than 30 days
 in February). Section 9's countries were measured, not assumed: the database
@@ -484,7 +485,11 @@ host is in AWS eu-west-1 (Ireland) and functions run in Vercel's iad1
 (Washington, D.C.). The publication gate stays in place: a placeholder added
 later withdraws the page again.
 
-**Production is not connected to Supabase.** Found while measuring regions:
+**Update, later on 2 October 2026: production is now connected** — both
+variables were set in Vercel and redeployed; `/feed` redirects signed-out
+visitors to `/login`. The paragraph below records what was found first.
+
+**Production was not connected to Supabase.** Found while measuring regions:
 `www.trytoastly.com` has no `NEXT_PUBLIC_SUPABASE_URL` or
 `NEXT_PUBLIC_SUPABASE_ANON_KEY`, so every signed-in page shows "Supabase
 isn't configured" and nobody can sign up on the live site. The migrations
@@ -531,6 +536,41 @@ UK-representative line; `/terms` still 404s; the consent step's privacy line
 ("Our privacy policy explains your rights over this information and how to
 reach us about them.") did not bump the consent version — it adds a link, not
 a term. Accounts created before 0015 have no date of birth on file.
+
+## Smile ID verification — integrated, sandbox
+
+Verified Real is Smile ID SmartSelfie (liveness only); the optional ID check
+is Biometric KYC for Nigeria — NIN, Virtual NIN, BVN. Never Enhanced or Basic
+KYC. Hosted v12 web flow; our own consent screen runs first, so Smile ID's
+overlay shows only its camera.
+
+- **Server only.** `/api/smile-id/session` mints a v3 token per attempt (five
+  per product per day) and returns the overlay config. The API key never
+  reaches the browser; a constraint check enforces it.
+- **The callback is the only source of truth.** `/api/smile-id/callback`
+  caps bodies at 1.5 MB, checks the HMAC signature (timing-safe, 10-minute
+  freshness), matches the result to a pending session by an unguessable
+  nonce, and takes the first result per session. Smile ID's signature covers
+  the timestamp, not the body — so for the ID check the number Smile ID
+  checked must also hash to the number the member entered.
+- **Outcome only.** A session row holds the Smile job ID, status, reason code,
+  pass/fail and timestamps. The callback never reads the record's name, date
+  of birth, photo, phone, address or marital status (a check enforces the
+  list). The ID number is never stored: a keyed HMAC is, key in Vault, so one
+  ID verifies one account and a removed member's ID stays blocked for two
+  years. Failed or abandoned sessions keep no hash.
+- **Sentinel:** `liveness_result` / `id_check_result`, carrying status,
+  reason and environment only.
+- **A hole closed (0016):** members could previously write their own
+  `stage`, `liveness_verified_at` and `id_confirmed_at` through the
+  "own profile writable" policy, and could call `emit_trust_event` directly.
+  Both now belong to the server.
+- **Held:** no sentence about what Smile ID does with images ships until its
+  retention terms are confirmed (`SMILE_TERMS_CONFIRMED`, pinned by a check).
+- **Privacy policy** updated for the HMAC and for the name and email sent to
+  Smile ID.
+- **Screens:** the overview follows `verify-overview.slim.html`; the other
+  five are built from it and are not design-approved (SKILL.md).
 
 ## Environment
 

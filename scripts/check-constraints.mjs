@@ -742,6 +742,70 @@ check("'user is married' is a first-class report reason", (s) => {
   return /user_is_married/.test(s) ? false : "missing from report_reason enum";
 });
 
+// --- Smile ID: secrets, outcome-only storage, held copy ------------------
+//
+// The API key mints tokens and checks callback signatures. It must never be
+// reachable from the browser: no client file may touch it or the server
+// library, and it must never be renamed into a NEXT_PUBLIC_ variable.
+const isClient = (s) => /^\s*["']use client["']/.test(s);
+
+check("Smile ID API key and server library stay server-side", (s, f) => {
+  if (/NEXT_PUBLIC_SMILE/i.test(s)) return "NEXT_PUBLIC_ Smile ID variable";
+  if (!isClient(s)) return false;
+  if (/SMILE_ID_API_KEY|SMILE_ID_PARTNER_ID/.test(s)) return "client file reads a Smile ID secret";
+  if (/from\s+["']@\/lib\/smile-id["']/.test(s)) return "client file imports lib/smile-id";
+  return false;
+});
+
+// The callback reads status, reason, product, the job id, our nonce and —
+// transiently, for the HMAC — the ID number. Nothing else from the record.
+// Marital status above all: Toastly never verifies it (PRD §5.2.1).
+check("Smile ID callback never reads identity-record PII", (s, f) => {
+  if (!/smile-id[\/]callback/.test(f)) return false;
+  const hit =
+    /\b(full_name|first_name|last_name|other_names|date_of_birth|dob|photo_url|phone_number(_2)?|address(_unparsed)?|marital_status|gender|image_links|kyc_receipt|user_provided_info|antifraud|device_signals|document_link)\b/.exec(
+      s,
+    );
+  return hit ? `reads ${hit[0]}` : false;
+});
+
+check("ID numbers are never stored — only a keyed HMAC", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  return /\bid_number\b/i.test(s) ? "id_number appears in SQL" : false;
+});
+
+check("verification uses SmartSelfie and Biometric KYC only", (s) =>
+  /enhanced_kyc|basic_kyc|enhanced_document|["']enhanced_kyc["']/i.test(stripComments(s, "x.ts"))
+    ? "Enhanced or Basic KYC referenced"
+    : false,
+);
+
+// HELD until Smile ID's retention terms are confirmed (user decision).
+check("held Smile ID image-processing copy does not ship", (s, f) => {
+  if (/uses your images only/i.test(s)) return "unconfirmed retention wording";
+  if (!/SMILE_PROCESSING_SENTENCE/.test(s) || /export const SMILE_PROCESSING_SENTENCE/.test(s)) return false;
+  return /SMILE_TERMS_CONFIRMED\s*\?/.test(s) ? false : "processing sentence rendered without the SMILE_TERMS_CONFIRMED gate";
+});
+
+check("Smile ID terms stay held until confirmed", (s, f) => {
+  if (!/verification-copy\.ts$/.test(f)) return false;
+  return /export const SMILE_TERMS_CONFIRMED = false;/.test(s)
+    ? false
+    : "SMILE_TERMS_CONFIRMED flipped — confirm Smile ID's retention terms, then update this check";
+});
+
+check("verification columns guarded from member writes", (s, f) => {
+  if (!/0016_smile_id\.sql$/.test(f)) return false;
+  return /create trigger guard_verification_columns/.test(s) && /liveness_verified_at is distinct/.test(s)
+    ? false
+    : "guard_verification_columns trigger missing";
+});
+
+check("Smile ID path reads no tier or entitlement", (s, f) => {
+  if (!/smile-id|verification-view|components[\/]verify/.test(f)) return false;
+  return /current_tier|entitlements|\btier\b/i.test(stripStrings(s));
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-02 13:28 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-02 18:14 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -54,6 +54,38 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/account-data` | 360 | pass | pass | pass | pass | `mobile\audit-account-data-360.png` |
 | `/audit/account-delete` | 320 | pass | pass | pass | pass | `mobile\audit-account-delete-320.png` |
 | `/audit/account-delete` | 360 | pass | pass | pass | pass | `mobile\audit-account-delete-360.png` |
+| `/audit/verify/start` | 320 | pass | pass | pass | pass | `mobile\audit-verify-start-320.png` |
+| `/audit/verify/start` | 360 | pass | pass | pass | pass | `mobile\audit-verify-start-360.png` |
+| `/audit/verify/before-selfie` | 320 | pass | pass | pass | pass | `mobile\audit-verify-before-selfie-320.png` |
+| `/audit/verify/before-selfie` | 360 | pass | pass | pass | pass | `mobile\audit-verify-before-selfie-360.png` |
+| `/audit/verify/checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-checking-320.png` |
+| `/audit/verify/checking` | 360 | pass | pass | pass | pass | `mobile\audit-verify-checking-360.png` |
+| `/audit/verify/review` | 320 | pass | pass | pass | pass | `mobile\audit-verify-review-320.png` |
+| `/audit/verify/review` | 360 | pass | pass | pass | pass | `mobile\audit-verify-review-360.png` |
+| `/audit/verify/retry-spoof` | 320 | pass | pass | pass | pass | `mobile\audit-verify-retry-spoof-320.png` |
+| `/audit/verify/retry-spoof` | 360 | pass | pass | pass | pass | `mobile\audit-verify-retry-spoof-360.png` |
+| `/audit/verify/retry-image` | 320 | pass | pass | pass | pass | `mobile\audit-verify-retry-image-320.png` |
+| `/audit/verify/retry-image` | 360 | pass | pass | pass | pass | `mobile\audit-verify-retry-image-360.png` |
+| `/audit/verify/retry-error` | 320 | pass | pass | pass | pass | `mobile\audit-verify-retry-error-320.png` |
+| `/audit/verify/retry-error` | 360 | pass | pass | pass | pass | `mobile\audit-verify-retry-error-360.png` |
+| `/audit/verify/passed` | 320 | pass | pass | pass | pass | `mobile\audit-verify-passed-320.png` |
+| `/audit/verify/passed` | 360 | pass | pass | pass | pass | `mobile\audit-verify-passed-360.png` |
+| `/audit/verify/id-form` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-form-320.png` |
+| `/audit/verify/id-form` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-form-360.png` |
+| `/audit/verify/id-checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-checking-320.png` |
+| `/audit/verify/id-checking` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-checking-360.png` |
+| `/audit/verify/id-review` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-review-320.png` |
+| `/audit/verify/id-review` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-review-360.png` |
+| `/audit/verify/id-not-found` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-not-found-320.png` |
+| `/audit/verify/id-not-found` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-not-found-360.png` |
+| `/audit/verify/id-face` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-face-320.png` |
+| `/audit/verify/id-face` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-face-360.png` |
+| `/audit/verify/id-used` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-used-320.png` |
+| `/audit/verify/id-used` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-used-360.png` |
+| `/audit/verify/id-error` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-error-320.png` |
+| `/audit/verify/id-error` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-error-360.png` |
+| `/audit/verify/both` | 320 | pass | pass | pass | pass | `mobile\audit-verify-both-320.png` |
+| `/audit/verify/both` | 360 | pass | pass | pass | pass | `mobile\audit-verify-both-360.png` |
 
 ## Failures
 

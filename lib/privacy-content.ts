@@ -61,7 +61,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Optional details stay optional. Religion, tribe, language, relationship history, profession, education and genotype never decide who you're matched with unless you choose a filter for your own search — and genotype can't be filtered on at all.",
           "Your genotype is health information. It's private by default, shared only with people you choose, and never used by our analytics, AI systems or safety screening.",
           "We don't record your Gist calls, and we never keep transcripts.",
-          "We don't store your NIN or BVN record. When you verify, we keep only the result.",
+          "We don't store your NIN or BVN, or the official record behind it. When you verify, we keep only the result — plus, for the ID check, a scrambled code so the same ID can't verify two accounts.",
           "We don't sell your personal data.",
           "You can see, correct, download or delete your data at any time.",
         ],
@@ -96,8 +96,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "Verified Real (everyone): a check of your phone number, and a selfie liveness capture showing you're a real person present at your phone.",
-          "ID check (optional): your NIN or BVN, checked by our verification provider against the official record and matched to your selfie. We keep only the outcome — whether it passed, and the date. We do not store your NIN or BVN, or the name, date of birth, photo, phone number or address held on the official record.",
+          "Verified Real (everyone): a check of your phone number, and a selfie liveness capture showing you're a real person present at your phone. To run it, our verification provider receives the selfie, your name and your email address. We keep only the result — whether it passed, and the date.",
+          "ID check (optional): your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. We keep only the outcome — whether it passed, and the date. We do not store your number, or the name, date of birth, photo, phone number or address held on the official record. We do keep a scrambled code made from your number — a one-way code that can't be turned back into it — so the same ID can't verify two accounts.",
         ],
       },
       {
@@ -273,8 +273,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         items: [
           "Your account and profile: while your account is open. When you delete your account in your settings, your data is deleted straight away, except what this section says we keep, and backup copies are overwritten within 7 days.",
           "Genotype: until you delete it or your account, as in section 5.",
-          "Verification results: for as long as your account is open.",
-          "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number for that time, so it can't simply sign up again.",
+          "Verification results, and the scrambled code made from a verified ID number: for as long as your account is open.",
+          "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number, and of its ID number if it completed the ID check, for that time, so it can't simply sign up again.",
           "Payment and financial records: 6 years, as tax law requires.",
         ],
       },

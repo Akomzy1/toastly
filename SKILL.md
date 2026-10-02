@@ -115,6 +115,28 @@ editor. Two new components came with them, also unapproved: a block-level
 rings filling along a rule so it borrows the mark's own logic rather than
 inventing a new one.
 
+**Verification (Smile ID) — 1 of 6 prototypes received.** The verify page
+now follows `verify-overview.slim.html`: the dark "Verification" band, the
+ring stepper (which replaces the old `Stepper`), and its four states. The
+other five screens specified in `design/prompts/verification-screens-prompt.md`
+— before your selfie, checking, outcomes, ID check, ID outcomes — have not
+been exported. They are built in `components/verify/verify-flow.tsx` from the
+overview's own cards and buttons and the genotype consent checkbox, and are
+**not design-approved**. Deviations from the received overview, flagged:
+- No back chevron in the "Verification" band: the page has no meaningful
+  back target, and the app header sits above it.
+- Two stepper states the prototype doesn't draw: phone not yet confirmed
+  (rule empty) and the ID check being checked (amber arc on a dashed ring,
+  rule at 83.3%).
+- The photo-visibility choice (decision (c)) sits under the passed states.
+- The old "Verification is free" notice and "What we never do" card are
+  gone — the overview has neither, and the prompt bars any mention of a plan
+  in this flow.
+- The ID check offers three equal options (NIN, Virtual NIN, BVN); the
+  prompt drew two. Virtual NIN was added by a later instruction.
+- A sandbox test-identity picker appears only while `SMILE_ID_ENV=sandbox`,
+  and never on the live site unless the tester's email is allow-listed.
+
 **App-surface screens built in Prompts 4–9, also outside the prototype.**
 The match card (feed), the Gist session list and room, the inbox list, the
 wallet, Couple Mode, and the safety kit at `/safety-kit` (`/safety` is the

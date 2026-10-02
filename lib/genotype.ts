@@ -94,11 +94,12 @@ export const GENOTYPE_CONSENT_VERSION = "2026-09-26";
  * How long Supabase keeps backups that may still hold an encrypted value
  * after deletion. It is stated in the consent copy, so it must be TRUE.
  *
- * CONFIRMED 2 October 2026: the project is on the Supabase Free plan, which
- * keeps no backups, so the statement holds. It also holds on Pro (7 days),
- * the planned next step. Revisit — and ask for consent again — before moving
- * to Team (14 days), Enterprise (up to 30) or point-in-time recovery longer
- * than 7 days. The privacy policy states the same figure twice.
+ * CONFIRMED 2 October 2026: the project is on the Supabase Pro plan, which
+ * keeps daily backups for 7 days, so the statement is exactly true — assuming
+ * point-in-time recovery is off, its default. Revisit, and ask members to
+ * consent again, before enabling point-in-time recovery longer than 7 days
+ * or moving to Team (14 days) or Enterprise (up to 30). The privacy policy
+ * states the same figure twice.
  */
 export const GENOTYPE_BACKUP_RETENTION_DAYS = 7;
 
