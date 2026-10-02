@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-02 18:14 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-02 20:35 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -26,6 +26,8 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/privacy` | 360 | pass | pass | pass | pass | `mobile\privacy-360.png` |
 | `/signup` | 320 | pass | pass | pass | pass | `mobile\signup-320.png` |
 | `/signup` | 360 | pass | pass | pass | pass | `mobile\signup-360.png` |
+| `/login` | 320 | pass | pass | pass | pass | `mobile\login-320.png` |
+| `/login` | 360 | pass | pass | pass | pass | `mobile\login-360.png` |
 | `/audit/locked-inbox` | 320 | pass | pass | pass | pass | `mobile\audit-locked-inbox-320.png` |
 | `/audit/locked-inbox` | 360 | pass | pass | pass | pass | `mobile\audit-locked-inbox-360.png` |
 | `/audit/city-picker` | 320 | pass | pass | pass | pass | `mobile\audit-city-picker-320.png` |

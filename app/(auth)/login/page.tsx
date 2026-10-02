@@ -61,7 +61,7 @@ export default function LoginPage() {
 
       <p className="text-center text-ui text-grey-600">
         New here?{" "}
-        <Link href="/signup" className="font-semibold text-green-500">
+        <Link href="/signup" className="py-[13px] font-semibold text-green-500">
           Create an account
         </Link>
       </p>

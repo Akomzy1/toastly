@@ -115,6 +115,14 @@ editor. Two new components came with them, also unapproved: a block-level
 rings filling along a rule so it borrows the mark's own logic rather than
 inventing a new one.
 
+**Header "Sign in" — added by decision, not in the prototype** (2 October
+2026). The approved header had no route to an account: both "Get verified"
+actions pointed at Pricing. Now a quiet champagne "Sign in" text link sits
+before "Get verified" on desktop and as the last row of the mobile menu, and
+the amber buttons ("Join Toastly", mobile "Get verified") go to `/signup`.
+The desktop "Get verified" text link still goes to `/verify`. Send the
+header's signed-out and signed-in states through the design pipeline.
+
 **Verification (Smile ID) — 1 of 6 prototypes received.** The verify page
 now follows `verify-overview.slim.html`: the dark "Verification" band, the
 ring stepper (which replaces the old `Stepper`), and its four states. The

@@ -71,6 +71,15 @@ export function SiteHeader() {
 
         {/* Desktop actions */}
         <div className="ml-auto hidden flex-shrink-0 items-center gap-3.5 lg:flex">
+          {/* NOT IN THE PROTOTYPE — added by decision (2 October 2026): the
+              approved header has no route to an account. Same quiet champagne
+              link style as "Get verified" beside it. */}
+          <Link
+            href="/login"
+            className="flex min-h-11 items-center text-nav font-medium text-champagne no-underline transition-opacity duration-200 hover:opacity-75"
+          >
+            Sign in
+          </Link>
           <Link
             href="/verify"
             className="flex min-h-11 items-center gap-[7px] text-nav font-medium text-champagne no-underline transition-opacity duration-200 hover:opacity-75"
@@ -79,7 +88,7 @@ export function SiteHeader() {
             Get verified
           </Link>
           <Link
-            href="/pricing"
+            href="/signup"
             className="inline-flex min-h-11 items-center rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline transition-colors duration-200 hover:bg-gold-300"
           >
             Join Toastly
@@ -89,7 +98,7 @@ export function SiteHeader() {
         {/* Mobile actions */}
         <div className="ml-auto flex flex-shrink-0 items-center gap-3 lg:hidden">
           <Link
-            href="/pricing"
+            href="/signup"
             className="inline-flex min-h-11 items-center rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline"
           >
             Get verified
@@ -124,6 +133,15 @@ export function SiteHeader() {
               </Link>
             </li>
           ))}
+          {/* Not in the prototype — see the desktop "Sign in" note. */}
+          <li>
+            <Link
+              href="/login"
+              className="block py-3.5 text-nav-lg font-medium text-champagne no-underline"
+            >
+              Sign in
+            </Link>
+          </li>
         </ul>
       ) : null}
     </header>

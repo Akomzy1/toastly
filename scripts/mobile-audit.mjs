@@ -39,6 +39,7 @@ const ROUTES = [
   { route: "/stories", label: "Stories" },
   { route: "/privacy", label: "Privacy Policy" },
   { route: "/signup", label: "Sign up" },
+  { route: "/login", label: "Sign in" },
   // Locked inbox and the five newly designed in-app surfaces, via the harness
   { route: "/audit/locked-inbox", label: "Locked inbox" },
   { route: "/audit/city-picker", label: "City picker" },

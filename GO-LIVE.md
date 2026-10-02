@@ -47,7 +47,7 @@ the server; the result is decided only by the signed callback at
 |---|---|
 | `SMILE_ID_PARTNER_ID`, `SMILE_ID_API_KEY` | From the Smile ID portal. Server only. |
 | `SMILE_ID_ENV` | `sandbox` until cut-over. |
-| `SMILE_ID_CALLBACK_URL` | `https://www.trytoastly.com/api/smile-id/callback` — **www**. `.env.local` currently has the bare domain, which 308-redirects; Smile ID won't follow it. |
+| `SMILE_ID_CALLBACK_URL` | `https://www.trytoastly.com/api/smile-id/callback` — **www**. `.env.local` currently has the bare domain, which 308-redirects; Smile ID won't follow it. Sent with every job; the Smile ID portal has no field for it, only an optional allowlist (cut-over step 4). |
 | `SMILE_ID_SANDBOX_TESTERS` | Optional. Emails allowed the test-identity picker on the live site while in sandbox. |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Required now** — the session route and callback write with it. |
 
@@ -68,7 +68,13 @@ the server; the result is decided only by the signed callback at
    Smile ID says otherwise), `SMILE_ID_ENV=production`,
    `SMILE_ID_CALLBACK_URL=https://www.trytoastly.com/api/smile-id/callback`.
    Remove `SMILE_ID_SANDBOX_TESTERS`. Keep Preview on sandbox keys.
-4. **Set the callback URL in the Smile ID portal** too, to the same www URL.
+4. **The callback URL travels with every job** (the session config sends
+   `SMILE_ID_CALLBACK_URL`), so there is no portal field to fill. The portal
+   only has an optional allowlist, under *Developer › Security Settings ›
+   Callback URLs*: if allowlisting is enabled, register `www.trytoastly.com`
+   for the **production** environment (sandbox is configured separately), or
+   every job is refused at submission with `403 "You are not authorized to do
+   that."`.
 5. **Redeploy.** The test-identity picker disappears by itself
    (`SMILE_ID_ENV` is no longer `sandbox`).
 6. **Revoke every verification earned in the sandbox.** Sandbox results are
