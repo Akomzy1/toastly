@@ -39,7 +39,6 @@ export type Profile = {
   created_at: string;
   updated_at: string;
   display_name: string;
-  date_of_birth: string | null;
   city: string | null;
   country_code: string;
   bio: string | null;

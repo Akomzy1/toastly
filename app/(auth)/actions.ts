@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { capture } from "@/lib/analytics";
+import { dateOfBirthProblem } from "@/lib/age";
 
 export type AuthState = { error?: string } | null;
 
@@ -23,6 +24,7 @@ export async function signUp(
   const password = String(formData.get("password") ?? "");
   const displayName = String(formData.get("display_name") ?? "").trim();
   const gender = String(formData.get("gender") ?? "");
+  const dateOfBirth = String(formData.get("date_of_birth") ?? "");
 
   if (!email || !password || !displayName) {
     return { error: "Please fill in your name, email and password." };
@@ -31,12 +33,18 @@ export async function signUp(
     return { error: "Use at least 8 characters for your password." };
   }
 
+  // 18 and over only. The database refuses an under-18 date too (0015).
+  const dobProblem = dateOfBirthProblem(dateOfBirth);
+  if (dobProblem) return { error: dobProblem };
+
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { display_name: displayName, gender: gender || null },
+      // date_of_birth is moved out of the metadata into a private table by
+      // the database as soon as the profile exists (0015).
+      data: { display_name: displayName, gender: gender || null, date_of_birth: dateOfBirth },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/auth/callback`,
     },
   });

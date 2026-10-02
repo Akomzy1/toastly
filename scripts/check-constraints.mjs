@@ -330,6 +330,58 @@ check("relationship history is never read from profiles", (s, f) => {
   console.log(`${hit ? "FAIL" : "ok  "}  ${name}`);
 }
 
+// --- The privacy policy is withheld while it has placeholders --------------
+//
+// A legal page must not go live reading "[DATE]". The page 404s and the
+// genotype consent link disappears while any [placeholder] remains.
+check("privacy policy is withheld while placeholders remain", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (p.endsWith("lib/privacy-content.ts")) {
+    return /export const PRIVACY_PUBLISHED = PRIVACY_PLACEHOLDERS\.length === 0/.test(s)
+      ? false
+      : "PRIVACY_PUBLISHED is not derived from the placeholder scan";
+  }
+  if (p.endsWith("app/(marketing)/privacy/page.tsx")) {
+    return /if \(!PRIVACY_PUBLISHED[^)]*\) notFound\(\)/.test(s)
+      ? false
+      : "the privacy page renders while unpublished";
+  }
+  if (p.endsWith("lib/genotype.ts")) {
+    return /GENOTYPE_PRIVACY_URL[^=]*= PRIVACY_PUBLISHED \?/.test(s)
+      ? false
+      : "the consent step links to an unpublished privacy page";
+  }
+  return false;
+});
+
+// --- Date of birth is private, and 18+ is enforced by the database ---------
+check("date of birth is private and adults-only", (s, f) => {
+  if (f.endsWith(".sql")) {
+    if (!/create table public\.profile_birthdates/.test(s)) return false;
+    if (!/alter table public\.profiles drop column date_of_birth/.test(s)) {
+      return "date of birth is still on the readable profiles table";
+    }
+    if (!/interval '18 years'/.test(s)) return "no 18+ rule in the database";
+    if (!/create policy "own birthdate" on public\.profile_birthdates\s+for all using \(auth\.uid\(\) = profile_id\)/.test(s)) {
+      return "profile_birthdates is not own-only";
+    }
+    return false;
+  }
+  return /from\(["']profiles["']\)[^;]*?select\(["'][^"']*\bdate_of_birth\b/.test(s)
+    ? "a profiles query selects date_of_birth"
+    : false;
+});
+
+// --- Deleting an account keeps only what the policy says, first ------------
+check("account deletion keeps the required records before deleting", (s, f) => {
+  if (!f.replace(/\\/g, "/").endsWith("lib/account-actions.ts")) return false;
+  const keep = s.indexOf('rpc("prepare_account_deletion")');
+  const del = s.indexOf("auth.admin.deleteUser(");
+  if (keep < 0) return "deletion does not call prepare_account_deletion";
+  if (del < 0) return "deletion does not delete the auth user";
+  return keep < del ? false : "the account is deleted before its records are kept";
+});
+
 // --- SMS stays out of the call path ---------------------------------------
 //
 // SMS exists for emergency-contact confirmation and panic alerts only. The

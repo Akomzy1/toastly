@@ -37,6 +37,8 @@ const ROUTES = [
   { route: "/safety", label: "Safety & Trust" },
   { route: "/diaspora", label: "Diaspora" },
   { route: "/stories", label: "Stories" },
+  { route: "/privacy", label: "Privacy Policy" },
+  { route: "/signup", label: "Sign up" },
   // Locked inbox and the five newly designed in-app surfaces, via the harness
   { route: "/audit/locked-inbox", label: "Locked inbox" },
   { route: "/audit/city-picker", label: "City picker" },
@@ -51,6 +53,8 @@ const ROUTES = [
   { route: "/audit/genotype-settings", label: "Genotype settings row" },
   { route: "/audit/genotype-delete", label: "Genotype delete sheet" },
   { route: "/audit/genotype-display", label: "Genotype on a match card" },
+  { route: "/audit/account-data", label: "Your data" },
+  { route: "/audit/account-delete", label: "Delete account sheet" },
 ];
 
 const VIEWPORTS = [

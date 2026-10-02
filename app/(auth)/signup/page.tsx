@@ -58,6 +58,21 @@ export default function SignUpPage() {
             />
           </Label>
 
+          <Label htmlFor="date_of_birth">
+            Date of birth
+            <Input
+              id="date_of_birth"
+              name="date_of_birth"
+              type="date"
+              autoComplete="bday"
+              required
+            />
+            <span className="text-caption tracking-normal text-grey-400">
+              Toastly is for people aged 18 and over. Your date of birth is
+              never shown to other members.
+            </span>
+          </Label>
+
           <Label htmlFor="password">
             Password
             <Input
@@ -106,11 +121,11 @@ export default function SignUpPage() {
 
           <p className="text-caption tracking-normal text-grey-600">
             By continuing you agree to our{" "}
-            <Link href="/terms" className="text-green-500">
+            <Link href="/terms" className="-mx-[3px] px-[3px] py-[14.5px] text-green-500">
               Terms
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="text-green-500">
+            <Link href="/privacy" className="py-[14.5px] text-green-500">
               Privacy Policy
             </Link>
             .
@@ -120,7 +135,7 @@ export default function SignUpPage() {
 
       <p className="text-center text-ui text-grey-600">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-green-500">
+        <Link href="/login" className="py-[13px] font-semibold text-green-500">
           Sign in
         </Link>
       </p>

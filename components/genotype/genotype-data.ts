@@ -32,3 +32,26 @@ export async function getVisibleGenotypes(
   for (const [id, value] of entries) if (value) out[id] = value;
   return out;
 }
+
+/**
+ * The member's own genotype, for their data download (privacy policy §10).
+ * The owner is always a permitted viewer — this displays it to them as a
+ * file. Never used for anything else.
+ */
+export async function getOwnGenotypeForExport(): Promise<
+  | { value: string; visibility: string; consented_at: string; consent_version: string }
+  | { unavailable: true }
+  | null
+> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("get_own_genotype");
+  if (error) return { unavailable: true };
+  const row = Array.isArray(data) ? data[0] : null;
+  if (!row) return null;
+  return {
+    value: row.value === "unknown" ? "I don't know yet" : row.value,
+    visibility: row.visibility,
+    consented_at: row.consented_at,
+    consent_version: row.consent_version,
+  };
+}

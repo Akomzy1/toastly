@@ -474,6 +474,55 @@ policy must be callable by the member, and one that includes a block check
 lets a determined member infer that they have been blocked. Photo reveal has
 had the same property since 0007.
 
+## Privacy policy and account lifecycle
+
+**The page publishes itself once its placeholders are filled.** `/privacy`
+renders the supplied policy from `lib/privacy-content.ts`. While any
+`[placeholder]` remains, it returns 404, stays out of the sitemap, and the
+genotype consent step shows no link. A constraint check keeps that gate in
+place. Still to fill: the effective date, the backup window (`[7]`, twice),
+safety-record retention (`[2]`), the response time (`[30]`), financial-record
+retention (`[6]`) and the processing countries.
+
+**Built so the policy is true** (migration `0015_account_lifecycle.sql`):
+
+- **Age.** Signup asks for date of birth and refuses under-18s, in the form
+  and in the database. The date lives in `profile_birthdates`, readable only
+  by its owner. `profiles.date_of_birth` was readable by every verified member,
+  so it was moved rather than used. The database copies the date out of the
+  signup metadata and then removes it, so it doesn't ride in session tokens.
+- **Deletion.** "Delete my account" on the profile page keeps only what
+  section 8 says is kept, removes photos and message attachments from
+  storage, then deletes the auth user. Every row cascades from there. Each step
+  stops the next if it fails.
+- **Retention.** Reports about a deleted account (no reporter identity, no
+  free-text detail) are kept for 2 years and payment records for 6. If the
+  account was removed for breaking the rules (an `actioned` report), its
+  hashed phone number is blocked from verifying a new account for 2 years. A
+  report alone never blocks anyone. Expired rows are purged nightly **only if
+  pg_cron is enabled**.
+- **Download.** "Download my data" returns a JSON file built as the member,
+  so row-level security decides what's in it. A Starter member's file
+  contains no locked messages. Safety-screening events are excluded by design
+  and available on request.
+
+**Text corrected to match the build and CLAUDE.md:** "Verified Real" is the
+phone + liveness badge and NIN/BVN is the optional ID check; no reference
+number is kept; no voice prompt answers; no per-question Gist record;
+venues are searched near your city; the panic button's exact location goes
+from the member's own phone, never through Toastly; usage is five product
+events plus hosting logs; the safety team doesn't read messages; safety
+screening uses no protected attribute but does compare payment, phone and
+connection country; the strongest automatic step is re-verification, and no
+machine removes an account; only necessary cookies; sign-in emails come from
+Supabase; the Anthropic row is gone, since no AI feature exists.
+
+**Still open:** a lawyer should review the policy, including the
+UK-representative line; `/terms` still 404s; the consent step's privacy line
+("Our privacy policy explains your rights over this information and how to
+reach us about them.") did not bump the consent version — it adds a link, not
+a term. Accounts created before 0015 have no date of birth on file.
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

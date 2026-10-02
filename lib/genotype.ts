@@ -23,6 +23,8 @@
  *     Sentinel, or the AriyaPlanner brief.
  */
 
+import { PRIVACY_PUBLISHED } from "@/lib/privacy-content";
+
 export const GENOTYPE_VALUES = ["AA", "AS", "AC", "SS", "SC", "unknown"] as const;
 export type GenotypeValue = (typeof GENOTYPE_VALUES)[number];
 
@@ -100,14 +102,16 @@ export const GENOTYPE_CONSENT_VERSION = "2026-09-26";
 export const GENOTYPE_BACKUP_RETENTION_DAYS = 7;
 
 /**
- * The privacy policy, with its data-rights contact.
+ * The privacy policy, whose section 10 names the data-rights contact
+ * (support@trytoastly.com). Shown at the end of the consent step's
+ * "Deleting it" section.
  *
- * BLOCKED — deliberately null. No /privacy page exists (the footer and the
- * signup page already link to one that 404s), and no data-rights contact
- * address has been provided. A dead link inside a legal consent step would be
- * worse than none, so the line renders only once this is set.
+ * Adding this link does NOT bump GENOTYPE_CONSENT_VERSION: it adds no new
+ * term to what members agree to, it points to where their existing rights
+ * are described. A change to what genotype is used for, or who sees it,
+ * would require a bump.
  */
-export const GENOTYPE_PRIVACY_URL: string | null = null;
+export const GENOTYPE_PRIVACY_URL: string | null = PRIVACY_PUBLISHED ? "/privacy" : null;
 
 /**
  * Plain-language information on what genotype combinations mean.
@@ -155,8 +159,9 @@ export const GENOTYPE_CONSENT = {
     },
   ],
   /**
-   * Shown at the end of "Deleting it" only once GENOTYPE_PRIVACY_URL is set.
-   * NEW LINE — not part of the approved copy; needs review before it renders.
+   * Shown at the end of "Deleting it". Added at the user's direction
+   * (decision 1, 26 September 2026); the wording is new and is flagged for
+   * review in FINAL-REVIEW.md.
    */
   privacyLine:
     "Our privacy policy explains your rights over this information and how to reach us about them.",

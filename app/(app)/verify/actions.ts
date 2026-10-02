@@ -65,6 +65,15 @@ export async function startPhoneVerification(
 
   // One number, one account, permanently — this is what makes a block stick.
   const hash = hashPhone(phone);
+
+  // An account removed for breaking the rules keeps its number blocked for
+  // the retention period, even after deletion (0015).
+  const { data: blocked } = await supabase.rpc("is_phone_blocked", { p_hash: hash });
+  if (blocked === true) {
+    return {
+      error: "That number can't be used to verify a new account. If you think this is a mistake, email support@trytoastly.com.",
+    };
+  }
   const { data: taken } = await supabase
     .from("phone_identities")
     .select("profile_id")

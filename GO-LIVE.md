@@ -15,7 +15,7 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All fourteen migrations are applied. 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Migrations 0001–0014 are applied. **0015** (account lifecycle) is safe to run before or after its code deploys: signup works either way, and account deletion refuses until 0015 exists. Enable **pg_cron** first if you can, or expired retention records are never purged. 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
 
 **Still to do on Supabase even though it works:** add
 `https://trytoastly.com` to Authentication → URL Configuration (Site URL and
@@ -76,9 +76,10 @@ Nothing in the codebase reads these. Setting them changes nothing today.
 
 ## 6. Not a credential, but on the same list
 
-- **A privacy policy page.** `/privacy` does not exist, yet the footer and
-  the signup page link to it. The genotype consent step also needs it, with
-  a data-rights contact address — none exists in the project yet.
+- **The privacy policy's placeholders.** `/privacy` is built but returns 404
+  until the effective date, retention periods, response time and processing
+  countries are filled in (`lib/privacy-content.ts`). A lawyer should review
+  it first. `/terms` still has no page.
 - **Backup retention on the Supabase plan.** The genotype consent copy says
   deleted values leave encrypted backups "within 7 days". That is true only
   on Pro without PITR; change `GENOTYPE_BACKUP_RETENTION_DAYS` if not.
