@@ -15,7 +15,7 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Migrations 0001–0014 are applied. **0015** (account lifecycle) is safe to run before or after its code deploys: signup works either way, and account deletion refuses until 0015 exists. Enable **pg_cron** first if you can, or expired retention records are never purged. 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All fifteen migrations are applied (0015, account lifecycle, on 2 October 2026). Expired retention records are purged nightly only if **pg_cron** is enabled — check with `select jobname from cron.job where jobname = 'toastly-purge-retention';`. 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
 
 **Still to do on Supabase even though it works:** add
 `https://trytoastly.com` to Authentication → URL Configuration (Site URL and
@@ -80,9 +80,14 @@ Nothing in the codebase reads these. Setting them changes nothing today.
   until the effective date, retention periods, response time and processing
   countries are filled in (`lib/privacy-content.ts`). A lawyer should review
   it first. `/terms` still has no page.
-- **Backup retention on the Supabase plan.** The genotype consent copy says
-  deleted values leave encrypted backups "within 7 days". That is true only
-  on Pro without PITR; change `GENOTYPE_BACKUP_RETENTION_DAYS` if not.
+- **Supabase plan: Free, by decision, until the project gains traction.**
+  The Free plan keeps **no backups** — a mistaken delete or a database fault
+  loses every member, match and payment record for good — and pauses the
+  project after a week without activity. Move to Pro before real members
+  depend on it. The genotype consent copy and privacy policy say backups are
+  overwritten "within 7 days", which is true on Free and on Pro; moving to
+  Team, Enterprise or point-in-time recovery over 7 days means changing
+  `GENOTYPE_BACKUP_RETENTION_DAYS` and asking members to consent again.
 - **Emergency numbers** (112, 767 Lagos, 999, 911) are marked
   VERIFY BEFORE LAUNCH in `lib/safety.ts`. A wrong number on a safety screen
   is worse than no number.

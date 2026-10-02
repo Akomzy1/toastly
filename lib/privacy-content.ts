@@ -222,7 +222,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "We never use it to choose or rank your matches, never tell anyone whether a pair is \"compatible\", never mark it as verified, and never pass it to our analytics, to any AI system, to our safety screening, or to AriyaPlanner.",
           "It's what you tell us — we don't check it.",
           "It's stored encrypted, and only you and the people you've chosen can read it.",
-          "Deleting it removes it from Toastly straight away, together with your permission. Encrypted backup copies are overwritten within [7] days.",
+          "Deleting it removes it from Toastly straight away, together with your permission. Encrypted backup copies are overwritten within 7 days.",
         ],
       },
     ],
@@ -261,7 +261,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "Your account and profile: while your account is open. When you delete your account in your settings, your data is deleted straight away, except what this section says we keep, and backup copies are overwritten within [7] days.",
+          "Your account and profile: while your account is open. When you delete your account in your settings, your data is deleted straight away, except what this section says we keep, and backup copies are overwritten within 7 days.",
           "Genotype: until you delete it or your account, as in section 5.",
           "Verification results: for as long as your account is open.",
           "Safety records (reports about an account, and their outcome): up to [2] years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number for that time, so it can't simply sign up again.",
