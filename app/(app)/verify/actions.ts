@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
+const PHONE_UNAVAILABLE = "Phone verification isn't available right now. Please try again later.";
+
 /**
  * Verification.
  *
@@ -63,7 +65,15 @@ export async function startPhoneVerification(
   if (!user) return { error: "Please sign in again." };
 
   // One number, one account, permanently — this is what makes a block stick.
-  const hash = hashPhone(phone);
+  // hashPhone refuses to run without the pepper in production. Say so
+  // plainly instead of crashing the page; the log names the cause.
+  let hash: string;
+  try {
+    hash = hashPhone(phone);
+  } catch (e) {
+    console.error("[verify] phone hashing unavailable:", (e as Error).message);
+    return { error: PHONE_UNAVAILABLE };
+  }
 
   // An account removed for breaking the rules keeps its number blocked for
   // the retention period, even after deletion (0015).
@@ -84,7 +94,12 @@ export async function startPhoneVerification(
   }
 
   const { error } = await supabase.auth.updateUser({ phone });
-  if (error) return { error: error.message };
+  if (error) {
+    // Most often: no SMS provider configured in Supabase Auth. The raw
+    // message is for the logs, not the member.
+    console.error("[verify] sending phone code failed:", error.message);
+    return { error: "We couldn't send a code right now. Please try again later." };
+  }
 
   return { ok: "We've sent you a code." };
 }
@@ -110,8 +125,15 @@ export async function confirmPhoneCode(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
 
+  let phoneHash: string;
+  try {
+    phoneHash = hashPhone(phone);
+  } catch (e) {
+    console.error("[verify] phone hashing unavailable:", (e as Error).message);
+    return { error: PHONE_UNAVAILABLE };
+  }
   await supabase.from("phone_identities").upsert({
-    phone_hash: hashPhone(phone),
+    phone_hash: phoneHash,
     profile_id: user.id,
   });
 

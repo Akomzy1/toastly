@@ -114,7 +114,8 @@ resolve in the Smile ID portal.
 | Integration | Variables | What happens without it |
 |---|---|---|
 | Canonical domain | `NEXT_PUBLIC_SITE_URL` | Defaults to `https://trytoastly.com`. If the real origin differs, every canonical URL, OG image and sitemap entry is wrong in search results. |
-| Phone hashing | `PHONE_HASH_PEPPER` | **Verification refuses to run in production.** Phone numbers are stored only as hashes, and the number space is small enough to brute-force, so an unpeppered hash is effectively reversible. Generate once: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Changing it later invalidates every existing phone identity. |
+| Phone codes (Supabase Auth SMS) | Set in **Supabase → Authentication → Providers → Phone**, not in Vercel | **No member can confirm a phone, so nobody can reach Verified Real.** Supabase Auth sends the code itself; our `TERMII_*` / `TWILIO_*` variables cover emergency contacts only. Twilio is supported natively; Termii would need a Supabase "Send SMS" hook (not built). The phone step now says "We couldn't send a code right now" instead of showing Supabase's raw error. |
+| Phone hashing | `PHONE_HASH_PEPPER` | **The phone step refuses to run in production** ("Phone verification isn't available right now" — before 2 October 2026 it crashed the page). Phone numbers are stored only as hashes, and the number space is small enough to brute-force, so an unpeppered hash is effectively reversible. Generate once: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Changing it later invalidates every existing phone identity. |
 | Service role | `SUPABASE_SERVICE_ROLE_KEY` | **Verification can't start or finish without it** (Smile ID session and callback), and staff tooling can't read. **Server-side only — never `NEXT_PUBLIC_`.** |
 
 ---
