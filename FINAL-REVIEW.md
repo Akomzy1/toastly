@@ -655,6 +655,15 @@ selfie check" until the photo match ships; either person can extend once
 "Online now" is a yes/no inside an accepted Gist; no last-seen time
 leaves the database.
 
+## Open: a Gist can count before its audio connects
+
+The Starter cap counts a Gist from `started_at`, which gist_join sets when
+the first person is issued a call token. If the browser then fails to reach
+LiveKit (as on 3 October 2026, from a doubled `wss://` in LIVEKIT_URL), the
+Gist still counts for both people. Fix when it matters: a LiveKit webhook
+(participant_joined) that marks the call connected only once both are in
+the room, and count from that instead.
+
 ## In-app navigation — built against its prototypes
 
 The in-app shell had no navigation: a member who finished their profile had

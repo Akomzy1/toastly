@@ -22,6 +22,18 @@ const b64url = (input: Buffer | string) =>
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 
+/**
+ * LIVEKIT_URL, tidied: trimmed, and with a repeated scheme collapsed
+ * ("wss://wss://x.livekit.cloud" → "wss://x.livekit.cloud"). A doubled scheme
+ * once made every call fail with "could not establish signal connection".
+ */
+export function livekitUrl(): string | null {
+  const raw = (process.env.LIVEKIT_URL ?? "").trim().replace(/\/+$/, "");
+  if (!raw) return null;
+  const host = raw.replace(/^((wss?|https?):\/\/)+/i, "");
+  return `wss://${host}`;
+}
+
 export function isLiveKitConfigured(): boolean {
   return Boolean(
     process.env.LIVEKIT_URL &&
@@ -101,7 +113,7 @@ export function gistRoomName(sessionId: string): string {
  * Never throws: a room that's already gone is the result we wanted.
  */
 export async function closeGistRoom(roomName: string): Promise<boolean> {
-  const url = process.env.LIVEKIT_URL;
+  const url = livekitUrl();
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
   if (!url || !apiKey || !apiSecret) return false;

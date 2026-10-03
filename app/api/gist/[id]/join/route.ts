@@ -1,4 +1,4 @@
-import { createGistToken, gistRoomName, isLiveKitConfigured } from "@/lib/livekit";
+import { createGistToken, gistRoomName, isLiveKitConfigured, livekitUrl } from "@/lib/livekit";
 import { json, memberSession, readClock } from "@/lib/gist-clock";
 
 export const dynamic = "force-dynamic";
@@ -36,5 +36,5 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   });
 
   const clock = await readClock(supabase, params.id, user.id);
-  return json({ url: process.env.LIVEKIT_URL, token, clock });
+  return json({ url: livekitUrl(), token, clock });
 }
