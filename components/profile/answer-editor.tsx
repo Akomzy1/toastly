@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useFormState, useFormStatus } from "react-dom";
 import { getAnswerFeedback, savePromptAnswer, type FeedbackState } from "@/app/(app)/profile/prompts/actions";
 import { Notice } from "@/components/ui/notice";
+import { ScreenBand } from "@/components/app/screen-band";
 
 /**
  * Edit a prompt answer — answer-mirror.slim.html.
@@ -70,10 +71,7 @@ export function AnswerEditor({
 
   return (
     <div className="mx-auto grid w-full max-w-[680px]">
-      <div className="grid gap-0.5 bg-green-800 px-4 pb-[18px] pt-5">
-        <h1 className="m-0 font-serif text-[19px] font-bold text-white">Edit answer</h1>
-        <p className="m-0 text-[13px] text-white/[.66]">Profile prompts</p>
-      </div>
+      <ScreenBand title="Edit answer" sub="Profile prompts" back="/profile" />
 
       <form action={save} className="grid content-start gap-[18px] px-3.5 pb-6 pt-5">
         <input type="hidden" name="prompt_id" value={promptId} />

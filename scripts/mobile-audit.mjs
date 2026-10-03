@@ -57,6 +57,11 @@ const ROUTES = [
   { route: "/audit/account-data", label: "Your data" },
   { route: "/audit/account-delete", label: "Delete account sheet" },
   { route: "/audit/gist-call", label: "Gist call · before joining" },
+  // In-app navigation (nav-*.slim.html)
+  { route: "/audit/nav/today", label: "Nav · today" },
+  { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },
+  { route: "/audit/nav/gists", label: "Nav · gists" },
+  { route: "/audit/nav/profile", label: "Nav · profile" },
   // Gist invites — every state of prototypes 1–8 and Both Clocks
   { route: "/audit/gist-invite/reply-starter", label: "Gist invite · reply-starter" },
   { route: "/audit/gist-invite/reply-paid", label: "Gist invite · reply-paid" },

@@ -367,7 +367,9 @@ check("date of birth is private and adults-only", (s, f) => {
     }
     return false;
   }
-  return /from\(["']profiles["']\)[^;]*?select\(["'][^"']*\bdate_of_birth\b/.test(s)
+  // Stops at the next .from( so a separate query on the member's own
+  // profile_birthdates row (in the same Promise.all) isn't mistaken for it.
+  return /from\(["']profiles["']\)(?:(?!\.from\()[^;])*?select\(["'][^"']*\bdate_of_birth\b/.test(s)
     ? "a profiles query selects date_of_birth"
     : false;
 });

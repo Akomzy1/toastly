@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScreenBand } from "@/components/app/screen-band";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -53,9 +54,10 @@ export default async function WalletPage() {
     .limit(20);
 
   return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
+    <>
+      <ScreenBand title="Wallet" sub="Coins and date deposits" />
+    <div className="mx-auto grid max-w-[640px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
       <div className="grid gap-2">
-        <h1 className="text-h3 text-ink-900">Coins</h1>
         <p className="text-ui text-grey-600">
           Coins aren&rsquo;t a subscription and they aren&rsquo;t a fee. You
           stake a few when a date is confirmed, and they come straight back
@@ -150,5 +152,6 @@ export default async function WalletPage() {
       ) : null}
       <HelpButton className="justify-self-start" />
     </div>
+    </>
   );
 }

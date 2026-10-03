@@ -1,19 +1,17 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BrandLockup } from "@/components/brand-mark";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { Notice } from "@/components/ui/notice";
-import { signOut } from "../(auth)/actions";
 import { PresenceHeartbeat } from "@/components/app/presence-heartbeat";
+import { AppHeader, AppTabBar } from "@/components/app/nav";
 
 /**
  * In-app shell.
  *
- * NOT IN THE PROTOTYPE — flagged. The only in-app screen the design covers is
- * the locked inbox, and that is a component-state demo rather than a shell:
- * it shows a tab bar and a list row, not navigation, headers or page chrome.
- * This is built from the design system's tokens and kept deliberately thin so
- * that when a real app shell is designed, little has to be unpicked.
+ * Built against design/prototype/nav-*.slim.html (3 October 2026): a bottom
+ * tab bar on phones (Today, Gists, Inbox, Profile), the same four in the dark
+ * header on desktop, and each screen's own band (components/app/screen-band)
+ * carrying the Safety pill. Content is padded clear of the tab bar and the
+ * phone's home indicator.
  *
  * SKILL.md: in-app layout rules differ from the marketing pages — no marketing
  * header, no footer.
@@ -47,22 +45,9 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="sticky top-0 z-50 border-b border-champagne/[.16] bg-green-800 font-sans">
-        <div className="mx-auto flex h-[60px] max-w-container items-center justify-between gap-4 px-5 md:px-10">
-          <Link href="/verify" className="no-underline">
-            <BrandLockup tone="dark" size={22} />
-          </Link>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="text-nav font-medium text-champagne transition-opacity duration-200 hover:opacity-75"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-      <main>{children}</main>
+      <AppHeader />
+      <main className="pb-[calc(58px+env(safe-area-inset-bottom))] lg:pb-0">{children}</main>
+      <AppTabBar />
       <PresenceHeartbeat />
     </div>
   );

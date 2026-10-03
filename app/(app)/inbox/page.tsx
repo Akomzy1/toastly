@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScreenBand } from "@/components/app/screen-band";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -74,17 +75,9 @@ export default async function InboxPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-[560px] gap-6 px-5 py-section-y">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-h3 text-ink-900">Inbox</h1>
-        {inbox.kind === "locked" && inbox.unreadCount > 0 ? (
-          /* The tab-bar badge: amber pill, count only, no preview. */
-          <span className="grid h-5 min-w-5 place-items-center rounded-pill bg-gold-500 px-1.5 text-chip font-semibold text-green-800">
-            {inbox.unreadCount}
-          </span>
-        ) : null}
-      </div>
-
+    <>
+      <ScreenBand title="Inbox" sub="Messages" />
+    <div className="mx-auto grid max-w-[560px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
       {inbox.kind === "locked" ? (
         inbox.unreadCount === 0 ? (
           <Card className="grid gap-3 p-[26px]">
@@ -139,5 +132,6 @@ export default async function InboxPage() {
         </ul>
       )}
     </div>
+    </>
   );
 }

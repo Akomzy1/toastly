@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileForm } from "./profile-form";
-import { GenotypeSection } from "@/components/genotype/genotype-section";
-import { YourData } from "@/components/account/your-data";
-import { PromptList } from "@/components/profile/prompt-list";
-import { HelpButton } from "@/components/help/help-button";
-import Link from "next/link";
-import type { Profile, ProfileHistory } from "@/lib/types/profile";
+import { ScreenBand } from "@/components/app/screen-band";
+import { ProfileHub, type HubPrompt } from "@/components/profile/profile-hub";
+import { TIER_LABELS } from "@/lib/entitlements";
+import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
-  title: "Your profile",
+  title: "Profile",
   robots: { index: false, follow: false },
 };
+export const dynamic = "force-dynamic";
 
+/** Profile as the hub — nav-profile-hub.slim.html. The long form lives at /profile/edit. */
 export default async function ProfilePage() {
   const supabase = createClient();
   const {
@@ -21,79 +20,43 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single<Profile>();
-
+  const [{ data: profile }, { data: birth }, { data: tierRow }, { data: answers }] = await Promise.all([
+    supabase.from("profiles").select("display_name, city, stage").eq("id", user.id).maybeSingle(),
+    supabase.from("profile_birthdates").select("date_of_birth").eq("profile_id", user.id).maybeSingle(),
+    supabase.rpc("current_tier", { p_profile_id: user.id }),
+    supabase.from("prompt_answers").select("prompt_id, answer, prompts(text, sort_order)").eq("profile_id", user.id),
+  ]);
   if (!profile) redirect("/verify");
 
-  // Own row only — RLS on profile_history (0013) enforces who else may read it.
-  const { data: historyRow } = await supabase
-    .from("profile_history")
-    .select("history, has_children, visibility")
-    .eq("profile_id", user.id)
-    .maybeSingle<ProfileHistory>();
+  // Your own age, from your own private date of birth — shown only to you here.
+  let age: number | null = null;
+  if (birth?.date_of_birth) {
+    const dob = new Date(birth.date_of_birth);
+    const now = new Date();
+    const birthdayThisYear = new Date(Date.UTC(now.getUTCFullYear(), dob.getUTCMonth(), dob.getUTCDate()));
+    age = now.getUTCFullYear() - dob.getUTCFullYear() - (now < birthdayThisYear ? 1 : 0);
+  }
+  const tier = (tierRow as Tier | null) ?? "starter";
+  const prompts: HubPrompt[] = (answers ?? [])
+    .map((a) => {
+      const p = Array.isArray(a.prompts) ? a.prompts[0] : (a.prompts as { text?: string; sort_order?: number } | null);
+      return { id: a.prompt_id as number, prompt: p?.text ?? "", answer: a.answer as string, order: p?.sort_order ?? 0 };
+    })
+    .sort((x, y) => x.order - y.order)
+    .map(({ id, prompt, answer }) => ({ id, prompt, answer }));
 
-  const history: ProfileHistory = historyRow ?? {
-    history: null,
-    has_children: null,
-    visibility: "on_match",
-  };
-
-  // Closed cities are listed too. A member may pick a city that hasn't opened
-  // yet — the option is honest about it, and the feed explains the fallback
-  // rather than the choice quietly doing nothing.
-  const { data: cities } = await supabase
-    .from("diaspora_cities")
-    .select("slug, label, country_code, active")
-    .order("label");
-
-  // The picker groups by country name, the way the prototype does. The table
-  // stores an ISO code, and has no region column — so region is null rather
-  // than a guess at what "NY · metro area" would be for every city.
-  const COUNTRY_NAMES: Record<string, string> = {
-    US: "United States",
-    GB: "United Kingdom",
-    CA: "Canada",
-  };
-
-  const cityOptions = (cities ?? []).map((c) => ({
-    slug: c.slug,
-    label: c.label,
-    country: COUNTRY_NAMES[c.country_code] ?? c.country_code,
-    region: null,
-    active: c.active,
-  }));
+  const name = `${profile.display_name}${age !== null ? `, ${age}` : ""}`;
+  const meta = [profile.city, TIER_LABELS[tier]].filter(Boolean).join(" · ");
 
   return (
-    <div className="mx-auto grid max-w-[720px] gap-6 px-5 py-section-y">
-      <div className="grid gap-2">
-        <h1 className="text-h3 text-ink-900">Your profile</h1>
-        <p className="text-ui text-grey-600">
-          Your prompt answers are what people read first. Everything below the
-          basics is optional.
-        </p>
-      </div>
-      <PromptList />
-      <ProfileForm profile={profile} history={history} cities={cityOptions} />
-      {/* Separate from the form on purpose: genotype has its own consent
-          step and its own save, and never travels with other fields. */}
-      <GenotypeSection />
-      {/* NOT IN THE PROTOTYPE — flagged, by decision (3 October 2026): the
-          in-app shell has no navigation yet, so setup needs a way onward.
-          A proper tab bar is going through the design pipeline
-          (design/prompts/app-tab-bar-prompt.md). */}
-      <Link
-        href="/feed"
-        className="flex min-h-12 w-full items-center justify-center rounded-lg bg-gold-500 px-5 py-3.5 text-button text-green-800 no-underline transition-colors duration-200 hover:bg-gold-300"
-      >
-        Go to today&rsquo;s six
-      </Link>
-      {/* Download and delete — privacy policy section 10. */}
-      <YourData />
-      <HelpButton className="justify-self-start" />
-    </div>
+    <>
+      <ScreenBand title="Profile" sub="You, as others see you" />
+      <ProfileHub
+        name={name}
+        meta={meta}
+        verified={profile.stage === "verified_real" || profile.stage === "id_confirmed"}
+        prompts={prompts}
+      />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RingStepper } from "./ring-stepper";
+import { ScreenBand } from "@/components/app/screen-band";
 import { Input, Label, Select } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import {
@@ -500,7 +501,7 @@ export function VerifyFlow({
               <h2 className="m-0 font-serif text-[24px] font-bold leading-[1.2] text-white">You&rsquo;re Verified Real</h2>
               <p className="m-0 text-ui leading-[1.6] text-white/80">Your profile can now be seen by other members.</p>
             </div>
-            <Link href="/profile" className={AMBER}>
+            <Link href="/profile/edit" className={AMBER}>
               Set up your profile
             </Link>
           </div>
@@ -585,12 +586,7 @@ function Shell({ view, children }: { view: VerifyView; children: React.ReactNode
   const live = isVerifiedReal(view);
   return (
     <div className="mx-auto grid w-full max-w-[680px]">
-      <div className="grid gap-0.5 bg-green-800 px-4 pb-[18px] pt-5">
-        <h1 className="m-0 font-serif text-[19px] font-bold text-white">Verification</h1>
-        <p className="m-0 text-[13px] text-white/[.66]">
-          {live ? "Your profile is visible" : "Your profile goes live once you're Verified Real"}
-        </p>
-      </div>
+      <ScreenBand title="Verification" sub={live ? "Your profile is visible" : "Your profile goes live once you're Verified Real"} />
       <div className="grid content-start gap-[18px] px-4 pb-6 pt-5">
         <RingStepper view={view} />
         {children}

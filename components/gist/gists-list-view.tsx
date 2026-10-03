@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AnswerStrip, Monogram } from "./invite-parts";
+import { ScreenBand } from "@/components/app/screen-band";
 
 /** The list body of gists-list.slim.html — shared by the page and the audit harness. */
 
@@ -19,10 +20,7 @@ export type GistGroup = { title: string; rows: GistRow[]; empty: string };
 export function GistListView({ groups }: { groups: GistGroup[] }) {
   return (
     <div className="mx-auto grid w-full max-w-[680px]">
-      <div className="flex items-baseline justify-between gap-3 bg-green-800 px-4 pb-[18px] pt-5">
-        <h1 className="m-0 font-serif text-[19px] font-bold text-white">Gists</h1>
-        <p className="m-0 text-[13px] text-white/[.66]">18-minute voice chats</p>
-      </div>
+      <ScreenBand title="Gists" sub="18-minute voice chats" />
       <div className="grid content-start gap-6 px-3.5 pb-6 pt-4">
         {groups.map((g) => (
           <section key={g.title} className="grid gap-2.5">

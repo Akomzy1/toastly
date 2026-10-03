@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScreenBand } from "@/components/app/screen-band";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
@@ -55,9 +56,10 @@ export default async function SafetyKitPage() {
     : null;
 
   return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
+    <>
+      <ScreenBand title="Safety kit" sub="Free on every plan, always" safety={false} />
+    <div className="mx-auto grid max-w-[640px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
       <div className="grid gap-2">
-        <h1 className="text-h3 text-ink-900">Safety kit</h1>
         <p className="text-ui text-grey-600">
           Tools for meeting people safely. Every one of them is free, on every
           plan — none of it is part of a subscription, and none of it ever will
@@ -87,5 +89,6 @@ export default async function SafetyKitPage() {
         </Notice>
       </Card>
     </div>
+    </>
   );
 }

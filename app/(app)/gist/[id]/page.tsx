@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { getVisibleGenotype } from "@/components/genotype/genotype-data";
 import { OutcomeForm } from "./outcome-form";
 import { SpotSuggestions, type Spot } from "./spot-suggestions";
 import { GistCall } from "@/components/gist/gist-call";
+import { ScreenBand } from "@/components/app/screen-band";
 import {
   AfterAccepting,
   AutoRefresh,
@@ -219,14 +219,10 @@ export default async function GistSessionPage({
   const videoPending = session.medium === "video" && canUseVideo(tier);
 
   return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
+    <>
+    <ScreenBand title="Voice Gist" sub={`with ${otherName.split(" ")[0]}`} back="/gist" />
+    <div className="mx-auto grid max-w-[640px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
       <div className="grid gap-2">
-        <Link href="/gist" className="text-nav text-green-500">
-          ← All sessions
-        </Link>
-        <h1 className="text-h3 text-ink-900">
-          {session.medium === "video" ? "Live video Gist" : "Voice Gist"}
-        </h1>
         <p className="text-ui text-grey-600">
           {GIST_DEFAULT_MINUTES} minutes, extendable once by{" "}
           {GIST_EXTENSION_MINUTES}. Nobody sees anybody&rsquo;s phone number —
@@ -323,5 +319,6 @@ export default async function GistSessionPage({
           so this is exactly where a free member most needs it. */}
       <SafetyActions memberId={otherId} name={otherName} />
     </div>
+    </>
   );
 }

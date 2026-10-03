@@ -655,6 +655,18 @@ selfie check" until the photo match ships; either person can extend once
 "Online now" is a yes/no inside an accepted Gist; no last-seen time
 leaves the database.
 
+## In-app navigation — built against its prototypes
+
+The in-app shell had no navigation: a member who finished their profile had
+nowhere to go. Now (`components/app/nav.tsx`, `screen-band.tsx`): a bottom
+tab bar on phones — Today, Gists, Inbox, Profile — with the inbox's bare
+unread count and a sand dot on Gists while an invite waits (cleared when
+Gists is opened); the same four in the desktop header with Safety kit and
+Sign out; a labelled Safety pill on every screen's band; Profile as the hub
+leading to Wallet, Couple Mode, Safety kit, Verification, Toastly Help and
+Your data. The profile form moved to /profile/edit. The temporary "Go to
+today's six" button is gone.
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

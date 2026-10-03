@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-03 15:00 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-03 18:34 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -58,6 +58,14 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/account-delete` | 360 | pass | pass | pass | pass | `mobile\audit-account-delete-360.png` |
 | `/audit/gist-call` | 320 | pass | pass | pass | pass | `mobile\audit-gist-call-320.png` |
 | `/audit/gist-call` | 360 | pass | pass | pass | pass | `mobile\audit-gist-call-360.png` |
+| `/audit/nav/today` | 320 | pass | pass | pass | pass | `mobile\audit-nav-today-320.png` |
+| `/audit/nav/today` | 360 | pass | pass | pass | pass | `mobile\audit-nav-today-360.png` |
+| `/audit/nav/today-no-badge` | 320 | pass | pass | pass | pass | `mobile\audit-nav-today-no-badge-320.png` |
+| `/audit/nav/today-no-badge` | 360 | pass | pass | pass | pass | `mobile\audit-nav-today-no-badge-360.png` |
+| `/audit/nav/gists` | 320 | pass | pass | pass | pass | `mobile\audit-nav-gists-320.png` |
+| `/audit/nav/gists` | 360 | pass | pass | pass | pass | `mobile\audit-nav-gists-360.png` |
+| `/audit/nav/profile` | 320 | pass | pass | pass | pass | `mobile\audit-nav-profile-320.png` |
+| `/audit/nav/profile` | 360 | pass | pass | pass | pass | `mobile\audit-nav-profile-360.png` |
 | `/audit/gist-invite/reply-starter` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-starter-320.png` |
 | `/audit/gist-invite/reply-starter` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-starter-360.png` |
 | `/audit/gist-invite/reply-paid` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-paid-320.png` |

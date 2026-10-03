@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScreenBand } from "@/components/app/screen-band";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -76,9 +77,10 @@ export default async function CouplePage() {
 
   if (!couple) {
     return (
-      <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
+      <>
+        <ScreenBand title="Couple Mode" sub="Free on every plan" />
+      <div className="mx-auto grid max-w-[640px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
         <div className="grid gap-2">
-          <h1 className="text-h3 text-ink-900">Couple Mode</h1>
           <p className="text-ui text-grey-600">
             A shared, private space for two: milestones, saved dates and a
             timeline that lives somewhere other than a chat thread.
@@ -103,13 +105,15 @@ export default async function CouplePage() {
           </Button>
         </Card>
       </div>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
+    <>
+      <ScreenBand title="Couple Mode" sub="Free on every plan" />
+    <div className="mx-auto grid max-w-[640px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-h3 text-ink-900">Couple Mode</h1>
         <Badge variant={couple.status === "active" ? "verified" : "optional"}>
           {couple.status === "active" ? "Active" : "Waiting on them"}
         </Badge>
@@ -192,5 +196,6 @@ export default async function CouplePage() {
         </FeatureCard>
       ) : null}
     </div>
+    </>
   );
 }

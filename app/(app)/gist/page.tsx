@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isExpired, sinceLabel } from "@/lib/gist-invites";
 import { localDay, localTime12 } from "@/lib/scheduling";
 import { GistListView, type GistGroup, type GistRow } from "@/components/gist/gists-list-view";
+import { GistsSeen } from "@/components/app/nav";
 import type { GistStatus } from "@/lib/gist";
 
 export const metadata: Metadata = {
@@ -113,5 +114,11 @@ export default async function GistPage() {
     { title: "Coming up", rows: coming, empty: "Nothing booked yet." },
   ];
 
-  return <GistListView groups={groups} />;
+  return (
+    <>
+      <GistListView groups={groups} />
+      {/* Opening Gists clears the tab bar's sand dot (nav-gists.slim.html). */}
+      <GistsSeen />
+    </>
+  );
 }

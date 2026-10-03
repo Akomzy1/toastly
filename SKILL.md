@@ -123,6 +123,20 @@ the amber buttons ("Join Toastly", mobile "Get verified") go to `/signup`.
 The desktop "Get verified" text link still goes to `/verify`. Send the
 header's signed-out and signed-in states through the design pipeline.
 
+**In-app navigation — built against nav-*.slim.html** (replaces the in-app
+shell flagged as invented). Bottom tab bar on phones (Today, Gists, Inbox,
+Profile), the same four in the dark desktop header, the Safety pill on every
+screen's band, and Profile as the hub. Deviations, flagged:
+- Today's band subline reads "Refreshes daily", not "Refreshes 6:00 am": the
+  six are rebuilt at midnight UTC (1:00 am in Lagos), so 6:00 am would be untrue.
+- The hub's photo is a monogram, and "Edit profile and photos" reads "Edit
+  profile", until photo upload exists (Prompt 14, parked).
+- "Answer another prompt" under the hub's prompts, and the pages it and the
+  hub lead to (/profile/prompts, /profile/data, /profile/edit), are not drawn.
+- Today's page content is unchanged: the prototype's six-row list is a
+  navigation demo, not a redesign of the match card.
+- On the safety kit itself the band omits the Safety pill.
+
 **Gist invites — built against gist-invite-*.slim.html and gists-list.slim.html
 (prototypes 1–8), and Both Clocks' window picker.** Deviations, flagged:
 - Monograms stand in for member photos: photo upload is part of Prompt 14

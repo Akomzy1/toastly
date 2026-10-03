@@ -59,7 +59,7 @@ export function FeedFallbackNotice({ city }: { city: string }) {
               the line, and with no background it is invisible — the
               prototype's inline link, unchanged to the eye, meets the bar. */}
           <Link
-            href="/profile"
+            href="/profile/edit"
             className="py-[13.5px] font-semibold text-green-550 underline underline-offset-2"
           >
             Change your city

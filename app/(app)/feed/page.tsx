@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScreenBand } from "@/components/app/screen-band";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -114,9 +115,10 @@ export default async function FeedPage() {
   );
 
   return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
+    <>
+      <ScreenBand title="Today's six" sub="Refreshes daily" />
+    <div className="mx-auto grid max-w-[640px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
       <div className="grid gap-2">
-        <h1 className="text-h3 text-ink-900">Today&rsquo;s matches</h1>
         <p className="text-ui text-grey-600">
           {DAILY_MATCH_COUNT} people, once a day. Read what they wrote and
           reply to something specific. When they&rsquo;re gone, they&rsquo;re
@@ -147,7 +149,7 @@ export default async function FeedPage() {
             settings gives it more to work with.
           </p>
           <Button variant="outline" asChild className="justify-self-start">
-            <Link href="/profile">Profile settings</Link>
+            <Link href="/profile/edit">Profile settings</Link>
           </Button>
         </Card>
       ) : (
@@ -163,5 +165,6 @@ export default async function FeedPage() {
         later.
       </p>
     </div>
+    </>
   );
 }

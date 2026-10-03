@@ -65,6 +65,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Never block zoom — accessibility, and SKILL.md treats mobile as non-optional.
   maximumScale: 5,
+  // Lets the in-app tab bar sit clear of the phone's home indicator
+  // (env(safe-area-inset-bottom)) when installed as a PWA.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

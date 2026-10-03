@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ScreenBand } from "@/components/app/screen-band";
 
 /**
  * Shared pieces of the gist-invite screens (gist-invite-*.slim.html,
@@ -8,20 +8,9 @@ import Link from "next/link";
  * of Prompt 14 (parked), so a monogram stands in until photos exist.
  */
 
+/** The screen band (components/app/screen-band) — Safety pill included. */
 export function Band({ title, sub, back }: { title: string; sub?: string; back?: string }) {
-  return (
-    <div className="flex items-center gap-2.5 bg-green-800 px-4 pb-[18px] pt-5">
-      {back ? (
-        <Link href={back} aria-label="Back" className="-my-2 -ml-2 grid h-11 w-11 place-items-center text-[20px] leading-none text-champagne no-underline">
-          ‹
-        </Link>
-      ) : null}
-      <div className="grid gap-0.5">
-        <h1 className="m-0 font-serif text-[19px] font-bold text-white">{title}</h1>
-        {sub ? <p className="m-0 text-[13px] text-white/[.66]">{sub}</p> : null}
-      </div>
-    </div>
-  );
+  return <ScreenBand title={title} sub={sub} back={back} />;
 }
 
 export function Monogram({ name, size = 44 }: { name: string; size?: number }) {
