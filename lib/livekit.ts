@@ -91,3 +91,38 @@ export function createGistToken({
 export function gistRoomName(sessionId: string): string {
   return `gist_${sessionId}`;
 }
+
+/**
+ * Close a Gist room for everyone in it — used when the server's clock says
+ * the time is up. Without this, the 18-minute box would rest on each
+ * browser's own timer, and a modified client could simply stay connected.
+ *
+ * Calls LiveKit's RoomService.DeleteRoom with a short-lived server token.
+ * Never throws: a room that's already gone is the result we wanted.
+ */
+export async function closeGistRoom(roomName: string): Promise<boolean> {
+  const url = process.env.LIVEKIT_URL;
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+  if (!url || !apiKey || !apiSecret) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  const signingInput = `${b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))}.${b64url(
+    JSON.stringify({ iss: apiKey, nbf: now, exp: now + 60, video: { roomCreate: true } }),
+  )}`;
+  const token = `${signingInput}.${b64url(createHmac("sha256", apiSecret).update(signingInput).digest())}`;
+
+  const host = url.replace(/^wss:/, "https:").replace(/^ws:/, "http:").replace(/\/$/, "");
+  try {
+    const res = await fetch(`${host}/twirp/livekit.RoomService/DeleteRoom`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ room: roomName }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    return res.ok || res.status === 404;
+  } catch {
+    return false;
+  }
+}

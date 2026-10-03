@@ -56,6 +56,7 @@ const ROUTES = [
   { route: "/audit/genotype-display", label: "Genotype on a match card" },
   { route: "/audit/account-data", label: "Your data" },
   { route: "/audit/account-delete", label: "Delete account sheet" },
+  { route: "/audit/gist-call", label: "Gist call · before joining" },
   // Toastly Help and Answer Mirror (Prompts 15, 16)
   { route: "/audit/help/start", label: "Help · start" },
   { route: "/audit/help/reply", label: "Help · reply" },

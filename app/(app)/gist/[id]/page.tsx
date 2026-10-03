@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { SafetyActions } from "@/components/safety/safety-actions";
@@ -12,6 +11,7 @@ import { getVisibleGenotype } from "@/components/genotype/genotype-data";
 import { ReadyForm } from "./ready-form";
 import { OutcomeForm } from "./outcome-form";
 import { SpotSuggestions, type Spot } from "./spot-suggestions";
+import { GistCall } from "@/components/gist/gist-call";
 import { placesConfigured } from "@/lib/places";
 import {
   canUseVideo,
@@ -93,10 +93,9 @@ export default async function GistSessionPage({
         .order("created_at", { ascending: false })
     : { data: [] };
 
-  // Video is only ever offered when the entitlement allows it AND the session
-  // was proposed as video. The token itself withholds camera publish rights
-  // otherwise, so this is presentation on top of a real control.
-  const videoAllowed = session.medium === "video" && canUseVideo(tier);
+  // Live video transport is Phase 2 (P2-D). A session proposed as video by an
+  // entitled member runs as voice for now, and the page says so.
+  const videoPending = session.medium === "video" && canUseVideo(tier);
 
   return (
     <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
@@ -146,22 +145,21 @@ export default async function GistSessionPage({
         </Card>
       ) : (
         <Card className="grid gap-4 p-[26px]">
-          <h2 className="text-h5 text-ink-900">Ready to join</h2>
+          {videoPending ? (
+            <Notice tone="info">
+              Live video isn&rsquo;t switched on yet, so this Gist runs as a
+              voice call.
+            </Notice>
+          ) : null}
           {!isLiveKitConfigured() ? (
             /* Honest about what isn't wired, rather than a dead button. */
             <Notice tone="locked" title="Calling isn't connected yet">
               LiveKit credentials aren&rsquo;t set in this environment, so the
-              call can&rsquo;t start. The session, the deck and the entitlement
-              rules all work — only the media transport is missing.
+              call can&rsquo;t start.
             </Notice>
           ) : (
-            <Button className="justify-self-start">Join session</Button>
+            <GistCall sessionId={session.id} otherName={otherName} />
           )}
-          <p className="text-nav text-grey-600">
-            {videoAllowed
-              ? "If the connection weakens, video drops to audio rather than freezing."
-              : "This is a voice session. Your camera will not be requested."}
-          </p>
         </Card>
       )}
 

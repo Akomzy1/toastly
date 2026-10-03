@@ -15,7 +15,7 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All eighteen migrations are applied (0018, AI agents, and 0017, the profiles read-policy fix, on 3 October 2026; 0016, Smile ID, and 0015, account lifecycle, on 2 October 2026). Until 0017, every member read of `profiles` failed with `42P17` (infinite recursion in the 0001 policy), so the verify page showed everyone the phone step. pg_cron is enabled and the nightly purge of expired retention records is scheduled (job `toastly-purge-retention`, 03:17 UTC, set up 2 October 2026). 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. **Set in Vercel production** (confirmed 2 October 2026): signed-out visitors to `/feed` are sent to `/login`, and the data download asks for sign-in rather than reporting "not configured". |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All nineteen migrations are applied (0019, Gist clock, 0018, AI agents, and 0017, the profiles read-policy fix, on 3 October 2026; 0016, Smile ID, and 0015, account lifecycle, on 2 October 2026). Until 0017, every member read of `profiles` failed with `42P17` (infinite recursion in the 0001 policy), so the verify page showed everyone the phone step. pg_cron is enabled and the nightly purge of expired retention records is scheduled (job `toastly-purge-retention`, 03:17 UTC, set up 2 October 2026). 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. **Set in Vercel production** (confirmed 2 October 2026): signed-out visitors to `/feed` are sent to `/login`, and the data download asks for sign-in rather than reporting "not configured". |
 
 **Still to do on Supabase:** add `https://www.trytoastly.com` (the host
 production actually serves — see below) to Authentication → URL
@@ -129,13 +129,38 @@ machine; the check itself is missing and deliberately not faked.
 |---|---|---|
 | **Paystack** (NGN) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` | The webhook verifies the HMAC-SHA512 signature correctly and then **grants nothing** — no payment recorded, no coins credited, no subscription. Returns 503 while the key is unset. |
 | **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Same: signature and replay window verified, **no entitlement granted**. |
-| **LiveKit** (Gist calls) | `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | Tokens are minted server-side with camera withheld unless entitled. The **client transport is not wired**, so the session page shows a "Join session" button with nothing behind it once credentials are set. |
 
 **Webhook URLs to register with each provider** — on `www`, because the bare
 domain answers with a redirect and payment providers don't follow redirects
 on webhooks:
 `https://www.trytoastly.com/api/webhooks/paystack` ·
 `https://www.trytoastly.com/api/webhooks/stripe`
+
+---
+
+## 3b. Gist voice calls — wired (LiveKit)
+
+Voice Gist runs over LiveKit (Phase 1). Live video stays Phase 2 (P2-D):
+every token withholds camera rights, and nothing in the call asks for a
+camera. Tested on 3 October 2026 with two headless browsers against the
+real LiveKit project: both connected, both heard each other, the camera
+was refused by the token, and a server-side room close disconnected both.
+
+- **`LIVEKIT_URL`** must be `wss://<project>.livekit.cloud` — one scheme.
+  `.env.local` had `wss://wss://…`, which never resolves; fixed there on
+  3 October 2026. **Check the value in Vercel**: if it has the same typo,
+  production calls fail with "could not establish signal connection".
+- **Migration 0019 (Gist clock) is applied** (3 October 2026): `gist_join`,
+  `gist_extend` and `gist_finish` exist and refuse anonymous callers; the
+  new timing columns are in place.
+- **How the 18 minutes is enforced:** the server starts the clock on first
+  join; when it runs out, either browser asks the server to close the room,
+  and the server refuses until the time is genuinely up. One honest client
+  is enough. Two modified clients could stay connected — closing that
+  needs a server-side timer (LiveKit webhooks or a scheduled job), not built.
+- **Extension is mutual:** it happens once, only when both people ask.
+  PRD §5.4 says "extendable once" without saying who decides — chosen to
+  match Gist's mutual opt-in everywhere else.
 
 ---
 

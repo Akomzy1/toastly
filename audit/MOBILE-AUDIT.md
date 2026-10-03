@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-03 07:03 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-03 13:14 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -56,6 +56,8 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/account-data` | 360 | pass | pass | pass | pass | `mobile\audit-account-data-360.png` |
 | `/audit/account-delete` | 320 | pass | pass | pass | pass | `mobile\audit-account-delete-320.png` |
 | `/audit/account-delete` | 360 | pass | pass | pass | pass | `mobile\audit-account-delete-360.png` |
+| `/audit/gist-call` | 320 | pass | pass | pass | pass | `mobile\audit-gist-call-320.png` |
+| `/audit/gist-call` | 360 | pass | pass | pass | pass | `mobile\audit-gist-call-360.png` |
 | `/audit/help/start` | 320 | pass | pass | pass | pass | `mobile\audit-help-start-320.png` |
 | `/audit/help/start` | 360 | pass | pass | pass | pass | `mobile\audit-help-start-360.png` |
 | `/audit/help/reply` | 320 | pass | pass | pass | pass | `mobile\audit-help-reply-320.png` |

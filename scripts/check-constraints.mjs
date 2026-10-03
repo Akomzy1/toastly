@@ -910,6 +910,32 @@ check("Toastly Help hand-offs are filed only by the member's tap", (s, f) => {
   return /support_tickets/.test(stripComments(s, f)) ? "the assistant writes a ticket itself" : false;
 });
 
+// --- Gist calls: voice only in Phase 1, 18 minutes kept by the server -------
+check("Phase 1 Gist tokens never grant the camera", (s, f) => {
+  if (!/app[\\/]api[\\/]gist[\\/]/.test(f)) return false;
+  if (!/createGistToken/.test(s)) return false;
+  return /canPublishVideo:\s*false\b/.test(stripComments(s, f))
+    ? false
+    : "a Gist token may grant camera rights — live video is Phase 2 (P2-D)";
+});
+
+check("the Gist clock is 18 minutes, server-kept, extendable once", (s, f) => {
+  if (!/0019_gist_clock\.sql$/.test(f)) return false;
+  const intervals = [...s.matchAll(/interval '(\d+) minutes'/g)].map((m) => m[1]);
+  if (!intervals.length || intervals.some((m) => m !== "18")) return `Gist intervals: ${intervals.join(", ")}`;
+  if (!/create trigger guard_gist_timing/.test(s)) return "timing guard missing";
+  if (!/extended_at is not null then\s*raise/.test(s)) return "extension not limited to once";
+  if (!/proposer_extend_at is not null and s\.invitee_extend_at is not null/.test(s)) return "extension not mutual";
+  return false;
+});
+
+check("Gist calls never ask for a camera", (s, f) => {
+  if (!/components[\\/]gist[\\/]/.test(f)) return false;
+  return /setCameraEnabled|getUserMedia\(\s*\{[^}]*video:\s*true|Track\.Source\.Camera/.test(stripComments(s, f))
+    ? "the call requests a camera"
+    : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

@@ -217,6 +217,8 @@ Three things drifted during the build. Fix them in one pass and report each.
 
 ## PROMPT 14 — Profile photos: four minimum, one face-matched (Phase 1)
 
+> **PARKED (3 October 2026).** Smile ID's documented API can't match an uploaded photo against the enrolled liveness face; a question is out to Smile ID. Resume when they answer. See FINAL-REVIEW.md.
+
 Read PRD §5.1.2 and the new CLAUDE.md photo rule first. *(Prompt 13 — Resend, PostHog and SMS wiring — was issued directly in chat.)*
 
 - A profile cannot go live with fewer than **4 photos**; max from config, default 6.

@@ -158,8 +158,9 @@ Each needs building, or the copy softening.
 
 ## Not connected (launch blockers)
 
-Smile ID production cut-over (integrated in sandbox — GO-LIVE §1a) · LiveKit
-calling · Paystack/Stripe webhooks granting entitlements · moderation queue tooling · photo upload UI · image
+Smile ID production cut-over (integrated in sandbox — GO-LIVE §1a) · the
+photo requirement (Prompt 14, parked; Phase 1 per PRD §9) · Paystack/Stripe
+webhooks granting entitlements · moderation queue tooling · photo upload UI · image
 message UI.
 
 ## Trust Sentinel — Phase 1 (instrumentation only)
@@ -591,6 +592,10 @@ a fresh selfie plus 6–8 liveness frames (`use_enrolled_image` only re-checks
 the enrolled face against itself), and SmartSelfie Compare matches a *new*
 selfie to a reference photo — REST and mobile SDKs only, not the hosted web
 flow. Nothing from Prompt 14 is built; options are in the session report.
+**Parked (3 October 2026)** pending Smile ID's answer to a written question
+(photo-vs-enrolled-face matching, image-link lifetime, Compare in the web
+flow). Resume from the build prompt when they reply; the photo prototypes
+(`photos-upload`, `photos-main-check`) are already in the repo.
 
 **Prompt 15 — Toastly Help** (`lib/concierge/`, `app/api/help/`,
 `components/help/`), against `toastly-help` and `toastly-help-handoff`:
@@ -624,6 +629,16 @@ AI legal-basis row, explicit consent for verification, and Toastly Help
 retention. Held, because untrue today: the main-photo comparison and
 AI safety-review summaries. The data export now includes verification
 results and Toastly Help data.
+
+## Gist voice calls — wired
+
+The session page's dead "Join session" button is now a real call
+(`components/gist/gist-call.tsx`, `app/api/gist/[id]/*`, 0019). Voice only:
+live video is Phase 2. The server keeps the 18-minute clock; extension is
+once and mutual; time-up closes the room for both via LiveKit's API.
+Mic-denied, audio-blocked (tap to hear), reconnecting, leave and rejoin
+are handled. A session proposed as video by an entitled member runs as
+voice and says so. Tested end to end with two browsers (GO-LIVE §3b).
 
 ## Environment
 

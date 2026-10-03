@@ -123,6 +123,11 @@ the amber buttons ("Join Toastly", mobile "Get verified") go to `/signup`.
 The desktop "Get verified" text link still goes to `/verify`. Send the
 header's signed-out and signed-in states through the design pipeline.
 
+**Gist call — NOT IN THE PROTOTYPE.** No Gist room was designed. The call
+card (join, timer, who's speaking, mute, leave, the mutual "18 more
+minutes" offer) is built from the session page's existing cards, buttons
+and the genotype callout style. Send it through the design pipeline.
+
 **Toastly Help and Answer Mirror — built against their prototypes**
 (`toastly-help`, `toastly-help-handoff`, `answer-mirror`). Not in them, and
 so flagged:
