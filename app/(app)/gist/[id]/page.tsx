@@ -74,7 +74,8 @@ export default async function GistSessionPage({
   const { data: questions } = await supabase
     .from("gist_questions")
     .select("id, text, depth")
-    .order("sort_order");
+    .order("sort_order")
+    .order("id");
 
   const isProposer = session.proposer_id === user.id;
   const youReady = isProposer
@@ -264,40 +265,13 @@ export default async function GistSessionPage({
               call can&rsquo;t start.
             </Notice>
           ) : (
-            <GistCall sessionId={session.id} otherName={otherName} />
+            <GistCall sessionId={session.id} otherName={otherName} questions={(questions ?? []) as { id: number; text: string; depth: number }[]} />
           )}
         </Card>
       )}
 
-      {/* The shared deck: both people see the same question at the same time,
-          walking from playful to real. "The questions open once you've both
-          joined" (gist-accepted.slim.html), so it appears when the call is live. */}
-      {(session.status as GistStatus) === "live" || (session.status as GistStatus) === "completed" ? (
-      <Card className="grid gap-4 p-[26px]">
-        <div className="grid gap-1.5">
-          <h2 className="text-h5 text-ink-900">Your question deck</h2>
-          <p className="text-ui text-grey-600">
-            Shared, and in this order. Nobody has to open with &ldquo;hi how
-            are you&rdquo;.
-          </p>
-        </div>
-        <ol className="grid list-none gap-3 p-0">
-          {(questions ?? []).map((q, i) => (
-            <li key={q.id} className="flex gap-3">
-              <span className="font-serif text-ui text-green-500">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="grid gap-1">
-                <span className="text-ui text-ink-900">{q.text}</span>
-                <span className="text-caption uppercase text-grey-400">
-                  {q.depth === 1 ? "Warm-up" : q.depth === 2 ? "Going deeper" : "Real"}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ol>
-      </Card>
-      ) : null}
+      {/* The question deck now lives inside the call, one card at a time,
+          the same on both screens (components/gist/gist-call.tsx, 0022). */}
 
       {/* Private double opt-in, only once the session has run. */}
       {(session.status as GistStatus) === "live" ||

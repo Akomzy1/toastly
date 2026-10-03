@@ -655,6 +655,20 @@ selfie check" until the photo match ships; either person can extend once
 "Online now" is a yes/no inside an accepted Gist; no last-seen time
 leaves the database.
 
+## Gist question deck — one card, both screens (0022)
+
+The deck was a static list of all nine questions. Now one card at a time,
+the same on both screens: either person taps Skip or Next after agreeing out
+loud, the server moves the deck (0022, gist_deck_advance — two taps at once
+move it one step), and the other phone updates over the call's data channel.
+A reload or rejoin lands on the same card. Per question, only "answered" or
+"skipped" is stored — never what was said (a constraint check holds it).
+Toastly never asks the questions; the two people do.
+
+First real two-account call (3 October 2026): connected and both heard each
+other, after fixing a stray-whitespace LIVEKIT_API_SECRET in Vercel (now
+trimmed in code) and a finished Gist blocking new invites (0021).
+
 ## Open: a Gist can count before its audio connects
 
 The Starter cap counts a Gist from `started_at`, which gist_join sets when

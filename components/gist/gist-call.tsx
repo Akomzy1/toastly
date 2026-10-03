@@ -11,6 +11,7 @@ import {
 } from "livekit-client";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
+import { DeckCard, type DeckQuestion } from "./deck-card";
 
 /**
  * The Gist call — voice only (Phase 1). Live video is Phase 2 (P2-D): the
@@ -33,6 +34,7 @@ type Clock = {
   you_asked_to_extend: boolean;
   they_asked_to_extend: boolean;
   finished: boolean;
+  deck_index: number;
 };
 
 type Phase = "idle" | "connecting" | "in_call" | "reconnecting" | "ended" | "left";
@@ -44,7 +46,16 @@ function mmss(total: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function GistCall({ sessionId, otherName }: { sessionId: string; otherName: string }) {
+export function GistCall({
+  sessionId,
+  otherName,
+  questions = [],
+}: {
+  sessionId: string;
+  otherName: string;
+  /** The shared deck, in order (0022). One card at a time, the same on both screens. */
+  questions?: DeckQuestion[];
+}) {
   const router = useRouter();
   const roomRef = React.useRef<Room | null>(null);
   const audioRef = React.useRef<HTMLDivElement>(null);
@@ -170,6 +181,10 @@ export function GistCall({ sessionId, otherName }: { sessionId: string; otherNam
       await room.startAudio().catch(() => undefined);
       setNeedsTap(!room.canPlaybackAudio);
       setPhase("in_call");
+      // Joining made the Gist live on the server; redraw the page so the
+      // question deck ("the questions open once you've both joined") appears.
+      // The call stays connected: this component keeps its state.
+      router.refresh();
     } catch (e) {
       // Say which side failed: the network, or LiveKit refusing the token.
       const reason = (e as Error)?.message ?? "";
@@ -217,6 +232,25 @@ export function GistCall({ sessionId, otherName }: { sessionId: string; otherNam
     setBusy(true);
     try {
       const res = await fetch(`/api/gist/${sessionId}/extend`, { method: "POST" });
+      const json = (await res.json()) as { clock?: Clock; error?: string };
+      if (json.clock) setClock(json.clock);
+      else if (json.error) setError(json.error);
+      await tellOther();
+    } catch {}
+    setBusy(false);
+  }
+
+  // Next / Skip: either person taps, after agreeing out loud. The server
+  // moves the card for both; the other phone hears about it at once.
+  async function advance(skip: boolean) {
+    if (!clock) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/gist/${sessionId}/deck`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expected: clock.deck_index, skip }),
+      });
       const json = (await res.json()) as { clock?: Clock; error?: string };
       if (json.clock) setClock(json.clock);
       else if (json.error) setError(json.error);
@@ -302,6 +336,13 @@ export function GistCall({ sessionId, otherName }: { sessionId: string; otherNam
       ) : null}
 
       {error ? <Notice tone="error">{error}</Notice> : null}
+
+      {/* NOT IN A PROTOTYPE — flagged, by decision (3 October 2026): one
+          question at a time, the same on both screens. Toastly never asks the
+          question; the two of you do, and agree out loud before moving on. */}
+      {questions.length && clock ? (
+        <DeckCard questions={questions} index={clock.deck_index} busy={busy} onSkip={() => advance(true)} onNext={() => advance(false)} />
+      ) : null}
 
       {warn && clock && !clock.extended ? (
         <div className="grid gap-2 rounded-lg border border-champagne/90 bg-gold-50 px-[13px] py-3.5">

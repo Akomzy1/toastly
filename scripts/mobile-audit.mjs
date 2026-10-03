@@ -57,6 +57,9 @@ const ROUTES = [
   { route: "/audit/account-data", label: "Your data" },
   { route: "/audit/account-delete", label: "Delete account sheet" },
   { route: "/audit/gist-call", label: "Gist call · before joining" },
+  { route: "/audit/gist-deck/first", label: "Gist deck · first" },
+  { route: "/audit/gist-deck/real", label: "Gist deck · real" },
+  { route: "/audit/gist-deck/done", label: "Gist deck · done" },
   // In-app navigation (nav-*.slim.html)
   { route: "/audit/nav/today", label: "Nav · today" },
   { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },

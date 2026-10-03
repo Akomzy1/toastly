@@ -955,6 +955,17 @@ check("Gist calls never ask for a camera", (s, f) => {
     : false;
 });
 
+// The Gist deck records which questions were answered or skipped — never
+// what was said (PRD 5.1.1: outcomes yes, audio and transcripts never).
+check("Gist deck steps store outcomes only, never content", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const m = s.match(/create table if not exists public\.gist_deck_steps \(([\s\S]*?)\n\);/);
+  if (!m) return false;
+  const cols = [...m[1].matchAll(/^\s*([a-z_]+)\s+(text|varchar|jsonb|bytea)/gm)].map((x) => x[1]);
+  const extra = cols.filter((c) => c !== "outcome");
+  return extra.length ? `content-capable column(s): ${extra.join(", ")}` : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

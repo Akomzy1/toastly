@@ -49,7 +49,7 @@ export default async function GistPage() {
 
   const { data: sessions } = await supabase
     .from("gist_sessions")
-    .select("id, status, proposer_id, invitee_id, created_at, scheduled_for, time_proposed_by, time_confirmed_at")
+    .select("id, status, proposer_id, invitee_id, created_at, scheduled_for, time_proposed_by, time_confirmed_at, ends_at")
     .or(`proposer_id.eq.${user.id},invitee_id.eq.${user.id}`)
     .order("created_at", { ascending: false })
     .limit(30);
@@ -90,7 +90,8 @@ export default async function GistPage() {
       else invites.push({ ...base, invite: true, status: `Invited you · ${sinceLabel(s.created_at, myZone)}` });
     } else if ((status === "declined" || status === "expired") && mine && recent) {
       waiting.push({ ...base, status: status === "declined" ? "Passed on this one" : "Invite closed" });
-    } else if (status === "accepted" || status === "live") {
+    } else if (status === "accepted" || (status === "live" && !(s.ends_at && Date.parse(s.ends_at) < Date.now()))) {
+      // A live Gist whose 18 minutes have run out is over, not "On now".
       let line: string;
       let teal = false;
       if (status === "live") {

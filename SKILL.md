@@ -160,6 +160,13 @@ screen's band, and Profile as the hub. Deviations, flagged:
 - The question deck now appears once the call is live (gist-accepted:
   "The questions open once you've both joined").
 
+**Gist question card — NOT IN A PROTOTYPE, by decision (3 October 2026).**
+One question at a time, the same on both screens, with Skip and Next that
+either person taps after agreeing out loud (components/gist/deck-card.tsx).
+Built from the Gist screens' cards and buttons. It replaced the static list
+of all nine questions, which didn't match the shipped Features copy ("the
+session offers one question"). Send it through the design pipeline.
+
 **Gist call — NOT IN THE PROTOTYPE.** No Gist room was designed. The call
 card (join, timer, who's speaking, mute, leave, the "Add 18
 minutes" offer) is built from the session page's existing cards, buttons

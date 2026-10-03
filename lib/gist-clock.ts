@@ -26,6 +26,8 @@ export type GistClock = {
   you_asked_to_extend: boolean;
   they_asked_to_extend: boolean;
   finished: boolean;
+  /** The shared question card both people are on (0022). */
+  deck_index: number;
 };
 
 /** The clock as the server sees it, from the member's own view of the row. */
@@ -36,7 +38,7 @@ export async function readClock(
 ): Promise<GistClock | null> {
   const { data: s } = await supabase
     .from("gist_sessions")
-    .select("proposer_id, ends_at, extended_at, proposer_extend_at, invitee_extend_at")
+    .select("proposer_id, ends_at, extended_at, proposer_extend_at, invitee_extend_at, deck_index")
     .eq("id", sessionId)
     .maybeSingle();
   if (!s) return null;
@@ -47,5 +49,6 @@ export async function readClock(
     you_asked_to_extend: Boolean(isProposer ? s.proposer_extend_at : s.invitee_extend_at),
     they_asked_to_extend: Boolean(isProposer ? s.invitee_extend_at : s.proposer_extend_at),
     finished: Boolean(s.ends_at && Date.now() >= Date.parse(s.ends_at)),
+    deck_index: typeof s.deck_index === "number" ? s.deck_index : 0,
   };
 }
