@@ -34,12 +34,15 @@ export function livekitUrl(): string | null {
   return `wss://${host}`;
 }
 
+/** Key and secret, trimmed: a pasted trailing space or newline makes every token invalid. */
+function credentials(): { apiKey: string; apiSecret: string } | null {
+  const apiKey = (process.env.LIVEKIT_API_KEY ?? "").trim();
+  const apiSecret = (process.env.LIVEKIT_API_SECRET ?? "").trim();
+  return apiKey && apiSecret ? { apiKey, apiSecret } : null;
+}
+
 export function isLiveKitConfigured(): boolean {
-  return Boolean(
-    process.env.LIVEKIT_URL &&
-      process.env.LIVEKIT_API_KEY &&
-      process.env.LIVEKIT_API_SECRET,
-  );
+  return Boolean(livekitUrl() && credentials());
 }
 
 /**
@@ -62,11 +65,11 @@ export function createGistToken({
   ttlSeconds?: number;
   canPublishVideo: boolean;
 }): string {
-  const apiKey = process.env.LIVEKIT_API_KEY;
-  const apiSecret = process.env.LIVEKIT_API_SECRET;
-  if (!apiKey || !apiSecret) {
+  const creds = credentials();
+  if (!creds) {
     throw new Error("LiveKit is not configured");
   }
+  const { apiKey, apiSecret } = creds;
 
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: "HS256", typ: "JWT" };
@@ -114,9 +117,9 @@ export function gistRoomName(sessionId: string): string {
  */
 export async function closeGistRoom(roomName: string): Promise<boolean> {
   const url = livekitUrl();
-  const apiKey = process.env.LIVEKIT_API_KEY;
-  const apiSecret = process.env.LIVEKIT_API_SECRET;
-  if (!url || !apiKey || !apiSecret) return false;
+  const creds = credentials();
+  if (!url || !creds) return false;
+  const { apiKey, apiSecret } = creds;
 
   const now = Math.floor(Date.now() / 1000);
   const signingInput = `${b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))}.${b64url(
@@ -150,12 +153,18 @@ export async function checkLiveKit(): Promise<{
   reachable: boolean;
   credentialsAccepted: boolean;
   status: number | null;
+  /** True when the stored value carries stray whitespace (now trimmed everywhere). */
+  keyHadStraySpace: boolean;
+  secretHadStraySpace: boolean;
 }> {
   const url = livekitUrl();
-  const apiKey = process.env.LIVEKIT_API_KEY?.trim();
-  const apiSecret = process.env.LIVEKIT_API_SECRET?.trim();
+  const creds = credentials();
   const host = url ? url.replace(/^wss:\/\//, "") : null;
-  if (!url || !apiKey || !apiSecret) return { configured: false, host, reachable: false, credentialsAccepted: false, status: null };
+  const keyHadStraySpace = (process.env.LIVEKIT_API_KEY ?? "") !== (process.env.LIVEKIT_API_KEY ?? "").trim();
+  const secretHadStraySpace = (process.env.LIVEKIT_API_SECRET ?? "") !== (process.env.LIVEKIT_API_SECRET ?? "").trim();
+  const flags = { keyHadStraySpace, secretHadStraySpace };
+  if (!url || !creds) return { configured: false, host, reachable: false, credentialsAccepted: false, status: null, ...flags };
+  const { apiKey, apiSecret } = creds;
 
   const now = Math.floor(Date.now() / 1000);
   const signingInput = `${b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))}.${b64url(
@@ -170,8 +179,8 @@ export async function checkLiveKit(): Promise<{
       cache: "no-store",
       signal: AbortSignal.timeout(10_000),
     });
-    return { configured: true, host, reachable: true, credentialsAccepted: res.ok, status: res.status };
+    return { configured: true, host, reachable: true, credentialsAccepted: res.ok, status: res.status, ...flags };
   } catch {
-    return { configured: true, host, reachable: false, credentialsAccepted: false, status: null };
+    return { configured: true, host, reachable: false, credentialsAccepted: false, status: null, ...flags };
   }
 }
