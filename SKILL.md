@@ -123,6 +123,19 @@ the amber buttons ("Join Toastly", mobile "Get verified") go to `/signup`.
 The desktop "Get verified" text link still goes to `/verify`. Send the
 header's signed-out and signed-in states through the design pipeline.
 
+**Toastly Help and Answer Mirror — built against their prototypes**
+(`toastly-help`, `toastly-help-handoff`, `answer-mirror`). Not in them, and
+so flagged:
+- The "Toastly Help" button that opens the panel (the prototype says it
+  opens from Settings, Verification and Payments but draws no trigger).
+- The safety card shown when a member describes danger.
+- The panel's frame: a right-hand sheet, full-width on phones.
+- "Your prompts" on the profile page — the list that leads to the edit
+  screen. The prototype designs the edit screen only.
+- The edit screen's back chevron is omitted; Cancel returns to the profile.
+- Answer Mirror has four labels, as the prototype draws, not the build
+  prompt's five.
+
 **Verification (Smile ID) — 1 of 6 prototypes received.** The verify page
 now follows `verify-overview.slim.html`: the dark "Verification" band, the
 ring stepper (which replaces the old `Stepper`), and its four states. The

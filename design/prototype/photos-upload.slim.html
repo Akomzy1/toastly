@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/4527daa5-cd4a-4099-8321-7ef8ab4788e5.js"></script>
+
+
+
+
+
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/4b0ce6d1-d4e1-4c22-a829-7d2a0a67a2e0.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/67ca2792-1c6b-4911-87e4-3c3d0948f665.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/2db03632-edbe-4058-80b8-71b7def6d936.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/5926d7a8-a516-4238-8fef-f36ab74b34f6.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Profile photos 1 of 2</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Add your photos</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">Four photos to go live, up to six. Only the main photo has to show your face; slots 2–6 say so in plain words. A quiet counter sits above Continue, which stays grey (never red) until four are in. Tap an empty slot to add, a filled one to replace or remove. The same screen serves profile edit.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="4">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Profile photos" style="position:relative;width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">{{ barTitle }}</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">{{ barSub }}</p>
+        </div>
+      </div>
+
+      <div style="padding:20px 14px 24px;display:grid;gap:20px;align-content:start">
+
+        <div style="display:grid;gap:6px;padding:0 2px">
+          <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309;text-wrap:balance">{{ heading }}</h2>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Add at least 4 photos, up to 6.</p>
+        </div>
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:14px;display:grid;gap:12px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="flex-shrink:0;width:104px">
+              <sc-if value="{{ main.filled }}" hint-placeholder-val="{{ true }}">
+                <button type="button" sc-camel-on-click="{{ main.tap }}" aria-label="Main photo. Tap to choose another." style="position:relative;display:block;width:100%;aspect-ratio:4/5;padding:0;border:0;border-radius:12px;overflow:hidden;background:#D9D9DA;cursor:pointer">
+                  <img src="{{ main.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                  <span style="position:absolute;left:6px;top:6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:rgba(0,31,27,0.82);color:#FFFFFF;font-size:12px;font-weight:600;display:grid;place-items:center">1</span>
+                </button>
+              </sc-if>
+              <sc-if value="{{ main.empty }}" hint-placeholder-val="{{ false }}">
+                <button type="button" sc-camel-on-click="{{ main.tap }}" style="display:grid;place-items:center;align-content:center;gap:2px;width:100%;aspect-ratio:4/5;padding:0;border:1.5px dashed rgba(0,105,92,0.5);border-radius:12px;background:#E5F0EE;color:#00695C;font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#00695C">
+                  <span aria-hidden="true" style="font-size:24px;line-height:1;font-weight:400">+</span>
+                  <span style="font-size:13px;font-weight:600">Add main photo</span>
+                </button>
+              </sc-if>
+            </div>
+            <div style="display:grid;gap:8px;min-width:0">
+              <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Main photo</p>
+              <sc-if value="{{ main.matched }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span aria-hidden="true" style="flex-shrink:0;width:36px;height:36px;border-radius:999px;background:#001F1B;display:grid;place-items:center">
+                    <svg width="24" height="24" sc-camel-view-box="-1.5 -1.5 27 27" fill="none"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </span>
+                  <span style="display:grid;gap:1px;min-width:0">
+                    <span style="font-size:14px;font-weight:600;color:#050309">Verified Real</span>
+                    <span style="font-size:13px;line-height:1.4;color:#504E52">Matches your selfie</span>
+                  </span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ main.checking }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;align-items:center;gap:10px">
+                  <svg width="36" height="36" sc-camel-view-box="12 12 24 24" fill="none" aria-hidden="true" style="flex-shrink:0">
+                    <circle cx="24" cy="24" r="9.5" stroke="#FFEFCC" stroke-width="3"></circle>
+                    <circle cx="24" cy="24" r="9.5" stroke="#CC8F00" stroke-width="3" stroke-dasharray="24 60" stroke-linecap="round" transform="rotate(-90 24 24)"></circle>
+                  </svg>
+                  <span style="display:grid;gap:1px;min-width:0">
+                    <span style="font-size:14px;font-weight:600;color:#050309">Checking</span>
+                    <span style="font-size:13px;line-height:1.4;color:#504E52">You can keep going</span>
+                  </span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ main.empty }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:14px;line-height:1.5;color:#504E52">A clear photo of your face</span>
+              </sc-if>
+            </div>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Your main photo needs to show your face clearly. We'll check it matches your Verified Real selfie, so people know your photos are really you.</p>
+        </div>
+
+        <div style="display:grid;gap:12px">
+          <div style="display:grid;gap:6px;padding:0 2px">
+            <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Your other photos</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Show your world — a place you love, what you're cooking, a moment with friends. They don't need to be of your face.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="5">
+              <div style="min-width:0">
+                <sc-if value="{{ t.filled }}">
+                  <button type="button" sc-camel-on-click="{{ t.tap }}" aria-label="{{ t.aria }}" style="position:relative;display:block;width:100%;aspect-ratio:4/5;padding:0;border:0;border-radius:12px;overflow:hidden;background:#D9D9DA;cursor:pointer">
+                    <img src="{{ t.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                    <span style="position:absolute;left:6px;top:6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:rgba(0,31,27,0.82);color:#FFFFFF;font-size:12px;font-weight:600;display:grid;place-items:center">{{ t.n }}</span>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ t.empty }}">
+                  <button type="button" sc-camel-on-click="{{ t.tap }}" aria-label="{{ t.aria }}" style="display:grid;place-items:center;align-content:center;gap:2px;width:100%;aspect-ratio:4/5;padding:0;border:1.5px dashed {{ t.border }};border-radius:12px;background:{{ t.bg }};color:{{ t.fg }};font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#00695C">
+                    <span aria-hidden="true" style="font-size:22px;line-height:1;font-weight:400">+</span>
+                    <span style="font-size:13px;font-weight:600">Add</span>
+                    <span style="font-size:12px;color:#504E52">{{ t.note }}</span>
+                  </button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0 2px;font-size:13px;line-height:1.55;color:#504E52">Tap a photo to replace or remove it.</p>
+        </div>
+
+        <p style="margin:0 2px;font-size:13px;line-height:1.6;color:#504E52;text-wrap:pretty">Only upload photos of yourself, as you are. No filters that change your face, and no AI-generated photos.</p>
+
+        <label style="position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px 13px;min-height:44px;border:1px solid {{ boxBorder }};border-radius:12px;background:{{ boxBg }};cursor:pointer">
+          <input type="checkbox" checked="{{ onlyMatches }}" sc-camel-on-change="{{ toggleOnly }}" style="position:absolute;opacity:0;width:1px;height:1px;margin:0">
+          <span aria-hidden="true" style="flex-shrink:0;width:24px;height:24px;margin-top:1px;border-radius:6px;border:1.5px solid {{ tickBorder }};background:{{ tickBg }};display:grid;place-items:center">
+            <sc-if value="{{ onlyMatches }}">
+              <svg width="14" height="14" sc-camel-view-box="0 0 16 16" fill="none"><path d="m3.5 8.4 3 3 6-6.6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </sc-if>
+          </span>
+          <span style="font-size:14.5px;line-height:1.55;color:#050309;text-wrap:pretty">Show my photos only to people I match with</span>
+        </label>
+
+        <div style="display:grid;gap:10px">
+          <div role="status" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px">
+            <span style="font-size:14px;font-weight:600;color:#050309">{{ counter }}</span>
+            <span style="font-size:13px;color:#504E52;text-align:right">{{ counterNote }}</span>
+          </div>
+          <button type="button" disabled="{{ disabled }}" aria-disabled="{{ disabled }}" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:{{ ctaBg }};color:{{ ctaFg }};font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:{{ ctaCursor }}">{{ ctaLabel }}</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ sheetOpen }}">
+        <div style="position:absolute;inset:0;background:rgba(0,31,27,0.55);display:flex;align-items:flex-end">
+          <div role="dialog" aria-modal="true" aria-labelledby="ph-sheet-title" style="width:100%;background:#FFFFFF;border-radius:20px 20px 0 0;padding:10px 16px 20px;display:grid;gap:12px">
+            <span aria-hidden="true" style="justify-self:center;width:36px;height:4px;border-radius:999px;background:#D9D9DA"></span>
+            <h2 id="ph-sheet-title" style="margin:4px 0 0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.25;color:#050309">{{ sheet.title }}</h2>
+            <sc-if value="{{ sheet.isMain }}">
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:#1E1C21;text-wrap:pretty">A new main photo is checked against your selfie again.</p>
+            </sc-if>
+            <div style="display:grid;gap:10px;margin-top:4px">
+              <button type="button" sc-camel-on-click="{{ sheet.replace }}" style="min-height:48px;padding:12px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">{{ sheet.replaceLabel }}</button>
+              <sc-if value="{{ sheet.canRemove }}">
+                <button type="button" sc-camel-on-click="{{ sheet.remove }}" style="width:100%;min-height:48px;padding:12px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Remove photo</button>
+              </sc-if>
+              <button type="button" sc-camel-on-click="{{ sheet.cancel }}" style="min-height:48px;padding:12px;border:0;border-radius:12px;background:transparent;color:#00695C;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1100}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+const POOL = ["feature-culture", "ariya-gathering", "feature-work", "diaspora-community", "date-meetup"];
+const PRESETS = {
+  empty: { photos: [null, null, null, null, null, null], main: "empty", mode: "onboard" },
+  three: { photos: ["member-amaka", "feature-culture", "ariya-gathering", null, null, null], main: "matched", mode: "onboard" },
+  ready: { photos: ["member-amaka", "feature-culture", "ariya-gathering", "feature-work", null, null], main: "matched", mode: "onboard" },
+  edit: { photos: ["member-amaka", "feature-culture", "ariya-gathering", "feature-work", "diaspora-community", "date-meetup"], main: "matched", mode: "edit" }
+};
+class Component extends DCLogic {
+  state = { w: "360px", preset: "three", ...PRESETS.three, sheet: null, onlyMatches: false };
+  componentWillUnmount() { clearTimeout(this.t); }
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  nextFree(photos) { return POOL.find(p => !photos.includes(p)) || POOL[0]; }
+  setMain() {
+    const photos = [...this.state.photos]; photos[0] = "member-amaka";
+    this.setState({ photos, main: "checking", sheet: null });
+    clearTimeout(this.t);
+    this.t = setTimeout(() => this.setState({ main: "matched" }), 2400);
+  }
+  fill(i) {
+    if (i === 0) return this.setMain();
+    const photos = [...this.state.photos]; photos[i] = this.nextFree(photos);
+    this.setState({ photos, sheet: null });
+  }
+  remove(i) {
+    const photos = [...this.state.photos]; photos[i] = null;
+    this.setState({ photos, sheet: null });
+  }
+  renderVals() {
+    const { w, preset, photos, main, mode, sheet, onlyMatches } = this.state;
+    const count = photos.filter(Boolean).length;
+    const ok = !!photos[0] && count >= 4;
+    const edit = mode === "edit";
+    const pick = k => () => { clearTimeout(this.t); this.setState({ preset: k, ...PRESETS[k], photos: [...PRESETS[k].photos], sheet: null }); };
+    let counterNote;
+    if (count < 4) counterNote = `Add ${4 - count} more to continue`;
+    else if (!photos[0]) counterNote = "Add your main photo to continue";
+    else counterNote = count < 6 ? `You can add ${6 - count} more` : "That's the most you can add";
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [["empty", "Starting out"], ["three", "3 of 4"], ["ready", "Ready"], ["edit", "Profile edit"]].map(([k, l]) => this.chip(l, preset === k, pick(k))),
+      barTitle: edit ? "Edit photos" : "Your photos",
+      barSub: edit ? "Profile" : "Profile setup",
+      heading: edit ? "Your photos" : "Add your photos",
+      main: {
+        filled: !!photos[0], empty: !photos[0], img: photos[0] ? IMG(photos[0]) : "",
+        matched: !!photos[0] && main === "matched", checking: !!photos[0] && main === "checking",
+        tap: () => photos[0] ? this.setState({ sheet: 0 }) : this.setMain()
+      },
+      tiles: [1, 2, 3, 4, 5].map(i => {
+        const p = photos[i], opt = i >= 4;
+        return {
+          n: i + 1, filled: !!p, empty: !p, img: p ? IMG(p) : "",
+          aria: p ? `Photo ${i + 1}. Tap to replace or remove.` : `Add photo ${i + 1}${opt ? ", optional" : ""}`,
+          note: opt ? "Optional" : "",
+          border: opt ? "rgba(5,3,9,0.22)" : "rgba(0,105,92,0.5)",
+          bg: opt ? "transparent" : "#FFFFFF",
+          fg: opt ? "#504E52" : "#00695C",
+          tap: () => p ? this.setState({ sheet: i }) : this.fill(i)
+        };
+      }),
+      onlyMatches,
+      toggleOnly: () => this.setState(s => ({ onlyMatches: !s.onlyMatches })),
+      boxBorder: onlyMatches ? "#00695C" : "rgba(5,3,9,0.2)",
+      boxBg: onlyMatches ? "#E5F0EE" : "#FFFFFF",
+      tickBorder: onlyMatches ? "#00695C" : "#828184",
+      tickBg: onlyMatches ? "#00695C" : "#FFFFFF",
+      counter: count < 4 ? `${count} of 4` : `${count} of 6`,
+      counterNote,
+      disabled: !ok,
+      ctaLabel: edit ? "Save changes" : "Continue",
+      ctaBg: ok ? "#00695C" : "#D9D9DA",
+      ctaFg: ok ? "#FFFFFF" : "#504E52",
+      ctaCursor: ok ? "pointer" : "not-allowed",
+      sheetOpen: sheet !== null,
+      sheet: sheet === null ? {} : {
+        isMain: sheet === 0,
+        title: sheet === 0 ? "Main photo" : `Photo ${sheet + 1}`,
+        replaceLabel: sheet === 0 ? "Choose another photo" : "Replace photo",
+        canRemove: sheet !== 0,
+        replace: () => this.fill(sheet),
+        remove: () => this.remove(sheet),
+        cancel: () => this.setState({ sheet: null })
+      }
+    };
+  }
+}
+</script>
+
+
+</body></html>

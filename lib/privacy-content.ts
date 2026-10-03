@@ -9,6 +9,35 @@
  * Every other claim has been checked against the build (October 2026). If
  * the product changes what it collects or keeps, change this text with it.
  *
+ * FACT-CHECK — claims added on 3 October 2026, each checked against the build:
+ *   - "We don't use your data to train AI models." TRUE today. Toastly trains
+ *     no models of its own, and its only AI provider (Anthropic, via the
+ *     commercial API) does not train on API inputs or outputs by default.
+ *     PHASE 2 WARNING: the Trust Sentinel's scorer is "deterministic rules
+ *     plus a classical model" (PRD §5.1.1). A classical model fitted to
+ *     member behaviour IS training a model on member data. Before it is
+ *     built, either this sentence changes (with notice, section 14) or the
+ *     model is fitted on something other than member data.
+ *   - Toastly Help sees status codes only (lib/concierge/tools.ts reads
+ *     stage, check status and reason codes, plan, coin counts) — never
+ *     selfies, ID numbers, chats or Gist data. Enforced by a constraint check.
+ *   - Profile feedback "never writes or rewrites anything": the model can
+ *     only return one of four fixed labels (lib/answer-mirror.ts). Enforced.
+ *   - Toastly Help conversations are deleted after 30 days of quiet
+ *     (retention_config, purge_expired_retention in 0018).
+ *   - AI never uses genotype, religion, tribe, language, relationship
+ *     history, profession or where you live: no agent reads those fields
+ *     (constraint check "agents never read protected attributes").
+ *
+ * HELD from the 3 October drop, because they are not yet true:
+ *   - "We also compare it with your main profile photo" (and the matching
+ *     section 3 wording). Prompt 14 is blocked: Smile ID cannot compare an
+ *     uploaded photo against the enrolled face. Add when a match ships.
+ *   - "AI ... safety-review summaries" and the "Safety review" bullet. The
+ *     Sentinel reviewer summaries are Phase 2. Add when they ship.
+ *   - The drop labelled the ID check "Verified Real (optional)". Verified
+ *     Real is the liveness selfie (PRD §5.1 correction); kept as ID check.
+ *
  * Section 9's countries were MEASURED, not assumed (2 October 2026): the
  * Supabase database host resolves to AWS eu-west-1 (Ireland), and the
  * x-vercel-id header shows functions running in iad1 (Washington, D.C.). No
@@ -22,7 +51,7 @@
 export const PRIVACY_CONTACT = "support@trytoastly.com";
 
 // The date this version was deployed and published.
-export const PRIVACY_EFFECTIVE_DATE = "2 October 2026";
+export const PRIVACY_EFFECTIVE_DATE = "3 October 2026";
 
 export type PrivacyBlock =
   | { kind: "p"; lead?: string; text: string }
@@ -137,6 +166,11 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
+        lead: "Toastly Help.",
+        text: "If you use our AI help assistant, the questions you ask, its replies, and anything you choose to pass to our team (see section 6a).",
+      },
+      {
+        kind: "p",
         lead: "Usage events.",
         text: "A small set of product events — that you signed up, completed verification, had your first Gist, made your first payment or upgraded — so we can understand how Toastly is used. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.",
       },
@@ -151,7 +185,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         head: ["What we do", "Why", "Legal basis"],
         rows: [
           ["Create and run your account; match you; deliver messages and Gist sessions", "To provide the service you signed up for", "Contract"],
-          ["Verify you're a real person, and optionally your NIN/BVN", "To keep fake and scam accounts off Toastly", "Legitimate interest; your consent for NIN/BVN"],
+          ["Verify you're a real person, and optionally your NIN/BVN", "To keep fake and scam accounts off Toastly", "Your explicit consent (this involves biometric data)"],
+          ["Answer your questions through our AI help assistant, and give optional feedback on your profile answers", "To help you use Toastly", "Contract; legitimate interest"],
           ["Store and share your genotype", "Only to show it to the people you choose", "Your explicit consent"],
           ["Show optional profile details", "Because you chose to add them", "Your consent"],
           ["Detect scams, fake accounts and abuse; act on reports", "To keep members safe", "Legitimate interest; legal obligation where applicable"],
@@ -201,6 +236,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           ["Twilio", "Text messages to numbers outside Nigeria (emergency contacts and alerts)"],
           ["Google (Places)", "Suggesting public venues for dates"],
           ["PostHog", "Product analytics (never receives your genotype)"],
+          ["Anthropic", "AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers or genotype"],
         ],
       },
       {
@@ -248,6 +284,24 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     ],
   },
   {
+    id: "how-we-use-ai",
+    title: "6a. How we use AI",
+    blocks: [
+      { kind: "p", text: "We use AI in a few limited places, and we'll always tell you when you're dealing with it." },
+      {
+        kind: "ul",
+        items: [
+          "Toastly Help, our AI assistant, answers questions about verification, payments and how Toastly works. It sees only things like whether a check passed — never your selfies, ID number, messages or Gist sessions. A person handles refunds, disputes and appeals.",
+          "Profile feedback, if you ask for it, tells you whether a prompt answer could be more specific. It never writes or rewrites anything for you. Toastly AI will never write a word for you.",
+        ],
+      },
+      {
+        kind: "p",
+        text: "Our AI never reads your private messages, never listens to Gist sessions, and never uses your genotype, religion, tribe, language, relationship history, profession or where you live. We don't use your data to train AI models.",
+      },
+    ],
+  },
+  {
     id: "keeping-safe",
     title: "7. Keeping Toastly safe",
     blocks: [
@@ -275,6 +329,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Genotype: until you delete it or your account, as in section 5.",
           "Verification results, and the scrambled code made from a verified ID number: for as long as your account is open.",
           "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number, and of its ID number if it completed the ID check, for that time, so it can't simply sign up again.",
+          "Toastly Help conversations: 30 days after the last message, then deleted. If you pass something to our team, your words are deleted at the same time; we keep only its reference number and whether it was resolved.",
           "Payment and financial records: 6 years, as tax law requires.",
         ],
       },

@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
 import { GenotypeSection } from "@/components/genotype/genotype-section";
 import { YourData } from "@/components/account/your-data";
+import { PromptList } from "@/components/profile/prompt-list";
+import { HelpButton } from "@/components/help/help-button";
 import type { Profile, ProfileHistory } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
@@ -73,12 +75,14 @@ export default async function ProfilePage() {
           basics is optional.
         </p>
       </div>
+      <PromptList />
       <ProfileForm profile={profile} history={history} cities={cityOptions} />
       {/* Separate from the form on purpose: genotype has its own consent
           step and its own save, and never travels with other fields. */}
       <GenotypeSection />
       {/* Download and delete — privacy policy section 10. */}
       <YourData />
+      <HelpButton className="justify-self-start" />
     </div>
   );
 }

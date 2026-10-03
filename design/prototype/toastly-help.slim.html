@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/52597a7e-4898-4778-93e5-53bad04be14a.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/b599fa61-72ff-4c2a-af80-00b4e670d4b6.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/a800f5b6-b222-4771-8bf3-a0e176467698.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/72d1ef44-cf78-4ef9-ab37-5a754e2a964e.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/2782dc2a-d1f7-4b96-8180-a61f2c091ce5.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Toastly Help 1 of 2</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Toastly Help</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">A plain help panel opened from Settings, Verification and Payments. The AI label sits under the title every time it opens. No avatar, name or persona: replies are labelled "Toastly Help · AI". A reply can carry one teal action. It answers in the language you write in.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Toastly Help" role="dialog" aria-labelledby="help-title" style="width:{{ frameW }};max-width:100%;min-height:680px;display:flex;flex-direction:column;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:12px 8px 12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <p id="help-title" style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Toastly Help</p>
+        <button type="button" aria-label="Close Toastly Help" style="width:44px;height:44px;border:0;border-radius:10px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:24px;line-height:1;cursor:pointer" style-hover="background:rgba(235,217,174,0.12)">×</button>
+      </div>
+      <div style="background:#E5F0EE;border-bottom:1px solid rgba(0,105,92,0.18);padding:12px 16px">
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#1E1C21;text-wrap:pretty"><strong style="font-weight:600;color:#050309">Toastly Help is an AI assistant.</strong> A person handles refunds, disputes and appeals.</p>
+      </div>
+
+      <div style="flex:1;padding:20px 14px 24px;display:grid;gap:18px;align-content:start">
+
+        <sc-if value="{{ isStart }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:16px">
+            <div style="display:grid;gap:6px;padding:0 2px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.25;color:#050309">What can I help with?</h2>
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:#504E52">Ask in English or Pidgin, or start with one of these.</p>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ starters }}" as="c" hint-placeholder-count="4">
+                <button type="button" sc-camel-on-click="{{ c.pick }}" style="min-height:44px;padding:10px 16px;border:1px solid rgba(0,105,92,0.35);border-radius:999px;background:#FFFFFF;color:#00695C;font-family:Inter,sans-serif;font-size:14px;font-weight:500;line-height:1.35;text-align:left;cursor:pointer" style-hover="background:#E5F0EE;border-color:#00695C">{{ c.q }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ inConvo }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;gap:16px">
+            <p style="margin:0;justify-self:end;max-width:85%;padding:12px 14px;border-radius:16px 16px 6px 16px;background:#001F1B;color:#FFFFFF;font-size:15px;line-height:1.5;text-wrap:pretty">{{ c.q }}</p>
+            <div style="display:grid;gap:6px;max-width:100%">
+              <p style="margin:0 2px;font-size:12px;font-weight:600;color:#504E52">Toastly Help · AI</p>
+              <div style="border:1px solid rgba(5,3,9,0.12);border-radius:6px 16px 16px 16px;background:#FFFFFF;padding:14px;display:grid;gap:10px">
+                <sc-for list="{{ c.paras }}" as="p" hint-placeholder-count="2">
+                  <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">{{ p }}</p>
+                </sc-for>
+                <sc-if value="{{ c.hasAction }}">
+                  <a href="{{ c.href }}" style="margin-top:4px;min-height:48px;padding:12px 16px;border-radius:12px;background:#00695C;color:#FFFFFF;font-size:15px;font-weight:600;line-height:1.35;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center" style-hover="background:#005449;color:#FFFFFF">{{ c.action }}</a>
+                </sc-if>
+              </div>
+              <a href="Toastly Help Handoff.dc.html" style="justify-self:start;min-height:44px;padding:0 2px;display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:#00695C;text-decoration:underline;text-underline-offset:4px">{{ c.person }}</a>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="border-top:1px solid rgba(5,3,9,0.12);background:#FFFFFF;padding:12px 14px 14px;display:grid;gap:8px">
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;min-width:0;display:flex">
+            <input type="text" aria-label="Your question" placeholder="{{ placeholder }}" style="width:100%;min-height:48px;padding:12px 14px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;color:#050309;outline-color:#00695C">
+          </label>
+          <button type="button" style="flex-shrink:0;min-width:64px;min-height:48px;padding:12px 14px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#005449">Send</button>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.5;color:#504E52;text-wrap:pretty">Toastly Help never sees your messages, selfies or ID number.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const CONVO = {
+  selfie: {
+    q: "Why didn't my selfie check work?",
+    paras: [
+      "Your last selfie check couldn't confirm it was you, live. This usually comes down to light: glare, a bright window behind you, or a dark room.",
+      "Face a window or a lamp, keep your whole face inside the frame, and hold still until the prompts say you're done."
+    ],
+    action: "Try the selfie again", href: "Toastly Verify Before Selfie.dc.html", person: "Ask a person instead"
+  },
+  id: {
+    q: "How do I check my ID?",
+    paras: [
+      "You can add your NIN or BVN from Verified Real. It's optional, and adds a second ring to your seal.",
+      "Your number is used once to confirm it's you. It's never shown to other members."
+    ],
+    action: "Check my ID", href: "Toastly Verify ID Check.dc.html", person: "Ask a person instead"
+  },
+  payment: {
+    q: "My payment didn't go through",
+    paras: [
+      "Most of the time a payment stops because the bank declined it — often a daily card limit, or the bank asking you to approve it in their app first.",
+      "Check your bank app, then try again. If money left your account but you didn't get your coins, a person on our team can sort that out."
+    ],
+    action: "Try the payment again", href: "Toastly Pricing.dc.html", person: "Ask a person about a charge"
+  },
+  coins: {
+    q: "How do coin deposits work?",
+    paras: [
+      "When you both commit to a date, you each put down coins. They're held, not spent.",
+      "Both are returned when the date happens, or when either of you cancels with notice. Only a genuine no-show gives them up."
+    ],
+    action: "", href: "", person: "Ask a person instead"
+  },
+  pidgin: {
+    q: "Why my payment no go through?",
+    paras: [
+      "Sorry about am. Most times, payment no dey go when your bank decline am — maybe your card don reach im daily limit, or di bank wan make you approve am for dia app first.",
+      "Check your bank app, then try am again. If dem don comot money from your account but you no see your coins, person for our team go sort am out."
+    ],
+    action: "Try di payment again", href: "Toastly Pricing.dc.html", person: "Ask person for our team"
+  }
+};
+class Component extends DCLogic {
+  state = { w: "360px", view: "start" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, view } = this.state;
+    const c = CONVO[view];
+    const go = k => () => this.setState({ view: k });
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [["start", "Opened"], ["selfie", "Reply with action"], ["pidgin", "Pidgin reply"]].map(([k, l]) => this.chip(l, view === k, go(k))),
+      isStart: view === "start",
+      inConvo: view !== "start",
+      starters: ["selfie", "id", "payment", "coins"].map(k => ({ q: CONVO[k].q, pick: go(k) })),
+      c: c ? { ...c, hasAction: !!c.action } : { paras: [] },
+      placeholder: view === "pidgin" ? "Ask anoda question" : "Ask a question"
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/e78204d4-e20a-4991-8173-1cf10bfa79ba.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/14998929-e9a8-4c29-abc2-4140a69d020d.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/6523824f-9794-4882-adad-961b329f97fb.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/8f22fc03-5234-443f-bca0-fff935160c01.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/f73384cb-4ff5-4835-b89f-8ebfd8f2f344.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Toastly Help 2 of 2</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Hand-off to a person</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">Refunds, disputes and appeals go to a person. The assistant says so plainly, offers one button to pass it on, then confirms with a ticket reference the member can copy. The reply comes by email.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Toastly Help hand-off" role="dialog" aria-labelledby="help-title" style="width:{{ frameW }};max-width:100%;min-height:680px;display:flex;flex-direction:column;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:12px 8px 12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <p id="help-title" style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Toastly Help</p>
+        <button type="button" aria-label="Close Toastly Help" style="width:44px;height:44px;border:0;border-radius:10px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:24px;line-height:1;cursor:pointer" style-hover="background:rgba(235,217,174,0.12)">×</button>
+      </div>
+      <div style="background:#E5F0EE;border-bottom:1px solid rgba(0,105,92,0.18);padding:12px 16px">
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#1E1C21;text-wrap:pretty"><strong style="font-weight:600;color:#050309">Toastly Help is an AI assistant.</strong> A person handles refunds, disputes and appeals.</p>
+      </div>
+
+      <div style="flex:1;padding:20px 14px 24px;display:grid;gap:16px;align-content:start">
+        <p style="margin:0;justify-self:end;max-width:85%;padding:12px 14px;border-radius:16px 16px 6px 16px;background:#001F1B;color:#FFFFFF;font-size:15px;line-height:1.5;text-wrap:pretty">I was charged twice for 20 coins. I'd like a refund for one of them.</p>
+
+        <div style="display:grid;gap:6px">
+          <p style="margin:0 2px;font-size:12px;font-weight:600;color:#504E52">Toastly Help · AI</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:6px 16px 16px 16px;background:#FFFFFF;padding:14px;display:grid;gap:10px">
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Sorry that happened. Refunds are handled by a person on our team, so I can't issue one myself.</p>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">I can pass this on now, with what you've told me here.</p>
+            <sc-if value="{{ offer }}" hint-placeholder-val="{{ true }}">
+              <button type="button" sc-camel-on-click="{{ pass }}" style="margin-top:4px;min-height:48px;padding:12px 16px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#005449">Pass this to our team</button>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ passed }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;gap:6px">
+            <p style="margin:0 2px;font-size:12px;font-weight:600;color:#504E52">Toastly Help · AI</p>
+            <div role="status" style="border:1px solid rgba(0,105,92,0.35);border-radius:6px 16px 16px 16px;background:#FFFFFF;padding:14px;display:grid;gap:12px">
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#050309;font-weight:500;text-wrap:pretty">I've passed this to our team. You'll get a reply by email.</p>
+              <div style="border-radius:12px;background:#E5F0EE;padding:12px 12px 12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <span style="display:grid;gap:2px;min-width:0">
+                  <span style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Reference</span>
+                  <span style="font-size:17px;font-weight:600;letter-spacing:0.04em;color:#050309;font-variant-numeric:tabular-nums">TH-58214</span>
+                </span>
+                <button type="button" sc-camel-on-click="{{ copy }}" style="flex-shrink:0;min-height:44px;padding:10px 14px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:#FFFFFF;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C">{{ copyLabel }}</button>
+              </div>
+              <p style="margin:0;font-size:13.5px;line-height:1.55;color:#504E52;text-wrap:pretty">The reply goes to the email on your account. Quote this reference if you write to us about it.</p>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="border-top:1px solid rgba(5,3,9,0.12);background:#FFFFFF;padding:12px 14px 14px;display:grid;gap:8px">
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;min-width:0;display:flex">
+            <input type="text" aria-label="Your question" placeholder="Ask a question" style="width:100%;min-height:48px;padding:12px 14px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;color:#050309;outline-color:#00695C">
+          </label>
+          <button type="button" style="flex-shrink:0;min-width:64px;min-height:48px;padding:12px 14px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#005449">Send</button>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.5;color:#504E52;text-wrap:pretty">Toastly Help never sees your messages, selfies or ID number.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { w: "360px", passed: true, copied: false };
+  componentWillUnmount() { clearTimeout(this.t); }
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, passed, copied } = this.state;
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [
+        this.chip("Offer", !passed, () => this.setState({ passed: false, copied: false })),
+        this.chip("Passed to team", passed, () => this.setState({ passed: true }))
+      ],
+      offer: !passed, passed,
+      pass: () => this.setState({ passed: true }),
+      copyLabel: copied ? "Copied" : "Copy",
+      copy: () => {
+        try { navigator.clipboard && navigator.clipboard.writeText("TH-58214"); } catch (e) {}
+        this.setState({ copied: true });
+        clearTimeout(this.t);
+        this.t = setTimeout(() => this.setState({ copied: false }), 2000);
+      }
+    };
+  }
+}
+</script>
+
+
+</body></html>

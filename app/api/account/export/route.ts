@@ -45,6 +45,7 @@ export async function GET() {
     profile, birthdate, history, promptAnswers, photos, repliesSent,
     gistSessions, gistOutcomes, couples, dateCommitments, coins, payments,
     entitlements, reportsFiled, blocks, emergencyContact, genotype,
+    verification, helpMessages, helpTickets,
   ] = await Promise.all([
     read("profiles", "id"),
     read("profile_birthdates", "profile_id"),
@@ -63,6 +64,9 @@ export async function GET() {
     read("blocks", "blocker_id"),
     read("emergency_contacts", "profile_id", "label, phone_e164, confirmed_at, created_at"),
     getOwnGenotypeForExport(),
+    read("verification_sessions", "profile_id", "product, status, result_code, passed, created_at, completed_at"),
+    read("support_messages", "profile_id", "conversation_id, role, content, created_at"),
+    read("support_tickets", "profile_id", "reference, category, summary, status, created_at"),
   ]);
 
   const messagesRes = await supabase
@@ -102,6 +106,9 @@ export async function GET() {
     people_you_blocked: blocks,
     emergency_contact: emergencyContact,
     genotype,
+    verification_results: verification,
+    toastly_help_conversations: helpMessages,
+    requests_passed_to_our_team: helpTickets,
   };
 
   const day = new Date().toISOString().slice(0, 10);

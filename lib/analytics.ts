@@ -5,6 +5,11 @@
  * funnel the product is actually judged on: someone joins, gets verified,
  * has a first real conversation, commits to a date, and pays.
  *
+ * Plus three agent events (PRD §5.9 rule: agent events go to PostHog as
+ * METADATA ONLY): Toastly Help used, a hand-off filed, Answer Mirror used.
+ * Their properties are labels and counts — never a question, a reply, an
+ * answer or a draft.
+ *
  * ---------------------------------------------------------------------------
  * WHAT NEVER GOES TO POSTHOG:
  *
@@ -30,7 +35,10 @@ export type AnalyticsEvent =
   | "verification_complete"
   | "first_gist"
   | "first_deposit"
-  | "upgrade";
+  | "upgrade"
+  | "agent_help_reply"
+  | "agent_help_handoff"
+  | "agent_answer_mirror";
 
 const FORBIDDEN_PROPERTIES = [
   "body", "message", "text", "content", "snippet", "preview",

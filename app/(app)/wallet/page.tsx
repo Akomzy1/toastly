@@ -6,6 +6,7 @@ import { Card, FeatureCard } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { COIN_PACKS, TIER_LABELS } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
+import { HelpButton } from "@/components/help/help-button";
 
 export const metadata: Metadata = {
   title: "Coins",
@@ -147,6 +148,7 @@ export default async function WalletPage() {
           </ul>
         </div>
       ) : null}
+      <HelpButton className="justify-self-start" />
     </div>
   );
 }

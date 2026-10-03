@@ -154,3 +154,16 @@ export function sendReverificationNotice(
     ),
   });
 }
+
+/**
+ * Tell the team a Toastly Help hand-off is waiting. Reference and category
+ * only: the member's words stay in support_tickets (cleared after the
+ * retention period), not in an inbox that keeps them forever.
+ */
+export function sendSupportTicketNotice(reference: string, category: string): Promise<EmailResult> {
+  const to = process.env.SUPPORT_INBOX || "support@trytoastly.com";
+  const subject = `Toastly Help hand-off ${reference} (${category})`;
+  const text = `A member passed a ${category} request to the team through Toastly Help.\n\nReference: ${reference}\n\nRead it in Supabase: support_tickets, where reference = '${reference}'. Reply to the member by email within the retention period.`;
+  const html = `<p>A member passed a <strong>${category}</strong> request to the team through Toastly Help.</p><p>Reference: <strong>${reference}</strong></p><p>Read it in Supabase: <code>support_tickets</code>, where reference = '${reference}'. Reply to the member by email within the retention period.</p>`;
+  return sendEmail({ to, subject, html, text });
+}

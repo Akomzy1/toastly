@@ -56,6 +56,18 @@ const ROUTES = [
   { route: "/audit/genotype-display", label: "Genotype on a match card" },
   { route: "/audit/account-data", label: "Your data" },
   { route: "/audit/account-delete", label: "Delete account sheet" },
+  // Toastly Help and Answer Mirror (Prompts 15, 16)
+  { route: "/audit/help/start", label: "Help · start" },
+  { route: "/audit/help/reply", label: "Help · reply" },
+  { route: "/audit/help/pidgin", label: "Help · pidgin" },
+  { route: "/audit/help/offer", label: "Help · offer" },
+  { route: "/audit/help/passed", label: "Help · passed" },
+  { route: "/audit/help/safety", label: "Help · safety" },
+  { route: "/audit/answer-mirror/before", label: "Answer Mirror · before" },
+  { route: "/audit/answer-mirror/great", label: "Answer Mirror · great" },
+  { route: "/audit/answer-mirror/specific", label: "Answer Mirror · specific" },
+  { route: "/audit/answer-mirror/detail", label: "Answer Mirror · detail" },
+  { route: "/audit/answer-mirror/short", label: "Answer Mirror · short" },
   // Verification — every state of the Smile ID flow
   { route: "/audit/verify/start", label: "Verify · start" },
   { route: "/audit/verify/before-selfie", label: "Verify · before-selfie" },

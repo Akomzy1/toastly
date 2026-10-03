@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-02 20:35 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-03 07:03 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -56,6 +56,28 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/account-data` | 360 | pass | pass | pass | pass | `mobile\audit-account-data-360.png` |
 | `/audit/account-delete` | 320 | pass | pass | pass | pass | `mobile\audit-account-delete-320.png` |
 | `/audit/account-delete` | 360 | pass | pass | pass | pass | `mobile\audit-account-delete-360.png` |
+| `/audit/help/start` | 320 | pass | pass | pass | pass | `mobile\audit-help-start-320.png` |
+| `/audit/help/start` | 360 | pass | pass | pass | pass | `mobile\audit-help-start-360.png` |
+| `/audit/help/reply` | 320 | pass | pass | pass | pass | `mobile\audit-help-reply-320.png` |
+| `/audit/help/reply` | 360 | pass | pass | pass | pass | `mobile\audit-help-reply-360.png` |
+| `/audit/help/pidgin` | 320 | pass | pass | pass | pass | `mobile\audit-help-pidgin-320.png` |
+| `/audit/help/pidgin` | 360 | pass | pass | pass | pass | `mobile\audit-help-pidgin-360.png` |
+| `/audit/help/offer` | 320 | pass | pass | pass | pass | `mobile\audit-help-offer-320.png` |
+| `/audit/help/offer` | 360 | pass | pass | pass | pass | `mobile\audit-help-offer-360.png` |
+| `/audit/help/passed` | 320 | pass | pass | pass | pass | `mobile\audit-help-passed-320.png` |
+| `/audit/help/passed` | 360 | pass | pass | pass | pass | `mobile\audit-help-passed-360.png` |
+| `/audit/help/safety` | 320 | pass | pass | pass | pass | `mobile\audit-help-safety-320.png` |
+| `/audit/help/safety` | 360 | pass | pass | pass | pass | `mobile\audit-help-safety-360.png` |
+| `/audit/answer-mirror/before` | 320 | pass | pass | pass | pass | `mobile\audit-answer-mirror-before-320.png` |
+| `/audit/answer-mirror/before` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-before-360.png` |
+| `/audit/answer-mirror/great` | 320 | pass | pass | pass | pass | `mobile\audit-answer-mirror-great-320.png` |
+| `/audit/answer-mirror/great` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-great-360.png` |
+| `/audit/answer-mirror/specific` | 320 | pass | pass | pass | pass | `mobile\audit-answer-mirror-specific-320.png` |
+| `/audit/answer-mirror/specific` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-specific-360.png` |
+| `/audit/answer-mirror/detail` | 320 | pass | pass | pass | pass | `mobile\audit-answer-mirror-detail-320.png` |
+| `/audit/answer-mirror/detail` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-detail-360.png` |
+| `/audit/answer-mirror/short` | 320 | pass | pass | pass | pass | `mobile\audit-answer-mirror-short-320.png` |
+| `/audit/answer-mirror/short` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-short-360.png` |
 | `/audit/verify/start` | 320 | pass | pass | pass | pass | `mobile\audit-verify-start-320.png` |
 | `/audit/verify/start` | 360 | pass | pass | pass | pass | `mobile\audit-verify-start-360.png` |
 | `/audit/verify/before-selfie` | 320 | pass | pass | pass | pass | `mobile\audit-verify-before-selfie-320.png` |

@@ -582,6 +582,49 @@ not read the member's stage and showed the phone step. 0017 moves the viewer
 check into a security-definer function, `viewer_is_verified()`; visibility is
 unchanged. A constraint check now fails if any policy reads its own table.
 
+## Prompts 14–16 — photos (blocked), Toastly Help, Answer Mirror
+
+**Prompt 14 is stopped at its own gate.** It requires the primary profile
+photo to be matched against the member's enrolled liveness face, and says to
+stop and report if Smile ID can't. It can't: SmartSelfie Authentication needs
+a fresh selfie plus 6–8 liveness frames (`use_enrolled_image` only re-checks
+the enrolled face against itself), and SmartSelfie Compare matches a *new*
+selfie to a reference photo — REST and mobile SDKs only, not the hosted web
+flow. Nothing from Prompt 14 is built; options are in the session report.
+
+**Prompt 15 — Toastly Help** (`lib/concierge/`, `app/api/help/`,
+`components/help/`), against `toastly-help` and `toastly-help-handoff`:
+- Claude Haiku, stateless; turns stored in Supabase (0018), deleted after 30
+  quiet days. Labelled as AI at the top of the panel every time.
+- Five tools: three reads (verification status codes, plan, coin balance)
+  run through the member's own session; a hand-off *proposal*; a safety
+  escalation. The member's tap files the ticket, never the model. A
+  constraint check pins the tool list and forbids writes.
+- Safety: a keyword pre-check skips the model; the model can also escalate.
+  Both show fixed safety copy (112, the safety kit) and offer a person.
+- Live-tested: status-code explanation with the right action, a Pidgin
+  reply, refund and appeal hand-offs, a ghost-writing refusal, the coin
+  split, and a sextortion case the keyword check missed but the model
+  escalated. Two wrong statements found in testing and fixed: it claimed to
+  "see" a double charge, and called stake credit "date deposits".
+
+**Prompt 16 — Answer Mirror** (`lib/answer-mirror.ts`, the edit-answer
+screen at `/profile/prompts/[id]`), against `answer-mirror`:
+- Structured output with one enum field; responses re-validated to exactly
+  one known label; anything else rejected and logged by length only.
+- Four labels, from the prototype (the build prompt's `reads_generic` folds
+  into "Try being more specific" there).
+- Live-tested on the prototype's four samples (all matched), a faith answer
+  (judged like any other) and a prompt-injection attempt (ignored).
+- The prompt editor didn't exist before; the prototype designs it, and it's
+  built from that.
+
+**Privacy policy** gains section 6a (How we use AI), the Anthropic row, the
+AI legal-basis row, explicit consent for verification, and Toastly Help
+retention. Held, because untrue today: the main-photo comparison and
+AI safety-review summaries. The data export now includes verification
+results and Toastly Help data.
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

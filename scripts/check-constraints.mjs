@@ -427,8 +427,12 @@ check("Sentinel events never go to the analytics tool", (s, f) => {
   }
   const union = /export type AnalyticsEvent =([\s\S]*?);/.exec(s);
   if (!union) return "the event union is missing";
-  const count = (union[1].match(/"/g) ?? []).length / 2;
-  return count > 6 ? `${count} analytics events — keep the set small` : false;
+  const names = [...union[1].matchAll(/"([a-z_]+)"/g)].map((m) => m[1]);
+  // Agent events are required by CLAUDE.md (metadata only) and counted apart.
+  const funnel = names.filter((n) => !n.startsWith("agent_"));
+  const agent = names.filter((n) => n.startsWith("agent_"));
+  if (funnel.length > 6) return `${funnel.length} funnel events — keep the set small`;
+  return agent.length > 4 ? `${agent.length} agent events — keep the set small` : false;
 });
 
 // --- The emergency contact is not a matching input ------------------------
@@ -827,6 +831,84 @@ check("Smile ID path reads no tier or entitlement", (s, f) => {
   if (hits.length) failures.push({ name: "no RLS policy queries its own table", hits });
   console.log(`${hits.length ? "FAIL" : "ok  "}  no RLS policy queries its own table`);
 }
+
+// --- AI agents (PRD §5.9; CLAUDE.md agent rules) ---------------------------
+const norm = (f) => f.replace(/\\/g, "/");
+const isAgentFile = (f) =>
+  /lib\/ai\/|lib\/concierge\/|lib\/answer-mirror\.ts$|app\/api\/help\//.test(norm(f));
+
+check("Claude only — no second LLM vendor or hosted agent runtime", (s) => {
+  const code = stripComments(s, "x.ts");
+  if (/from\s+["'](openai|@openai\/|langchain|@langchain\/|ai\/openai|@ai-sdk\/openai)/.test(code)) return "imports another LLM vendor";
+  if (/\.beta\.(agents|sessions|environments|deployments)\b/.test(code)) return "uses a vendor-hosted agent runtime";
+  return false;
+});
+
+check("every model call goes through lib/ai/client.ts", (s, f) => {
+  if (norm(f).endsWith("lib/ai/client.ts")) return false;
+  return /new\s+Anthropic\s*\(/.test(stripComments(s, "x.ts")) ? "constructs its own Anthropic client" : false;
+});
+
+// The concierge may read status codes and propose; it may never move money,
+// change an account or read chats.
+check("Toastly Help tools are read-only", (s, f) => {
+  if (!/lib\/concierge\/tools\.ts$/.test(norm(f))) return false;
+  const code = stripComments(s, f);
+  const names = (code.match(/CONCIERGE_TOOL_NAMES = \[([\s\S]*?)\]/) ?? [])[1] ?? "";
+  const listed = [...names.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
+  const allowed = ["create_support_ticket", "escalate_safety", "get_coin_balance", "get_subscription_status", "get_verification_status"];
+  if (listed.join() !== allowed.join()) return `tool list changed: ${listed.join(", ")}`;
+  if (/\.(insert|update|upsert|delete)\s*\(/.test(code)) return "a tool writes to the database";
+  const rpcs = [...code.matchAll(/\.rpc\(\s*"([a-z_]+)"/g)].map((m) => m[1]);
+  const okRpcs = ["current_tier", "coin_balance", "withdrawable_balance"];
+  const bad = rpcs.find((r) => !okRpcs.includes(r));
+  if (bad) return `calls ${bad}`;
+  if (/\.from\(\s*"(messages|replies|message_attachments|gist_sessions|threads)"/.test(code)) return "reads chats or Gist data";
+  return false;
+});
+
+// Payloads are built from permitted fields; protected attributes, genotype,
+// chats, Gist data, selfies and ID numbers never reach an agent.
+check("agents never read protected attributes, chats or biometrics", (s, f) => {
+  if (!isAgentFile(f)) return false;
+  const code = stripComments(s, f);
+  const sel = [...code.matchAll(/\.select\(\s*"([^"]*)"/g)].map((m) => m[1]).join(",");
+  const hit = /\b(religion|tribe|languages|history|has_children|profession|education|genotype\w*|pool|city|diaspora\w*|date_of_birth|gender|display_name|bio|id_hash|job_id)\b/.exec(sel);
+  if (hit) return `selects ${hit[1]}`;
+  if (/\.from\(\s*"(messages|replies|message_attachments|gist_sessions|threads|profile_history|member_genotypes|genotype\w*|profile_birthdates|phone_identities)"/.test(code)) return "reads a forbidden table";
+  if (/image_links|selfie_image|id_number/.test(code)) return "touches selfie or ID data";
+  return false;
+});
+
+check("Answer Mirror returns only a fixed label — no free text", (s, f) => {
+  if (!/lib\/answer-mirror\.ts$/.test(norm(f))) return false;
+  const schema = (s.match(/FEEDBACK_SCHEMA = \{([\s\S]*?)\} as const;/) ?? [])[1];
+  if (!schema) return "FEEDBACK_SCHEMA missing";
+  const props = (schema.match(/properties:\s*\{([\s\S]*?)\},\s*required/) ?? [])[1] ?? "";
+  const keys = [...props.matchAll(/^\s*([a-z_]+):/gm)].map((m) => m[1]);
+  if (keys.join() !== "feedback") return `schema fields: ${keys.join(", ")}`;
+  if (!/enum:\s*\[\.\.\.FEEDBACK_LABELS\]/.test(props)) return "feedback is not an enum";
+  if (!/additionalProperties:\s*false/.test(schema)) return "schema allows extra fields";
+  if (!/keys\.length !== 1/.test(s)) return "response is not re-validated to a single key";
+  return false;
+});
+
+check("AI is labelled at first contact; the pledge is shown", (s, f) => {
+  const p = norm(f);
+  if (p.endsWith("components/help/help-panel.tsx")) {
+    return /Toastly Help is an AI assistant\./.test(s) ? false : "AI label missing from Toastly Help";
+  }
+  if (p.endsWith("components/profile/answer-editor.tsx")) {
+    if (!/Toastly AI will never write a word for you\./.test(s)) return "pledge missing";
+    return /AI feedback/.test(s) ? false : "AI feedback label missing";
+  }
+  return false;
+});
+
+check("Toastly Help hand-offs are filed only by the member's tap", (s, f) => {
+  if (!/lib\/concierge\//.test(norm(f))) return false;
+  return /support_tickets/.test(stripComments(s, f)) ? "the assistant writes a ticket itself" : false;
+});
 
 console.log("");
 if (failures.length) {

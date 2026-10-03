@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { VerifyFlow } from "@/components/verify/verify-flow";
+import { HelpButton } from "@/components/help/help-button";
 import { PhoneStep } from "./phone-step";
 import { PhotosStep } from "./photos-step";
 import { SANDBOX_IDENTITIES, sandboxPickerAllowed, smileConfig } from "@/lib/smile-id";
@@ -50,6 +51,7 @@ export default async function VerifyPage() {
     : [];
 
   return (
+    <>
     <VerifyFlow
       view={view}
       sandbox={sandbox}
@@ -63,5 +65,9 @@ export default async function VerifyPage() {
         ) : null
       }
     />
+    <div className="mx-auto w-full max-w-[680px] px-4 pb-8">
+      <HelpButton />
+    </div>
+    </>
   );
 }

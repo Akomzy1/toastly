@@ -41,10 +41,24 @@
 ## 5. Core Features (MVP)
 
 ### 5.1 Verification & Trust
-- Mandatory tiered verification: phone → selfie liveness → optional NIN/BVN for a **"Verified Real"** badge.
+- Mandatory verification before a profile goes live: **phone code → liveness selfie**. Passing the liveness selfie earns the **"Verified Real" seal** — the product's central trust signal, held by every visible member. *(Corrects an earlier definition that tied Verified Real to the NIN/BVN check; the shipped How It Works copy — "your seal goes live before your profile does" — and the designed verification screens both make the selfie the seal.)*
+- **Optional ID check** — NIN, Virtual NIN or BVN via Smile ID Biometric KYC (number matched against the official record *and* to a new selfie) adds a **second ring** to the seal. Never presented as missing, never nagged. Toastly stores only the outcome.
 - Verification and core safety are **never paywalled**.
 - Women's safety kit: photo-reveal control, share-your-date/panic feature, unsolicited-image blur, report/block.
 - No phone number is ever required to talk, call, or Gist in-app (VoIP-based calling). Any number-sharing affordance (e.g., a "share contact" button) is withheld until a trust threshold (completed video Gist + mutual "continue," or Couple Mode entry) — but free-text chat is never scanned, blocked, or policed.
+
+### 5.1.2 Profile photos — minimum four, one face-matched (decided)
+
+The liveness selfie proves a real person is behind the phone; it does **not** prove the profile photos are that person. Without a link between the two, a scammer passes liveness with their own face and then uploads a stolen photo set — a catfish wearing a Verified Real seal. Closing that gap is a launch requirement, not a Phase 2 signal.
+
+- **Minimum 4 photos to go live** (maximum set in config, default 6). Hinge requires six, so four is not heavy-handed.
+- **The primary photo must be a clear face photo that matches the liveness selfie**, checked automatically. No match → profile does not go live; borderline results go to human review, never auto-rejection.
+- **The other three can be anything** — hobbies, places, food, moments. This keeps Toastly prompt-first rather than a face-rating app, and lets privacy-conscious members (women wary of exposure, single parents, widowed users) show one face rather than four.
+- **Changing the primary photo re-runs the match.** A later mismatch is also a Trust Sentinel "verification drift" event (§5.1.1).
+- **Biometric processing — covered by explicit consent.** The liveness consent covers comparing the selfie with the main profile photo. Toastly stores only the match outcome, never a face template.
+- **No AI-generated or face-altering photos** of the member, stated in community rules; "these photos aren't them" is a first-class report category. No AI attractiveness scoring, ever.
+- Photos are **compressed on the phone before upload** so four photos don't punish members on rationed data. The existing "show photos only to matches" setting still applies.
+- Camera-roll or photo-library *scanning* (Tinder's Chemistry pattern) is **not** built — see §5.9 do-not-build list. Members upload what they choose; nothing else on their device is read.
 
 ### 5.1.1 Trust Sentinel — behavioural anti-scam agent (decided; Phase 1 signals, Phase 2 agent)
 
@@ -77,7 +91,12 @@
 5. **Audit trail.** Every score, every reviewer decision, every outcome — logged and reviewable. This is what makes the system defensible if challenged and improvable over time.
 6. **Feedback loop.** Reviewer decisions retrain thresholds. The Sentinel gets better because humans correct it, not because it trusts itself more.
 
-**Model use.** Claude API, tiered per the stack: Haiku for continuous signal scoring (cheap, high volume); Sonnet for composing the reviewer-facing reason and for the profile-vs-Gist consistency check. Opus is not required. This is an infrastructure cost, not a per-user feature cost, and it is **never paywalled** — protection applies to every tier including Starter.
+**Model use.** Continuous scoring is done by **deterministic rules plus a classical model** (e.g. gradient-boosted), not an LLM — an LLM is the wrong primary scorer for adaptive adversaries. Claude (Sonnet) writes the plain-language case summary for the human reviewer only. This is an infrastructure cost, never paywalled.
+
+**Sentinel+ extensions (Phase 2, from the AI-agent research):**
+- **Step-up re-liveness.** Above a high score, the account must pass a fresh Smile ID liveness check before its next Gist or date commitment. This answers real-time deepfake video — a video call alone no longer proves identity — and is the strongest automated step allowed (consistent with "restrict pending re-verification").
+- **"Safety Check" — user-triggered, chat-free.** Any member, on any tier, can tap Safety Check on a match. A structured tap-through asks: have they asked for money, gift cards or crypto? refused to Gist on Toastly? claimed an emergency abroad? The agent returns plain-language guidance and offers to escalate to the review queue. **It never reads the conversation.**
+- **Off-platform-contact signals come from UI events only** (e.g. use of a share-contact affordance), never from parsing message text.
 
 **Success signal.** Scam-related reports per 1,000 active users falls after launch; false-positive rate on manual review stays below a threshold to be set from the first cohort (target: under 1 in 5 flags cleared as false positives, reviewed monthly). If the false-positive rate is high, loosen thresholds before adding signals.
 
@@ -150,12 +169,45 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 ### 5.7 Couple Mode & AriyaPlanner Handoff
 - Opt-in shared space for mutually-confirmed exclusive couples: milestones, saved dates, shared "our story" timeline.
 - Milestone triggers (first date logged, "official," anniversary, **engagement** — the primary handoff trigger).
-- On engagement: one-tap start into AriyaPlanner with a pre-filled brief (tribes, languages, home states, location, aesthetic signals, budget cues already known from Gist/profile data).
+- On engagement: a **consent-gated** handoff into AriyaPlanner. **Each partner approves separately.** The brief is drafted only from fields the couple enters or explicitly chooses to copy across at handoff — city, rough date, guest-count band, budget band, and the ceremony formats they select (introduction, traditional, white wedding). **Nothing flows automatically from Toastly profiles**, because tribe, religion and similar fields are protected attributes that no agent may read (§5.9). Genotype is blocked at the schema level. *(Corrects an earlier "pre-filled from profile data" design.)*
 - Couple data shared only with mutual consent, encrypted, never used to gate matching.
 
 ### 5.8 Data-Light / Distribution
 - PWA-first, installable from browser, no app store required.
 - Data-light mode for low-end Android and constrained connectivity.
+
+### 5.9 AI agents — what Toastly builds, and what it refuses to (decided)
+
+Source: the AI-agent research report (October 2026). The market is splitting: incumbents are putting AI *into* the conversation (Tinder Chemistry, Grindr's paid AI tier, Hinge's founder's Overtone), while users push back hard against AI-written messages ("chatfishing" — in one survey 65% of daters aged 21–35 said they'd be less likely to engage with someone who used AI to write their profile or messages). Toastly takes the opposite side: **agents make trust, logistics and the path to marriage effortless; every human moment stays unmediated.**
+
+**Governing principles (apply to every agent):**
+1. **Agents in the infrastructure, never in the intimacy.** No agent writes, suggests or rewrites messages or profile text, coaches a live conversation, or speaks for a member.
+2. **Never reads private chats, never hears Gist audio.** Agents work from structured data, status codes and metadata.
+3. **Protected attributes and genotype are never inputs** — blocked at the schema/feature-store level, not just in prompts.
+4. **Always labelled as AI** at first contact (the EU AI Act Article 50 standard, used as the design bar everywhere). **No persona, no ongoing emotional chat** — task-scoped helpers only, which keeps Toastly clear of US companion-chatbot laws.
+5. **Humans make consequential decisions.** No auto-bans; refunds, disputes and appeals go to people.
+6. **Never paywalled** where an agent touches safety or verification.
+
+**Vendor and architecture (decided):**
+- **Claude only.** Do not add OpenAI as a second LLM vendor: its Agents API (public beta, Sept 2026) keeps session state only in the US and isn't eligible for zero data retention, its low-code Agent Builder is being retired, and a second vendor would double the DPIA and cross-border transfer work under Nigeria's GAID and UK GDPR. Revisit only if Claude clearly underperforms on Pidgin or Nigerian English in Toastly's own evals.
+- **Stateless calls; state lives in Supabase.** No vendor-hosted agent sessions (neither OpenAI's Agents API nor Claude Managed Agents — both are stateful and not ZDR-eligible). Request zero data retention where eligible; redact before every call.
+- **Toastly is not listed as an app inside ChatGPT.** ChatGPT apps must suit all audiences, OpenAI's review flags tools that ask for biometrics or government IDs, members' romantic disclosures would sit outside Toastly's processor agreement, and Premium can't be sold there. **Build MCP-native instead**, so a later read-only AriyaPlanner tool can serve both Claude and ChatGPT cheaply.
+- Language: English and Pidgin for agent-facing UX; Yoruba, Igbo and Hausa as human-reviewed static copy only, never generated for anything safety-critical.
+
+**The roadmap:**
+
+| # | Agent | What the member experiences | Phase |
+|---|---|---|---|
+| 1 | **Verification & Support Concierge** | A labelled AI helper for liveness failures, ID-check options, payment problems, coin deposits and tier questions, in English or Pidgin. Sees status codes only — never selfies, ID numbers or chats. Hands refunds, disputes and appeals to a person. | **Now** |
+| 2 | **Answer Mirror** | Private feedback on the member's own prompt answers ("specific enough", "add a detail only you could say"). **Feedback categories only — never suggested wording.** Toastly's public pledge: *Toastly AI will never write a word for you.* | **Now** |
+| 3 | **Trust Sentinel+** | Behavioural scoring with step-up re-liveness and a user-triggered Safety Check (§5.1.1). | Phase 2 (pull forward if possible) |
+| 4 | **Plan the Toast** | After both tap "let's meet": three time slots from structured availability and three vetted public venues; both pick by tapping; the agent handles the coin deposit, reminders, an optional share-my-date link and a "home safe?" check-in. Confirmations are system-authored ("Toastly scheduled…"), never written as either person. Extends the date-spot suggestion (§5.5). | Phase 2 |
+| 5 | **Diaspora home windows** | Diaspora members set when they'll be back home (e.g. December); matches see it and can plan a first in-person meeting for that window. Uses location and time zone the member chose to share for scheduling — **diaspora status is never a ranking or scoring input.** | Phase 2 |
+| 6 | **Adaptive Gist deck** | Both people opt in. The next card is chosen from a curated, human-written bank using only skip/extend/star metadata. Afterwards each person writes three private reflections, and the agent turns *their own words* into a personal note. Never infers anything about the other person; no audio, no transcript. | Phase 2 |
+| 7 | **AriyaPlanner engagement brief** | Consent-gated per partner; drafted only from fields the couple enters or chooses to copy at handoff (§5.7). | Later |
+| 8 | **Read-only AriyaPlanner MCP tool** | A no-login wedding budget and checklist tool, listable in Claude's connectors and the ChatGPT app directory as top-of-funnel. No personal data. | Later — experiment |
+
+**Do not build** (each contradicts a rule above or has backfired elsewhere): AI openers, smart compose or reply suggestions; chat recaps, "smart inbox" or anything that reads messages; agent-to-agent dating; camera-roll or photo-library scanning; any paid AI tier that ranks visibility or predicts "who's into you"; an AI matchmaker "friend" persona; live AI on Gist (transcription, sentiment, chemistry scores); AI attractiveness scoring or AI-enhanced photos; automatic bans from a scam score.
 
 ## 6. AriyaPlanner Integration (strategic core, not a bolt-on)
 
@@ -242,9 +294,9 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 
 > **Build-sequence note:** the Claude Code build sequence (`build-prompts.md`) implements Phase 1 across Prompts 0–12. A post-build audit found Prompts 0–9 omitted three Phase 1 items — diaspora matching pools, date-spot suggestion, and time-zone-aware Gist scheduling — now covered by Prompts 10–11, with Prompt 12 handling the domain change to **trytoastly.com**, app icons, stubbed-integration checklist and WhatsApp removal. Live video Gist transport was built in Prompt 5 ahead of its Phase 2 slot; nothing is owed there beyond credentials.
 
-- **Phase 1 (launch):** Verification/trust layer, **Trust Sentinel signal instrumentation (events only, no agent — §5.1.1)**, prompt-based matching, intent spectrum, voice Gist (default), coin-deposit date commitment, lightweight date-spot suggestion, Couple Mode (data capture only), women's safety kit, PWA, domestic coins + subscription, "back home" diaspora matching + diaspora subscription. Launch in Lagos only.
-- **Phase 2:** **Trust Sentinel scoring agent + human review queue (§5.1.1)**, 1:1 live video Gist (premium), hosted live-streaming/matchmaker channel (once verified liquidity exists — MyPerson already runs this live, so this should not be pushed indefinitely), diaspora-to-diaspora matching unlocked per qualifying city.
-- **Later phase:** Live AriyaPlanner handoff integration (shared identity/account layer), fuller curated date-venue directory (if usage justifies content-ops investment), public/host matchmaker partnerships (bringing existing Facebook/TikTok matchmakers on as ambassadors).
+- **Phase 1 (launch):** Verification/trust layer **including the four-photo minimum with face match (§5.1.2)**, **Verification & Support Concierge and Answer Mirror (§5.9)**, **Trust Sentinel signal instrumentation (events only, no agent — §5.1.1)**, prompt-based matching, intent spectrum, voice Gist (default), coin-deposit date commitment, lightweight date-spot suggestion, Couple Mode (data capture only), women's safety kit, PWA, domestic coins + subscription, "back home" diaspora matching + diaspora subscription. Launch in Lagos only.
+- **Phase 2:** **Trust Sentinel+ — scoring, human review queue, step-up re-liveness and Safety Check (§5.1.1)**, **Plan the Toast, diaspora home windows and the adaptive Gist deck (§5.9)**, 1:1 live video Gist (premium), hosted live-streaming/matchmaker channel (once verified liquidity exists — MyPerson already runs this live, so this should not be pushed indefinitely), diaspora-to-diaspora matching unlocked per qualifying city.
+- **Later phase:** Live AriyaPlanner handoff integration (shared identity/account layer) **with the consent-gated engagement-brief agent**, **a read-only AriyaPlanner MCP tool (§5.9)**, fuller curated date-venue directory (if usage justifies content-ops investment), public/host matchmaker partnerships (bringing existing Facebook/TikTok matchmakers on as ambassadors).
 
 ## 10. Risks & Mitigations
 
@@ -262,6 +314,10 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 | Diaspora pricing arbitrage | Signal-stacking + manual review, not aggressive auto-enforcement |
 
 ## 11. Open Questions (not yet decided — do not assume answers)
+- **AI-agent prerequisites (§5.9):** run Toastly's own Pidgin and Nigerian-English evals before relying on Claude for agent copy; request zero data retention from Anthropic; get counsel's view on whether any task-scoped agent could count as a "companion chatbot" under US state law before serving US diaspora members; complete a GAID DPIA for each agent before launch.
+- **Plan the Toast depends on the share-your-date / panic design**, which is still unspecified (trigger, countdown, SMS-only vs link).
+- **ID-number fingerprint:** whether to store a keyed hash of NIN/BVN to stop one ID verifying multiple accounts and removed members returning — recommended, not yet decided.
+- **Face-match provider:** confirm Smile ID can compare an uploaded profile photo against the enrolled liveness face before adding any other biometric vendor.
 - Trust Sentinel false-positive threshold — set from the first cohort's review outcomes, not pre-launch (§5.1.1).
 - Two follow-on agents are recorded as **intent, not commitment**: an adaptive Gist deck with private per-person debrief (both-party consent, no transcript retention), and an autonomous AriyaPlanner handoff that drafts the wedding brief on engagement. Neither is scoped, costed or scheduled.
 - ~~Free-tier limit on voice Gist sessions~~ — **decided:** Starter = 8/month, Diaspora = unlimited (see §7.1).
