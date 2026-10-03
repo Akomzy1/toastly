@@ -138,3 +138,40 @@ export async function closeGistRoom(roomName: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Configuration check for the signed-in diagnostic route: can this server
+ * reach LiveKit, and does LiveKit accept its key and secret? Returns yes/no
+ * facts only — never the key, the secret or a token.
+ */
+export async function checkLiveKit(): Promise<{
+  configured: boolean;
+  host: string | null;
+  reachable: boolean;
+  credentialsAccepted: boolean;
+  status: number | null;
+}> {
+  const url = livekitUrl();
+  const apiKey = process.env.LIVEKIT_API_KEY?.trim();
+  const apiSecret = process.env.LIVEKIT_API_SECRET?.trim();
+  const host = url ? url.replace(/^wss:\/\//, "") : null;
+  if (!url || !apiKey || !apiSecret) return { configured: false, host, reachable: false, credentialsAccepted: false, status: null };
+
+  const now = Math.floor(Date.now() / 1000);
+  const signingInput = `${b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))}.${b64url(
+    JSON.stringify({ iss: apiKey, nbf: now - 10, exp: now + 60, video: { roomList: true } }),
+  )}`;
+  const token = `${signingInput}.${b64url(createHmac("sha256", apiSecret).update(signingInput).digest())}`;
+  try {
+    const res = await fetch(`https://${host}/twirp/livekit.RoomService/ListRooms`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: "{}",
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    return { configured: true, host, reachable: true, credentialsAccepted: res.ok, status: res.status };
+  } catch {
+    return { configured: true, host, reachable: false, credentialsAccepted: false, status: null };
+  }
+}

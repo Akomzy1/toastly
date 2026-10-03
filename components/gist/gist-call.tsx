@@ -170,8 +170,17 @@ export function GistCall({ sessionId, otherName }: { sessionId: string; otherNam
       await room.startAudio().catch(() => undefined);
       setNeedsTap(!room.canPlaybackAudio);
       setPhase("in_call");
-    } catch {
-      setError("We couldn't connect the call. Check your connection and try again.");
+    } catch (e) {
+      // Say which side failed: the network, or LiveKit refusing the token.
+      const reason = (e as Error)?.message ?? "";
+      console.error("[gist] connect failed:", reason);
+      setError(
+        /401|invalid|token|unauthori[sz]ed/i.test(reason)
+          ? "The call server didn't accept this call. Please tell us — this is on our side, not yours."
+          : /signal connection|fetch|network|websocket/i.test(reason)
+            ? "We couldn't reach the call server. Check your connection and try again."
+            : `We couldn't connect the call (${reason.slice(0, 80) || "unknown error"}). Please try again.`,
+      );
       setPhase("idle");
       return;
     }
