@@ -15,7 +15,7 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All nineteen migrations are applied (0019, Gist clock, 0018, AI agents, and 0017, the profiles read-policy fix, on 3 October 2026; 0016, Smile ID, and 0015, account lifecycle, on 2 October 2026). Until 0017, every member read of `profiles` failed with `42P17` (infinite recursion in the 0001 policy), so the verify page showed everyone the phone step. pg_cron is enabled and the nightly purge of expired retention records is scheduled (job `toastly-purge-retention`, 03:17 UTC, set up 2 October 2026). 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. **Set in Vercel production** (confirmed 2 October 2026): signed-out visitors to `/feed` are sent to `/login`, and the data download asks for sign-in rather than reporting "not configured". |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All twenty migrations are applied (0020, Gist invites, 0019, Gist clock, 0018, AI agents, and 0017, the profiles read-policy fix, on 3 October 2026; 0016, Smile ID, and 0015, account lifecycle, on 2 October 2026). Until 0017, every member read of `profiles` failed with `42P17` (infinite recursion in the 0001 policy), so the verify page showed everyone the phone step. pg_cron is enabled and the nightly purge of expired retention records is scheduled (job `toastly-purge-retention`, 03:17 UTC, set up 2 October 2026). 0013 (relationship history) and 0014 (genotype) both on 26 September 2026 — 0013 after the deploy that reads the new table, 0014 after Vault passed a store-and-read round trip and pgcrypto an encrypt-and-decrypt check. **Set in Vercel production** (confirmed 2 October 2026): signed-out visitors to `/feed` are sent to `/login`, and the data download asks for sign-in rather than reporting "not configured". |
 
 **Still to do on Supabase:** add `https://www.trytoastly.com` (the host
 production actually serves — see below) to Authentication → URL
@@ -153,14 +153,23 @@ was refused by the token, and a server-side room close disconnected both.
 - **Migration 0019 (Gist clock) is applied** (3 October 2026): `gist_join`,
   `gist_extend` and `gist_finish` exist and refuse anonymous callers; the
   new timing columns are in place.
+- **Delete any hand-verified test accounts before launch** (Supabase →
+  Authentication → Users), e.g. `tokunboakomolede+test@gmail.com`. The
+  sandbox revoke step (§1a) only catches accounts verified through a Smile ID
+  sandbox selfie; an account set to `verified_real` in the SQL editor has no
+  session row and would slip through.
+- **Migration 0020 (Gist invites) is applied** (3 October 2026): `gist_invite`,
+  `gist_has_room` and `gist_answer` exist and refuse anonymous callers; the
+  new columns are in place. It changed how Starter Gists are counted (on
+  connect, both people) and added the 3-day invite expiry to the nightly job.
 - **How the 18 minutes is enforced:** the server starts the clock on first
   join; when it runs out, either browser asks the server to close the room,
   and the server refuses until the time is genuinely up. One honest client
   is enough. Two modified clients could stay connected — closing that
   needs a server-side timer (LiveKit webhooks or a scheduled job), not built.
-- **Extension is mutual:** it happens once, only when both people ask.
-  PRD §5.4 says "extendable once" without saying who decides — chosen to
-  match Gist's mutual opt-in everywhere else.
+- **Extension:** either person can add 18 minutes, once — as the approved
+  Both Clocks prototype says ("Either of you can extend it once"). 0019
+  briefly made it mutual; 0020 corrects that.
 
 ---
 

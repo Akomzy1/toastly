@@ -4,6 +4,7 @@ import { BrandLockup } from "@/components/brand-mark";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { Notice } from "@/components/ui/notice";
 import { signOut } from "../(auth)/actions";
+import { PresenceHeartbeat } from "@/components/app/presence-heartbeat";
 
 /**
  * In-app shell.
@@ -62,6 +63,7 @@ export default async function AppLayout({
         </div>
       </header>
       <main>{children}</main>
+      <PresenceHeartbeat />
     </div>
   );
 }

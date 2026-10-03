@@ -1,10 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { canUseVideo, type GistMedium } from "@/lib/gist";
 import { capture } from "@/lib/analytics";
-import type { Tier } from "@/lib/types/profile";
 
 export type GistState = { error?: string; ok?: string } | null;
 
@@ -16,134 +15,94 @@ async function me() {
   return { supabase, user };
 }
 
-async function tierOf(
-  supabase: ReturnType<typeof createClient>,
-  id: string,
-): Promise<Tier> {
-  const { data } = await supabase.rpc("current_tier", { p_profile_id: id });
-  return (data as Tier | null) ?? "starter";
+/**
+ * Gist invites (gist-invite prototypes 1–8).
+ *
+ * Every rule lives in the database (0020): only someone in today's six, one
+ * open Gist per pair, the Starter cap (counted when a call CONNECTS, for both
+ * people), invites closing after 3 days. These wrappers turn its messages
+ * into calm copy and move the member to the next screen.
+ */
+function capMessage(message: string): string | null {
+  if (/allowance/i.test(message)) return "You've used your 2 Gists this month.";
+  return null;
 }
 
-/**
- * Propose a Gist.
- *
- * The entitlement is enforced by a database trigger on insert, so this cannot
- * be bypassed by a modified client. The checks here exist to produce a decent
- * message rather than a raw constraint error.
- */
-export async function proposeGist(
-  _prev: GistState,
-  formData: FormData,
-): Promise<GistState> {
+export async function inviteToGist(promptAnswerId: string): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
 
-  const inviteeId = String(formData.get("invitee_id") ?? "");
-  const medium = (String(formData.get("medium") ?? "voice") as GistMedium);
-  const scheduledFor = String(formData.get("scheduled_for") ?? "");
-
-  if (!inviteeId) return { error: "Who is this for?" };
-
-  const tier = await tierOf(supabase, user.id);
-
-  if (medium === "video" && !canUseVideo(tier)) {
-    return {
-      error:
-        "Live video Gist is part of Premium Plus. You can propose a voice Gist now — voice is the default here, not a downgrade.",
-    };
-  }
-
-  const { error } = await supabase.from("gist_sessions").insert({
-    proposer_id: user.id,
-    invitee_id: inviteeId,
-    medium,
-    scheduled_for: scheduledFor || null,
+  const { data: sessionId, error } = await supabase.rpc("gist_invite", {
+    p_prompt_answer_id: promptAnswerId,
   });
-
-  if (error) {
-    // The trigger's message is the honest one; surface it rather than a
-    // generic failure.
-    if (/allowance/i.test(error.message)) {
-      return {
-        error:
-          "That's both of your free Gist sessions for this month. They reset at the start of next month.",
-      };
-    }
-    if (/Premium Plus/i.test(error.message)) {
-      return { error: "Live video Gist is part of Premium Plus." };
-    }
-    return { error: error.message };
+  if (error || typeof sessionId !== "string") {
+    return { error: capMessage(error?.message ?? "") ?? error?.message ?? "That didn't send. Please try again." };
   }
 
-  // Funnel step three: the first real conversation. Counted after the insert,
-  // so "1" means this one.
+  // Funnel step three: the first Gist invite this member has sent.
   const { count } = await supabase
     .from("gist_sessions")
     .select("id", { count: "exact", head: true })
-    .or(`proposer_id.eq.${user.id},invitee_id.eq.${user.id}`);
-  if ((count ?? 0) <= 1) {
-    await capture("first_gist", user.id, { medium });
-  }
+    .eq("proposer_id", user.id);
+  if ((count ?? 0) <= 1) await capture("first_gist", user.id, { medium: "voice" });
 
   revalidatePath("/gist");
-  return { ok: "Invite sent." };
+  redirect(`/gist/${sessionId}/sent`);
 }
 
-export async function respondToGist(
-  _prev: GistState,
-  formData: FormData,
-): Promise<GistState> {
+/** The same, for a <form action>. */
+export async function inviteToGistForm(_prev: GistState, formData: FormData): Promise<GistState> {
+  return inviteToGist(String(formData.get("prompt_answer_id") ?? ""));
+}
+
+export async function respondToInvite(sessionId: string, accept: boolean): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
-
-  const id = String(formData.get("session_id") ?? "");
-  const accept = String(formData.get("accept") ?? "") === "yes";
-
-  const { error } = await supabase
-    .from("gist_sessions")
-    .update({ status: accept ? "accepted" : "declined" })
-    .eq("id", id)
-    .eq("invitee_id", user.id);
-
-  if (error) return { error: error.message };
+  const { error } = await supabase.rpc("gist_respond", { p_session_id: sessionId, p_accept: accept });
+  if (error) return { error: capMessage(error.message) ?? error.message };
   revalidatePath("/gist");
-  return { ok: accept ? "Accepted." : "Declined." };
+  revalidatePath(`/gist/${sessionId}`);
+  return { ok: accept ? "accepted" : "declined" };
 }
 
-/**
- * Opt in to the session.
- *
- * Mutual opt-in gates the hardware: a room token is only issued once BOTH
- * sides have marked themselves ready, so no microphone or camera can be
- * requested before the other person has agreed.
- */
-export async function markReady(
-  _prev: GistState,
-  formData: FormData,
-): Promise<GistState> {
+/** "Start now" / "Gist now": I'm ready. The call opens once you both are. */
+export async function startNow(sessionId: string): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
-
-  const id = String(formData.get("session_id") ?? "");
   const { data: session } = await supabase
     .from("gist_sessions")
-    .select("proposer_id, invitee_id")
-    .eq("id", id)
+    .select("proposer_id, status")
+    .eq("id", sessionId)
     .single();
-
-  if (!session) return { error: "That session doesn't exist." };
-
-  const field =
-    session.proposer_id === user.id ? "proposer_ready_at" : "invitee_ready_at";
-
+  if (!session || session.status !== "accepted") return { error: "This Gist can't start right now." };
+  const field = session.proposer_id === user.id ? "proposer_ready_at" : "invitee_ready_at";
   const { error } = await supabase
     .from("gist_sessions")
     .update({ [field]: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", sessionId);
+  if (error) return { error: "This Gist can't start right now." };
+  revalidatePath(`/gist/${sessionId}`);
+  return { ok: "ready" };
+}
 
+export async function proposeTime(sessionId: string, at: string): Promise<GistState> {
+  const { supabase, user } = await me();
+  if (!user) return { error: "Please sign in again." };
+  const { error } = await supabase.rpc("gist_propose_time", { p_session_id: sessionId, p_at: at });
   if (error) return { error: error.message };
-  revalidatePath(`/gist/${id}`);
-  return { ok: "Ready. Waiting for them to join." };
+  revalidatePath(`/gist/${sessionId}`);
+  revalidatePath("/gist");
+  redirect(`/gist/${sessionId}`);
+}
+
+export async function confirmTime(sessionId: string): Promise<GistState> {
+  const { supabase, user } = await me();
+  if (!user) return { error: "Please sign in again." };
+  const { error } = await supabase.rpc("gist_confirm_time", { p_session_id: sessionId });
+  if (error) return { error: error.message };
+  revalidatePath(`/gist/${sessionId}`);
+  revalidatePath("/gist");
+  return { ok: "confirmed" };
 }
 
 /**

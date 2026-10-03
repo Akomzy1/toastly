@@ -19,7 +19,9 @@ import { Notice } from "@/components/ui/notice";
  * NOT IN THE PROTOTYPE — flagged. No Gist room was designed; this is built
  * from the session page's own cards and buttons.
  *
- * The clock is the server's (0019). This component only displays it, and
+ * The clock is the server's (0019, 0020). Either person can extend once —
+ * both-clocks.slim.html: "Either of you can extend it once, by 18 minutes."
+ * This component only displays it, and
  * when it runs out it asks the server to close the room for both people.
  * Nothing is recorded: no audio leaves the two browsers except through
  * LiveKit's relay, and no transcript exists anywhere.
@@ -297,18 +299,10 @@ export function GistCall({ sessionId, otherName }: { sessionId: string; otherNam
           <p className="m-0 text-ui font-semibold text-gold-800">
             {mmss(secondsLeft ?? 0)} left. Want 18 more minutes?
           </p>
-          <p className="m-0 text-nav text-gold-800">
-            {clock.you_asked_to_extend
-              ? `You've asked. It extends if ${first} asks too.`
-              : clock.they_asked_to_extend
-                ? `${first} would like more time. It extends if you ask too.`
-                : "It extends only if you both ask. You can do this once."}
-          </p>
-          {!clock.you_asked_to_extend ? (
-            <Button variant="outline" className="justify-self-start" disabled={busy} onClick={extend}>
-              Ask for 18 more minutes
-            </Button>
-          ) : null}
+          <p className="m-0 text-nav text-gold-800">Either of you can extend it once, by 18 minutes.</p>
+          <Button variant="outline" className="justify-self-start" disabled={busy} onClick={extend}>
+            Add 18 minutes
+          </Button>
         </div>
       ) : null}
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { canSendText, replyKindFor } from "@/lib/feed";
+import { canSendText } from "@/lib/feed";
 import type { Tier } from "@/lib/types/profile";
 
 export type ReplyState = { error?: string; ok?: string } | null;
@@ -14,9 +14,10 @@ export type ReplyState = { error?: string; ok?: string } | null;
  * accept one — `prompt_answer_id` is required, so every opener is attached to
  * something the sender actually read.
  *
- * The Starter rule is enforced here, server-side, not in the UI: a Starter
- * member's outbound move is a Gist invite, and any free text they submit is
- * refused rather than quietly dropped.
+ * Text only. Gist invites go through inviteToGist (gist/actions.ts), which
+ * creates a real Gist — before 0020 a "Gist invite" here saved a reply row
+ * and nothing ever came of it. Starter can't send text, enforced here and in
+ * the database (0004), and is pointed to the Gist invite instead.
  */
 export async function replyToAnswer(
   _prev: ReplyState,
@@ -41,34 +42,25 @@ export async function replyToAnswer(
   });
   const tier = (tierRow as Tier | null) ?? "starter";
 
-  const kind = replyKindFor(tier);
-
-  if (kind === "text" && !body) {
-    return { error: "Write something first." };
-  }
-  if (!canSendText(tier) && body) {
+  if (!canSendText(tier)) {
     // Not silently downgraded: the member is told what happened and why.
     return {
       error:
         "Starter can't send text messages. You can invite them to a Gist instead — that's your outbound channel on the free plan.",
     };
   }
+  if (!body) return { error: "Write something first." };
 
   const { error } = await supabase.from("replies").insert({
     sender_id: user.id,
     recipient_id: recipientId,
     prompt_answer_id: promptAnswerId,
-    kind,
-    body: kind === "text" ? body : null,
+    kind: "text",
+    body,
   });
 
   if (error) return { error: error.message };
 
   revalidatePath("/feed");
-  return {
-    ok:
-      kind === "gist_invite"
-        ? "Gist invite sent."
-        : "Sent. It'll be waiting for them.",
-  };
+  return { ok: "Sent. It'll be waiting for them." };
 }

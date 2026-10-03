@@ -6,6 +6,7 @@ import { GenotypeSection } from "@/components/genotype/genotype-section";
 import { YourData } from "@/components/account/your-data";
 import { PromptList } from "@/components/profile/prompt-list";
 import { HelpButton } from "@/components/help/help-button";
+import Link from "next/link";
 import type { Profile, ProfileHistory } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
@@ -80,6 +81,16 @@ export default async function ProfilePage() {
       {/* Separate from the form on purpose: genotype has its own consent
           step and its own save, and never travels with other fields. */}
       <GenotypeSection />
+      {/* NOT IN THE PROTOTYPE — flagged, by decision (3 October 2026): the
+          in-app shell has no navigation yet, so setup needs a way onward.
+          A proper tab bar is going through the design pipeline
+          (design/prompts/app-tab-bar-prompt.md). */}
+      <Link
+        href="/feed"
+        className="flex min-h-12 w-full items-center justify-center rounded-lg bg-gold-500 px-5 py-3.5 text-button text-green-800 no-underline transition-colors duration-200 hover:bg-gold-300"
+      >
+        Go to today&rsquo;s six
+      </Link>
       {/* Download and delete — privacy policy section 10. */}
       <YourData />
       <HelpButton className="justify-self-start" />

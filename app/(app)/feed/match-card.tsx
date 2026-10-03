@@ -1,25 +1,9 @@
-"use client";
-
-import * as React from "react";
-import { useFormState, useFormStatus } from "react-dom";
-import { replyToAnswer } from "./actions";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Notice } from "@/components/ui/notice";
-import { Textarea } from "@/components/ui/field";
 import { SafetyActions } from "@/components/safety/safety-actions";
 import type { FeedCandidate } from "@/lib/feed";
 import { GenotypeChip } from "@/components/genotype/genotype-chip";
-
-function Submit({ label }: { label: string }) {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="justify-self-start">
-      {pending ? "Sending…" : label}
-    </Button>
-  );
-}
 
 /**
  * A match card.
@@ -31,23 +15,17 @@ function Submit({ label }: { label: string }) {
  * Three rules are structural here, not decorative:
  *   - answers sit ABOVE any photography, because members read intentions
  *     rather than score faces;
- *   - a reply must be attached to one specific answer — selecting an answer
- *     is what opens the composer, and there is no way to send without one;
+ *   - a reply must be attached to one specific answer — tapping an answer
+ *     opens the reply screen for it (gist-invite prototypes 1–3), and there
+ *     is no way to reply or invite without one;
  *   - there is no swipe gesture, no like button, no super-like, and no
  *     heart or flame anywhere.
  */
 export function MatchCard({
   candidate,
-  canSendText,
 }: {
   candidate: FeedCandidate;
-  canSendText: boolean;
 }) {
-  const [selected, setSelected] = React.useState<string | null>(null);
-  const [state, action] = useFormState(replyToAnswer, null);
-
-  const chosen = candidate.answers.find((a) => a.id === selected);
-
   return (
     <Card className="grid content-start gap-5 p-[26px]">
       <div className="flex flex-wrap items-center gap-3">
@@ -63,31 +41,18 @@ export function MatchCard({
 
       {/* Answers first. This ordering is the product. */}
       <ul className="grid list-none gap-3 p-0">
-        {candidate.answers.map((a) => {
-          const active = a.id === selected;
-          return (
-            <li key={a.id}>
-              <button
-                type="button"
-                onClick={() => setSelected(active ? null : a.id)}
-                aria-pressed={active}
-                className={`grid w-full gap-1.5 rounded-lg border p-4 text-left transition-colors duration-200 ${
-                  active
-                    ? "border-green-500 bg-green-50"
-                    : "border-ink-900/[.12] bg-white hover:border-green-500/50"
-                }`}
-              >
-                <span className="text-caption font-semibold uppercase text-green-500">
-                  {a.prompt}
-                </span>
-                <span className="text-ui text-ink-900">{a.answer}</span>
-                <span className="text-caption tracking-normal text-grey-400">
-                  {active ? "Replying to this" : "Reply to this answer"}
-                </span>
-              </button>
-            </li>
-          );
-        })}
+        {candidate.answers.map((a) => (
+          <li key={a.id}>
+            <Link
+              href={`/feed/reply/${a.id}`}
+              className="grid w-full gap-1.5 rounded-lg border border-ink-900/[.12] bg-white p-4 text-left no-underline transition-colors duration-200 hover:border-green-500/50"
+            >
+              <span className="text-caption font-semibold uppercase text-green-500">{a.prompt}</span>
+              <span className="text-ui text-ink-900">{a.answer}</span>
+              <span className="text-caption tracking-normal text-grey-400">Reply to this answer</span>
+            </Link>
+          </li>
+        ))}
       </ul>
 
       {candidate.tags.length || candidate.genotype ? (
@@ -101,40 +66,6 @@ export function MatchCard({
             <GenotypeChip value={candidate.genotype} ground="white" />
           ) : null}
         </div>
-      ) : null}
-
-      {chosen ? (
-        <form action={action} className="grid gap-4 border-t border-ink-900/[.12] pt-5">
-          <input type="hidden" name="recipient_id" value={candidate.id} />
-          <input type="hidden" name="prompt_answer_id" value={chosen.id} />
-
-          <p className="text-caption uppercase text-grey-600">
-            Replying to &ldquo;{chosen.prompt}&rdquo;
-          </p>
-
-          {canSendText ? (
-            <Textarea
-              name="body"
-              rows={3}
-              required
-              maxLength={1000}
-              placeholder="Say something about what they wrote…"
-            />
-          ) : (
-            /* Starter: framed as what it is — a paid feature and a real
-               alternative — never as an error or a blank state. */
-            <Notice tone="locked" title="Free plan: invite them to a Gist">
-              Sending text is part of Premium. On Starter your opening move is
-              a Gist invite — a scheduled voice session, which is the
-              conversation anyway.
-            </Notice>
-          )}
-
-          {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
-          {state?.ok ? <Notice tone="success">{state.ok}</Notice> : null}
-
-          <Submit label={canSendText ? "Send reply" : "Invite to a Gist"} />
-        </form>
       ) : null}
 
       {/* Report and block, on every card, for every member. This component

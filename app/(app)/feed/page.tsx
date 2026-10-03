@@ -8,7 +8,7 @@ import { Notice } from "@/components/ui/notice";
 import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
 import { getVisibleGenotypes } from "@/components/genotype/genotype-data";
 import { MatchCard } from "./match-card";
-import { canSendText, DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
+import { DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
 import {
   isVerifiedReal,
   type Profile,
@@ -153,7 +153,7 @@ export default async function FeedPage() {
       ) : (
         <div className="grid gap-5">
           {cards.map((c) => (
-            <MatchCard key={c.id} candidate={c} canSendText={canSendText(tier)} />
+            <MatchCard key={c.id} candidate={c} />
           ))}
         </div>
       )}

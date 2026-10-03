@@ -634,11 +634,26 @@ results and Toastly Help data.
 
 The session page's dead "Join session" button is now a real call
 (`components/gist/gist-call.tsx`, `app/api/gist/[id]/*`, 0019). Voice only:
-live video is Phase 2. The server keeps the 18-minute clock; extension is
-once and mutual; time-up closes the room for both via LiveKit's API.
+live video is Phase 2. The server keeps the 18-minute clock; either person
+can extend once; time-up closes the room for both via LiveKit's API.
 Mic-denied, audio-blocked (tap to hear), reconnecting, leave and rejoin
 are handled. A session proposed as video by an entitled member runs as
 voice and says so. Tested end to end with two browsers (GO-LIVE §3b).
+
+**Gist invites — built against eight new prototypes (3 October 2026).**
+Before this, nobody could start a Gist: the feed's "Gist invite" saved a
+reply row and no screen accepted anything. Now (0020, `components/gist/`):
+reply to an answer (Starter / paid / at the limit), invite sent, the
+three-group Gist list, received with Accept / Decline, after accepting
+("Gist now?" when both are online, otherwise pick a time), the sender's
+outcomes, and Both Clocks' window picker with the other person confirming.
+Decisions applied: a Gist counts when the call connects, for both people
+(PRD §7.1 — the prototype's "always free to accept" copy was changed to
+match); invites close after 3 days; the seal line reads "Passed a live
+selfie check" until the photo match ships; either person can extend once
+(both-clocks.slim.html — replaces this morning's mutual extension).
+"Online now" is a yes/no inside an accepted Gist; no last-seen time
+leaves the database.
 
 ## Environment
 

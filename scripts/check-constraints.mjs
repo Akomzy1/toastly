@@ -920,13 +920,30 @@ check("Phase 1 Gist tokens never grant the camera", (s, f) => {
 });
 
 check("the Gist clock is 18 minutes, server-kept, extendable once", (s, f) => {
-  if (!/0019_gist_clock\.sql$/.test(f)) return false;
+  if (!/00(19_gist_clock|20_gist_invites)\.sql$/.test(f)) return false;
   const intervals = [...s.matchAll(/interval '(\d+) minutes'/g)].map((m) => m[1]);
-  if (!intervals.length || intervals.some((m) => m !== "18")) return `Gist intervals: ${intervals.join(", ")}`;
-  if (!/create trigger guard_gist_timing/.test(s)) return "timing guard missing";
-  if (!/extended_at is not null then\s*raise/.test(s)) return "extension not limited to once";
-  if (!/proposer_extend_at is not null and s\.invitee_extend_at is not null/.test(s)) return "extension not mutual";
+  if (intervals.some((m) => m !== "18" && m !== "2" && m !== "5")) return `Gist intervals: ${intervals.join(", ")}`;
+  if (!/create trigger guard_gist_timing/.test(s) && /0019/.test(f)) return "timing guard missing";
+  if (/function public\.gist_extend/.test(s) && !/extended_at is not null then\s*raise/.test(s)) return "extension not limited to once";
   return false;
+});
+
+// A Gist counts when the call CONNECTS, for BOTH people (decision of
+// 3 October 2026; PRD §7.1). The count must key on started_at, never on an
+// invite or an acceptance.
+check("Starter Gists are counted on connect, for both people", (s, f) => {
+  if (!/0020_gist_invites\.sql$/.test(f)) return false;
+  const fn = (s.match(/function public\.voice_gists_this_month[\s\S]*?\$\$;/) ?? [""])[0];
+  if (!/g\.started_at >= date_trunc\('month', now\(\)\)/.test(fn)) return "not counted on connect";
+  if (!/g\.proposer_id = p_profile_id or g\.invitee_id = p_profile_id/.test(fn)) return "not counted for both people";
+  return false;
+});
+
+// "Photos match their selfie" is only true once the photo match ships
+// (Prompt 14, parked).
+check("no claim that photos match a selfie before the photo match exists", (s, f) => {
+  if (!/\.(tsx|ts)$/.test(f) || /check-constraints/.test(f)) return false;
+  return /Photos match their selfie/.test(stripComments(s, f)) ? "photo-match claim shipped before Prompt 14" : false;
 });
 
 check("Gist calls never ask for a camera", (s, f) => {

@@ -206,3 +206,43 @@ export function needsTwoClocks(
 ): boolean {
   return Boolean(yourZone && theirZone && yourZone !== theirZone);
 }
+
+/** "4:40 pm" in that zone — the gist-invite and both-clocks prototypes' format. */
+export function localTime12(instant: Date, timeZone: string): string | null {
+  try {
+    return new Intl.DateTimeFormat("en-GB", { timeZone, hour: "numeric", minute: "2-digit", hour12: true })
+      .format(instant)
+      .replace(/\s?([ap])\.?m\.?/i, (_m, p: string) => ` ${p.toLowerCase()}m`);
+  } catch {
+    return null;
+  }
+}
+
+const SLOT_MS = 30 * 60 * 1000;
+const GIST_MS = 18 * 60 * 1000;
+
+/**
+ * Up to three Gist start times on the member's own "today" or "tomorrow",
+ * where the whole 18-minute call sits inside 08:00–22:00 for BOTH people
+ * (both-clocks.slim.html). Slots are on the half hour, at least 30 minutes
+ * out, and spread across the day: the first, the middle and the last that fit.
+ */
+export function gistWindows(
+  myZone: string | null,
+  theirZone: string | null,
+  day: "today" | "tomorrow",
+  now: Date = new Date(),
+): Date[] {
+  const zone = myZone ?? DEFAULT_TIME_ZONE;
+  const target = localDay(new Date(now.getTime() + (day === "tomorrow" ? 86_400_000 : 0)), zone);
+  const first = Math.ceil((now.getTime() + SLOT_MS) / SLOT_MS) * SLOT_MS;
+  const fits: Date[] = [];
+  for (let t = first; t < now.getTime() + 3 * 86_400_000; t += SLOT_MS) {
+    const start = new Date(t);
+    if (localDay(start, zone) !== target) continue;
+    const lastMinute = new Date(t + GIST_MS - 60_000);
+    if (suitsBoth(start, myZone, theirZone) && suitsBoth(lastMinute, myZone, theirZone)) fits.push(start);
+  }
+  if (fits.length <= 3) return fits;
+  return [fits[0], fits[Math.floor((fits.length - 1) / 2)], fits[fits.length - 1]];
+}

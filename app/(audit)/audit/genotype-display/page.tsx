@@ -32,7 +32,7 @@ export default function AuditGenotypeDisplay() {
   return (
     <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
       <h1 className="text-h3 text-ink-900">Today&rsquo;s matches</h1>
-      <MatchCard candidate={CANDIDATE} canSendText={false} />
+      <MatchCard candidate={CANDIDATE} />
     </div>
   );
 }

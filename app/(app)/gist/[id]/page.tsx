@@ -2,22 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { SafetyActions } from "@/components/safety/safety-actions";
 import { GenotypeChip } from "@/components/genotype/genotype-chip";
 import { getVisibleGenotype } from "@/components/genotype/genotype-data";
-import { ReadyForm } from "./ready-form";
 import { OutcomeForm } from "./outcome-form";
 import { SpotSuggestions, type Spot } from "./spot-suggestions";
 import { GistCall } from "@/components/gist/gist-call";
+import {
+  AfterAccepting,
+  AutoRefresh,
+  ReceivedView,
+  SenderOutcome,
+  StartPanel,
+  TimePending,
+} from "@/components/gist/invite-views";
+import { loadInvite } from "@/lib/gist-invites";
+import { canSendText } from "@/lib/feed";
+import { localDay, localTime12 } from "@/lib/scheduling";
 import { placesConfigured } from "@/lib/places";
 import {
   canUseVideo,
   GIST_DEFAULT_MINUTES,
   GIST_EXTENSION_MINUTES,
-  isJoinable,
   type GistStatus,
 } from "@/lib/gist";
 import { isLiveKitConfigured } from "@/lib/livekit";
@@ -28,6 +36,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+export const dynamic = "force-dynamic";
+
+/**
+ * One Gist, from invite to call. Routes by state:
+ *   proposed            invitee: received (6) · sender: waiting (8)
+ *   declined / expired  sender: outcome (8) · invitee: passed
+ *   accepted            invitee: after accepting (7) · sender: said yes (8),
+ *                       then picking a time, then Start now
+ *   both started, live  the call, the deck, "continue?"
+ * Report and block sit under every state.
+ */
 export default async function GistSessionPage({
   params,
 }: {
@@ -64,7 +83,7 @@ export default async function GistSessionPage({
   const theyReady = isProposer
     ? Boolean(session.invitee_ready_at)
     : Boolean(session.proposer_ready_at);
-  const joinable = isJoinable(session);
+  const bothReady = youReady && theyReady;
 
   // The other participant, for the report and block action below.
   const otherId: string = isProposer ? session.invitee_id : session.proposer_id;
@@ -93,6 +112,108 @@ export default async function GistSessionPage({
         .order("created_at", { ascending: false })
     : { data: [] };
 
+  // --- The invite states ---------------------------------------------------
+  const ctx = await loadInvite(supabase, params.id, user.id);
+  if (!ctx) notFound();
+  const starter = !canSendText(tier);
+  const status = ctx.effectiveStatus;
+  const safety = (
+    <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">
+      <SafetyActions memberId={otherId} name={otherName} />
+    </div>
+  );
+  const zone = (z: string | null) => z ?? "Africa/Lagos";
+  const crossZone = zone(ctx.me.zone) !== zone(ctx.other.zone);
+  const at12 = (iso: string, z: string | null) => {
+    const d = new Date(iso);
+    return `${localDay(d, zone(z))} · ${localTime12(d, zone(z))}`;
+  };
+
+  if (status === "proposed" || status === "declined" || status === "expired") {
+    return (
+      <>
+        {ctx.iAmProposer ? (
+          <SenderOutcome
+            sessionId={ctx.id}
+            name={ctx.other.name}
+            answer={ctx.answer}
+            kind={status === "proposed" ? "waiting" : status}
+            starter={starter}
+            online={false}
+          />
+        ) : (
+          <ReceivedView
+            sessionId={ctx.id}
+            name={ctx.other.name}
+            city={ctx.other.city}
+            answer={ctx.answer}
+            starter={starter}
+            passed={status === "declined" ? "declined" : status === "expired" ? "closed" : null}
+          />
+        )}
+        {status === "proposed" ? <AutoRefresh every={20_000} /> : null}
+        {safety}
+      </>
+    );
+  }
+
+  if (status === "accepted" && !bothReady) {
+    const { data: online } = await supabase.rpc("gist_partner_online", { p_session_id: params.id });
+    const confirmed = ctx.timeConfirmed && ctx.scheduledFor;
+    if (ctx.scheduledFor && ctx.timeProposedByMe !== null && !ctx.timeConfirmed) {
+      return (
+        <>
+          <TimePending
+            sessionId={ctx.id}
+            name={ctx.other.name}
+            pickedByMe={ctx.timeProposedByMe}
+            mine={at12(ctx.scheduledFor, ctx.me.zone)}
+            theirs={at12(ctx.scheduledFor, ctx.other.zone)}
+            crossZone={crossZone}
+          />
+          <AutoRefresh />
+          {safety}
+        </>
+      );
+    }
+    if (!confirmed && !youReady) {
+      const now = new Date();
+      return (
+        <>
+          {ctx.iAmProposer ? (
+            <SenderOutcome
+              sessionId={ctx.id}
+              name={ctx.other.name}
+              answer={ctx.answer}
+              kind="accepted"
+              starter={starter}
+              online={online === true}
+            />
+          ) : (
+            <AfterAccepting
+              sessionId={ctx.id}
+              name={ctx.other.name}
+              city={ctx.other.city}
+              myName={ctx.me.name}
+              online={online === true}
+              crossZone={crossZone}
+              nowMine={localTime12(now, zone(ctx.me.zone))}
+              nowTheirs={localTime12(now, zone(ctx.other.zone))}
+              myCity={ctx.me.city}
+              zoneLine={
+                crossZone
+                  ? `${ctx.other.first} is in ${ctx.other.city ?? "another time zone"}. Every time you see will show on both clocks.`
+                  : "You're in the same time zone, so one clock is all you need."
+              }
+            />
+          )}
+          <AutoRefresh />
+          {safety}
+        </>
+      );
+    }
+  }
+
   // Live video transport is Phase 2 (P2-D). A session proposed as video by an
   // entitled member runs as voice for now, and the page says so.
   const videoPending = session.medium === "video" && canUseVideo(tier);
@@ -120,28 +241,17 @@ export default async function GistSessionPage({
         ) : null}
       </div>
 
-      {/* Mutual opt-in. Nothing touches a microphone or camera until both
-          sides have said yes — the token is not issued before that. */}
-      {!joinable ? (
+      {/* Mutual opt-in: the call opens only once BOTH have tapped Start now
+          — no token, and no microphone, before that. */}
+      {!bothReady ? (
         <Card className="grid gap-4 p-[26px]">
-          <h2 className="text-h5 text-ink-900">Before anything turns on</h2>
-          <p className="text-ui text-grey-600">
-            Your microphone stays off until you both opt in. Nothing is
-            recorded, and either of you can leave at any point.
-          </p>
-          <ul className="grid list-none gap-2 p-0 text-ui">
-            <li className="flex items-center gap-2.5">
-              <Badge variant={youReady ? "verified" : "optional"}>
-                {youReady ? "You're ready" : "Waiting on you"}
-              </Badge>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Badge variant={theyReady ? "verified" : "optional"}>
-                {theyReady ? "They're ready" : "Waiting on them"}
-              </Badge>
-            </li>
-          </ul>
-          {!youReady ? <ReadyForm sessionId={session.id} /> : null}
+          <StartPanel
+            sessionId={session.id}
+            name={otherName}
+            when={ctx.timeConfirmed && ctx.scheduledFor ? at12(ctx.scheduledFor, ctx.me.zone) : null}
+            youReady={youReady}
+          />
+          <AutoRefresh />
         </Card>
       ) : (
         <Card className="grid gap-4 p-[26px]">
@@ -164,7 +274,9 @@ export default async function GistSessionPage({
       )}
 
       {/* The shared deck: both people see the same question at the same time,
-          walking from playful to real. */}
+          walking from playful to real. "The questions open once you've both
+          joined" (gist-accepted.slim.html), so it appears when the call is live. */}
+      {(session.status as GistStatus) === "live" || (session.status as GistStatus) === "completed" ? (
       <Card className="grid gap-4 p-[26px]">
         <div className="grid gap-1.5">
           <h2 className="text-h5 text-ink-900">Your question deck</h2>
@@ -189,6 +301,7 @@ export default async function GistSessionPage({
           ))}
         </ol>
       </Card>
+      ) : null}
 
       {/* Private double opt-in, only once the session has run. */}
       {(session.status as GistStatus) === "live" ||

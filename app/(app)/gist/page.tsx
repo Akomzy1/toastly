@@ -1,34 +1,43 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Notice } from "@/components/ui/notice";
-import {
-  canUseVideo,
-  GIST_DEFAULT_MINUTES,
-  voiceRemaining,
-  type GistStatus,
-} from "@/lib/gist";
-import { BothClocks } from "@/components/gist/both-clocks";
-import type { Tier } from "@/lib/types/profile";
+import { isExpired, sinceLabel } from "@/lib/gist-invites";
+import { localDay, localTime12 } from "@/lib/scheduling";
+import { GistListView, type GistGroup, type GistRow } from "@/components/gist/gists-list-view";
+import type { GistStatus } from "@/lib/gist";
 
 export const metadata: Metadata = {
-  title: "Gist sessions",
+  title: "Gists",
   robots: { index: false, follow: false },
 };
+export const dynamic = "force-dynamic";
 
-const STATUS_LABEL: Record<GistStatus, string> = {
-  proposed: "Invited",
-  accepted: "Confirmed",
-  live: "Live now",
-  completed: "Done",
-  declined: "Declined",
-  cancelled: "Cancelled",
-  expired: "Expired",
-};
+/**
+ * Your Gists — gists-list.slim.html (prototype 5).
+ *
+ * One list, three groups, always in this order. Every row carries the prompt
+ * answer the invite was about, labelled with whose answer it is. Invites for
+ * you sit on a sand edge; nothing else is ranked or badged. Empty groups say
+ * so in one line.
+ *
+ * Declined and closed invites stay under "Waiting on them" for a week so the
+ * sender can see the outcome (prototype 8) — the list has no other place for
+ * them, flagged.
+ */
+
+type Row = GistRow;
+
+const WEEK = 7 * 86_400_000;
+
+function when(iso: string, zone: string | null): string {
+  const z = zone ?? "Africa/Lagos";
+  const at = new Date(iso);
+  const today = localDay(new Date(), z);
+  const tomorrow = localDay(new Date(Date.now() + 86_400_000), z);
+  const day = localDay(at, z);
+  const prefix = day === today ? "Today" : day === tomorrow ? "Tomorrow" : null;
+  return `${prefix ? `${prefix}, ` : ""}${day} · ${localTime12(at, z)}`;
+}
 
 export default async function GistPage() {
   const supabase = createClient();
@@ -37,143 +46,72 @@ export default async function GistPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: tierRow } = await supabase.rpc("current_tier", {
-    p_profile_id: user.id,
-  });
-  const tier = (tierRow as Tier | null) ?? "starter";
-
-  const { data: usedRow } = await supabase.rpc("voice_gists_this_month", {
-    p_profile_id: user.id,
-  });
-  const used = (usedRow as number | null) ?? 0;
-  const remaining = voiceRemaining(tier, used);
-
   const { data: sessions } = await supabase
     .from("gist_sessions")
-    .select("id, medium, status, scheduled_for, proposer_id, invitee_id")
+    .select("id, status, proposer_id, invitee_id, created_at, scheduled_for, time_proposed_by, time_confirmed_at")
     .or(`proposer_id.eq.${user.id},invitee_id.eq.${user.id}`)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(30);
 
-  // Both clocks, where the pair is split across zones. The Diaspora page
-  // promises this in public copy; without it a scheduled time is shown in
-  // whichever zone the browser happens to be in and the other side guesses.
-  const counterpartIds = Array.from(
-    new Set(
-      (sessions ?? []).map((s) =>
-        s.proposer_id === user.id ? s.invitee_id : s.proposer_id,
-      ),
-    ),
-  );
+  const list = sessions ?? [];
+  const otherIds = Array.from(new Set(list.map((s) => (s.proposer_id === user.id ? s.invitee_id : s.proposer_id))));
+  const [{ data: people }, answers] = await Promise.all([
+    supabase.from("profiles").select("id, display_name, time_zone").in("id", [user.id, ...otherIds]),
+    Promise.all(list.map((s) => supabase.rpc("gist_answer", { p_session_id: s.id }))),
+  ]);
+  const nameOf = (id: string) => (people ?? []).find((p) => p.id === id)?.display_name ?? "A member";
+  const myZone = (people ?? []).find((p) => p.id === user.id)?.time_zone ?? null;
 
-  const { data: zonePeople } = counterpartIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id, time_zone, city, display_name")
-        .in("id", [...counterpartIds, user.id])
-    : { data: [] };
+  const invites: Row[] = [];
+  const waiting: Row[] = [];
+  const coming: Row[] = [];
 
-  const personOf = (id: string) => (zonePeople ?? []).find((p) => p.id === id);
-  const zoneOf = (id: string) => personOf(id)?.time_zone ?? null;
-  const myZone = zoneOf(user.id);
-  const myCity = personOf(user.id)?.city ?? null;
+  list.forEach((s, i) => {
+    const mine = s.proposer_id === user.id;
+    const otherId = mine ? s.invitee_id : s.proposer_id;
+    const name = nameOf(otherId);
+    const first = name.split(" ")[0];
+    const a = Array.isArray(answers[i].data) ? answers[i].data[0] : null;
+    const base = {
+      id: s.id,
+      name,
+      teal: false,
+      invite: false,
+      whose: a ? (a.owner_id === user.id ? "Your answer" : `${first}'s answer`) : "",
+      prompt: (a?.prompt as string | undefined) ?? null,
+      answer: (a?.answer as string | undefined) ?? null,
+    };
+    const status = (isExpired(s.status as GistStatus, s.created_at) ? "expired" : s.status) as GistStatus;
+    const recent = Date.now() - Date.parse(s.created_at) < WEEK;
 
-  return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
-      <div className="grid gap-2">
-        <h1 className="text-h3 text-ink-900">Gist sessions</h1>
-        <p className="text-ui text-grey-600">
-          A scheduled voice call with guided prompts — {GIST_DEFAULT_MINUTES}{" "}
-          minutes by default, extendable once. Neither of you sees the
-          other&rsquo;s number, ever.
-        </p>
-      </div>
+    if (status === "proposed") {
+      if (mine) waiting.push({ ...base, status: `Invite sent · ${sinceLabel(s.created_at, myZone)}` });
+      else invites.push({ ...base, invite: true, status: `Invited you · ${sinceLabel(s.created_at, myZone)}` });
+    } else if ((status === "declined" || status === "expired") && mine && recent) {
+      waiting.push({ ...base, status: status === "declined" ? "Passed on this one" : "Invite closed" });
+    } else if (status === "accepted" || status === "live") {
+      let line: string;
+      let teal = false;
+      if (status === "live") {
+        line = "On now";
+        teal = true;
+      } else if (s.scheduled_for && s.time_confirmed_at) {
+        line = when(s.scheduled_for, myZone);
+        teal = true;
+      } else if (s.scheduled_for && s.time_proposed_by) {
+        line = s.time_proposed_by === user.id ? `Waiting on ${first} to confirm the time` : `${first} picked a time — confirm it`;
+      } else {
+        line = "Said yes · pick a time";
+      }
+      coming.push({ ...base, status: line, teal });
+    }
+  });
 
-      {/* Voice is the default and the free path — never framed as a downgrade
-          from video. */}
-      <Card className="grid gap-3 p-[26px]">
-        <h2 className="text-h5 text-ink-900">This month</h2>
-        {remaining === null ? (
-          <p className="text-ui text-grey-600">
-            Unlimited voice Gist sessions on your plan. {used} so far this
-            month.
-          </p>
-        ) : (
-          <p className="text-ui text-grey-600">
-            <strong className="text-ink-900">
-              {remaining} of 2 voice sessions left
-            </strong>{" "}
-            this month. They reset at the start of next month.
-          </p>
-        )}
+  const groups: GistGroup[] = [
+    { title: "Invites for you", rows: invites, empty: "No invites right now." },
+    { title: "Waiting on them", rows: waiting, empty: "Nothing waiting on a reply." },
+    { title: "Coming up", rows: coming, empty: "Nothing booked yet." },
+  ];
 
-        {canUseVideo(tier) ? (
-          <Badge variant="tier" className="justify-self-start">
-            Live video available
-          </Badge>
-        ) : (
-          /* A paid feature, stated plainly — not an error, and not a nag. */
-          <Notice tone="locked">
-            Live video Gist is part of Premium Plus. Voice is the default here
-            either way — it&rsquo;s the point of a Gist, not a lesser version
-            of one.
-          </Notice>
-        )}
-      </Card>
-
-      {!sessions?.length ? (
-        <Card className="grid gap-3 p-[26px]">
-          <h2 className="text-h5 text-ink-900">No sessions yet</h2>
-          <p className="text-ui text-grey-600">
-            Reply to something on today&rsquo;s feed to propose your first one.
-          </p>
-          <Button variant="outline" asChild className="justify-self-start">
-            <Link href="/feed">Today&rsquo;s matches</Link>
-          </Button>
-        </Card>
-      ) : (
-        <ul className="grid list-none gap-4 p-0">
-          {sessions.map((s) => (
-            <li key={s.id}>
-              <Card className="flex flex-wrap items-center justify-between gap-4 p-[26px]">
-                <div className="grid gap-1.5">
-                  <span className="flex items-center gap-2">
-                    <Badge variant={s.medium === "video" ? "tier" : "verified"}>
-                      {s.medium === "video" ? "Live video" : "Voice"}
-                    </Badge>
-                    <span className="text-caption uppercase text-grey-600">
-                      {STATUS_LABEL[s.status as GistStatus]}
-                    </span>
-                  </span>
-                  {(() => {
-                    if (!s.scheduled_for) {
-                      return (
-                        <p className="text-ui text-ink-900">Not scheduled yet</p>
-                      );
-                    }
-                    const otherId =
-                      s.proposer_id === user.id ? s.invitee_id : s.proposer_id;
-                    const other = personOf(otherId);
-                    return (
-                      <BothClocks
-                        instant={new Date(s.scheduled_for)}
-                        yourZone={myZone}
-                        yourCity={myCity}
-                        theirZone={other?.time_zone ?? null}
-                        theirCity={other?.city ?? null}
-                        theirName={other?.display_name ?? "They"}
-                      />
-                    );
-                  })()}
-                </div>
-                <Button variant="outline" asChild>
-                  <Link href={`/gist/${s.id}`}>Open</Link>
-                </Button>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+  return <GistListView groups={groups} />;
 }

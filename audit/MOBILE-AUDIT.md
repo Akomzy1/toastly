@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-03 13:14 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-03 15:00 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -58,6 +58,46 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/account-delete` | 360 | pass | pass | pass | pass | `mobile\audit-account-delete-360.png` |
 | `/audit/gist-call` | 320 | pass | pass | pass | pass | `mobile\audit-gist-call-320.png` |
 | `/audit/gist-call` | 360 | pass | pass | pass | pass | `mobile\audit-gist-call-360.png` |
+| `/audit/gist-invite/reply-starter` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-starter-320.png` |
+| `/audit/gist-invite/reply-starter` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-starter-360.png` |
+| `/audit/gist-invite/reply-paid` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-paid-320.png` |
+| `/audit/gist-invite/reply-paid` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-paid-360.png` |
+| `/audit/gist-invite/reply-limit` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-320.png` |
+| `/audit/gist-invite/reply-limit` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-360.png` |
+| `/audit/gist-invite/sent` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-sent-320.png` |
+| `/audit/gist-invite/sent` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-sent-360.png` |
+| `/audit/gist-invite/list` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-list-320.png` |
+| `/audit/gist-invite/list` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-list-360.png` |
+| `/audit/gist-invite/list-quiet` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-list-quiet-320.png` |
+| `/audit/gist-invite/list-quiet` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-list-quiet-360.png` |
+| `/audit/gist-invite/received` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-received-320.png` |
+| `/audit/gist-invite/received` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-received-360.png` |
+| `/audit/gist-invite/received-declined` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-received-declined-320.png` |
+| `/audit/gist-invite/received-declined` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-received-declined-360.png` |
+| `/audit/gist-invite/outcome-waiting` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-waiting-320.png` |
+| `/audit/gist-invite/outcome-waiting` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-waiting-360.png` |
+| `/audit/gist-invite/outcome-accepted` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-accepted-320.png` |
+| `/audit/gist-invite/outcome-accepted` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-accepted-360.png` |
+| `/audit/gist-invite/outcome-declined` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-declined-320.png` |
+| `/audit/gist-invite/outcome-declined` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-declined-360.png` |
+| `/audit/gist-invite/outcome-expired` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-expired-320.png` |
+| `/audit/gist-invite/outcome-expired` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-outcome-expired-360.png` |
+| `/audit/gist-invite/accepted-online` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-accepted-online-320.png` |
+| `/audit/gist-invite/accepted-online` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-accepted-online-360.png` |
+| `/audit/gist-invite/accepted-cross` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-accepted-cross-320.png` |
+| `/audit/gist-invite/accepted-cross` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-accepted-cross-360.png` |
+| `/audit/gist-invite/accepted-same` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-accepted-same-320.png` |
+| `/audit/gist-invite/accepted-same` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-accepted-same-360.png` |
+| `/audit/gist-invite/time-confirm` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-time-confirm-320.png` |
+| `/audit/gist-invite/time-confirm` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-time-confirm-360.png` |
+| `/audit/gist-invite/time-waiting` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-time-waiting-320.png` |
+| `/audit/gist-invite/time-waiting` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-time-waiting-360.png` |
+| `/audit/gist-invite/picker` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-picker-320.png` |
+| `/audit/gist-invite/picker` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-picker-360.png` |
+| `/audit/gist-invite/picker-none` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-picker-none-320.png` |
+| `/audit/gist-invite/picker-none` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-picker-none-360.png` |
+| `/audit/gist-invite/picker-same` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-picker-same-320.png` |
+| `/audit/gist-invite/picker-same` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-picker-same-360.png` |
 | `/audit/help/start` | 320 | pass | pass | pass | pass | `mobile\audit-help-start-320.png` |
 | `/audit/help/start` | 360 | pass | pass | pass | pass | `mobile\audit-help-start-360.png` |
 | `/audit/help/reply` | 320 | pass | pass | pass | pass | `mobile\audit-help-reply-320.png` |

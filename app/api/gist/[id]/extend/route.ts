@@ -3,8 +3,8 @@ import { json, memberSession, readClock } from "@/lib/gist-clock";
 export const dynamic = "force-dynamic";
 
 /**
- * Ask for the one extension. It happens only when BOTH people ask — the same
- * mutual opt-in as starting the call. Either can still leave at any time.
+ * The one extension: either person can add 18 minutes, once
+ * (both-clocks.slim.html). Either can still leave at any time.
  */
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   const { supabase, user } = await memberSession();

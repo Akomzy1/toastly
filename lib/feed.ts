@@ -36,7 +36,3 @@ export type FeedCandidate = {
 export function canSendText(tier: Tier): boolean {
   return capabilities(tier).sendText;
 }
-
-export function replyKindFor(tier: Tier): "text" | "gist_invite" {
-  return canSendText(tier) ? "text" : "gist_invite";
-}

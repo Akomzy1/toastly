@@ -123,8 +123,31 @@ the amber buttons ("Join Toastly", mobile "Get verified") go to `/signup`.
 The desktop "Get verified" text link still goes to `/verify`. Send the
 header's signed-out and signed-in states through the design pipeline.
 
+**Gist invites — built against gist-invite-*.slim.html and gists-list.slim.html
+(prototypes 1–8), and Both Clocks' window picker.** Deviations, flagged:
+- Monograms stand in for member photos: photo upload is part of Prompt 14
+  (parked).
+- Age and profession are omitted from the person rows: date of birth is
+  private, and profession follows its owner's visibility setting.
+- Copy changed by decision (a Gist counts when it connects, for both
+  people): the received screen's "It's free to accept" gains, for Starters,
+  "If the call happens, it counts as one of your 2 Gists this month"; the
+  limit screen's "You can still accept Gist invites… always free" became
+  "Invites others send you will still arrive, but you can't accept one
+  until your Gists reset."
+- "Photos match their selfie" reads "Passed a live selfie check" until the
+  photo match ships (a constraint check holds it).
+- "Amaka sees this answer… If she says yes" uses "they"; the message
+  placeholder is generic.
+- Not drawn, built from the same cards: the sender's "Waiting on …" state;
+  confirming a picked time; waiting after "Start now"; declined and closed
+  invites staying under "Waiting on them" for a week; one clock per row
+  for a same-zone pair in the picker.
+- The question deck now appears once the call is live (gist-accepted:
+  "The questions open once you've both joined").
+
 **Gist call — NOT IN THE PROTOTYPE.** No Gist room was designed. The call
-card (join, timer, who's speaking, mute, leave, the mutual "18 more
+card (join, timer, who's speaking, mute, leave, the "Add 18
 minutes" offer) is built from the session page's existing cards, buttons
 and the genotype callout style. Send it through the design pipeline.
 
