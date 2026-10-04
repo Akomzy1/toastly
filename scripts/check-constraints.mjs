@@ -404,15 +404,15 @@ check("SMS is never reachable from the call path", (s, f) => {
 // something to read.
 check("blind report and block disclose no sender", (s, f) => {
   if (!f.endsWith(".sql") || !/blind_report_locked/.test(s)) return false;
-  const report = /create or replace function public\.blind_report_locked\(([\s\S]*?)\)\s*returns\s+(\w+)/.exec(s);
-  const block = /create or replace function public\.blind_block_locked\(([\s\S]*?)\)\s*returns\s+(\w+)/.exec(s);
-  if (!report || !block) return "one of the blind functions is missing";
-  if (/uuid/i.test(report[1]) || /uuid/i.test(block[1])) {
-    return "a blind function takes a member id";
-  }
-  if (report[2] !== "void" || block[2] !== "void") {
-    return "a blind function returns something the client could read";
-  }
+  // Each definition is checked on its own: a later migration may redefine one
+  // (0025 marks blind reports) without the other.
+  const defs = [
+    /create or replace function public\.blind_report_locked\(([\s\S]*?)\)\s*returns\s+(\w+)/.exec(s),
+    /create or replace function public\.blind_block_locked\(([\s\S]*?)\)\s*returns\s+(\w+)/.exec(s),
+  ].filter(Boolean);
+  if (!defs.length) return false;
+  if (defs.some((d) => /uuid/i.test(d[1]))) return "a blind function takes a member id";
+  if (defs.some((d) => d[2] !== "void")) return "a blind function returns something the client could read";
   return false;
 });
 
@@ -1050,6 +1050,53 @@ check("payment code never blocks or restricts on a pricing signal", (s, f) => {
   return /(restrict|suspend|ban|lock)_(member|account|profile|user)|update\s+profiles\s+set\s+stage/i.test(s)
     ? "acts on a member's account"
     : false;
+});
+
+// --- Review queue (0025) -----------------------------------------------------
+const fnBody = (src, name) => (src.match(new RegExp("function public\\." + name + "\\([\\s\\S]*?\\n\\$\\$;")) ?? [])[0] ?? "";
+
+// Every staff function checks the caller is staff, in the database.
+check("staff functions check the caller is staff", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const names = [...s.matchAll(/create or replace function public\.(staff_[a-z_]+)\(/g)].map((m) => m[1]);
+  const open = names.filter((n) => n !== "staff_audit_append_only" && !/_require_staff\(\)/.test(fnBody(s, n)));
+  return open.length ? `no staff check in ${open.join(", ")}` : false;
+});
+
+// Evidence never includes chat or Gist content (CLAUDE.md: reviewers never
+// see message content).
+check("staff evidence never reads message or Gist content", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const body = fnBody(s, "staff_item");
+  if (!body) return false;
+  return /from\s+(messages|replies|gist_deck_steps|support_conversations)\b|\.body\b|transcript/i.test(body)
+    ? "staff_item reads content"
+    : false;
+});
+
+// A person decides: only staff_decide restricts, asks for re-verification or
+// removes. Nothing automatic (CLAUDE.md: no auto-ban, no shadow-restriction).
+check("only a staff decision restricts, re-verifies or removes", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const writes = /insert into (public\.)?(account_restrictions|reverification_requests)\b|perform _remove_account\(/g;
+  const outside = s.replace(fnBody(s, "staff_decide"), "").match(writes);
+  return outside ? `writes outside staff_decide: ${outside.join(", ")}` : false;
+});
+
+// Phase 1: the Sentinel is events-only, so nothing may create a Sentinel item.
+check("no Sentinel review items in Phase 1", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  return /_queue\(\s*'sentinel'|values\s*\(\s*'sentinel'/.test(s) ? "creates a Sentinel item" : false;
+});
+
+check("the staff audit log is append-only", (s, f) => {
+  if (!/0025_review_queue\.sql$/.test(norm(f))) return false;
+  return /before update or delete on public\.staff_audit_log/.test(s) ? false : "no append-only trigger";
+});
+
+check("the staff screens are gated on is_staff", (s, f) => {
+  if (!/app\/\(staff\)\/staff\/layout\.tsx$/.test(norm(f))) return false;
+  return /rpc\("is_staff"\)/.test(s) && /if \(staff !== true\) notFound\(\)/.test(s) ? false : "layout doesn't check staff";
 });
 
 console.log("");

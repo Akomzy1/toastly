@@ -328,7 +328,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Your account and profile: while your account is open. When you delete your account in your settings, your data is deleted straight away, except what this section says we keep, and backup copies are overwritten within 7 days.",
           "Genotype: until you delete it or your account, as in section 5.",
           "Verification results, and the scrambled code made from a verified ID number: for as long as your account is open.",
-          "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number, and of its ID number if it completed the ID check, for that time, so it can't simply sign up again.",
+          "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number, and of its ID number if it completed the ID check, for that time, so it can't simply sign up again. Its sign-in (email or phone) is kept, blocked, for the same 2 years, then deleted. Every decision by our team about an account is recorded, with the reason category, so it can be checked later.",
           "Toastly Help conversations: 30 days after the last message, then deleted. If you pass something to our team, your words are deleted at the same time; we keep only its reference number and whether it was resolved.",
           "Payment and financial records: 6 years, as tax law requires.",
         ],

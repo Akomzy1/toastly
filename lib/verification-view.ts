@@ -49,8 +49,23 @@ export function deriveVerifyView(
   selfie: SessionSummary | null,
   idCheck: SessionSummary | null,
   now: number = Date.now(),
+  /** Set when staff asked this member to take the selfie check again (0025). */
+  reverifySince: string | null = null,
 ): VerifyView {
   if (stage === "unverified") return { kind: "phone" };
+
+  // Asked to re-verify: the selfie step again, judged only on attempts made
+  // since the request. A pass clears the request (0025's trigger), and the
+  // ID ring is kept throughout.
+  if (reverifySince && (stage === "verified_real" || stage === "id_confirmed")) {
+    const fresh = selfie && Date.parse(selfie.created_at) >= Date.parse(reverifySince) ? selfie : null;
+    const s = fromSession(fresh, now);
+    if (s === "checking") return { kind: "selfie_checking" };
+    if (s === "review") return { kind: "selfie_review" };
+    if (s) return { kind: "selfie_retry", ...s };
+    return { kind: "start" };
+  }
+
   if (stage === "id_confirmed") return { kind: "both" };
 
   if (stage === "phone_verified") {

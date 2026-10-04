@@ -175,6 +175,74 @@ export function sendReverificationNotice(
   });
 }
 
+/*
+ * Review-queue outcomes (0025). Same rules as the re-verification notice:
+ * the member is always told, with a reason CATEGORY only — never the signal,
+ * the reporter or the evidence — and a way to reach a person.
+ */
+
+const BUTTON =
+  "display:inline-block;padding:12px 20px;border-radius:8px;background:#FFB300;color:#050309;font-size:15px;font-weight:600;text-decoration:none";
+const P = "margin:0 0 14px;font-size:15px;line-height:1.6;color:#1E1C21";
+const SMALL = "margin:0;font-size:14px;line-height:1.6;color:#504E52";
+
+/** The member is paying the Naira price but their profile says they live abroad. */
+export function sendSwitchPlanNotice(to: string) {
+  const line =
+    "Your profile says you live outside Nigeria, and your plan is a Naira plan. Naira plans are for members at home; the Diaspora plan is the one for members abroad, and it includes matching with others in your city as it opens.";
+  return sendEmail({
+    to,
+    subject: "About your Toastly plan",
+    text: `${line} Nothing has changed on your account. If you live in Nigeria, update your profile country and that's it. Otherwise, please move to the Diaspora plan when your current one ends: trytoastly.com/profile/plan`,
+    html: shell(
+      "About your plan",
+      `<p style="${P}">${line}</p>
+       <p style="${P}">Nothing has changed on your account. If you live in Nigeria, update your profile country and that&rsquo;s it. Otherwise, please move to the Diaspora plan when your current one ends.</p>
+       <p style="margin:0"><a href="https://www.trytoastly.com/profile/plan" style="${BUTTON}">See your plan</a></p>`,
+    ),
+  });
+}
+
+export function sendRestrictionNotice(to: string, { reasonCategory }: { reasonCategory: string }) {
+  const line = `Your Toastly account is restricted while a person on our team looks into something — the reason category is "${reasonCategory}". For now you won't appear in anyone's matches and can't start new conversations, Gists or dates.`;
+  return sendEmail({
+    to,
+    subject: "Your Toastly account is restricted for now",
+    text: `${line} You can still use the safety kit, report or block anyone, verify, and download or delete your data. To talk to a person, open Toastly Help in the app.`,
+    html: shell(
+      "Your account is restricted for now",
+      `<p style="${P}">${line}</p>
+       <p style="${SMALL}">You can still use the safety kit, report or block anyone, verify, and download or delete your data. To talk to a person, open Toastly Help in the app.</p>`,
+    ),
+  });
+}
+
+export function sendRestrictionLifted(to: string) {
+  return sendEmail({
+    to,
+    subject: "Your Toastly account is back to normal",
+    text: "The restriction on your Toastly account has been lifted. You'll appear in matches again from tomorrow's six, and you can start conversations as before.",
+    html: shell(
+      "You're back to normal",
+      `<p style="${P}">The restriction on your account has been lifted. You&rsquo;ll appear in matches again from tomorrow&rsquo;s six, and you can start conversations as before.</p>`,
+    ),
+  });
+}
+
+export function sendRemovalNotice(to: string, { reasonCategory }: { reasonCategory: string }) {
+  const line = `We've closed your Toastly account after a review by a person on our team — the reason category is "${reasonCategory}".`;
+  return sendEmail({
+    to,
+    subject: "Your Toastly account has been closed",
+    text: `${line} You won't be able to sign in or create a new verified account. We keep only what the law and member safety require, for the periods in our privacy policy (trytoastly.com/privacy). If you think this is a mistake, reply to this email.`,
+    html: shell(
+      "Your account has been closed",
+      `<p style="${P}">${line}</p>
+       <p style="${SMALL}">You won&rsquo;t be able to sign in or create a new verified account. We keep only what the law and member safety require, for the periods in our <a href="https://www.trytoastly.com/privacy">privacy policy</a>. If you think this is a mistake, reply to this email.</p>`,
+    ),
+  });
+}
+
 /**
  * Tell the team a Toastly Help hand-off is waiting. Reference and category
  * only: the member's words stay in support_tickets (cleared after the

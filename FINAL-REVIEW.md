@@ -781,6 +781,49 @@ plan" page; coins held while the card pays the rest).
   subscribe to the other plan); profile country decides which track the
   plan page shows, and the server accepts either (signals catch arbitrage).
 
+## Review queue, restrictions, track rules (0025)
+
+Decided 4 October 2026 (the staff screen is a launch blocker).
+
+- **Naira plans from abroad.** Any Naira plan — card, bank or USSD pass,
+  part-coins, or coins in full — bought by a member whose profile country
+  isn't Nigeria raises a `profile_country_mismatch` pricing review, from
+  database triggers on `payments` and `entitlements`. Nothing is blocked.
+- **Diaspora pools.** Correction to an earlier claim in this session:
+  0012 already limits diaspora-to-diaspora matching to Diaspora plans. What
+  was missing was telling the member — the pool choice now says it's a
+  Diaspora-plan feature, and the feed shows its own notice (distinct from
+  the city-not-open notice, which it takes precedence over).
+- **Women's offer.** Diaspora Plus abroad, Premium Plus at home. Signup
+  doesn't ask for a country, so it switches when the profile country
+  changes, keeping the same end date.
+- **The queue.** `review_items`, fed by triggers from every source, one item
+  per source record, oldest first. Staff are accounts in `staff_members`;
+  every staff function checks that in the database; members get a 404.
+  Evidence per kind is the facts the rules allow (signals and country codes;
+  report reason, the reporter's own note and whether the pair had a Gist or
+  thread; check-in times; Smile ID result codes) — never message content,
+  Gist audio, selfies or ID numbers. Actions: clear, ask to switch plan
+  (pricing), request re-verification, restrict, lift restriction, remove,
+  and attended / no-show for disputes. Every decision is written first to
+  the append-only `staff_audit_log`.
+- **Restrict:** no new six, out of everyone's six, and no new messages,
+  replies, Gist invites, date proposals or stakes (database triggers).
+  Safety kit, report, block, Help, verification and data stay. **Re-verify:**
+  out of new feeds until a fresh selfie passes (the ID ring is kept; the
+  Smile ID session route allows the selfie again). **Remove:** retention
+  records and blocked phone/ID hashes as on account deletion, then the
+  profile is deleted; the sign-in is banned in Auth first and deleted when
+  retention ends. Members are told by email and in-app notice, with a
+  reason category only.
+- **Sentinel.** The queue has a Sentinel kind, but nothing creates one in
+  Phase 1 (CLAUDE.md) — a constraint check holds it.
+- **Tests.** 11 PGlite tests; six new constraint checks and a reworked
+  blind-report check, each catching a planted violation.
+- **Not done.** No photo-match items (Prompt 14 parked); no phone-origin
+  signal (deferred); staff can't approve a borderline Smile ID check (Smile
+  ID's own review decides it; staff can ask for a retake).
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

@@ -200,6 +200,11 @@ export async function POST(req: Request) {
         .eq("id", session.profile_id);
       await capture("verification_complete", session.profile_id, { stage: "verified_real" });
     }
+    // A re-verification selfie (0025): the stage stays, the liveness date
+    // moves on, and the request is cleared by the database trigger.
+    if (product === "smartselfie" && (profile?.stage === "verified_real" || profile?.stage === "id_confirmed")) {
+      await admin.from("profiles").update({ liveness_verified_at: now }).eq("id", session.profile_id);
+    }
     if (product === "biometric_kyc" && profile?.stage === "verified_real") {
       await admin
         .from("profiles")

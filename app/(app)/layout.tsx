@@ -3,6 +3,7 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { Notice } from "@/components/ui/notice";
 import { PresenceHeartbeat } from "@/components/app/presence-heartbeat";
 import { AppHeader, AppTabBar } from "@/components/app/nav";
+import { MemberNotices } from "@/components/app/member-notices";
 
 /**
  * In-app shell.
@@ -46,7 +47,10 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-paper">
       <AppHeader />
-      <main className="pb-[calc(58px+env(safe-area-inset-bottom))] lg:pb-0">{children}</main>
+      <main className="pb-[calc(58px+env(safe-area-inset-bottom))] lg:pb-0">
+        <MemberNotices />
+        {children}
+      </main>
       <AppTabBar />
       <PresenceHeartbeat />
     </div>

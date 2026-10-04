@@ -68,10 +68,13 @@ export function ProfileForm({
   profile,
   history,
   cities,
+  diasporaPlan = false,
 }: {
   profile: Profile;
   history: ProfileHistory;
   cities: PickerCity[];
+  /** On Diaspora or Diaspora Plus: diaspora-to-diaspora matching is included. */
+  diasporaPlan?: boolean;
 }) {
   const [state, action] = useFormState(saveProfile, null);
 
@@ -124,6 +127,18 @@ export function ProfileForm({
             ))}
           </Select>
         </Label>
+        {/* NOT IN A PROTOTYPE — flagged. Diaspora-to-diaspora matching is a
+            Diaspora-plan feature (0012); say so here rather than let the
+            choice silently do nothing. */}
+        {profile.country_code !== "NG" && !diasporaPlan ? (
+          <span className="-mt-2 text-caption text-grey-600">
+            Matching with members in your diaspora community is part of the Diaspora plan. On your current plan
+            you&rsquo;re matched back home.{" "}
+            <a href="/profile/plan" className="font-semibold text-green-500 underline">
+              See the Diaspora plan
+            </a>
+          </span>
+        ) : null}
 
         {/* Only members abroad choose a diaspora city; it is what the
             per-city opening keys off. Nigeria-based members never see it,

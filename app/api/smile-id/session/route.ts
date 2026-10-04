@@ -82,8 +82,11 @@ export async function POST(req: Request) {
     .single();
   if (!profile) return refuse(401, "Please sign in again.");
 
-  // The ladder: phone, then Verified Real, then (optionally) the ID ring.
-  if (product === "smartselfie" && profile.stage !== "phone_verified") {
+  // The ladder: phone, then Verified Real, then (optionally) the ID ring —
+  // or the selfie again when staff asked for re-verification (0025).
+  const { data: reverify } = await supabase.from("reverification_requests").select("profile_id").maybeSingle();
+  const reverifying = Boolean(reverify) && (profile.stage === "verified_real" || profile.stage === "id_confirmed");
+  if (product === "smartselfie" && profile.stage !== "phone_verified" && !reverifying) {
     return refuse(409, "This step isn't available for your account right now.");
   }
   if (product === "biometric_kyc" && profile.stage !== "verified_real") {

@@ -101,6 +101,11 @@ const ROUTES = [
   // Coin balance and dates (Prompt 17) — invented UI, flagged
   { route: "/audit/coins", label: "Coins" },
   { route: "/audit/coins-buy", label: "Coins · buying on" },
+  { route: "/audit/notices/restricted", label: "Notice · restricted" },
+  { route: "/audit/notices/reverify", label: "Notice · reverify" },
+  { route: "/audit/notices/switch-plan", label: "Notice · switch-plan" },
+  { route: "/audit/notices/all", label: "Notice · all" },
+  { route: "/audit/notices/pool-plan", label: "Notice · pool-plan" },
   { route: "/audit/plan/ngn-starter", label: "Plan · ngn-starter" },
   { route: "/audit/plan/ngn-coins", label: "Plan · ngn-coins" },
   { route: "/audit/plan/ngn-renewing", label: "Plan · ngn-renewing" },

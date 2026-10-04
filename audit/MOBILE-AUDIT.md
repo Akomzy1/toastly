@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-04 09:12 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-04 14:27 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -138,6 +138,16 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/coins` | 360 | pass | pass | pass | pass | `mobile\audit-coins-360.png` |
 | `/audit/coins-buy` | 320 | pass | pass | pass | pass | `mobile\audit-coins-buy-320.png` |
 | `/audit/coins-buy` | 360 | pass | pass | pass | pass | `mobile\audit-coins-buy-360.png` |
+| `/audit/notices/restricted` | 320 | pass | pass | pass | pass | `mobile\audit-notices-restricted-320.png` |
+| `/audit/notices/restricted` | 360 | pass | pass | pass | pass | `mobile\audit-notices-restricted-360.png` |
+| `/audit/notices/reverify` | 320 | pass | pass | pass | pass | `mobile\audit-notices-reverify-320.png` |
+| `/audit/notices/reverify` | 360 | pass | pass | pass | pass | `mobile\audit-notices-reverify-360.png` |
+| `/audit/notices/switch-plan` | 320 | pass | pass | pass | pass | `mobile\audit-notices-switch-plan-320.png` |
+| `/audit/notices/switch-plan` | 360 | pass | pass | pass | pass | `mobile\audit-notices-switch-plan-360.png` |
+| `/audit/notices/all` | 320 | pass | pass | pass | pass | `mobile\audit-notices-all-320.png` |
+| `/audit/notices/all` | 360 | pass | pass | pass | pass | `mobile\audit-notices-all-360.png` |
+| `/audit/notices/pool-plan` | 320 | pass | pass | pass | pass | `mobile\audit-notices-pool-plan-320.png` |
+| `/audit/notices/pool-plan` | 360 | pass | pass | pass | pass | `mobile\audit-notices-pool-plan-360.png` |
 | `/audit/plan/ngn-starter` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-starter-320.png` |
 | `/audit/plan/ngn-starter` | 360 | pass | pass | pass | pass | `mobile\audit-plan-ngn-starter-360.png` |
 | `/audit/plan/ngn-coins` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-coins-320.png` |

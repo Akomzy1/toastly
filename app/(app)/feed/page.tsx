@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
+import { PoolPlanNotice } from "@/components/app/pool-plan-notice";
 import { getVisibleGenotypes } from "@/components/genotype/genotype-data";
 import { MatchCard } from "./match-card";
 import { DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
@@ -68,6 +69,16 @@ export default async function FeedPage() {
   const { data: fallbackCity } = await supabase.rpc("pool_fallback_city", {
     p_profile_id: user.id,
   });
+
+  // Non-null ('tier') when the member asked for diaspora matching without a
+  // Diaspora plan (0012): the six came from back home. Told, never silent —
+  // and this takes precedence over the city notice, which is for cities not
+  // yet open.
+  const [{ data: poolRestriction }, { data: myCountry }] = await Promise.all([
+    supabase.rpc("pool_restriction", { p_profile_id: user.id }),
+    supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
+  ]);
+  const needsDiasporaPlan = poolRestriction === "tier" && (myCountry?.country_code ?? "NG") !== "NG";
 
   const ids = (feed ?? []).map((f: { candidate_id: string }) => f.candidate_id);
 
@@ -137,7 +148,7 @@ export default async function FeedPage() {
       {/* Built against design/prototype/feed-fallback-notice.slim.html. Says
           plainly which pool the six came from, and why, rather than leaving a
           diaspora member to wonder why everyone is in Lagos. */}
-      {fallbackCity ? <FeedFallbackNotice city={String(fallbackCity)} /> : null}
+      {needsDiasporaPlan ? <PoolPlanNotice /> : fallbackCity ? <FeedFallbackNotice city={String(fallbackCity)} /> : null}
 
       {cards.length === 0 ? (
         /* Empty state. NOT IN THE PROTOTYPE — flagged. */

@@ -30,7 +30,7 @@ export default async function VerifyPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: sessions }] = await Promise.all([
+  const [{ data: profile }, { data: sessions }, { data: reverify }] = await Promise.all([
     supabase.from("profiles").select("stage, photo_reveal").eq("id", user.id).single(),
     supabase
       .from("verification_sessions")
@@ -38,13 +38,14 @@ export default async function VerifyPage() {
       .eq("profile_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase.from("reverification_requests").select("requested_at").maybeSingle(),
   ]);
 
   const latest = (product: string): SessionSummary | null =>
     (sessions ?? []).find((s) => s.product === product) ?? null;
 
   const stage: VerificationStage = profile?.stage ?? "unverified";
-  const view = deriveVerifyView(stage, latest("smartselfie"), latest("biometric_kyc"));
+  const view = deriveVerifyView(stage, latest("smartselfie"), latest("biometric_kyc"), Date.now(), reverify?.requested_at ?? null);
 
   const sandbox = sandboxPickerAllowed(smileConfig(), user.email)
     ? SANDBOX_IDENTITIES.map(({ key, label, products }) => ({ key, label, products }))

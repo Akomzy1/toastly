@@ -204,6 +204,17 @@ Stripe's hosted page, so no card form was designed or built. The hub gained
 a "Your plan" row and the locked inbox's upgrade link points here instead of
 the marketing Pricing page. Send the plan page through the design pipeline.
 
+**Review queue and member notices — NOT IN A PROTOTYPE (0025, 4 October
+2026).** `/staff` (internal tool: the queue, an item with its evidence, the
+decision form with a confirm tick for restrict and remove) is built from the
+in-app cards and buttons. Member-facing and invented, all built from the
+in-app Notice: the restricted, re-verify and switch-plan notices under the
+app header (components/app/member-notices.tsx); the feed's "Today's six are
+from back home" Diaspora-plan notice (components/app/pool-plan-notice.tsx),
+separate from the approved feed-fallback notice; and a caption under the
+profile form's "Match me with" choice for members abroad without a Diaspora
+plan. Send the member-facing three through the design pipeline.
+
 **Toastly Help and Answer Mirror — built against their prototypes**
 (`toastly-help`, `toastly-help-handoff`, `answer-mirror`). Not in them, and
 so flagged:

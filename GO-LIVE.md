@@ -87,6 +87,36 @@ cash).
 
 ---
 
+## 0b. Staff review queue — LAUNCH BLOCKER (migration 0025)
+
+One queue for every human-review item at `/staff`: pricing signals, reports
+(married-user and blind reports marked), attendance disputes, borderline
+selfie and ID checks; photo matches arrive with Prompt 14 and Sentinel flags
+in Phase 2. Also in 0025: a Naira plan bought from a profile abroad (any
+route, coins included) raises a pricing review, and the women's launch
+offer is Diaspora Plus for members abroad.
+
+1. ~~Run `supabase/migrations/0025_review_queue.sql`.~~ **Applied 4 October
+   2026**; the owner is staff. Checked from outside: staff functions and
+   tables refuse anonymous callers.
+2. Make yourself staff (and anyone else who reviews), in the SQL editor:
+
+   ```sql
+   insert into staff_members (profile_id)
+   select id from auth.users where email = 'you@example.com';
+   ```
+
+   Remove someone with `delete from staff_members where profile_id = …`.
+3. Make sure **hello@trytoastly.com** is read by a person: the removal email
+   tells members to reply to it, since a removed member can't use Toastly
+   Help.
+
+Restrict and remove act on the member's account; remove also bans their
+sign-in in Supabase Auth (needs `SUPABASE_SERVICE_ROLE_KEY`, already set).
+Every decision is in `staff_audit_log`, which nothing can edit.
+
+---
+
 ## 1. The database — connected
 
 | Integration | Variables | Notes |
