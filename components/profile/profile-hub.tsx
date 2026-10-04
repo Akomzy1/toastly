@@ -23,7 +23,7 @@ import { signOut } from "@/app/(auth)/actions";
 export type HubPrompt = { id: number; prompt: string; answer: string };
 
 const HUB: { label: string; sub: string; href?: string; help?: true }[] = [
-  { label: "Wallet", sub: "Coins and date deposits", href: "/wallet" },
+  { label: "Coins", sub: "Your balance and date stakes", href: "/coins" },
   { label: "Couple Mode", sub: "Free on every plan", href: "/couple" },
   { label: "Safety kit", sub: "Free on every plan, always", href: "/safety-kit" },
   { label: "Verification", sub: "Selfie and ID checks", href: "/verify" },

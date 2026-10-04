@@ -109,7 +109,7 @@ export function sendEmergencyContactChanged(
  * A receipt.
  *
  * Coins are framed as a promise kept, not a fee paid: the wording here has to
- * match the wallet's.
+ * match the coins page's.
  */
 export function sendReceipt(
   to: string,

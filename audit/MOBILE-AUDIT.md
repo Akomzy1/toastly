@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-03 21:52 UTC against `http://localhost:3000`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-04 00:24 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -134,6 +134,42 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/answer-mirror/detail` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-detail-360.png` |
 | `/audit/answer-mirror/short` | 320 | pass | pass | pass | pass | `mobile\audit-answer-mirror-short-320.png` |
 | `/audit/answer-mirror/short` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-short-360.png` |
+| `/audit/coins` | 320 | pass | pass | pass | pass | `mobile\audit-coins-320.png` |
+| `/audit/coins` | 360 | pass | pass | pass | pass | `mobile\audit-coins-360.png` |
+| `/audit/dates/propose` | 320 | pass | pass | pass | pass | `mobile\audit-dates-propose-320.png` |
+| `/audit/dates/propose` | 360 | pass | pass | pass | pass | `mobile\audit-dates-propose-360.png` |
+| `/audit/dates/propose-short` | 320 | pass | pass | pass | pass | `mobile\audit-dates-propose-short-320.png` |
+| `/audit/dates/propose-short` | 360 | pass | pass | pass | pass | `mobile\audit-dates-propose-short-360.png` |
+| `/audit/dates/pending-them` | 320 | pass | pass | pass | pass | `mobile\audit-dates-pending-them-320.png` |
+| `/audit/dates/pending-them` | 360 | pass | pass | pass | pass | `mobile\audit-dates-pending-them-360.png` |
+| `/audit/dates/pending-short` | 320 | pass | pass | pass | pass | `mobile\audit-dates-pending-short-320.png` |
+| `/audit/dates/pending-short` | 360 | pass | pass | pass | pass | `mobile\audit-dates-pending-short-360.png` |
+| `/audit/dates/pending-me` | 320 | pass | pass | pass | pass | `mobile\audit-dates-pending-me-320.png` |
+| `/audit/dates/pending-me` | 360 | pass | pass | pass | pass | `mobile\audit-dates-pending-me-360.png` |
+| `/audit/dates/confirmed` | 320 | pass | pass | pass | pass | `mobile\audit-dates-confirmed-320.png` |
+| `/audit/dates/confirmed` | 360 | pass | pass | pass | pass | `mobile\audit-dates-confirmed-360.png` |
+| `/audit/dates/confirmed-late` | 320 | pass | pass | pass | pass | `mobile\audit-dates-confirmed-late-320.png` |
+| `/audit/dates/confirmed-late` | 360 | pass | pass | pass | pass | `mobile\audit-dates-confirmed-late-360.png` |
+| `/audit/dates/check-in` | 320 | pass | pass | pass | pass | `mobile\audit-dates-check-in-320.png` |
+| `/audit/dates/check-in` | 360 | pass | pass | pass | pass | `mobile\audit-dates-check-in-360.png` |
+| `/audit/dates/checked-in` | 320 | pass | pass | pass | pass | `mobile\audit-dates-checked-in-320.png` |
+| `/audit/dates/checked-in` | 360 | pass | pass | pass | pass | `mobile\audit-dates-checked-in-360.png` |
+| `/audit/dates/contest-absent` | 320 | pass | pass | pass | pass | `mobile\audit-dates-contest-absent-320.png` |
+| `/audit/dates/contest-absent` | 360 | pass | pass | pass | pass | `mobile\audit-dates-contest-absent-360.png` |
+| `/audit/dates/contest-attender` | 320 | pass | pass | pass | pass | `mobile\audit-dates-contest-attender-320.png` |
+| `/audit/dates/contest-attender` | 360 | pass | pass | pass | pass | `mobile\audit-dates-contest-attender-360.png` |
+| `/audit/dates/review` | 320 | pass | pass | pass | pass | `mobile\audit-dates-review-320.png` |
+| `/audit/dates/review` | 360 | pass | pass | pass | pass | `mobile\audit-dates-review-360.png` |
+| `/audit/dates/completed` | 320 | pass | pass | pass | pass | `mobile\audit-dates-completed-320.png` |
+| `/audit/dates/completed` | 360 | pass | pass | pass | pass | `mobile\audit-dates-completed-360.png` |
+| `/audit/dates/no-show-attender` | 320 | pass | pass | pass | pass | `mobile\audit-dates-no-show-attender-320.png` |
+| `/audit/dates/no-show-attender` | 360 | pass | pass | pass | pass | `mobile\audit-dates-no-show-attender-360.png` |
+| `/audit/dates/no-show-absent` | 320 | pass | pass | pass | pass | `mobile\audit-dates-no-show-absent-320.png` |
+| `/audit/dates/no-show-absent` | 360 | pass | pass | pass | pass | `mobile\audit-dates-no-show-absent-360.png` |
+| `/audit/dates/cancelled-safety` | 320 | pass | pass | pass | pass | `mobile\audit-dates-cancelled-safety-320.png` |
+| `/audit/dates/cancelled-safety` | 360 | pass | pass | pass | pass | `mobile\audit-dates-cancelled-safety-360.png` |
+| `/audit/dates/cancelled-reschedule` | 320 | pass | pass | pass | pass | `mobile\audit-dates-cancelled-reschedule-320.png` |
+| `/audit/dates/cancelled-reschedule` | 360 | pass | pass | pass | pass | `mobile\audit-dates-cancelled-reschedule-360.png` |
 | `/audit/verify/start` | 320 | pass | pass | pass | pass | `mobile\audit-verify-start-320.png` |
 | `/audit/verify/start` | 360 | pass | pass | pass | pass | `mobile\audit-verify-start-360.png` |
 | `/audit/verify/before-selfie` | 320 | pass | pass | pass | pass | `mobile\audit-verify-before-selfie-320.png` |

@@ -165,6 +165,6 @@ export const faqs: [string, string][] = [
   ],
   [
     "What is the AriyaPlanner handoff?",
-    "An optional one-tap transfer from Couple Mode into AriyaPlanner, our wedding-planning product: introduction ceremony, traditional wedding and white wedding, with budgets in Naira or USD.",
+    "An optional one-tap handoff from Couple Mode into AriyaPlanner, our wedding-planning product: introduction ceremony, traditional wedding and white wedding, with budgets in Naira or USD.",
   ],
 ];

@@ -17,7 +17,7 @@ import Link from "next/link";
  * panel. Both are built from the panel's own cards and buttons.
  */
 
-type Action = "none" | "retry_selfie" | "check_id" | "payment" | "wallet" | "safety_kit";
+type Action = "none" | "retry_selfie" | "check_id" | "payment" | "coins" | "safety_kit";
 type Lang = "en" | "pcm";
 type Reply = { paragraphs: string[]; action: Action; handoff: string | null; safety: boolean; language: Lang };
 
@@ -33,7 +33,7 @@ const ACTIONS: Record<Exclude<Action, "none">, { href: string; en: string; pcm: 
   retry_selfie: { href: "/verify", en: "Try the selfie again", pcm: "Try di selfie again" },
   check_id: { href: "/verify", en: "Check my ID", pcm: "Check my ID" },
   payment: { href: "/pricing", en: "Try the payment again", pcm: "Try di payment again" },
-  wallet: { href: "/wallet", en: "Open your wallet", pcm: "Open your wallet" },
+  coins: { href: "/coins", en: "See your coins", pcm: "Check your coins" },
   safety_kit: { href: "/safety-kit", en: "Open your safety kit", pcm: "Open your safety kit" },
 };
 

@@ -34,7 +34,7 @@ export function tabFor(pathname: string): TabKey | null {
   if (pathname.startsWith("/feed")) return "today";
   if (pathname.startsWith("/gist")) return "gists";
   if (pathname.startsWith("/inbox")) return "inbox";
-  if (/^\/(profile|wallet|couple|safety-kit|verify)/.test(pathname)) return "profile";
+  if (/^\/(profile|coins|dates|couple|safety-kit|verify)/.test(pathname)) return "profile";
   return null;
 }
 

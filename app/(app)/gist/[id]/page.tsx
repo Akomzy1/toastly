@@ -113,6 +113,31 @@ export default async function GistSessionPage({
         .order("created_at", { ascending: false })
     : { data: [] };
 
+  // Prompt 17: the date proposal behind an accepted spot — the member's
+  // stakeable balance, the limits, and any date already open from this Gist.
+  const booking = mutual
+    ? await Promise.all([
+        supabase.rpc("purchased_balance", { p_profile_id: user.id }),
+        supabase.from("coin_config").select("stake_min, stake_max, cancel_cutoff_hours").maybeSingle(),
+        supabase
+          .from("date_commitments")
+          .select("id, status")
+          .eq("session_id", params.id)
+          .in("status", ["pending", "confirmed", "provisional_no_show", "under_review"])
+          .maybeSingle(),
+      ]).then(([bal, cfg, open]) =>
+        cfg.data
+          ? {
+              stakeable: Math.max(0, (bal.data as number | null) ?? 0),
+              stakeMin: cfg.data.stake_min,
+              stakeMax: cfg.data.stake_max,
+              cutoffHours: cfg.data.cancel_cutoff_hours,
+              openDate: open.data ?? null,
+            }
+          : undefined,
+      )
+    : undefined;
+
   // --- The invite states ---------------------------------------------------
   const ctx = await loadInvite(supabase, params.id, user.id);
   if (!ctx) notFound();
@@ -285,6 +310,7 @@ export default async function GistSessionPage({
         mutual={Boolean(mutual)}
         configured={placesConfigured()}
         matchFirst={otherName.split(" ")[0]}
+        booking={booking}
       />
 
       {/* Safety & Trust promises "every screen has a report action, including

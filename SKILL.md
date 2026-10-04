@@ -172,6 +172,26 @@ card (join, timer, who's speaking, mute, leave, the "Add 18
 minutes" offer) is built from the session page's existing cards, buttons
 and the genotype callout style. Send it through the design pipeline.
 
+**Coin balance and dates — NOT IN A PROTOTYPE (Prompt 17).** All built from
+the in-app cards, buttons and notices until the coins and attendance design
+is exported; send each through the design pipeline:
+- `/coins` (components/coins/coin-balance.tsx): the balance, "Can stake" and
+  "Gift coins", paying Premium or Premium Plus with coins (with the shortfall
+  in coins and naira), the packs, the no-cash-refund line, and the history.
+  It replaces `/wallet` (now a redirect): the approved nav prototype's hub
+  row said "Wallet", which the new CLAUDE.md rule bans in UI copy, so the
+  row reads "Coins · Your balance and date stakes".
+- The propose form under an accepted spot (components/dates/propose-date.tsx):
+  the date-spot prototype ends at "Pick a time you can both make." with
+  nothing behind it.
+- `/dates/[id]` (components/dates/date-view.tsx): every state — waiting for
+  a stake, staking, confirmed, the check-in with its location line on screen
+  before the browser asks, plans changed (cancel, ask to move it, cancel for
+  my safety), "We didn't see you check in" with "I was there", under review,
+  both made it, the outcomes for each side, and the cancelled reasons.
+- Copy rules held by constraint checks: never "wallet", "escrow", "transfer"
+  or "cash out"; never "forfeit" or "penalty" as framing.
+
 **Toastly Help and Answer Mirror — built against their prototypes**
 (`toastly-help`, `toastly-help-handoff`, `answer-mirror`). Not in them, and
 so flagged:

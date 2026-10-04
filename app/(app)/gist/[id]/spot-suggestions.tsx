@@ -5,6 +5,15 @@ import { setSpotStatus, suggestSpots } from "./spot-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
+import { ProposeDate, type OpenDate } from "@/components/dates/propose-date";
+
+export type Booking = {
+  stakeable: number;
+  stakeMin: number;
+  stakeMax: number;
+  cutoffHours: number;
+  openDate: OpenDate;
+};
 
 /**
  * Date-spot card — built against design/prototype/date-spot.slim.html.
@@ -56,10 +65,12 @@ function SpotCard({
   spot,
   sessionId,
   matchFirst,
+  booking,
 }: {
   spot: Spot;
   sessionId: string;
   matchFirst: string;
+  booking?: Booking;
 }) {
   const [state, action] = useFormState(setSpotStatus, null);
   const accepted = spot.status === "accepted";
@@ -149,6 +160,7 @@ function SpotCard({
               each other, and it comes back to both of you after the date.
             </p>
           </div>
+          {booking ? <ProposeDate spotId={spot.id} matchFirst={matchFirst} {...booking} /> : null}
           <p className="text-center text-nav leading-relaxed text-grey-600">
             Nothing is booked. {spot.name} isn&rsquo;t expecting you — call
             ahead if you&rsquo;d like a table.
@@ -165,12 +177,14 @@ export function SpotSuggestions({
   mutual,
   configured,
   matchFirst = "they",
+  booking,
 }: {
   sessionId: string;
   spots: Spot[];
   mutual: boolean;
   configured: boolean;
   matchFirst?: string;
+  booking?: Booking;
 }) {
   const [state, action] = useFormState(suggestSpots, null);
 
@@ -215,6 +229,7 @@ export function SpotSuggestions({
               spot={s}
               sessionId={sessionId}
               matchFirst={matchFirst}
+              booking={booking}
             />
           ))}
         </div>

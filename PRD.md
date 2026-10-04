@@ -154,10 +154,29 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 - Session data feeds the AriyaPlanner warm brief (see §6).
 
 ### 5.5 Coin-Deposit Date-Commitment
-- Both parties stake a small coin deposit ahead of a confirmed date; a no-show forfeits.
-- **Where a forfeited coin goes (ratified):** it becomes a **stake credit for the person who showed up** — non-withdrawable, not cash, usable only as the deposit on a future date. Toastly does not keep it and does not pay it out.
-  - *Why this and not the alternatives:* Toastly keeping it would give Toastly an interest in no-shows. Paying cash to the person who showed up invites bait-farming. A credit usable only as a future stake rewards the wronged party in the one currency that cannot be gamed — it simply puts them back in the game for free.
-  - *Supersedes:* the Claude Design prototype's Pricing page described forfeited coins going to a charity chosen by the other person. **That was never ratified and is not to be built or displayed** — it would commit Toastly to charity partnerships, disbursement rails, receipts, an audit trail, and questions about holding and redirecting user funds in Nigeria, all at launch. Remove the copy as well as the mechanic: shipping the claim without the pipeline is a public promise about where users' money goes.
+- Both parties stake a small coin deposit ahead of a confirmed date.
+
+**The coin balance (decided — supersedes the earlier "future-stake-only credit" rule).** Every member has a **coin balance**. Stakes, forfeits and spending all move through it.
+
+- **Both show up:** each stake returns to its owner's coin balance.
+- **One doesn't show:** the absent member's stake moves to the coin balance of the member who showed up. Toastly keeps none of it.
+- **Coins are spendable on any Toastly product**, including domestic subscriptions — so being stood up leaves you with something of real value, not just a token for another date.
+- **Coins are never refunded or paid out as cash.** Purchase terms must say so clearly at the point of sale.
+
+**Rules that keep it safe and legal:**
+1. **It is a coin balance, never a "wallet".** A Nigerian product that holds value and moves it between users looks like e-money, which is CBN-licensed territory. The balance is **closed-loop**: coins are not money, cannot be withdrawn, cannot be sent between members by choice, and move between members **only** as the result of a stake outcome. The words "wallet", "escrow", "transfer" and "cash out" never appear in product copy. *(Legal confirmation required before launch — §11.)*
+2. **Only purchased coins can be staked.** Any promotional or free coins sit in a separate, non-stakeable bucket. Otherwise one person with two accounts could stage no-shows and convert free coins into paid subscriptions.
+3. **Coins pay domestic naira subscriptions only.** Diaspora subscriptions ($15/$30) must be paid in dollars. Letting naira-priced coins pay a dollar subscription would reopen the exact arbitrage §7's pricing-integrity rules close. Diaspora members can still use coins for stakes, extra Gists and other coin purchases.
+4. **Toastly never profits from a no-show.** Forfeited coins always go to the member who showed up.
+
+**How attendance is decided (recommended default — overrule in §11 if needed):**
+- Both members **check in at the venue in the app** during the date window, confirmed by location near the agreed spot. Location is used only for this check-in, with consent, and not retained beyond it.
+- One checks in and the other doesn't → **provisional no-show**. The absent member can contest within **24 hours**; contested cases go to a person, never an automatic decision.
+- **Cancelling in good time is always free** (cut-off configurable, default 12 hours before), and so is **rescheduling by mutual agreement**.
+- **A safety cancellation never costs anything.** If a member pulls out because they feel unsafe, or reports the other person, their stake is returned in full. **The stake must never pressure anyone into meeting someone they're uneasy about.** This overrides every rule above.
+- Repeated no-shows as the absent party are a Trust Sentinel signal (§5.1.1), not grounds for automatic action.
+
+*History:* the prototype once described forfeited coins going to a charity — never ratified, never to be built or displayed. A later rule limited the credit to future date deposits; this section supersedes it.
 - Framed warmly ("showing up for each other"), never punitively (contrast with MyPerson's escrow/forfeit language).
 - Paired with a **lightweight date-spot suggestion** (maps-API lookup of nearby public venues, not a curated directory at MVP) surfaced after a strong Gist — doubles as a soft safety signal (public-venue nudge).
 
@@ -220,7 +239,7 @@ Source: the AI-agent research report (October 2026). The market is splitting: in
 
 | Layer | Mechanism | Notes |
 |---|---|---|
-| Domestic coins | ₦500–₦5,000 packs via Paystack/Flutterwave/USSD/bank transfer/OPay | Date stakes, unlocking the locked inbox, additional Gist sessions, unlock "who liked you." **No Boosts, no Super Likes** — see §7.2 |
+| Domestic coins | ₦500–₦5,000 packs via Paystack/Flutterwave/USSD/bank transfer/OPay | Date stakes, unlocking the locked inbox, additional Gist sessions, unlock "who liked you", paying domestic naira subscriptions. Held in a closed-loop coin balance, never refunded as cash (§5.5). **No Boosts, no Super Likes** — see §7.2 |
 | Domestic subscription | Premium ~₦3,500/mo; Premium Plus ~₦7,000/mo (unlocks live-video Gist, advanced filters, incognito) | Benchmarked directly against MyPerson's published pricing |
 | Diaspora subscription | ~$15–30/mo via card/Apple Pay | Covers both back-home and diaspora-to-diaspora matching |
 | AriyaPlanner wedding funnel | Multiple ₦50,000 Event Passes per graduated couple | LTV engine, not launch revenue |
@@ -267,11 +286,12 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 
 Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That was a carry-over from the Tinder/Bumble/Badoo teardown and does not survive contact with Toastly's own mechanic.** With a fixed six-a-day feed, a Boost can only mean appearing in more people's six — which is buying attention, the precise thing the brand is built against. Super Likes are already denied by shipped copy on Home: *"no streaks, no 'you've been super-liked'."*
 
-**Coins therefore have four honest jobs, none of which buy placement in anyone else's feed:**
+**Coins therefore have five honest jobs, none of which buy placement in anyone else's feed:**
 1. Date stakes (the coin-deposit commitment)
 2. Unlocking the locked Starter inbox
 3. Additional Gist sessions beyond the tier allowance
 4. Unlocking see-who-liked-you (the user's own data about themselves — it changes nothing in another user's feed)
+5. Paying for a **domestic naira subscription** (Premium or Premium Plus) — never a diaspora dollar subscription (§5.5)
 
 **Shipped Pricing copy (ratified):** *"Nobody buys your place in the six… paying can improve how well those six are matched to you, it never buys you more of them."* This is now literally true. Paid tiers may improve **match quality and ordering within a user's own six**; nothing a user buys inserts them into another user's six.
 
@@ -314,6 +334,8 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 | Diaspora pricing arbitrage | Signal-stacking + manual review, not aggressive auto-enforcement |
 
 ## 11. Open Questions (not yet decided — do not assume answers)
+- **Coin balance legal check (§5.5):** confirm with a Nigerian lawyer that a closed-loop, non-withdrawable coin balance moved only by stake outcomes falls outside CBN e-money and payment-service licensing; and confirm the no-refund terms are enforceable for UK diaspora buyers under consumer law.
+- **Attendance method (§5.5):** venue check-in by location is the recommended default; the cancellation cut-off (default 12 hours) and the 24-hour contest window are configurable and not yet final.
 - **AI-agent prerequisites (§5.9):** run Toastly's own Pidgin and Nigerian-English evals before relying on Claude for agent copy; request zero data retention from Anthropic; get counsel's view on whether any task-scoped agent could count as a "companion chatbot" under US state law before serving US diaspora members; complete a GAID DPIA for each agent before launch.
 - **Plan the Toast depends on the share-your-date / panic design**, which is still unspecified (trigger, countdown, SMS-only vs link).
 - **ID-number fingerprint:** whether to store a keyed hash of NIN/BVN to stop one ID verifying multiple accounts and removed members returning — recommended, not yet decided.

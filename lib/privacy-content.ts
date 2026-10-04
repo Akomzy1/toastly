@@ -51,7 +51,7 @@
 export const PRIVACY_CONTACT = "support@trytoastly.com";
 
 // The date this version was deployed and published.
-export const PRIVACY_EFFECTIVE_DATE = "3 October 2026";
+export const PRIVACY_EFFECTIVE_DATE = "4 October 2026";
 
 export type PrivacyBlock =
   | { kind: "p"; lead?: string; text: string }
@@ -142,12 +142,12 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Dates and coins.",
-        text: "Dates you arrange, venues you accept, coin deposits, and whether a date went ahead.",
+        text: "Dates you arrange, venues you accept, check-ins, your coin balance and its history, coin deposits, and whether a date went ahead.",
       },
       {
         kind: "p",
         lead: "Location.",
-        text: "Your city and time zone. When we suggest a public venue for a date, we search near your city. We don't track your location. If you use the panic button, your phone adds your exact location to the message it sends your chosen contact — that message goes from your own phone, and Toastly never receives your location.",
+        text: "Your city and time zone. When we suggest a public venue for a date, we search near your city. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location. If you use the panic button, your phone adds your exact location to the message it sends your chosen contact — that message goes from your own phone, and Toastly never receives your location.",
       },
       {
         kind: "p",

@@ -521,8 +521,10 @@ check("pool choice never changes the daily count", (s, f) => {
 // stake_credit_received as a trust-event kind and creates no ledger row at
 // all; the older selector failed it for the mere mention, which is the check
 // being wrong about the file rather than the file being wrong.
+// Prompt 17 retired stake credits (0023 issues none), but rows from before
+// it keep the guarantee, so the check stays on the file that defines them.
 check("stake credits can never be withdrawable", (s, f) => {
-  if (!f.endsWith(".sql") || !/coin_ledger/.test(s)) return false;
+  if (!f.endsWith(".sql") || !/coin_ledger/.test(s) || !/withdrawable/.test(s)) return false;
   const hasConstraint = /kind <> 'stake_credit' or withdrawable = false/.test(s);
   const excluded = /withdrawable_balance[\s\S]*?withdrawable = true/.test(s);
   if (!hasConstraint) return "no constraint forcing stake credits non-withdrawable";
@@ -862,7 +864,7 @@ check("Toastly Help tools are read-only", (s, f) => {
   if (listed.join() !== allowed.join()) return `tool list changed: ${listed.join(", ")}`;
   if (/\.(insert|update|upsert|delete)\s*\(/.test(code)) return "a tool writes to the database";
   const rpcs = [...code.matchAll(/\.rpc\(\s*"([a-z_]+)"/g)].map((m) => m[1]);
-  const okRpcs = ["current_tier", "coin_balance", "withdrawable_balance"];
+  const okRpcs = ["current_tier", "coin_balance", "purchased_balance", "promo_balance"];
   const bad = rpcs.find((r) => !okRpcs.includes(r));
   if (bad) return `calls ${bad}`;
   if (/\.from\(\s*"(messages|replies|message_attachments|gist_sessions|threads)"/.test(code)) return "reads chats or Gist data";
@@ -964,6 +966,47 @@ check("Gist deck steps store outcomes only, never content", (s, f) => {
   const cols = [...m[1].matchAll(/^\s*([a-z_]+)\s+(text|varchar|jsonb|bytea)/gm)].map((x) => x[1]);
   const extra = cols.filter((c) => c !== "outcome");
   return extra.length ? `content-capable column(s): ${extra.join(", ")}` : false;
+});
+
+// --- Coin balance (Prompt 17, PRD §5.5) ------------------------------------
+// Closed-loop, never a wallet: CLAUDE.md bans the words in UI copy, because
+// they describe a stored-value product Toastly isn't (the legal check in
+// PRD §11). Comments may name them; strings and JSX text may not.
+check("coin copy never says wallet, escrow, transfer or cash out", (s, f) => {
+  if (f.endsWith(".sql")) return false;
+  const hit = /\b(wallets?|escrow|cash[ -]?out|transfers?)\b/i.exec(s);
+  return hit ? `says "${hit[1]}"` : false;
+});
+
+// Coins pay naira subscriptions only. The database refuses a diaspora plan;
+// this keeps the allow-list exactly Premium and Premium Plus.
+check("coins pay only Premium and Premium Plus, enforced in the database", (s, f) => {
+  if (!f.endsWith(".sql") || !/function public\.subscribe_with_coins/.test(s)) return false;
+  const m = s.match(/if p_tier not in \(([^)]*)\)/);
+  if (!m) return "subscribe_with_coins has no tier allow-list";
+  const tiers = [...m[1].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]).sort().join();
+  return tiers === "premium,premium_plus" ? false : `allow-list is ${tiers}`;
+});
+
+// No withdrawal, payout, or member-to-member send: coins only ever move
+// between members as a date stake's outcome, decided by the database.
+check("no coin withdrawal, payout or member-to-member send", (s, f) => {
+  if (f.endsWith(".sql")) {
+    const fn = /create (or replace )?function public\.(\w*(withdraw|payout|cash_?out|send_coins|transfer|gift_coins)\w*)\s*\(/i.exec(s);
+    // _date_payout settles a stake inside the database; members cannot call it.
+    if (fn && fn[2] !== "withdrawable_balance" && fn[2] !== "_date_payout") return `defines ${fn[2]}`;
+    return false;
+  }
+  const rpc = /\.rpc\(\s*"(\w*(withdraw|payout|cash_?out|send_coins|transfer|gift_coins)\w*)"/i.exec(s);
+  return rpc ? `calls ${rpc[1]}` : false;
+});
+
+// The ledger is append-only: history is never edited, only added to.
+check("the coin ledger is append-only", (s, f) => {
+  if (!/0023_coin_balance\.sql$/.test(norm(f))) return false;
+  if (!/create trigger \w+\s+before update or delete on public\.coin_ledger/i.test(s)) return "no append-only trigger";
+  if (!/revoke insert, update, delete on public\.coin_ledger from anon, authenticated/i.test(s)) return "members can write the ledger";
+  return false;
 });
 
 console.log("");

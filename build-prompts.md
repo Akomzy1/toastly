@@ -1,6 +1,6 @@
 # Toastly — Claude Code Build Prompt Sequence
 
-Run these **in order**, one per session or one per major work block. **Phase 1 is Prompts 0–16** — 0–9 build the core, 10–12 close audit gaps, 13 (issued in chat) wires email, analytics and SMS, and 14–16 add the photo requirement and the two launch AI agents. Phase 2 items are listed at the end and are not to be started before launch. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
+Run these **in order**, one per session or one per major work block. **Phase 1 is Prompts 0–17** — 0–9 build the core, 10–12 close audit gaps, 13 (issued in chat) wires email, analytics and SMS, 14–16 add the photo requirement and the two launch AI agents, and 17 adds the coin balance and date attendance. Phase 2 items are listed at the end and are not to be started before launch. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
 
 **Before running any of these:** confirm the forty prototype files are in `/design/prototype/`:
 
@@ -258,6 +258,30 @@ Read PRD §5.9 first.
 
 ---
 
+## PROMPT 17 — Coin balance and date attendance (Phase 1)
+
+Read PRD §5.5 and the CLAUDE.md coin-balance and attendance rules first. This replaces the earlier "stake credit usable only as a future deposit" mechanic.
+
+**Coin balance**
+- A per-member coin balance backed by an **append-only ledger** — every movement is a ledger row; the balance is derived, never edited directly.
+- Two buckets: **purchased** (stakeable) and **promotional** (not stakeable). Stakes draw only from purchased coins.
+- Stake outcomes are **single atomic transactions**: both attend → each stake returns to its owner; one absent → that stake moves to the attending member. Toastly keeps nothing.
+- Coins can pay **Premium and Premium Plus (naira) only**. At checkout, coins apply first and Paystack covers any remainder. Diaspora dollar subscriptions cannot be paid with coins — enforce on the server, not just the UI.
+- No withdrawal, payout, refund-to-cash or member-to-member send flow, anywhere. Add a constraint check that fails the build if UI copy contains "wallet", "escrow", "transfer" or "cash out".
+
+**Attendance**
+- During the date window, each member taps **"I'm here"**, confirmed by location within a set radius of the agreed venue. Ask for location only at that moment, with plain consent copy; keep only the check-in result, not the coordinates.
+- One checks in, the other doesn't → provisional no-show, with a **24-hour window** to contest. Contested cases go to the human review queue; nothing moves until it's resolved.
+- Cancelling before the cut-off (config, default 12 hours) and mutually agreed rescheduling return both stakes.
+- **Safety cancellation and safety reports return the reporter's stake in full, always, and override every other rule.** Add a test proving a member who reports or cancels for safety can never lose coins.
+- Emit Sentinel events for no-shows (as the absent party), contests and outcomes — outcome only.
+
+**Copy** stays warm: "showing up for each other". A member who was stood up sees: *"They didn't make it — their coins are now in your balance."* Never "forfeit", "penalty" or "fine".
+
+The coin-balance screen, check-in, contest and outcome screens are invented UI — flag them until prototypes exist, and add them to the mobile audit. **Do not ship to production until the legal check in PRD §11 is confirmed.**
+
+---
+
 ## PHASE 2 — not yet due; do not run until Phase 1 is live and there is real usage data
 
 None should be started before launch.
@@ -276,4 +300,4 @@ Live AriyaPlanner handoff integration with the **consent-gated engagement-brief 
 
 ---
 
-*End of sequence. Phase 1 = Prompts 0–16 (Prompt 13 issued in chat).*
+*End of sequence. Phase 1 = Prompts 0–17 (Prompt 13 issued in chat).*

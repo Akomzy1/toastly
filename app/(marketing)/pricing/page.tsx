@@ -117,7 +117,7 @@ export default function PricingPage() {
             </Badge>
             <h2 className="text-h2 text-ink-900">For members at home</h2>
             <p className="text-body-lg text-grey-600">
-              Billed in Naira by card, bank transfer or USSD. Cancel from the
+              Billed in Naira by card, bank or USSD. Cancel from the
               app, no phone call required.
             </p>
           </div>
@@ -216,7 +216,7 @@ export default function PricingPage() {
               Coins are not a subscription and they are not a fee. When a date
               is confirmed, you each stake a few. You both turn up, you both get
               them straight back. Somebody&rsquo;s plans change and they say so
-              — everything comes back, no questions.
+              in good time — everything comes back, no questions.
             </p>
             <p className="text-ui text-grey-600">
               This is a mutual promise about each other&rsquo;s time, not a
@@ -237,8 +237,8 @@ export default function PricingPage() {
           </div>
 
           <p className="mt-8 text-nav text-grey-600">
-            Unused coins never expire. Refundable to your original payment
-            method on request.
+            Unused coins never expire. Coins are never refunded or paid out as
+            cash.
           </p>
         </div>
       </section>

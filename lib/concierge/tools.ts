@@ -43,7 +43,7 @@ export const CONCIERGE_TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "get_coin_balance",
-    description: "Read the member's coin balance, split into coins they bought (refundable on request) and stake credit (from a date the other person missed; usable only as a future date deposit, never cashed out).",
+    description: "Read the member's coin balance: the total, the part they can stake on a date (coins they bought, plus coins from a date the other person missed), and promotional gift coins (spendable, never stakeable).",
     input_schema: EMPTY_INPUT,
   },
   {
@@ -109,13 +109,13 @@ export async function runConciergeTool(
       return { result: { plan: typeof data === "string" ? data : "unknown" } };
     }
     case "get_coin_balance": {
-      const [{ data: balance }, { data: withdrawable }] = await Promise.all([
+      const [{ data: balance }, { data: purchased }, { data: promo }] = await Promise.all([
         supabase.rpc("coin_balance", { p_profile_id: profileId }),
-        supabase.rpc("withdrawable_balance", { p_profile_id: profileId }),
+        supabase.rpc("purchased_balance", { p_profile_id: profileId }),
+        supabase.rpc("promo_balance", { p_profile_id: profileId }),
       ]);
-      const total = typeof balance === "number" ? balance : 0;
-      const bought = typeof withdrawable === "number" ? withdrawable : 0;
-      return { result: { coins: total, bought_coins: bought, stake_credit: Math.max(0, total - bought) } };
+      const num = (v: unknown) => (typeof v === "number" ? Math.max(0, v) : 0);
+      return { result: { coins: num(balance), stakeable: num(purchased), promotional: num(promo) } };
     }
     case "create_support_ticket": {
       const raw = (input as { category?: unknown } | null)?.category;

@@ -11,6 +11,24 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 ---
 
+## 0. Prompt 17, coin balance (migration 0023)
+
+**The legal check in PRD §11 is confirmed** (owner, 4 October 2026: CBN
+e-money licensing; UK consumer law on the no-refund terms). Ship in this
+order:
+
+1. Run `supabase/migrations/0023_coin_balance.sql` in the SQL editor. It
+   schedules pg_cron job `toastly-advance-dates` (every 10 minutes) and drops
+   the open `settle_commitment` function.
+2. Merge the branch and let Vercel deploy. `/wallet` redirects to `/coins`.
+3. The privacy policy's effective date is set to 4 October 2026 for the
+   "Dates and coins" and check-in location lines.
+
+Still not wired after that: buying coin packs (Paystack/Stripe), and paying
+the remainder of a plan by card when coins fall short.
+
+---
+
 ## 1. The database — connected
 
 | Integration | Variables | Notes |
@@ -154,10 +172,14 @@ was refused by the token, and a server-side room close disconnected both.
   `gist_extend` and `gist_finish` exist and refuse anonymous callers; the
   new timing columns are in place.
 - **Delete any hand-verified test accounts before launch** (Supabase →
-  Authentication → Users), e.g. `tokunboakomolede+test@gmail.com`. The
-  sandbox revoke step (§1a) only catches accounts verified through a Smile ID
-  sandbox selfie; an account set to `verified_real` in the SQL editor has no
-  session row and would slip through.
+  Authentication → Users). The sandbox revoke step (§1a) only catches
+  accounts verified through a Smile ID sandbox selfie; an account set to
+  `verified_real` in the SQL editor has no session row and would slip
+  through. `tokunboakomolede+test@gmail.com` was deleted through the in-app
+  Delete account flow on 3 October 2026 (confirmed: one account, one profile
+  left). **Still to handle:** `tokunboakomolede@gmail.com` had its phone
+  marked confirmed by hand — delete it at launch, or verify it properly once
+  SMS is connected.
 - **Migration 0020 (Gist invites) is applied** (3 October 2026): `gist_invite`,
   `gist_has_room` and `gist_answer` exist and refuse anonymous callers; the
   new columns are in place. It changed how Starter Gists are counted (on

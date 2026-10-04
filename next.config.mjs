@@ -6,6 +6,10 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  // Prompt 17: the coin balance is never called a wallet (CLAUDE.md).
+  async redirects() {
+    return [{ source: "/wallet", destination: "/coins", permanent: true }];
+  },
   async headers() {
     return [
       {

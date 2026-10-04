@@ -108,7 +108,7 @@ export const dpTiers: Tier[] = [
 export const trackLabels = ["Nigeria (₦)", "Diaspora ($)"];
 
 export const tableCaptions = [
-  "Nigeria track — billed in Naira by card, transfer or USSD.",
+  "Nigeria track — billed in Naira by card, bank or USSD.",
   "Diaspora track — billed in USD by card or Apple Pay.",
 ];
 

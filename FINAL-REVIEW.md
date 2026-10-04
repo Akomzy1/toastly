@@ -686,9 +686,58 @@ tab bar on phones — Today, Gists, Inbox, Profile — with the inbox's bare
 unread count and a sand dot on Gists while an invite waits (cleared when
 Gists is opened); the same four in the desktop header with Safety kit and
 Sign out; a labelled Safety pill on every screen's band; Profile as the hub
-leading to Wallet, Couple Mode, Safety kit, Verification, Toastly Help and
-Your data. The profile form moved to /profile/edit. The temporary "Go to
-today's six" button is gone.
+leading to Coins (was Wallet — renamed in Prompt 17), Couple Mode, Safety
+kit, Verification, Toastly Help and Your data. The profile form moved to
+/profile/edit. The temporary "Go to today's six" button is gone.
+
+## Prompt 17 — coin balance and dates
+
+Replaces the future-stake-only credit. Built on branch
+`prompt-17-coin-balance` and held until the legal check in PRD §11 (CBN
+e-money licensing; UK consumer law on the no-refund terms) was confirmed by
+the owner on 4 October 2026. Migration 0023 runs before the deploy: the new
+pages call its functions.
+
+- **Ledger (0023).** `coin_ledger` is append-only: a trigger refuses updates
+  and deletes (except the account-deletion cascade), and members can't write
+  it at all. Two buckets: purchased (stakeable) and promotional (spendable,
+  never stakeable). A `txn_id` groups the rows of one outcome.
+- **Dates.** Propose a time at an accepted spot (12 hours to 14 days ahead),
+  stake 5–50 coins; the other person stakes to confirm. Check-in within 250 m
+  of the venue, from 30 minutes before to 90 after; coordinates are passed to
+  the check and never stored. Both attend: both stakes back. Neither: both
+  back. One absent: provisional, a 24-hour window to say "I was there"
+  (human review via `attendance_reviews` / `resolve_attendance_review`),
+  then the attender gets their own stake back plus the absent member's.
+  Toastly never keeps a coin. A scheduled job (`toastly-advance-dates`,
+  every 10 minutes) and each page load move dates on.
+- **Cancelling.** Free before the 12-hour cut-off. After it: ask to move it
+  (both must ask; every coin returns) or cancel for safety (always free).
+  There is no late non-safety cancel — a design choice, flagged.
+- **Safety overrides everything.** A report filed by either person against
+  the other cancels any open date with every stake returned; if the reporter
+  was settled as a no-show in the last 7 days, their stake is restored,
+  funded by reversing the award the reported member received. Six test
+  scenarios assert the reporter never loses coins and Toastly neither keeps
+  nor mints any.
+- **Coins pay subscriptions.** `subscribe_with_coins` takes Premium (35
+  coins) or Premium Plus (70) — one coin counts as ₦100 — and refuses every
+  Diaspora plan in the database. Gift coins are spent first. If the balance
+  is short, nothing is spent and the shortfall is shown; paying the rest by
+  Paystack isn't wired.
+- **Closed a pre-existing hole.** 0005's `settle_commitment` was callable by
+  anonymous clients and could mint coins (confirmed by probe against
+  production). 0023 drops it.
+- **Tests.** `node --test scripts/sql-test/coin-balance.test.mjs`: 15 tests
+  against every migration in a throwaway Postgres (PGlite), never the real
+  database. Disabling safety, letting coins pay a Diaspora plan, removing the
+  award row, or disabling the append-only guard each fails the matching test.
+  Four new constraint checks (banned words, the subscription allow-list, no
+  withdrawal/payout/send, append-only) each catch a planted violation.
+- **Copy changed.** Pricing: "Coins are never refunded or paid out as cash"
+  (was refundable to the original payment method); "bank transfer" became
+  "bank"; the deposit line gained "in good time". Toastly Help's coin facts
+  and its balance tool were rewritten to the new rules.
 
 ## Environment
 

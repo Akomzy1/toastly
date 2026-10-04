@@ -42,6 +42,7 @@ export default function AuditDateSpot() {
         mutual
         configured
         matchFirst="Amaka"
+        booking={{ stakeable: 38, stakeMin: 5, stakeMax: 50, cutoffHours: 12, openDate: null }}
       />
     </div>
   );
