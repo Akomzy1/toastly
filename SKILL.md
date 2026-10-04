@@ -192,6 +192,18 @@ is exported; send each through the design pipeline:
 - Copy rules held by constraint checks: never "wallet", "escrow", "transfer"
   or "cash out"; never "forfeit" or "penalty" as framing.
 
+**Your plan — NOT IN A PROTOTYPE (live payments, 4 October 2026).**
+`/profile/plan` (components/plan/plan-page.tsx): the current plan and how
+it's paid, "Stop renewing" with a confirm step, and a card per plan on the
+member's track — Naira: "Pay by card · renews monthly", "Pay by bank or
+USSD · 30 days", and "Use N coins" or "Use your N coins + pay ₦X"; dollars:
+"Subscribe · card or Apple Pay". Tier names, prices and the one-line
+descriptions are the shipped Pricing copy. The coins page gained a "Buy"
+button per pack and payment notices. Checkout itself is Paystack's and
+Stripe's hosted page, so no card form was designed or built. The hub gained
+a "Your plan" row and the locked inbox's upgrade link points here instead of
+the marketing Pricing page. Send the plan page through the design pipeline.
+
 **Toastly Help and Answer Mirror — built against their prototypes**
 (`toastly-help`, `toastly-help-handoff`, `answer-mirror`). Not in them, and
 so flagged:

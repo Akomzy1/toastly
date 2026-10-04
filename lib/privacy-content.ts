@@ -157,7 +157,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Payments.",
-        text: "Your subscription and coin purchases. Card and bank details are handled by our payment providers — we never see or store your full card number.",
+        text: "Your subscription and coin purchases. Card and bank details are handled by our payment providers — we never see or store your full card number. We keep the country your card was issued in and the country you paid from (never your IP address), to keep pricing fair.",
       },
       {
         kind: "p",

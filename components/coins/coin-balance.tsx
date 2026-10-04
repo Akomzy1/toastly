@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import Link from "next/link";
 import { payWithCoins } from "@/app/(app)/coins/actions";
+import { checkout, type PlanState } from "@/app/(app)/profile/plan/actions";
 import { Notice } from "@/components/ui/notice";
 
 /**
@@ -11,7 +13,8 @@ import { Notice } from "@/components/ui/notice";
  *
  * NOT IN A PROTOTYPE — flagged (Prompt 17). Built from the in-app cards and
  * buttons until the coins design (Toastly-Coins-Attendance-Design-Prompt.md)
- * is exported.
+ * is exported. Buying a pack goes to Paystack (₦) or Stripe ($) hosted
+ * checkout; the amount comes from price_list on the server.
  *
  * Copy rules: never "wallet", "escrow", "transfer" or "cash out" (a
  * constraint check enforces it), never "forfeit", "penalty" or "fine".
@@ -57,6 +60,30 @@ function PayButton({ label }: { label: string }) {
   );
 }
 
+function BuyPack({ sku, enabled }: { sku: string; enabled: boolean }) {
+  const [state, action] = useFormState<PlanState, FormData>(checkout, null);
+  return (
+    <form action={action} className="grid gap-2">
+      <input type="hidden" name="sku" value={sku} />
+      <input type="hidden" name="mode" value="pack" />
+      {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
+      {enabled ? (
+        <PayButton label="Buy" />
+      ) : (
+        <button type="button" disabled className="min-h-12 w-full rounded-lg bg-grey-200 px-5 py-3.5 text-button text-grey-600">
+          Not available yet
+        </button>
+      )}
+    </form>
+  );
+}
+
+const PAID: Record<string, { tone: "success" | "info"; text: string }> = {
+  "1": { tone: "success", text: "Payment received. Your coins are in." },
+  pending: { tone: "info", text: "Payment received — your coins can take a minute to show. Refresh shortly." },
+  cancelled: { tone: "info", text: "No payment was taken." },
+};
+
 function PlanOffer({ tier, name, coins }: { tier: "premium" | "premium_plus"; name: string; coins: number }) {
   const [state, action] = useFormState(payWithCoins, null);
   return (
@@ -70,8 +97,11 @@ function PlanOffer({ tier, name, coins }: { tier: "premium" | "premium_plus"; na
       {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
       {state?.shortfallCoins ? (
         <Notice tone="info">
-          You need {state.shortfallCoins} more coins (₦{state.shortfallNaira?.toLocaleString("en-NG")}). Paying the rest
-          by card isn&rsquo;t connected yet — nothing was taken from your balance.
+          You need {state.shortfallCoins} more coins (₦{state.shortfallNaira?.toLocaleString("en-NG")}). Nothing was taken
+          from your balance.
+          <Link href="/profile/plan" className="mt-1 flex min-h-11 items-center font-semibold underline">
+            Use your coins and pay the rest
+          </Link>
         </Notice>
       ) : null}
       <PayButton label={`Use ${coins} coins`} />
@@ -89,6 +119,8 @@ export function CoinBalance({
   premiumPlusCoins,
   packs,
   history,
+  buy = { NGN: false, USD: false },
+  paid = null,
 }: {
   total: number;
   stakeable: number;
@@ -99,9 +131,14 @@ export function CoinBalance({
   premiumPlusCoins: number;
   packs: Pack[];
   history: LedgerRow[];
+  /** Which providers can take a payment here (live keys only in production). */
+  buy?: { NGN: boolean; USD: boolean };
+  paid?: string | null;
 }) {
+  const notice = paid ? PAID[paid] : null;
   return (
     <div className="mx-auto grid w-full max-w-[680px] content-start gap-4 px-3.5 pb-6 pt-4">
+      {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <div className={CARD}>
         <p className={LABEL_CAPS}>Your balance · {tierLabel}</p>
         <div className="flex items-baseline gap-2">
@@ -145,12 +182,19 @@ export function CoinBalance({
               <span className="font-serif text-[26px] font-bold text-green-500">{p.coins}</span>
               <span className="text-ui font-semibold text-ink-900">{p.price}</span>
               <span className="text-nav text-grey-600">{p.note}</span>
+              <BuyPack sku={p.id} enabled={buy[p.currency]} />
             </div>
           ))}
         </div>
-        <Notice tone="locked" title="Buying isn't connected yet">
-          Paystack and Stripe aren&rsquo;t set up in this environment, so packs can&rsquo;t be bought yet.
-        </Notice>
+        {!buy.NGN || !buy.USD ? (
+          <Notice tone="locked" title={!buy.NGN && !buy.USD ? "Buying isn't connected yet" : "Some packs aren't available yet"}>
+            {!buy.NGN && !buy.USD
+              ? "Paystack and Stripe aren’t set up in this environment, so packs can’t be bought yet."
+              : !buy.NGN
+                ? "Naira packs need Paystack, which isn’t set up in this environment."
+                : "The dollar pack needs Stripe, which isn’t set up in this environment."}
+          </Notice>
+        ) : null}
         {/* PRD §5.5: purchase terms must say this clearly at the point of sale. */}
         <p className="m-0 text-nav font-semibold leading-[1.55] text-ink-900">
           Coins never expire. They&rsquo;re never refunded or paid out as cash.

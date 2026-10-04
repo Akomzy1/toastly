@@ -739,6 +739,48 @@ pages call its functions.
   "bank"; the deposit line gained "in good time". Toastly Help's coin facts
   and its balance tool were rewritten to the new rules.
 
+## Live payments — Paystack and Stripe (0024)
+
+Decided 4 October 2026 (hybrid Naira billing; hosted checkout plus a "Your
+plan" page; coins held while the card pays the rest).
+
+- **The server sets every amount.** `price_list` holds every price;
+  `payment_open` takes a sku and a mode, never an amount (a constraint check
+  holds both the function signature and the checkout code). Settlement
+  rejects an amount or currency that doesn't match what was opened.
+- **Once only.** The webhook and the return page (which verifies with the
+  provider server-to-server, never trusting the URL) both settle; the second
+  is a no-op, and the receipt goes once.
+- **Naira.** Card: a Paystack plan that renews monthly (plans created by the
+  app on first use) and is stopped from the plan page. Bank or USSD: a
+  30-day pass that extends from the current end, with an email three days
+  before it ends (Vercel Cron, `CRON_SECRET`). Coins part-pay Premium or
+  Premium Plus: held in the ledger at checkout, released if the payment
+  fails or after an hour; a payment arriving after release re-takes the
+  coins, or — if they've been spent — is credited as coins, never a plan
+  nobody paid for and never cash.
+- **Dollars.** Stripe Checkout subscriptions for Diaspora and Diaspora Plus
+  (card, Apple Pay), and the dollar coin pack. Coins never pay a dollar plan.
+- **Renewals.** Each paid period is its own time-limited grant (period end
+  plus a day's grace), so stopping a renewal simply lets the paid period run
+  out; a failed renewal shows as "didn't go through" and lapses at the end.
+- **Pricing integrity.** A Naira payment on a card issued outside Nigeria,
+  or a Naira checkout opened from outside Nigeria (Vercel's request country,
+  two letters, never the IP), queues one manual review per signal and emits
+  one Sentinel event per mismatch. Nothing blocks the payment or the member.
+- **Live-key guard.** `sk_live_` keys are honoured only on the production
+  deployment; anywhere else they read as not configured. `.env.local` holds
+  live keys today, so local testing can't charge a real card.
+- **Tests.** 12 PGlite tests for 0024 (packs, passes, part-payment and its
+  release and late arrival, renewals, subscriptions and the hidden token,
+  pricing signals, no payouts); 10 event-mapping tests with a fake database;
+  4 signature and live-key tests. Four new constraint checks, each catching
+  a planted violation.
+- **Not done.** No refund flow in the app (a person refunds in the
+  provider's dashboard); no plan-switch proration (stop the renewal, then
+  subscribe to the other plan); profile country decides which track the
+  plan page shows, and the server accepts either (signals catch arbitrage).
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

@@ -130,6 +130,26 @@ export function sendReceipt(
 }
 
 /**
+ * A plan that won't renew on its own is ending (a 30-day pass, or a card
+ * plan whose renewal was stopped). Sent once, a few days before. A nudge,
+ * never pressure: no countdown, no "last chance".
+ */
+export function sendPlanEnding(to: string, { plan, ends }: { plan: string; ends: string }) {
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.trytoastly.com"}/profile/plan`;
+  return sendEmail({
+    to,
+    subject: `Your ${plan} ends on ${ends}`,
+    text: `Your ${plan} ends on ${ends}. If you'd like to keep it, you can add another 30 days or switch to a card plan here: ${url}. If not, nothing to do — you'll move to Starter, which is free, and keep your matches and verification.`,
+    html: shell(
+      `Your ${plan} ends on ${ends}`,
+      `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#1E1C21">If you&rsquo;d like to keep it, you can add another 30 days or switch to a card plan.</p>
+       <p style="margin:0 0 18px"><a href="${url}" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#FFB300;color:#050309;font-size:15px;font-weight:600;text-decoration:none">See your plan</a></p>
+       <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52">If not, there&rsquo;s nothing to do. You&rsquo;ll move to Starter, which is free, and keep your matches and verification.</p>`,
+    ),
+  });
+}
+
+/**
  * The re-verification notice (PRD §5.1.1).
  *
  * Constraints this template exists to honour: the member is always told; a

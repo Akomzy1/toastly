@@ -32,7 +32,7 @@ type Item =
 const ACTIONS: Record<Exclude<Action, "none">, { href: string; en: string; pcm: string }> = {
   retry_selfie: { href: "/verify", en: "Try the selfie again", pcm: "Try di selfie again" },
   check_id: { href: "/verify", en: "Check my ID", pcm: "Check my ID" },
-  payment: { href: "/pricing", en: "Try the payment again", pcm: "Try di payment again" },
+  payment: { href: "/profile/plan", en: "Try the payment again", pcm: "Try di payment again" },
   coins: { href: "/coins", en: "See your coins", pcm: "Check your coins" },
   safety_kit: { href: "/safety-kit", en: "Open your safety kit", pcm: "Open your safety kit" },
 };

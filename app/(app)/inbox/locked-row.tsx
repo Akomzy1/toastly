@@ -103,7 +103,7 @@ export function LockedRow({ label }: { label: string }) {
 
           <div className="flex flex-wrap items-center gap-4">
             <Button variant="onDarkPrimary" asChild>
-              <Link href="/pricing">{LOCKED_COPY.cta}</Link>
+              <Link href="/profile/plan">{LOCKED_COPY.cta}</Link>
             </Button>
             <button
               type="button"

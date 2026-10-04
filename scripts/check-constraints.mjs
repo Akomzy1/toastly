@@ -1009,6 +1009,49 @@ check("the coin ledger is append-only", (s, f) => {
   return false;
 });
 
+// --- Payments (0024) ----------------------------------------------------------
+// The server sets every amount: payment_open takes a sku and a mode, never a
+// price, and checkout code never reads an amount from a form.
+check("checkout never takes an amount from the browser", (s, f) => {
+  if (/0024_payments_live\.sql$/.test(norm(f))) {
+    const sig = (s.match(/function public\.payment_open\(([\s\S]*?)\)\s*returns/) ?? [])[1] ?? "";
+    if (!sig) return "payment_open not found";
+    return /amount|price/i.test(sig) ? "payment_open accepts an amount" : false;
+  }
+  if (/(lib\/payments\/checkout\.ts|app\/\(app\)\/profile\/plan\/actions\.ts|app\/\(app\)\/coins\/actions\.ts)$/.test(norm(f))) {
+    return /formData\.get\(\s*"(amount|price|amount_minor|coins)"/.test(s) ? "reads an amount from the form" : false;
+  }
+  return false;
+});
+
+// A webhook is trusted only after its signature checks out.
+check("payment webhooks verify the signature before parsing", (s, f) => {
+  if (!/app\/api\/webhooks\/(paystack|stripe)\/route\.ts$/.test(norm(f))) return false;
+  const verify = s.search(/verify(Paystack|Stripe)Signature\(/);
+  const parse = s.indexOf("JSON.parse(");
+  if (verify < 0) return "no signature check";
+  return parse >= 0 && parse < verify ? "parses before verifying" : false;
+});
+
+// Live keys charge real cards: read in one place, honoured only in production.
+check("live payment keys are honoured only in production, read in one place", (s, f) => {
+  if (f.endsWith(".sql")) return false;
+  const reads = /process\.env\.(PAYSTACK_SECRET_KEY|STRIPE_SECRET_KEY)/.test(s);
+  if (/lib\/payments\/config\.ts$/.test(norm(f))) {
+    const guard = /_live_\/\.test\(v\) && !isProduction\(\)\) return null/.test(s);
+    return /VERCEL_ENV === "production"/.test(s) && guard ? false : "no live-key guard";
+  }
+  return reads ? "reads a payment secret outside lib/payments/config.ts" : false;
+});
+
+// Pricing-integrity signals queue a review; payment code never blocks.
+check("payment code never blocks or restricts on a pricing signal", (s, f) => {
+  if (!/(lib\/payments\/|app\/api\/webhooks\/|0024_payments_live\.sql$)/.test(norm(f))) return false;
+  return /(restrict|suspend|ban|lock)_(member|account|profile|user)|update\s+profiles\s+set\s+stage/i.test(s)
+    ? "acts on a member's account"
+    : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

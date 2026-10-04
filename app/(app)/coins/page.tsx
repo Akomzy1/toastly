@@ -6,12 +6,13 @@ import { HelpButton } from "@/components/help/help-button";
 import { CoinBalance, type LedgerRow } from "@/components/coins/coin-balance";
 import { COIN_PACKS, TIER_LABELS } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
+import { paymentsConfigured } from "@/lib/payments/config";
 
 export const metadata: Metadata = { title: "Coins", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 /** Your coin balance (PRD §5.5; 0023). Closed-loop: never a cash balance. */
-export default async function CoinsPage() {
+export default async function CoinsPage({ searchParams }: { searchParams: { paid?: string } }) {
   const supabase = createClient();
   const {
     data: { user },
@@ -41,6 +42,8 @@ export default async function CoinsPage() {
         premiumPlusCoins={cfg?.premium_plus_coins ?? 70}
         packs={COIN_PACKS.map((p) => ({ id: p.id, coins: p.coins, price: p.price, note: p.note, currency: p.currency }))}
         history={(rows ?? []) as LedgerRow[]}
+        buy={{ NGN: paymentsConfigured("paystack"), USD: paymentsConfigured("stripe") }}
+        paid={searchParams.paid ?? null}
       />
       <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">
         <HelpButton />

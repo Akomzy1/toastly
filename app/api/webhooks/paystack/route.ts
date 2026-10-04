@@ -1,57 +1,43 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCharge } from "@/lib/payments-notify";
+import { paystackSecret } from "@/lib/payments/config";
+import { paystackTierForPlan, verifyPaystackSignature } from "@/lib/payments/paystack";
+import { handlePaystackEvent } from "@/lib/payments/events";
 
 /**
  * Paystack webhook — NGN only.
  *
- * Paystack signs with HMAC-SHA512 over the raw body using the secret key.
- * The signature is verified before the body is parsed, and compared with a
- * timing-safe equality: a plain === leaks information about the expected
- * value through response timing.
+ * The HMAC-SHA512 signature over the raw body is verified (timing-safe)
+ * before the body is parsed. Grants happen here, or on the return page after
+ * a server-side verify — never on a browser's word. Every database call is
+ * idempotent, so a retried webhook grants nothing twice.
  *
- * Entitlement grants happen here rather than on a client redirect, because a
- * redirect can be forged and a webhook cannot.
+ * Set this URL in Paystack → Settings → API Keys & Webhooks (test and live):
+ *   https://www.trytoastly.com/api/webhooks/paystack
  */
 export async function POST(request: NextRequest) {
-  const secret = process.env.PAYSTACK_SECRET_KEY;
-  if (!secret) {
-    return NextResponse.json({ error: "not configured" }, { status: 503 });
-  }
+  if (!paystackSecret()) return NextResponse.json({ error: "not configured" }, { status: 503 });
 
   const raw = await request.text();
-  const signature = request.headers.get("x-paystack-signature") ?? "";
-  const expected = createHmac("sha512", secret).update(raw).digest("hex");
-
-  const a = Buffer.from(signature);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+  if (!verifyPaystackSignature(raw, request.headers.get("x-paystack-signature") ?? "")) {
     return NextResponse.json({ error: "bad signature" }, { status: 401 });
   }
 
-  const event = JSON.parse(raw) as { event: string; data: { reference: string } };
-
-  // A webhook has no session, so resolving a reference to a member needs the
-  // service role. Narrow and deliberate: read the payment row, nothing else.
+  // A webhook has no session: the service role resolves a reference to a
+  // member, through the payment functions and nothing else.
   const admin = createAdminClient();
+  if (!admin) return NextResponse.json({ error: "not configured" }, { status: 503 });
 
-  // Only NGN reaches this endpoint. A USD charge arriving here is a routing
-  // bug or an arbitrage attempt; the payments table refuses the pairing.
-  switch (event.event) {
-    case "charge.success":
-      // TODO: record the payment, credit coins or grant the subscription
-      // entitlement. Not implemented — no live credentials in this build.
-      //
-      // The receipt and the funnel events below are real code on an inert
-      // path: they look the payment up by reference, and nothing writes
-      // payment rows yet. Whoever builds the payment loop gets both for free
-      // by inserting the row before this runs.
-      await notifyCharge(admin, event.data.reference, "paystack");
-      break;
-    default:
-      break;
+  try {
+    const outcome = await handlePaystackEvent(JSON.parse(raw), admin, { tierForPlan: paystackTierForPlan });
+    if (outcome.ref && (outcome.status === "granted" || outcome.status === "credited_as_coins")) {
+      await notifyCharge(admin, outcome.ref, "paystack");
+    }
+    return NextResponse.json({ received: true, status: outcome.status });
+  } catch (e) {
+    // 500 makes Paystack retry later.
+    console.error("paystack webhook", (e as Error).message);
+    return NextResponse.json({ error: "failed" }, { status: 500 });
   }
-
-  return NextResponse.json({ received: true });
 }

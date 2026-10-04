@@ -9,12 +9,9 @@ import { sendReceipt } from "@/lib/email";
  * service-role client, used here for exactly two reads: the payment row, and
  * the member's email address.
  *
- * THIS PATH IS CURRENTLY INERT, and deliberately so. It looks the payment up
- * by provider reference, and nothing writes payment rows yet: the webhooks
- * verify signatures and grant nothing (still a TODO). Whoever builds the
- * payment loop gets the receipt and the two funnel events for free by
- * inserting the row before this runs — rather than discovering later that
- * neither was ever wired.
+ * Runs after a payment is settled (0024: payment_open writes the row at
+ * checkout, payment_settle marks it paid), from the webhook or the return
+ * page — whichever settles it first, so the receipt goes once.
  */
 
 function formatAmount(minor: number, currency: string): string {

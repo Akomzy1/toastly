@@ -24,8 +24,66 @@ order:
 3. The privacy policy's effective date is set to 4 October 2026 for the
    "Dates and coins" and check-in location lines.
 
-Still not wired after that: buying coin packs (Paystack/Stripe), and paying
-the remainder of a plan by card when coins fall short.
+Done: 0023 applied and Prompt 17 deployed (4 October 2026). Buying coins
+and paying the rest of a plan by card arrive with live payments (§0a).
+
+---
+
+## 0a. Live payments — Paystack (₦) and Stripe ($) (migration 0024)
+
+Decided 4 October 2026: Naira plans are hybrid (card renews monthly and is
+stopped in the app; bank or USSD buys a 30-day pass); diaspora plans are
+monthly Stripe subscriptions; coins can part-pay Premium or Premium Plus
+(held at checkout, card pays the rest, released after an hour if
+abandoned). Checkout is hosted by Paystack and Stripe.
+
+**Live keys only work on the production deployment.** On a laptop or a
+preview, a `sk_live_` key reads as "not configured", so testing can never
+charge a real card. Test in test mode first.
+
+**Test mode first (on a Vercel preview):**
+
+1. In Paystack and Stripe, switch the dashboard to **Test mode** and copy
+   the test keys.
+2. Vercel → Settings → Environment Variables, scope **Preview** only:
+   `PAYSTACK_SECRET_KEY` (sk_test_…), `PAYSTACK_PUBLIC_KEY` (pk_test_…),
+   `STRIPE_SECRET_KEY` (sk_test_…), `STRIPE_WEBHOOK_SECRET` (whsec_… from
+   the test-mode endpoint below). Put the same test keys in `.env.local`
+   for local work (the live ones there are ignored off production anyway).
+3. Register the test webhooks against the preview URL (Paystack test
+   webhook URL; Stripe test endpoint), pay with Paystack's test card
+   `4084 0840 8408 4081` and Stripe's `4242 4242 4242 4242`.
+
+**Production, in this order:**
+
+1. ~~Run `supabase/migrations/0024_payments_live.sql`.~~ **Applied 4 October
+   2026** and checked from outside: prices readable, every payment function
+   and table refuses anonymous callers. pg_cron job `toastly-release-holds`
+   runs every 15 minutes.
+2. Vercel → Production: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`,
+   `STRIPE_SECRET_KEY` (live), `STRIPE_WEBHOOK_SECRET` (the live endpoint's
+   `whsec_…`), and `CRON_SECRET` (any long random string — Vercel Cron sends
+   it to the reminder job).
+3. **Paystack** → Settings → API Keys & Webhooks → Live webhook URL:
+   `https://www.trytoastly.com/api/webhooks/paystack`. Plans ("Toastly
+   Premium", "Toastly Premium Plus") are created by the app on first use.
+4. **Stripe** → Developers → Webhooks → Add endpoint
+   `https://www.trytoastly.com/api/webhooks/stripe` with events:
+   `checkout.session.completed`, `checkout.session.expired`,
+   `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed`, `invoice.paid`,
+   `invoice.payment_failed`, `customer.subscription.created`,
+   `customer.subscription.updated`, `customer.subscription.deleted`.
+   Copy its signing secret into `STRIPE_WEBHOOK_SECRET`. Prices
+   (`toastly_diaspora_monthly`, `toastly_diaspora_plus_monthly`) are created
+   by the app on first use. Apple Pay works on Stripe's hosted checkout.
+5. Redeploy. The daily reminder job (`vercel.json`, 08:00 UTC) emails members
+   three days before a pass or a stopped card plan ends.
+
+**Still to note:** refunds and disputes are handled by a person in each
+provider's dashboard; marking a payment refunded in the database is a staff
+step (there is no refund flow in the app, by design — coins never become
+cash).
 
 ---
 
@@ -145,8 +203,9 @@ machine; the check itself is missing and deliberately not faked.
 
 | Integration | Variables | Current behaviour |
 |---|---|---|
-| **Paystack** (NGN) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` | The webhook verifies the HMAC-SHA512 signature correctly and then **grants nothing** — no payment recorded, no coins credited, no subscription. Returns 503 while the key is unset. |
-| **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Same: signature and replay window verified, **no entitlement granted**. |
+| **Paystack** (NGN) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` | **Wired (0024)** — see §0a. Checkout, card renewals, 30-day passes, coin part-payment, webhook and return-page settlement. Off (with an in-app notice) while the key is unset, or a live key off production. |
+| **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | **Wired (0024)** — see §0a. Diaspora subscriptions and the dollar coin pack. |
+| **Vercel Cron** | `CRON_SECRET` | Plan-ending reminder emails (daily). Refuses every request while unset. |
 
 **Webhook URLs to register with each provider** — on `www`, because the bare
 domain answers with a redirect and payment providers don't follow redirects

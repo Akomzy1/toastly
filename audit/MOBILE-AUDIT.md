@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-04 00:24 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-04 09:12 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640, device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -136,6 +136,22 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/answer-mirror/short` | 360 | pass | pass | pass | pass | `mobile\audit-answer-mirror-short-360.png` |
 | `/audit/coins` | 320 | pass | pass | pass | pass | `mobile\audit-coins-320.png` |
 | `/audit/coins` | 360 | pass | pass | pass | pass | `mobile\audit-coins-360.png` |
+| `/audit/coins-buy` | 320 | pass | pass | pass | pass | `mobile\audit-coins-buy-320.png` |
+| `/audit/coins-buy` | 360 | pass | pass | pass | pass | `mobile\audit-coins-buy-360.png` |
+| `/audit/plan/ngn-starter` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-starter-320.png` |
+| `/audit/plan/ngn-starter` | 360 | pass | pass | pass | pass | `mobile\audit-plan-ngn-starter-360.png` |
+| `/audit/plan/ngn-coins` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-coins-320.png` |
+| `/audit/plan/ngn-coins` | 360 | pass | pass | pass | pass | `mobile\audit-plan-ngn-coins-360.png` |
+| `/audit/plan/ngn-renewing` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-renewing-320.png` |
+| `/audit/plan/ngn-renewing` | 360 | pass | pass | pass | pass | `mobile\audit-plan-ngn-renewing-360.png` |
+| `/audit/plan/ngn-stopped` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-stopped-320.png` |
+| `/audit/plan/ngn-stopped` | 360 | pass | pass | pass | pass | `mobile\audit-plan-ngn-stopped-360.png` |
+| `/audit/plan/ngn-off` | 320 | pass | pass | pass | pass | `mobile\audit-plan-ngn-off-320.png` |
+| `/audit/plan/ngn-off` | 360 | pass | pass | pass | pass | `mobile\audit-plan-ngn-off-360.png` |
+| `/audit/plan/usd` | 320 | pass | pass | pass | pass | `mobile\audit-plan-usd-320.png` |
+| `/audit/plan/usd` | 360 | pass | pass | pass | pass | `mobile\audit-plan-usd-360.png` |
+| `/audit/plan/usd-renewing` | 320 | pass | pass | pass | pass | `mobile\audit-plan-usd-renewing-320.png` |
+| `/audit/plan/usd-renewing` | 360 | pass | pass | pass | pass | `mobile\audit-plan-usd-renewing-360.png` |
 | `/audit/dates/propose` | 320 | pass | pass | pass | pass | `mobile\audit-dates-propose-320.png` |
 | `/audit/dates/propose` | 360 | pass | pass | pass | pass | `mobile\audit-dates-propose-360.png` |
 | `/audit/dates/propose-short` | 320 | pass | pass | pass | pass | `mobile\audit-dates-propose-short-320.png` |
