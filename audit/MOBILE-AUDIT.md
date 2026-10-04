@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-04 14:27 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640, device scale 2, touch.
+Run 2026-10-04 15:38 UTC against `http://localhost:3107`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -138,6 +138,38 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/coins` | 360 | pass | pass | pass | pass | `mobile\audit-coins-360.png` |
 | `/audit/coins-buy` | 320 | pass | pass | pass | pass | `mobile\audit-coins-buy-320.png` |
 | `/audit/coins-buy` | 360 | pass | pass | pass | pass | `mobile\audit-coins-buy-360.png` |
+| `/audit/pool/paid-open` | 320 | pass | pass | pass | pass | `mobile\audit-pool-paid-open-320.png` |
+| `/audit/pool/paid-open` | 360 | pass | pass | pass | pass | `mobile\audit-pool-paid-open-360.png` |
+| `/audit/pool/paid-soon` | 320 | pass | pass | pass | pass | `mobile\audit-pool-paid-soon-320.png` |
+| `/audit/pool/paid-soon` | 360 | pass | pass | pass | pass | `mobile\audit-pool-paid-soon-360.png` |
+| `/audit/pool/free` | 320 | pass | pass | pass | pass | `mobile\audit-pool-free-320.png` |
+| `/audit/pool/free` | 360 | pass | pass | pass | pass | `mobile\audit-pool-free-360.png` |
+| `/audit/pool/no-city` | 320 | pass | pass | pass | pass | `mobile\audit-pool-no-city-320.png` |
+| `/audit/pool/no-city` | 360 | pass | pass | pass | pass | `mobile\audit-pool-no-city-360.png` |
+| `/audit/preferences/on` | 320 | pass | pass | pass | pass | `mobile\audit-preferences-on-320.png` |
+| `/audit/preferences/on` | 360 | pass | pass | pass | pass | `mobile\audit-preferences-on-360.png` |
+| `/audit/preferences/off` | 320 | pass | pass | pass | pass | `mobile\audit-preferences-off-320.png` |
+| `/audit/preferences/off` | 360 | pass | pass | pass | pass | `mobile\audit-preferences-off-360.png` |
+| `/audit/coins-get/usd` | 320 | pass | pass | pass | pass | `mobile\audit-coins-get-usd-320.png` |
+| `/audit/coins-get/usd` | 360 | pass | pass | pass | pass | `mobile\audit-coins-get-usd-360.png` |
+| `/audit/coins-get/ngn` | 320 | pass | pass | pass | pass | `mobile\audit-coins-get-ngn-320.png` |
+| `/audit/coins-get/ngn` | 360 | pass | pass | pass | pass | `mobile\audit-coins-get-ngn-360.png` |
+| `/audit/coins-get/usd-done` | 320 | pass | pass | pass | pass | `mobile\audit-coins-get-usd-done-320.png` |
+| `/audit/coins-get/usd-done` | 360 | pass | pass | pass | pass | `mobile\audit-coins-get-usd-done-360.png` |
+| `/audit/console/queue` | 768 | pass | pass | pass | pass | `mobile\audit-console-queue-768.png` |
+| `/audit/console/queue` | 1280 | pass | pass | pass | pass | `mobile\audit-console-queue-1280.png` |
+| `/audit/console/queue-decided` | 768 | pass | pass | pass | pass | `mobile\audit-console-queue-decided-768.png` |
+| `/audit/console/queue-decided` | 1280 | pass | pass | pass | pass | `mobile\audit-console-queue-decided-1280.png` |
+| `/audit/console/case-pricing` | 768 | pass | pass | pass | pass | `mobile\audit-console-case-pricing-768.png` |
+| `/audit/console/case-pricing` | 1280 | pass | pass | pass | pass | `mobile\audit-console-case-pricing-1280.png` |
+| `/audit/console/case-blind` | 768 | pass | pass | pass | pass | `mobile\audit-console-case-blind-768.png` |
+| `/audit/console/case-blind` | 1280 | pass | pass | pass | pass | `mobile\audit-console-case-blind-1280.png` |
+| `/audit/console/case-attendance` | 768 | pass | pass | pass | pass | `mobile\audit-console-case-attendance-768.png` |
+| `/audit/console/case-attendance` | 1280 | pass | pass | pass | pass | `mobile\audit-console-case-attendance-1280.png` |
+| `/audit/console/case-decided` | 768 | pass | pass | pass | pass | `mobile\audit-console-case-decided-768.png` |
+| `/audit/console/case-decided` | 1280 | pass | pass | pass | pass | `mobile\audit-console-case-decided-1280.png` |
+| `/audit/console/history` | 768 | pass | pass | pass | pass | `mobile\audit-console-history-768.png` |
+| `/audit/console/history` | 1280 | pass | pass | pass | pass | `mobile\audit-console-history-1280.png` |
 | `/audit/notices/restricted` | 320 | pass | pass | pass | pass | `mobile\audit-notices-restricted-320.png` |
 | `/audit/notices/restricted` | 360 | pass | pass | pass | pass | `mobile\audit-notices-restricted-360.png` |
 | `/audit/notices/reverify` | 320 | pass | pass | pass | pass | `mobile\audit-notices-reverify-320.png` |

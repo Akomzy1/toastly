@@ -41,13 +41,24 @@ export function ProfileHub({
   meta,
   verified,
   prompts,
+  abroad = false,
 }: {
   name: string;
   /** "Yaba, Lagos · Starter" */
   meta: string;
   verified: boolean;
   prompts: HubPrompt[];
+  /** Lives outside Nigeria: chooses a pool, rather than "open to abroad" (PRD §5.6). */
+  abroad?: boolean;
 }) {
+  // Who you match with: one row, by where the member lives (pool-choice /
+  // open-to-abroad prototypes).
+  const rows = [
+    abroad
+      ? { label: "Your match pool", sub: "Back home, your diaspora community, or both", href: "/profile/pool" }
+      : { label: "Match preferences", sub: "Who shows up in your six", href: "/profile/preferences" },
+    ...HUB,
+  ];
   const [help, setHelp] = React.useState(false);
   return (
     <div className="mx-auto grid w-full max-w-[680px] content-start gap-3 px-3.5 pb-6 pt-4">
@@ -89,7 +100,7 @@ export function ProfileHub({
 
       <p className={LABEL}>More</p>
       <div className="grid overflow-hidden rounded-xl border border-ink-900/[.12] bg-white">
-        {HUB.map((h, i) => {
+        {rows.map((h, i) => {
           const body = (
             <>
               <span className="grid min-w-0 gap-0.5">

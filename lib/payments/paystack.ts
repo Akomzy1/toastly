@@ -97,6 +97,8 @@ export async function paystackInitialize(args: {
   reference: string;
   callbackUrl: string;
   mode: "pack" | "pass" | "recurring" | "remainder";
+  /** A coin pack paid by card only, or by bank and USSD only (Get coins). */
+  method?: "card" | "bank" | null;
   planCode?: string;
   metadata: Record<string, string>;
 }): Promise<string> {
@@ -113,7 +115,10 @@ export async function paystackInitialize(args: {
     body.plan = args.planCode;
     body.channels = ["card"];
   } else {
-    body.channels = args.mode === "pass" ? PASS_CHANNELS : ONE_OFF_CHANNELS;
+    body.channels =
+      args.method === "card" ? ["card"]
+      : args.method === "bank" || args.mode === "pass" ? PASS_CHANNELS
+      : ONE_OFF_CHANNELS;
   }
   const data = await call<{ authorization_url: string }>("/transaction/initialize", { method: "POST", body });
   return data.authorization_url;

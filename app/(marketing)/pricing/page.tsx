@@ -155,8 +155,9 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* 4 — Women's launch offer. 30 days of full Premium Plus, granted as a
-             real entitlement at signup — not a coupon, not base Premium. */}
+      {/* 4 — Women's launch offer (pricing-offer.slim.html). 30 days of full
+             Premium Plus — or Diaspora Plus for women abroad (PRD §7) — granted
+             as a real entitlement, not a coupon, not base Premium. */}
       <section id="women" className="bg-green-800 text-white">
         <div className="mx-auto grid max-w-container gap-10 px-5 py-section-y-lg md:px-10 lg:grid-cols-2 lg:gap-[72px]">
           <div className="grid content-start gap-5">
@@ -167,9 +168,8 @@ export default function PricingPage() {
               30 days of Premium Plus. On us.
             </h2>
             <p className="text-body-lg text-white/[.78]">
-              Full access to live-video Gist and incognito mode, active on your
-              account from the day you verify — no card, no code, nothing to
-              cancel.
+              Women get 30 days of Premium Plus free — or Diaspora Plus if you
+              live abroad. No card needed.
             </p>
             <p className="text-ui text-white/[.72]">
               It&rsquo;s part of how we think about safety and comfort for women
@@ -186,8 +186,8 @@ export default function PricingPage() {
                 </AccordionTrigger>
                 <AccordionContent className="text-white/[.72]">
                   When you verify as a woman, your account starts with 30 days
-                  of Premium Plus already active — live-video Gist and incognito
-                  mode included, no payment method on file. It ends
+                  of Premium Plus already active — or Diaspora Plus if you live
+                  abroad — with no payment method on file. It ends
                   automatically after 30 days; from there you can move to any
                   paid tier or drop back to Starter, free forever.
                 </AccordionContent>

@@ -4,7 +4,6 @@ import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import Link from "next/link";
 import { payWithCoins } from "@/app/(app)/coins/actions";
-import { checkout, type PlanState } from "@/app/(app)/profile/plan/actions";
 import { Notice } from "@/components/ui/notice";
 
 /**
@@ -21,8 +20,6 @@ import { Notice } from "@/components/ui/notice";
  */
 
 export type LedgerRow = { id: string; delta: number; kind: string; bucket: string; note: string | null; created_at: string };
-
-type Pack = { id: string; coins: number; price: string; note: string; currency: "NGN" | "USD" };
 
 const LABEL: Record<string, string> = {
   purchase: "Bought coins",
@@ -57,24 +54,6 @@ function PayButton({ label }: { label: string }) {
     >
       {pending ? "Paying…" : label}
     </button>
-  );
-}
-
-function BuyPack({ sku, enabled }: { sku: string; enabled: boolean }) {
-  const [state, action] = useFormState<PlanState, FormData>(checkout, null);
-  return (
-    <form action={action} className="grid gap-2">
-      <input type="hidden" name="sku" value={sku} />
-      <input type="hidden" name="mode" value="pack" />
-      {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
-      {enabled ? (
-        <PayButton label="Buy" />
-      ) : (
-        <button type="button" disabled className="min-h-12 w-full rounded-lg bg-grey-200 px-5 py-3.5 text-button text-grey-600">
-          Not available yet
-        </button>
-      )}
-    </form>
   );
 }
 
@@ -114,25 +93,21 @@ export function CoinBalance({
   stakeable,
   promo,
   tierLabel,
-  diaspora,
+  abroad,
   premiumCoins,
   premiumPlusCoins,
-  packs,
   history,
-  buy = { NGN: false, USD: false },
   paid = null,
 }: {
   total: number;
   stakeable: number;
   promo: number;
   tierLabel: string;
-  diaspora: boolean;
+  /** Lives outside Nigeria: dollar track. */
+  abroad: boolean;
   premiumCoins: number;
   premiumPlusCoins: number;
-  packs: Pack[];
   history: LedgerRow[];
-  /** Which providers can take a payment here (live keys only in production). */
-  buy?: { NGN: boolean; USD: boolean };
   paid?: string | null;
 }) {
   const notice = paid ? PAID[paid] : null;
@@ -161,44 +136,28 @@ export function CoinBalance({
         </p>
       </div>
 
-      <div className={CARD}>
-        <p className={LABEL_CAPS}>Pay for a plan with coins</p>
-        {diaspora ? (
-          <p className="m-0 text-nav leading-[1.55] text-grey-600">
-            Diaspora plans are paid in dollars, so coins can&rsquo;t pay for them. You can still use coins for date
-            stakes and extra Gists.
-          </p>
-        ) : null}
-        <PlanOffer tier="premium" name="Premium" coins={premiumCoins} />
-        <PlanOffer tier="premium_plus" name="Premium Plus" coins={premiumPlusCoins} />
-        <p className="m-0 text-nav leading-[1.55] text-grey-600">Gift coins are used first. One coin counts as ₦100.</p>
-      </div>
+      {/* Coins pay naira plans only, and members abroad are never quoted naira
+          (CLAUDE.md, PRD §5.5) — so this card is for members in Nigeria. */}
+      {!abroad ? (
+        <div className={CARD}>
+          <p className={LABEL_CAPS}>Pay for a plan with coins</p>
+          <PlanOffer tier="premium" name="Premium" coins={premiumCoins} />
+          <PlanOffer tier="premium_plus" name="Premium Plus" coins={premiumPlusCoins} />
+          <p className="m-0 text-nav leading-[1.55] text-grey-600">Gift coins are used first. One coin counts as ₦100.</p>
+        </div>
+      ) : null}
 
       <div className={CARD}>
-        <p className={LABEL_CAPS}>Buy coins</p>
-        <div className="grid gap-2.5 sm:grid-cols-3">
-          {packs.map((p) => (
-            <div key={p.id} className="grid gap-1 rounded-lg border border-ink-900/[.12] p-3.5">
-              <span className="font-serif text-[26px] font-bold text-green-500">{p.coins}</span>
-              <span className="text-ui font-semibold text-ink-900">{p.price}</span>
-              <span className="text-nav text-grey-600">{p.note}</span>
-              <BuyPack sku={p.id} enabled={buy[p.currency]} />
-            </div>
-          ))}
-        </div>
-        {!buy.NGN || !buy.USD ? (
-          <Notice tone="locked" title={!buy.NGN && !buy.USD ? "Buying isn't connected yet" : "Some packs aren't available yet"}>
-            {!buy.NGN && !buy.USD
-              ? "Paystack and Stripe aren’t set up in this environment, so packs can’t be bought yet."
-              : !buy.NGN
-                ? "Naira packs need Paystack, which isn’t set up in this environment."
-                : "The dollar pack needs Stripe, which isn’t set up in this environment."}
-          </Notice>
-        ) : null}
-        {/* PRD §5.5: purchase terms must say this clearly at the point of sale. */}
-        <p className="m-0 text-nav font-semibold leading-[1.55] text-ink-900">
-          Coins never expire. They&rsquo;re never refunded or paid out as cash.
+        <p className={LABEL_CAPS}>Get coins</p>
+        <p className="m-0 text-nav leading-[1.55] text-grey-600">
+          {abroad ? "Packs priced in US dollars, by card or Apple Pay." : "Packs priced in naira, by card, bank or USSD."}
         </p>
+        <Link
+          href="/coins/get"
+          className="grid min-h-12 place-items-center rounded-lg bg-gold-500 px-5 py-3.5 text-button text-green-800 no-underline hover:bg-gold-300"
+        >
+          Get coins
+        </Link>
       </div>
 
       <div className="grid gap-2.5">

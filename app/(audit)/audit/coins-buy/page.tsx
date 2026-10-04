@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { requireAuditHarness } from "@/lib/audit-harness";
 import { CoinBalance, type LedgerRow } from "@/components/coins/coin-balance";
-import { COIN_PACKS } from "@/lib/entitlements";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Audit · coins buying", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Audit · coins abroad", robots: { index: false, follow: false } };
 
 const DAY = 86400_000;
 const at = (d: number) => new Date(Date.UTC(2026, 9, 1) - d * DAY).toISOString();
@@ -25,13 +24,11 @@ export default function AuditCoinsBuy() {
       total={58}
       stakeable={38}
       promo={20}
-      tierLabel="Premium"
-      diaspora={false}
+      tierLabel="Diaspora"
+      abroad={true}
       premiumCoins={35}
       premiumPlusCoins={70}
-      packs={COIN_PACKS.map((p) => ({ id: p.id, coins: p.coins, price: p.price, note: p.note, currency: p.currency }))}
       history={HISTORY}
-      buy={{ NGN: true, USD: true }}
       paid="1"
     />
   );

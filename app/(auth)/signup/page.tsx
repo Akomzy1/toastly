@@ -112,7 +112,7 @@ export default function SignUpPage() {
               <VerifiedSeal size={16} className="mt-0.5 text-green-550" />
               <span>
                 Women get 30 days of Premium Plus free from the day they verify
-                — live-video Gist and incognito mode, no card needed.
+                — or Diaspora Plus if you live abroad. No card needed.
               </span>
             </span>
           </Notice>

@@ -41,8 +41,8 @@ async function coins(id, n) {
 
 test("members and anonymous callers can read prices but can't write them or call any payment function", async () => {
   const id = await member();
-  const prices = await as(db, id, (tx) => tx.query("select sku, amount_minor from price_list order by sku"));
-  assert.equal(prices.rows.length, 7);
+  const prices = await as(db, id, (tx) => tx.query("select sku, amount_minor from price_list where active order by sku"));
+  assert.equal(prices.rows.length, 10, "two naira packs, four dollar packs (0026), four plans");
   assert.equal(prices.rows.find((p) => p.sku === "premium").amount_minor, 350000);
   await assert.rejects(as(db, id, (tx) => tx.query("update price_list set amount_minor = 1 where sku = 'premium'")));
   for (const sql of [
@@ -215,8 +215,8 @@ test("pricing integrity: foreign card or request country on a Naira payment goes
   // Dollars on a Nigerian card is not arbitrage.
   const d = await member();
   const r3 = ref();
-  await open(d, "us-30", "pack", r3, "NG");
-  await settle("stripe", r3, 600, "USD", "NG");
+  await open(d, "us-10", "pack", r3, "NG");
+  await settle("stripe", r3, 200, "USD", "NG");
   assert.equal((await svc("select count(*)::int as n from integrity_reviews where profile_id = $1", [d])).rows[0].n, 0);
 });
 

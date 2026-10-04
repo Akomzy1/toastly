@@ -1,6 +1,7 @@
 /**
- * Words for the review queue (0025). Members only ever see a reason
- * CATEGORY — never the signal, the reporter, or the evidence.
+ * Words for the review console (review-queue / review-case / review-history
+ * prototypes). Members only ever see a reason CATEGORY — never the signal,
+ * the reporter, or the evidence.
  */
 
 export const REASON_LABEL: Record<string, string> = {
@@ -12,30 +13,93 @@ export const REASON_LABEL: Record<string, string> = {
   safety: "account safety",
 };
 
+/** Case types, in the prototype's order. "Report" and "ID check" are added (flagged). */
 export const KIND_LABEL: Record<string, string> = {
   pricing: "Pricing signal",
-  report: "Report",
+  sentinel: "Safety flag",
+  photo_match: "Photo check",
+  selfie_review: "Selfie check",
+  id_review: "ID check",
+  blind_report: "Locked-inbox report",
   married_report: "Married-user report",
-  blind_report: "Blind report",
-  attendance: "Attendance dispute",
-  selfie_review: "Selfie check — borderline",
-  id_review: "ID check — borderline",
-  photo_match: "Photo match — borderline",
-  sentinel: "Sentinel flag",
+  report: "Report",
+  attendance: "Date-attendance dispute",
+};
+export const KIND_ORDER = Object.keys(KIND_LABEL);
+
+export const SOURCE_LABEL: Record<string, string> = {
+  pricing: "automatic signal",
+  sentinel: "automatic signal",
+  photo_match: "verification result",
+  selfie_review: "verification result",
+  id_review: "verification result",
+  blind_report: "member report",
+  married_report: "member report",
+  report: "member report",
+  attendance: "dispute filed",
+};
+
+export const STAGE_LABEL: Record<string, string> = {
+  new: "New",
+  in_review: "In review",
+  waiting_member: "Waiting on member",
+  decided: "Decided",
+};
+
+/** Status pill colours, from the prototype's ST map (theme tokens). */
+export const STAGE_STYLE: Record<string, string> = {
+  new: "bg-green-50 border-green-500/30 text-green-550",
+  in_review: "bg-gold-50 border-gold-600/35 text-gold-800",
+  waiting_member: "bg-grey-100 border-ink-900/[.14] text-ink-800",
+  decided: "bg-white border-ink-900/[.18] text-grey-600",
 };
 
 export const ACTION_LABEL: Record<string, string> = {
-  clear: "Clear — no action",
+  clear: "Clear",
   ask_switch_plan: "Ask to switch plan",
   request_reverification: "Request re-verification",
   restrict: "Restrict",
   lift_restriction: "Lift restriction",
-  remove: "Remove account",
-  attended: "They were there — return both stakes",
-  no_show: "They weren't there — stake goes to the attender",
+  remove: "Remove",
+  attended: "They attended",
+  no_show: "They didn't attend",
+  member_switched: "Switched plan",
 };
 
-/** Actions that change what a member can do: asked to confirm twice. */
-export const SERIOUS = new Set(["restrict", "remove"]);
+export const ACTION_SUB: Record<string, string> = {
+  clear: "No action. The case closes.",
+  ask_switch_plan: "Member is asked to move to the plan for where they live.",
+  request_reverification: "Member redoes selfie liveness. Account stays open.",
+  restrict: "Limits matching and messages until reviewed again.",
+  lift_restriction: "Matching and messages return to normal.",
+  remove: "Closes the account. The member can appeal.",
+  attended: "Both stakes go back to their owners. The case closes.",
+  no_show: "The stake goes to the member who showed up. The case closes.",
+};
+
+/** The prototype asks for a short sentence; the database enforces the same. */
+export const MIN_REASON = 12;
 
 export const reasonLabel = (category: string | null | undefined) => REASON_LABEL[category ?? ""] ?? "your account";
+
+export const caseNo = (n: number | string) => `TC-${n}`;
+export const memberNo = (n: number | string | null | undefined) => (n == null ? "Removed member" : `M-${n}`);
+
+export function waited(fromIso: string, now: number = Date.now()): string {
+  const m = Math.max(0, Math.floor((now - Date.parse(fromIso)) / 60_000));
+  const d = Math.floor(m / 1440);
+  const h = Math.floor((m % 1440) / 60);
+  return d ? `${d} d ${h} h` : h ? `${h} h ${m % 60} m` : `${m % 60} m`;
+}
+
+/** Times in WAT, as the history screen says. */
+export function wat(iso: string, withYear = false): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Lagos",
+    day: "numeric",
+    month: "short",
+    ...(withYear ? { year: "numeric" } : {}),
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}

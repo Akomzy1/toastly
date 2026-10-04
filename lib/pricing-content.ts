@@ -172,7 +172,7 @@ export const compareRows: [string, string[]][][] = [
 export const coinPacks = [
   { name: "10 coins", note: "Two date commitments, roughly", price: "₦1,000" },
   { name: "30 coins", note: "Most-used pack", price: "₦2,700" },
-  { name: "Diaspora pack — 30 coins", note: "Billed in USD", price: "$6" },
+  { name: "Diaspora packs — 5 to 50 coins", note: "Billed in USD, by card or Apple Pay", price: "from $1" },
 ];
 
 export const whyPay = [

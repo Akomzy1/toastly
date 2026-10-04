@@ -166,8 +166,9 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 **Rules that keep it safe and legal:**
 1. **It is a coin balance, never a "wallet".** A Nigerian product that holds value and moves it between users looks like e-money, which is CBN-licensed territory. The balance is **closed-loop**: coins are not money, cannot be withdrawn, cannot be sent between members by choice, and move between members **only** as the result of a stake outcome. The words "wallet", "escrow", "transfer" and "cash out" never appear in product copy. *(Legal confirmation required before launch — §11.)*
 2. **Only purchased coins can be staked.** Any promotional or free coins sit in a separate, non-stakeable bucket. Otherwise one person with two accounts could stage no-shows and convert free coins into paid subscriptions.
-3. **Coins pay domestic naira subscriptions only.** Diaspora subscriptions ($15/$30) must be paid in dollars. Letting naira-priced coins pay a dollar subscription would reopen the exact arbitrage §7's pricing-integrity rules close. Diaspora members can still use coins for stakes, extra Gists and other coin purchases.
-4. **Toastly never profits from a no-show.** Forfeited coins always go to the member who showed up.
+3. **Coins are bought in the member's own currency.** Members in Nigeria buy coin packs in naira (card, transfer, USSD); members abroad buy them in **US dollars** (card or Apple Pay), as the Diaspora page already promises — nobody abroad is quoted in naira. A coin is the same coin once bought; only the purchase price differs by track.
+4. **Coins pay domestic naira subscriptions only.** Diaspora subscriptions ($15/$30) must be paid in dollars. Letting naira-priced coins pay a dollar subscription would reopen the exact arbitrage §7's pricing-integrity rules close. Diaspora members can still use coins for stakes, extra Gists and other coin purchases. If a member abroad uses coins — however bought — on a naira plan, the pricing-integrity review signal is raised (§7); it is never blocked.
+5. **Toastly never profits from a no-show.** Forfeited coins always go to the member who showed up.
 
 **How attendance is decided (recommended default — overrule in §11 if needed):**
 - Both members **check in at the venue in the app** during the date window, confirmed by location near the agreed spot. Location is used only for this check-in, with consent, and not retained beyond it.
@@ -180,10 +181,23 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 - Framed warmly ("showing up for each other"), never punitively (contrast with MyPerson's escrow/forfeit language).
 - Paired with a **lightweight date-spot suggestion** (maps-API lookup of nearby public venues, not a curated directory at MVP) surfaced after a strong Gist — doubles as a soft safety signal (public-venue nudge).
 
-### 5.6 Diaspora Matching (two pools, not one)
-- **"Back home"** (abroad → Nigeria) — inherits Lagos liquidity, launches first.
-- **Diaspora-to-diaspora** (abroad → abroad) — a genuinely separate liquidity problem per city; unlocked **per diaspora city** only once that city has enough verified users, not switched on globally at launch.
-- Explicit location-intent filter so users choose which pool they're matched into.
+### 5.6 Diaspora Matching — who can match with whom (decided)
+
+**The model: one Nigeria pool, which diaspora members can join.** "Back home" matching is not a separate pool. A member abroad who chooses **back home** or **either** appears in the Nigeria pool alongside Nigeria-based members, so matching runs both ways automatically. **Diaspora-to-diaspora** (abroad → abroad) is the only genuinely separate pool.
+
+| Member | Matches with people in Nigeria | Matches with people abroad |
+|---|---|---|
+| Lives in Nigeria — any tier, free included | Yes | Yes — diaspora members who chose back home or either, unless they switch "Open to people living abroad" off |
+| Abroad — free (Starter) or a naira plan | Yes, via back home | **No** |
+| Abroad — Diaspora or Diaspora Plus | Yes, via back home | Yes — diaspora-to-diaspora, city by city as each opens |
+
+**Rules:**
+- **Diaspora ↔ Nigeria is never paywalled.** Diaspora members' main draw is reaching home; Nigeria-based members never pay extra to meet someone abroad. Each person's normal tier rules still apply (a Starter still has 2 Gists a month and no text).
+- **Diaspora-to-diaspora requires an active Diaspora or Diaspora Plus plan.** This is the dollar plan's core benefit, and it is what makes paying in dollars worth it — the second half of the pricing-integrity approach in §7 ("narrow the incentive", alongside the review signals). A dual-resident or visitor on a naira plan still gets back home, which is the pool they most likely want. *(Decided earlier in the build and passed to Claude Code in chat but not recorded here, which let the code drift; recorded now.)*
+- **Diaspora-to-diaspora also opens per diaspora city** only once that city has enough verified members — not globally at launch. When a paid member's city isn't open, the feed falls back to back home and says why (the feed-fallback notice). When a non-Diaspora-plan member abroad looks at diaspora-to-diaspora, it is shown honestly as a Diaspora-plan feature — a different message from the fallback notice.
+- **Diaspora members choose their pool explicitly** — back home, my diaspora, or either — among the pools their plan allows.
+- **Nigeria-based members get a setting: "Open to people living abroad"** — on by default, easy to switch off. Plenty of members want someone local and no long-distance or japa relationship. It's a filter the member applies to their own feed; diaspora status must never be a ranking or scoring input.
+- **Diaspora location claims get extra scrutiny.** "I live abroad" is one of the oldest romance-scam cover stories (the oil-rig engineer, the soldier overseas, the customs fee). Profile country is checked against phone origin and connection location, and mismatches go to the review queue as signals, never automatic action. The Safety Check (§5.1.1) asks *"Have they claimed an emergency abroad?"* Verified Real and the face-matched main photo do the heavy lifting; this is the backstop.
 
 ### 5.7 Couple Mode & AriyaPlanner Handoff
 - Opt-in shared space for mutually-confirmed exclusive couples: milestones, saved dates, shared "our story" timeline.
@@ -244,7 +258,7 @@ Source: the AI-agent research report (October 2026). The market is splitting: in
 | Diaspora subscription | ~$15–30/mo via card/Apple Pay | Covers both back-home and diaspora-to-diaspora matching |
 | AriyaPlanner wedding funnel | Multiple ₦50,000 Event Passes per graduated couple | LTV engine, not launch revenue |
 | Trust | Free, always | Verification and safety features are never paywalled |
-| Women's launch offer | **30 days free Premium Plus (decided)** | Not base Premium — Premium Plus includes live-video Gist and incognito, both carrying real safety value. Note: shorter than MyPerson's 90-day offer, so Toastly wins on tier but loses on the directly-comparable duration number — monitor whether 30 days is long enough to correct the gender ratio at launch |
+| Women's launch offer | **30 days free Premium Plus (decided) — or 30 days free Diaspora Plus for women abroad**, so the offer matches their track and includes diaspora-to-diaspora matching | Not base Premium — Premium Plus includes live-video Gist and incognito, both carrying real safety value. Note: shorter than MyPerson's 90-day offer, so Toastly wins on tier but loses on the directly-comparable duration number — monitor whether 30 days is long enough to correct the gender ratio at launch |
 
 ### 7.1 Tier-by-tier package (corrected, authoritative)
 
@@ -314,7 +328,7 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 
 > **Build-sequence note:** the Claude Code build sequence (`build-prompts.md`) implements Phase 1 across Prompts 0–12. A post-build audit found Prompts 0–9 omitted three Phase 1 items — diaspora matching pools, date-spot suggestion, and time-zone-aware Gist scheduling — now covered by Prompts 10–11, with Prompt 12 handling the domain change to **trytoastly.com**, app icons, stubbed-integration checklist and WhatsApp removal. Live video Gist transport was built in Prompt 5 ahead of its Phase 2 slot; nothing is owed there beyond credentials.
 
-- **Phase 1 (launch):** Verification/trust layer **including the four-photo minimum with face match (§5.1.2)**, **Verification & Support Concierge and Answer Mirror (§5.9)**, **Trust Sentinel signal instrumentation (events only, no agent — §5.1.1)**, prompt-based matching, intent spectrum, voice Gist (default), coin-deposit date commitment, lightweight date-spot suggestion, Couple Mode (data capture only), women's safety kit, PWA, domestic coins + subscription, "back home" diaspora matching + diaspora subscription. Launch in Lagos only.
+- **Phase 1 (launch):** **A staff review screen for the single human-review queue — a launch blocker**, since pricing signals, Sentinel flags, borderline photo and selfie matches, blind reports, married-user reports and attendance disputes all end in "a person reviews it" (shows the reason and the evidence the rules allow, never message content; actions: clear, ask to switch plan, request re-verification, restrict, remove; every decision audit-logged), Verification/trust layer **including the four-photo minimum with face match (§5.1.2)**, **Verification & Support Concierge and Answer Mirror (§5.9)**, **Trust Sentinel signal instrumentation (events only, no agent — §5.1.1)**, prompt-based matching, intent spectrum, voice Gist (default), coin-deposit date commitment, lightweight date-spot suggestion, Couple Mode (data capture only), women's safety kit, PWA, domestic coins + subscription, "back home" diaspora matching + diaspora subscription. Launch in Lagos only.
 - **Phase 2:** **Trust Sentinel+ — scoring, human review queue, step-up re-liveness and Safety Check (§5.1.1)**, **Plan the Toast, diaspora home windows and the adaptive Gist deck (§5.9)**, 1:1 live video Gist (premium), hosted live-streaming/matchmaker channel (once verified liquidity exists — MyPerson already runs this live, so this should not be pushed indefinitely), diaspora-to-diaspora matching unlocked per qualifying city.
 - **Later phase:** Live AriyaPlanner handoff integration (shared identity/account layer) **with the consent-gated engagement-brief agent**, **a read-only AriyaPlanner MCP tool (§5.9)**, fuller curated date-venue directory (if usage justifies content-ops investment), public/host matchmaker partnerships (bringing existing Facebook/TikTok matchmakers on as ambassadors).
 
@@ -326,7 +340,7 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 | Yahoo/catfish/scam | Mandatory verification, structured Gist as a natural scam filter, re-verification on flags |
 | Chicken-and-egg liquidity | City-by-city launch (Lagos first), women-first seeding (mirrors MyPerson's "women get 90 days free" — validated necessity, not optional) |
 | Starter tier too restrictive to build liquidity (no chat, 2 Gist/month) | A deliberate tradeoff, not an oversight — monitor match-to-conversation conversion closely post-launch; be prepared to loosen the cap if it's suppressing volume rather than driving upgrades |
-| Gender imbalance | 30 days free Premium Plus for women at launch (decided, see §7) — shorter than the competitor's 90-day equivalent, so watch female retention past day 30 closely and be prepared to extend if the ratio doesn't hold |
+| Gender imbalance | 30 days free Premium Plus for women at launch — Diaspora Plus for women abroad (decided, see §7) — shorter than the competitor's 90-day equivalent, so watch female retention past day 30 closely and be prepared to extend if the ratio doesn't hold |
 | Low domestic willingness-to-pay | Coins + diaspora cross-subsidy; do not assume subscription-only will work domestically |
 | Diaspora-diaspora liquidity fragmentation | Per-city unlock, not global at launch |
 | WhatsApp leakage | Own the relationship layer (Couple Mode), not the chat pipe; never police number-sharing in free text |

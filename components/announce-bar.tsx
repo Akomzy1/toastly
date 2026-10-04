@@ -32,8 +32,8 @@ export function AnnounceBar() {
   return (
     <div className="relative bg-green-700 px-12 py-2.5">
       <p className="text-center text-caption leading-normal tracking-normal text-champagne">
-        Women get <strong className="font-semibold">30 days free Premium Plus</strong>{" "}
-        at signup — no card needed.{" "}
+        Women get <strong className="font-semibold">30 days of Premium Plus free</strong>{" "}
+        — or Diaspora Plus if you live abroad. No card needed.{" "}
         {/* The anchor carries the hit area — a 13px caption's inline box is
             ~15.7px, plus 14.5px padding each way clears 44px (13.5 measured
             43). Invisible on an inline element with no background. The

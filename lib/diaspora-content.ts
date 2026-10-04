@@ -11,7 +11,8 @@ export const pools = [
     title: "Match back home",
     img: "/img/diaspora/diaspora-back-home.webp",
     alt: "A woman laughing during an evening video call at her desk, city lights behind her",
-    body: "Match with verified singles in Lagos, Abuja, Port Harcourt, Ibadan and beyond, from wherever you are.",
+    planTag: false,
+    body: "Open to everyone abroad, on any plan — free included. Match with verified singles in Lagos, Abuja, Port Harcourt, Ibadan and beyond, from wherever you are.",
     points: [
       "Cultural continuity, and families who already speak the same language.",
       "Gist sessions scheduled across the time difference for you.",
@@ -23,7 +24,8 @@ export const pools = [
     title: "Match within your diaspora",
     img: "/img/diaspora/diaspora-community.webp",
     alt: "A man and woman laughing together on a sofa at home, city skyline through the window",
-    body: "Match with other Nigerians in your own country — two people in the UK, the US or Canada, same city if you like.",
+    planTag: true,
+    body: "Included with Diaspora and Diaspora Plus, opening city by city. Match with other Nigerians in your own country — two people in the UK, the US or Canada, same city if you like.",
     points: [
       "Shared experience of being Nigerian somewhere else.",
       "Same time zone, so a Gist fits into a normal evening.",
@@ -41,7 +43,7 @@ export const steps = [
   {
     n: "2",
     title: "Set your match pool",
-    body: "Back home, your diaspora community, or both at once. Change it any time in settings.",
+    body: "Back home is open on any plan. Matching within your diaspora comes with Diaspora and Diaspora Plus, opening city by city. Change it any time in settings.",
   },
   {
     n: "3",

@@ -28,6 +28,12 @@ const BASE = (process.env.AUDIT_BASE_URL ?? "http://localhost:3000").replace(/\/
 const OUT_DIR = path.resolve("audit");
 const SHOT_DIR = path.join(OUT_DIR, "mobile");
 
+// The staff review console is used at tablet and desktop widths.
+const CONSOLE = [
+  { width: 768, height: 1024 },
+  { width: 1280, height: 800 },
+];
+
 const ROUTES = [
   // Seven marketing pages
   { route: "/", label: "Home" },
@@ -100,7 +106,23 @@ const ROUTES = [
   { route: "/audit/answer-mirror/short", label: "Answer Mirror · short" },
   // Coin balance and dates (Prompt 17) — invented UI, flagged
   { route: "/audit/coins", label: "Coins" },
-  { route: "/audit/coins-buy", label: "Coins · buying on" },
+  { route: "/audit/coins-buy", label: "Coins · member abroad" },
+  { route: "/audit/pool/paid-open", label: "Pool choice · paid-open" },
+  { route: "/audit/pool/paid-soon", label: "Pool choice · paid-soon" },
+  { route: "/audit/pool/free", label: "Pool choice · free" },
+  { route: "/audit/pool/no-city", label: "Pool choice · no-city" },
+  { route: "/audit/preferences/on", label: "Match preferences · on" },
+  { route: "/audit/preferences/off", label: "Match preferences · off" },
+  { route: "/audit/coins-get/usd", label: "Get coins · usd" },
+  { route: "/audit/coins-get/ngn", label: "Get coins · ngn" },
+  { route: "/audit/coins-get/usd-done", label: "Get coins · usd-done" },
+  { route: "/audit/console/queue", label: "Console · queue", viewports: CONSOLE },
+  { route: "/audit/console/queue-decided", label: "Console · queue-decided", viewports: CONSOLE },
+  { route: "/audit/console/case-pricing", label: "Console · case-pricing", viewports: CONSOLE },
+  { route: "/audit/console/case-blind", label: "Console · case-blind", viewports: CONSOLE },
+  { route: "/audit/console/case-attendance", label: "Console · case-attendance", viewports: CONSOLE },
+  { route: "/audit/console/case-decided", label: "Console · case-decided", viewports: CONSOLE },
+  { route: "/audit/console/history", label: "Console · history", viewports: CONSOLE },
   { route: "/audit/notices/restricted", label: "Notice · restricted" },
   { route: "/audit/notices/reverify", label: "Notice · reverify" },
   { route: "/audit/notices/switch-plan", label: "Notice · switch-plan" },
@@ -153,6 +175,7 @@ const VIEWPORTS = [
   { width: 320, height: 568 },
   { width: 360, height: 640 },
 ];
+
 
 const MIN_TARGET = 44;
 const MIN_FONT = 12;
@@ -267,12 +290,12 @@ async function main() {
   const browser = await chromium.launch();
   const results = [];
 
-  for (const { route, label } of ROUTES) {
-    for (const vp of VIEWPORTS) {
+  for (const { route, label, viewports } of ROUTES) {
+    for (const vp of viewports ?? VIEWPORTS) {
       const context = await browser.newContext({
         viewport: vp,
         deviceScaleFactor: 2,
-        isMobile: true,
+        isMobile: vp.width < 700,
         hasTouch: true,
         reducedMotion: "reduce",
       });
@@ -330,7 +353,7 @@ function render(results) {
   const lines = [];
   lines.push("# Mobile audit");
   lines.push("");
-  lines.push(`Run ${when} UTC against \`${BASE}\`. Viewports 320×568 and 360×640, device scale 2, touch.`);
+  lines.push(`Run ${when} UTC against \`${BASE}\`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.`);
   lines.push("");
   lines.push(`Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least ${MIN_TARGET}×${MIN_TARGET}px), **text** (no visible text under ${MIN_FONT}px).`);
   lines.push("");

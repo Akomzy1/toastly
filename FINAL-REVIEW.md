@@ -824,6 +824,42 @@ Decided 4 October 2026 (the staff screen is a launch blocker).
   signal (deferred); staff can't approve a borderline Smile ID check (Smile
   ID's own review decides it; staff can ask for a retake).
 
+## Diaspora rules, USD coins, review console (0026)
+
+PRD §5.6 and CLAUDE.md pulled from the 4 October 2026 drops (both clean
+supersets); nine diaspora-review prototypes slimmed into design/prototype/.
+
+- **One Nigeria pool (§5.6).** Members abroad who choose "back home" or
+  "Both" now appear in Nigeria-based members' sixes, both ways, on any plan.
+  Until 0026 the feed only ever showed members in Nigeria to members in
+  Nigeria. Diaspora-to-diaspora needs both members on a Diaspora plan and
+  both having chosen it (set_match_pool refuses the diaspora options
+  without the plan). "Open to people living abroad" (default on) filters only
+  the Nigeria-based member's own six; diaspora status is never a score input.
+- **Where you live.** Nothing in the app let a member set a country, so no
+  real member could be "abroad". Edit profile now asks "Where do you live?"
+  (decided; invented UI, flagged). A country given at signup sets the
+  women's offer directly; otherwise 0025's trigger switches it.
+- **USD coins.** Four dollar packs (5/$1, 10/$2, 25/$5, 50/$10, decided) on
+  the Get coins screen; the 30-for-$6 pack is retired. Members abroad never
+  see naira prices — the "pay for a plan with coins" card is hidden for
+  them. A naira pack bought from a profile abroad raises a review (signal).
+- **Console.** Cases have numbers (TC-…) and members appear by number
+  (M-…), never by name. Stages New / In review / Waiting on member /
+  Decided, assignment, and an append-only case timeline (case_events) with
+  system entries: raised; member responded (a passing selfie, a move to a
+  Diaspora plan, or a country change to Nigeria); closed. Every action needs
+  a written reason (12+ characters, enforced in the database). A removed
+  member's cases and history survive (subject set to null, number kept).
+  The case view shows "Not shown in review, by design"; a constraint check
+  fails the build if staff_item or the console queries message bodies,
+  genotype or biometric images (counts of messages are allowed).
+- **Marketing.** Home's diaspora line and women's offer, Pricing's women's
+  band, and the Diaspora page's pools copy with the "Diaspora plans" tag.
+- **Tests.** 11 PGlite tests for 0026; the 0024 and 0025 suites updated
+  for the new rules; a rebuilt evidence check catching four planted
+  violations. Mobile audit 252/252, with the console at 768 and 1280 wide.
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

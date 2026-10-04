@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { requireAuditHarness } from "@/lib/audit-harness";
 import { CoinBalance, type LedgerRow } from "@/components/coins/coin-balance";
-import { COIN_PACKS } from "@/lib/entitlements";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Audit · coins", robots: { index: false, follow: false } };
@@ -26,10 +25,9 @@ export default function AuditCoins() {
       stakeable={38}
       promo={20}
       tierLabel="Premium"
-      diaspora={false}
+      abroad={false}
       premiumCoins={35}
       premiumPlusCoins={70}
-      packs={COIN_PACKS.map((p) => ({ id: p.id, coins: p.coins, price: p.price, note: p.note, currency: p.currency }))}
       history={HISTORY}
     />
   );

@@ -19,7 +19,10 @@ export type CheckoutResult = { url: string } | { error: string };
 
 type Opened = { payment_id: string; amount_minor: number; currency: "NGN" | "USD"; hold_coins: number; label: string; provider: "paystack" | "stripe" };
 
-export async function startCheckout(sku: string, mode: Mode): Promise<CheckoutResult> {
+/** How a member chose to pay a coin pack. Stripe shows card and Apple Pay together. */
+export type Method = "card" | "bank" | "apple" | null;
+
+export async function startCheckout(sku: string, mode: Mode, method: Method = null): Promise<CheckoutResult> {
   const supabase = createClient();
   const {
     data: { user },
@@ -43,7 +46,7 @@ export async function startCheckout(sku: string, mode: Mode): Promise<CheckoutRe
   // two letters, never the IP address itself.
   const ipCountry = headers().get("x-vercel-ip-country");
   const ref = newReference();
-  const back = price.kind === "coin_pack" ? "/coins" : "/profile/plan";
+  const back = price.kind === "coin_pack" ? "/coins/get" : "/profile/plan";
 
   let customer: string | null = null;
   try {
@@ -83,6 +86,7 @@ export async function startCheckout(sku: string, mode: Mode): Promise<CheckoutRe
         reference: ref,
         callbackUrl: `${siteUrl()}/api/payments/paystack/return?next=${encodeURIComponent(back)}`,
         mode,
+        method: mode === "pack" && (method === "card" || method === "bank") ? method : null,
         planCode:
           mode === "recurring" ? await paystackPlanCode(price.tier as "premium" | "premium_plus", opened.amount_minor) : undefined,
         metadata: { profile_id: user.id, payment_id: opened.payment_id },
@@ -111,5 +115,5 @@ export async function startCheckout(sku: string, mode: Mode): Promise<CheckoutRe
 
 /** Where a return page may send the member: our own pages only. */
 export function safeNext(next: string | null): string {
-  return next === "/coins" || next === "/profile/plan" ? next : "/profile/plan";
+  return next === "/coins" || next === "/coins/get" || next === "/profile/plan" ? next : "/profile/plan";
 }

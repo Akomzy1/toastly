@@ -133,8 +133,8 @@ test("evidence carries the allowed facts and never a message body", async () => 
   const json = JSON.stringify(item.rows[0].i);
   assert.ok(!json.includes("SECRET-CHAT-WORDS"), "no chat content");
   const ev = item.rows[0].i.evidence;
-  assert.equal(ev.reason, "harassment");
-  assert.equal(ev.had_thread_together, true);
+  assert.equal(ev.reason, "Harassment");
+  assert.equal(ev.messages_from_member_to_reporter, 1, "a count only — never the text");
   assert.equal(ev.reporter_note, "note to Toastly");
   assert.deepEqual(item.rows[0].i.actions, ["clear", "request_reverification", "restrict", "remove"]);
 });
@@ -174,7 +174,7 @@ test("restrict hides the member and stops new contact; safety tools still work; 
   const item2 = await itemFor(b, "report");
   const offered = (await asStaff("select staff_item($1) as i", [item2])).rows[0].i.actions;
   assert.ok(offered.includes("lift_restriction") && !offered.includes("restrict"));
-  await asStaff("select staff_decide($1, 'lift_restriction', null)", [item2]);
+  await asStaff("select staff_decide($1, 'lift_restriction', 'second look found nothing more')", [item2]);
   await db.query("insert into messages (thread_id, sender_id, body) values ($1, $2, 'hi again')", [t, b]);
 
   const log = await svc("select action from staff_audit_log where subject_id = $1 order by created_at", [b]);
@@ -188,7 +188,7 @@ test("re-verification hides the member from new feeds until a fresh selfie passe
   const b = await member("Asked To Re-verify");
   const c = await member("RV Bystander");
   await report(a, b, "fake_profile");
-  await asStaff("select staff_decide($1, 'request_reverification', null)", [await itemFor(b, "report")]);
+  await asStaff("select staff_decide($1, 'request_reverification', 'confirm the account holder first')", [await itemFor(b, "report")]);
   assert.equal((await as(db, b, (tx) => tx.query("select reason_category from reverification_requests"))).rows[0].reason_category, "report");
   const feed = await as(db, c, (tx) => tx.query("select candidate_id from build_daily_feed($1)", [c]));
   assert.ok(!feed.rows.some((r) => r.candidate_id === b));
@@ -213,7 +213,7 @@ test("ask to switch plan leaves a notice the member can read and dismiss; clear 
   await as(db, abroad, (tx) => tx.query("select dismiss_notice($1)", [n.rows[0].id]));
   assert.equal((await as(db, abroad, (tx) => tx.query("select count(*)::int as n from member_notices where dismissed_at is null"))).rows[0].n, 0);
   assert.equal((await svc("select status from integrity_reviews where profile_id = $1", [abroad])).rows[0].status, "actioned");
-  await assert.rejects(asStaff("select staff_decide($1, 'clear')", [id]), /isn't available/, "a closed item takes no second decision");
+  assert.equal((await asStaff("select staff_item($1) as i", [id])).rows[0].i.stage, "waiting_member", "the case waits on the member, still open to a later decision");
 });
 
 test("remove keeps retention records, blocks the phone and ID from verifying again, deletes the profile, and the audit survives", async () => {
@@ -254,7 +254,7 @@ test("an attendance dispute is decided by a person: attended returns both stakes
   await db.query("insert into attendance_reviews (commitment_id, contested_by) values ($1, $2)", [d.id, b]);
   const id = await itemFor(b, "attendance");
   const item = (await asStaff("select staff_item($1) as i", [id])).rows[0].i;
-  assert.deepEqual(item.actions, ["attended", "no_show"]);
+  assert.deepEqual(item.actions, ["attended", "no_show", "restrict", "remove"]);
   assert.equal(item.evidence.venue, "Café Test");
   await asStaff("select staff_decide($1, 'attended', 'receipt shown')", [id]);
   assert.equal((await db.query("select status from date_commitments where id = $1", [d.id])).rows[0].status, "completed");

@@ -81,9 +81,14 @@ export default function DiasporaPage() {
                     />
                   </PhotoFrame>
                   <div className="grid gap-3.5 px-[26px] pb-[26px]">
-                    <Badge variant="optional" className="justify-self-start">
-                      {p.tag}
-                    </Badge>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-caption font-semibold uppercase text-green-500">{p.tag}</p>
+                      {p.planTag ? (
+                        <span className="rounded-pill border border-gold-600/35 bg-gold-50 px-[11px] py-[5px] text-caption font-semibold text-gold-800">
+                          Diaspora plans
+                        </span>
+                      ) : null}
+                    </div>
                     <h3 className="text-h4 text-ink-900">{p.title}</h3>
                     <p className="text-ui text-grey-600">{p.body}</p>
                     <ul className="grid list-none gap-2.5 p-0">
@@ -107,9 +112,9 @@ export default function DiasporaPage() {
               Choose your pool — or both.
             </h3>
             <p className="mt-2 text-ui text-grey-600">
-              Nobody is locked into one path. Run back-home and
-              diaspora-to-diaspora at the same time, and change it whenever you
-              like in settings.
+              Back home is open on every plan. With Diaspora or Diaspora Plus,
+              run back-home and diaspora-to-diaspora at the same time, and
+              change it whenever you like in settings.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {["Back home", "My community", "Both"].map((c) => (

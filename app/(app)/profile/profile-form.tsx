@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { saveProfile } from "./actions";
 import { Badge } from "@/components/ui/badge";
@@ -9,10 +10,10 @@ import { Input, Label, Select, Textarea } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import { CityPicker, type PickerCity } from "@/components/app/city-picker";
 import { TimeZoneField } from "@/components/app/time-zone-field";
+import { LIVE_COUNTRIES } from "@/lib/countries";
 import {
   HISTORY_LABELS,
   INTENT_LABELS,
-  POOL_LABELS,
   VISIBILITY_LABELS,
   type Profile,
   type ProfileHistory,
@@ -68,15 +69,13 @@ export function ProfileForm({
   profile,
   history,
   cities,
-  diasporaPlan = false,
 }: {
   profile: Profile;
   history: ProfileHistory;
   cities: PickerCity[];
-  /** On Diaspora or Diaspora Plus: diaspora-to-diaspora matching is included. */
-  diasporaPlan?: boolean;
 }) {
   const [state, action] = useFormState(saveProfile, null);
+  const [country, setCountry] = React.useState(profile.country_code || "NG");
 
   return (
     <form action={action} className="grid gap-6">
@@ -117,35 +116,28 @@ export function ProfileForm({
           />
         </Label>
 
-        <Label htmlFor="pool">
-          Match me with
-          <Select id="pool" name="pool" defaultValue={profile.pool}>
-            {(["back_home", "diaspora", "both"] as const).map((p) => (
-              <option key={p} value={p}>
-                {POOL_LABELS[p]}
+        {/* NOT IN A PROTOTYPE — flagged (decided 4 October 2026). Nothing
+            else let a member say they live abroad, so every diaspora rule
+            (PRD §5.6) was out of reach. Self-declared; the pricing signals
+            watch for mismatches. Who you match with now lives on its own
+            screens (pool-choice / open-to-abroad prototypes). */}
+        <Label htmlFor="country_code">
+          Where do you live?
+          <Select id="country_code" name="country_code" value={country} onChange={(e) => setCountry(e.target.value)}>
+            {LIVE_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
               </option>
             ))}
           </Select>
         </Label>
-        {/* NOT IN A PROTOTYPE — flagged. Diaspora-to-diaspora matching is a
-            Diaspora-plan feature (0012); say so here rather than let the
-            choice silently do nothing. */}
-        {profile.country_code !== "NG" && !diasporaPlan ? (
-          <span className="-mt-2 text-caption text-grey-600">
-            Matching with members in your diaspora community is part of the Diaspora plan. On your current plan
-            you&rsquo;re matched back home.{" "}
-            <a href="/profile/plan" className="font-semibold text-green-500 underline">
-              See the Diaspora plan
-            </a>
-          </span>
-        ) : null}
 
         {/* Only members abroad choose a diaspora city; it is what the
             per-city opening keys off. Nigeria-based members never see it,
             and the database refuses to store one for them. */}
         {/* Both built against their own prototypes — city-picker.slim.html
             and time-zone.slim.html. */}
-        {profile.country_code !== "NG" ? (
+        {country !== "NG" ? (
           <div className="grid gap-2">
             <CityPicker cities={cities} defaultValue={profile.diaspora_city} />
             <span className="text-caption text-grey-600">

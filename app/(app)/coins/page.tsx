@@ -4,9 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ScreenBand } from "@/components/app/screen-band";
 import { HelpButton } from "@/components/help/help-button";
 import { CoinBalance, type LedgerRow } from "@/components/coins/coin-balance";
-import { COIN_PACKS, TIER_LABELS } from "@/lib/entitlements";
+import { TIER_LABELS } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
-import { paymentsConfigured } from "@/lib/payments/config";
 
 export const metadata: Metadata = { title: "Coins", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -19,7 +18,8 @@ export default async function CoinsPage({ searchParams }: { searchParams: { paid
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: tierRow }, { data: total }, { data: stakeable }, { data: promo }, { data: cfg }, { data: rows }] = await Promise.all([
+  const [{ data: profile }, { data: tierRow }, { data: total }, { data: stakeable }, { data: promo }, { data: cfg }, { data: rows }] = await Promise.all([
+    supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
     supabase.rpc("current_tier", { p_profile_id: user.id }),
     supabase.rpc("coin_balance", { p_profile_id: user.id }),
     supabase.rpc("purchased_balance", { p_profile_id: user.id }),
@@ -37,12 +37,10 @@ export default async function CoinsPage({ searchParams }: { searchParams: { paid
         stakeable={Math.max(0, (stakeable as number | null) ?? 0)}
         promo={Math.max(0, (promo as number | null) ?? 0)}
         tierLabel={TIER_LABELS[tier]}
-        diaspora={tier === "diaspora" || tier === "diaspora_plus"}
+        abroad={(profile?.country_code ?? "NG") !== "NG"}
         premiumCoins={cfg?.premium_coins ?? 35}
         premiumPlusCoins={cfg?.premium_plus_coins ?? 70}
-        packs={COIN_PACKS.map((p) => ({ id: p.id, coins: p.coins, price: p.price, note: p.note, currency: p.currency }))}
         history={(rows ?? []) as LedgerRow[]}
-        buy={{ NGN: paymentsConfigured("paystack"), USD: paymentsConfigured("stripe") }}
         paid={searchParams.paid ?? null}
       />
       <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">

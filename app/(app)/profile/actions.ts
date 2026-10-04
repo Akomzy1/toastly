@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isLiveCountry } from "@/lib/countries";
 import type { FieldVisibility } from "@/lib/types/profile";
 
 export type ProfileState = { error?: string; ok?: string } | null;
@@ -54,18 +55,13 @@ export async function saveProfile(
     .map((s) => s.trim())
     .filter(Boolean);
 
-  // A Nigeria-based member has no diaspora city — the column is for choosing
-  // a diaspora-to-diaspora pool, and 0010 enforces the same rule as a CHECK.
-  // Read rather than trusted from the form: country lives on the profile.
-  const { data: me } = await supabase
-    .from("profiles")
-    .select("country_code")
-    .eq("id", user.id)
-    .single();
-  const diasporaCity =
-    me?.country_code && me.country_code !== "NG"
-      ? optional(formData, "diaspora_city")
-      : null;
+  // Where the member lives (self-declared, from a fixed list). A
+  // Nigeria-based member has no diaspora city — the column is for the
+  // diaspora-to-diaspora pool, and 0010 enforces the same rule as a CHECK.
+  const countryRaw = String(formData.get("country_code") ?? "").toUpperCase();
+  const { data: me } = await supabase.from("profiles").select("country_code").eq("id", user.id).single();
+  const country = isLiveCountry(countryRaw) ? countryRaw : me?.country_code ?? "NG";
+  const diasporaCity = country !== "NG" ? optional(formData, "diaspora_city") : null;
 
   const { error } = await supabase
     .from("profiles")
@@ -73,8 +69,11 @@ export async function saveProfile(
       display_name: displayName,
       city: optional(formData, "city"),
       bio: optional(formData, "bio"),
-      pool: String(formData.get("pool") ?? "back_home"),
+      country_code: country,
       diaspora_city: diasporaCity,
+      // Moving to Nigeria returns the member to the Nigeria pool; the pool
+      // itself is chosen on /profile/pool (set_match_pool).
+      ...(country === "NG" ? { pool: "back_home" } : {}),
       time_zone: optional(formData, "time_zone"),
 
       // Never a gate: stored when offered, null when not.

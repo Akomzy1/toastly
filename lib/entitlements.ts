@@ -138,18 +138,6 @@ export const TIER_LABELS: Record<Tier, string> = {
   diaspora_plus: "Diaspora Plus",
 };
 
-/**
- * Coin packs. Prices are the shipped Pricing page's.
- *
- * Coins buy exactly four things (PRD §7.2): date stakes, inbox unlocks,
- * additional Gist sessions, and see-who-liked-you. Nothing here raises a
- * member's visibility to anyone else — there is no Boost and no Super Like.
- */
-export const COIN_PACKS = [
-  { id: "ng-10", coins: 10, price: "₦1,000", currency: "NGN" as const, note: "Two date commitments, roughly" },
-  { id: "ng-30", coins: 30, price: "₦2,700", currency: "NGN" as const, note: "Most-used pack" },
-  { id: "us-30", coins: 30, price: "$6", currency: "USD" as const, note: "Billed in USD" },
-];
 
 /** NGN goes to Paystack, USD to Stripe. Never converted, never crossed. */
 export function providerFor(currency: "NGN" | "USD"): "paystack" | "stripe" {

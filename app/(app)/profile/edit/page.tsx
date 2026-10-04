@@ -42,9 +42,6 @@ export default async function EditProfilePage() {
   // Closed cities are listed too. A member may pick a city that hasn't opened
   // yet — the option is honest about it, and the feed explains the fallback
   // rather than the choice quietly doing nothing.
-  const { data: tier } = await supabase.rpc("current_tier", { p_profile_id: user.id });
-  const diasporaPlan = tier === "diaspora" || tier === "diaspora_plus";
-
   const { data: cities } = await supabase
     .from("diaspora_cities")
     .select("slug, label, country_code, active")
@@ -75,7 +72,7 @@ export default async function EditProfilePage() {
           Your prompt answers are what people read first. Everything below the
           basics is optional.
         </p>
-        <ProfileForm profile={profile} history={history} cities={cityOptions} diasporaPlan={diasporaPlan} />
+        <ProfileForm profile={profile} history={history} cities={cityOptions} />
         {/* Separate from the form on purpose: genotype has its own consent
             step and its own save, and never travels with other fields. */}
         <GenotypeSection />

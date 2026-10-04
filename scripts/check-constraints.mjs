@@ -1063,15 +1063,30 @@ check("staff functions check the caller is staff", (s, f) => {
   return open.length ? `no staff check in ${open.join(", ")}` : false;
 });
 
-// Evidence never includes chat or Gist content (CLAUDE.md: reviewers never
-// see message content).
-check("staff evidence never reads message or Gist content", (s, f) => {
-  if (!f.endsWith(".sql")) return false;
-  const body = fnBody(s, "staff_item");
-  if (!body) return false;
-  return /from\s+(messages|replies|gist_deck_steps|support_conversations)\b|\.body\b|transcript/i.test(body)
-    ? "staff_item reads content"
-    : false;
+// The case view never queries message bodies, Gist content, genotype or
+// biometric images (CLAUDE.md; PRD §9). Counting a member's messages is
+// allowed — reading what they say is not. Checked in the database function
+// that builds a case (staff_item, its latest definition) and in every file
+// of the console.
+const CASE_CONTENT = new RegExp(
+  [
+    "\\.body\\b", "\\bbody\\s*(,|from|\\))", "string_agg\\(", "\\btranscript", // message and Gist content
+    "\\bfrom\\s+(replies|gist_deck_steps|support_conversations)\\b",
+    "\\b(member_genotypes|genotype\\w*)\\b", // genotype
+    "\\b(image_links|selfie_image\\w*|id_image\\w*|photo_url\\w*|storage\\.objects)\\b", // biometric images
+  ].join("|"),
+  "i",
+);
+check("the case view never queries message bodies, genotype or biometric images", (s, f) => {
+  if (f.endsWith(".sql")) {
+    const defs = [...s.matchAll(/create or replace function public\.staff_item\([\s\S]*?\n\$\$;/g)].map((m) => m[0]);
+    const hit = defs.map((d) => CASE_CONTENT.exec(d)).find(Boolean);
+    return hit ? `staff_item touches "${hit[0]}"` : false;
+  }
+  if (!/(app\/\(staff\)\/|components\/staff\/)/.test(norm(f))) return false;
+  if (/\.from\(\s*"(messages|replies|member_genotypes|genotype\w*|profile_photos|verification_images)"/.test(s)) return "the console queries content tables directly";
+  const hit = /\b(member_genotypes|image_links|selfie_image\w*|storage\.from)\b/.exec(s);
+  return hit ? `the console touches "${hit[0]}"` : false;
 });
 
 // A person decides: only staff_decide restricts, asks for re-verification or

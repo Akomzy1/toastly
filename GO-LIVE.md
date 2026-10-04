@@ -117,6 +117,20 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
+## 0c. Diaspora rules, USD coins, console cases (migration 0026)
+
+1. ~~Run `supabase/migrations/0026_diaspora_rules_console.sql`.~~ **Applied
+   4 October 2026.** Checked from outside: four USD packs live, the $6 pack
+   retired, every member numbered, the open case numbered with its timeline,
+   and the console functions refuse anonymous callers.
+2. Optional: give a senior reviewer their role —
+   `update staff_members set role = 'Senior reviewer' where profile_id = …`.
+3. Existing members are all recorded as living in Nigeria (no screen set a
+   country until now). Members abroad should open Edit profile → "Where do
+   you live?" — worth a line in the next email to members.
+
+---
+
 ## 1. The database — connected
 
 | Integration | Variables | Notes |

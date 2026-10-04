@@ -198,22 +198,50 @@ it's paid, "Stop renewing" with a confirm step, and a card per plan on the
 member's track — Naira: "Pay by card · renews monthly", "Pay by bank or
 USSD · 30 days", and "Use N coins" or "Use your N coins + pay ₦X"; dollars:
 "Subscribe · card or Apple Pay". Tier names, prices and the one-line
-descriptions are the shipped Pricing copy. The coins page gained a "Buy"
-button per pack and payment notices. Checkout itself is Paystack's and
-Stripe's hosted page, so no card form was designed or built. The hub gained
-a "Your plan" row and the locked inbox's upgrade link points here instead of
-the marketing Pricing page. Send the plan page through the design pipeline.
+descriptions are the shipped Pricing copy. Checkout itself is Paystack's
+and Stripe's hosted page, so no card form was designed or built. The hub
+gained a "Your plan" row and the locked inbox's upgrade link points here
+instead of the marketing Pricing page. Send the plan page through the design
+pipeline.
 
-**Review queue and member notices — NOT IN A PROTOTYPE (0025, 4 October
-2026).** `/staff` (internal tool: the queue, an item with its evidence, the
-decision form with a confirm tick for restrict and remove) is built from the
-in-app cards and buttons. Member-facing and invented, all built from the
-in-app Notice: the restricted, re-verify and switch-plan notices under the
-app header (components/app/member-notices.tsx); the feed's "Today's six are
-from back home" Diaspora-plan notice (components/app/pool-plan-notice.tsx),
-separate from the approved feed-fallback notice; and a caption under the
-profile form's "Match me with" choice for members abroad without a Diaspora
-plan. Send the member-facing three through the design pipeline.
+**Member notices — NOT IN A PROTOTYPE (0025).** All built from the in-app
+Notice: the restricted, re-verify and switch-plan notices under the app
+header (components/app/member-notices.tsx), and the feed's "Today's six are
+from back home" notice (components/app/pool-plan-notice.tsx) for a member
+whose stored pool needs a Diaspora plan they no longer have — separate from
+the approved feed-fallback notice. Send them through the design pipeline.
+
+**"Where do you live?" — NOT IN A PROTOTYPE (decided 4 October 2026).** A
+country select in Edit profile (lib/countries.ts). Nothing else let a member
+say they live abroad, so every diaspora rule was out of reach. Choosing a
+country outside Nigeria shows the approved city picker. It replaces the old
+"Match me with" dropdown, which moved to its own screens (below).
+
+**Built against the diaspora-review prototypes (4 October 2026)** — no
+longer invented UI:
+- **Review console** — `review-queue`, `review-case`, `review-history`
+  (`/staff`, `/staff/[id]`, `/staff/history`; components/staff/). Deviations,
+  flagged: filter buttons are 44px tall (the prototype draws 36px; the
+  console is used on tablets, and the site's touch-target rule is 44); an
+  "Assign to me" button on a new case (the queue's "In review · name" needs a
+  way to happen); an extra "Report" type for ordinary reports and an "ID
+  check" type; attendance disputes are decided "They attended" / "They didn't
+  attend" (decided); the sample evidence Toastly doesn't record — sign-in
+  locations, device time-zone history, check-in distance, dispute statements
+  — isn't shown.
+- **Your match pool** — `pool-choice` (`/profile/pool`). Addition: a member
+  abroad with no city chosen is told where to choose it.
+- **Match preferences** — `open-to-abroad` (`/profile/preferences`).
+  Deviation: the prototype's "Age range" row is omitted — Toastly has no
+  age-range setting.
+- **Get coins** — `coins-get-usd` (`/coins/get`). Adapted: members in Nigeria
+  get the same screen with the naira packs and "Card" / "Bank or USSD". The
+  coins page's in-page pack grid became a "Get coins" link.
+- **Marketing** — Home's diaspora line and women's offer
+  (`home-diaspora-offer`), Pricing's women's offer band (`pricing-offer`),
+  and the Diaspora page's pools copy and "Diaspora plans" tag
+  (`diaspora-pools`). Pricing's coin pack list shows the new dollar range
+  ("from $1"); the prototype still lists the retired 30-coin $6 pack.
 
 **Toastly Help and Answer Mirror — built against their prototypes**
 (`toastly-help`, `toastly-help-handoff`, `answer-mirror`). Not in them, and

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { startCheckout, type Mode } from "@/lib/payments/checkout";
+import { startCheckout, type Method, type Mode } from "@/lib/payments/checkout";
 import { paystackDisable } from "@/lib/payments/paystack";
 import { stripeCancelAtPeriodEnd } from "@/lib/payments/stripe";
 
@@ -17,7 +17,9 @@ export async function checkout(_prev: PlanState, formData: FormData): Promise<Pl
   const sku = String(formData.get("sku") ?? "");
   const mode = String(formData.get("mode") ?? "") as Mode;
   if (!MODES.includes(mode)) return { error: "Choose how to pay." };
-  const result = await startCheckout(sku, mode);
+  const m = String(formData.get("method") ?? "");
+  const method: Method = m === "card" || m === "bank" || m === "apple" ? m : null;
+  const result = await startCheckout(sku, mode, method);
   if ("error" in result) return { error: result.error };
   redirect(result.url);
 }

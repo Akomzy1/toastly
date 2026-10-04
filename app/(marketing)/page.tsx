@@ -455,10 +455,10 @@ export default function HomePage() {
             </Button>
           </div>
           <p className="text-nav text-champagne">
-            Women get 30 days of Premium Plus free at signup — full Gist video
-            and incognito mode, no card needed.{" "}
+            Women get 30 days of Premium Plus free — or Diaspora Plus if you
+            live abroad. No card needed.{" "}
             {/* py-[13.5px]: 44px hit area on an inline link, no visual change. */}
-            <Link href="/how-it-works" className="py-[13.5px] underline underline-offset-4">
+            <Link href="/pricing#women" className="py-[13.5px] underline underline-offset-4">
               See how it works
             </Link>
           </p>
@@ -473,10 +473,12 @@ export default function HomePage() {
             <h2 className="text-h2 text-ink-900">
               In London, matching in Lagos.
             </h2>
+            {/* PRD §5.6: back home on any plan; the diaspora community on a
+                Diaspora plan (home-diaspora-offer.slim.html). */}
             <p className="text-body-lg text-grey-600">
-              Pick your pool: back home, your diaspora community, or both at
-              once. Gist scheduling does the time-zone maths for you, and the
-              diaspora track is priced in USD.
+              Abroad? Match back home on any plan — and with Nigerians in your
+              own city on a Diaspora plan. Gist scheduling does the time-zone
+              maths for you, and the diaspora track is priced in USD.
             </p>
             <Button variant="outline" asChild className="justify-self-start">
               <Link href="/diaspora">Diaspora matching</Link>
@@ -485,8 +487,7 @@ export default function HomePage() {
           <PhotoFrame ratio="16/11" zoom>
             <Image
               src="/img/home/diaspora-call.webp"
-              // Prototype carried no alt for this image; written here.
-              alt="A woman on an evening video call at home, city lights behind her"
+              alt="A Nigerian woman in London laughing during an evening video call"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover opacity-90"

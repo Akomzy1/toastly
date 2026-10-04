@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/ef844a58-8519-43a9-bcda-976a0368e741.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/459a81a1-edb8-4940-847f-d8e6c080e33c.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/861cdc4e-a42d-498b-a884-c76df511d028.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/791141dd-1de7-4915-9c96-74926d4d8ddf.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/f0632fab-95e6-4731-af0d-fd5f97a2c439.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F2F2F2;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div data-screen-label="Review case" style="min-height:100vh;display:flex;flex-direction:column">
+
+  <div style="background:#FFFFFF;border-bottom:1px solid rgba(5,3,9,0.12);padding:6px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px">
+    <span style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#828184">Prototype · example case</span>
+    <sc-for list="{{ examples }}" as="x" hint-placeholder-count="3">
+      <button type="button" sc-camel-on-click="{{ x.pick }}" style="min-height:32px;padding:4px 10px;border-radius:999px;border:1px solid {{ x.border }};background:{{ x.bg }};color:{{ x.fg }};font-family:Inter,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer">{{ x.label }}</button>
+    </sc-for>
+  </div>
+
+  <header style="background:#001F1B;min-height:52px;padding:8px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px">
+    <span style="display:flex;align-items:center;gap:9px">
+      <svg width="26" height="26" sc-camel-view-box="0 0 48 48" fill="none" aria-hidden="true"><circle cx="19" cy="20" r="9.5" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="29" cy="20" r="9.5" stroke="#FFB300" stroke-width="3"></circle><rect x="8" y="34" width="32" height="2.4" rx="1.2" fill="#EBD9AE"></rect></svg>
+      <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:18px;color:#FFFFFF">Toastly</span>
+      <span style="padding:3px 8px;border:1px solid rgba(235,217,174,0.4);border-radius:6px;font-size:12px;font-weight:600;color:#EBD9AE">Review console</span>
+    </span>
+    <nav aria-label="Console" style="display:flex;gap:4px">
+      <a href="review-queue.html" style="min-height:44px;padding:0 12px;display:flex;align-items:center;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;box-shadow:inset 0 -2px 0 #FFB300">Queue</a>
+      <a href="review-history.html" style="min-height:44px;padding:0 12px;display:flex;align-items:center;font-size:14px;font-weight:500;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Decision history</a>
+    </nav>
+    <span style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.72)">Adaeze O. · Reviewer</span>
+  </header>
+
+  <main style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:20px 24px 40px;display:grid;gap:18px;align-content:start">
+
+    <div style="display:grid;gap:8px">
+      <nav aria-label="Breadcrumb" style="display:flex;gap:6px;font-size:13px;color:#504E52"><a href="review-queue.html" style="color:#00695C;text-decoration:none">Queue</a><span aria-hidden="true">›</span><span>{{ c.id }}</span></nav>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px">
+        <span style="padding:3px 9px;border-radius:6px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.18);font-size:12.5px;font-weight:600;color:#1E1C21">{{ c.type }}</span>
+        <span style="padding:3px 9px;border-radius:6px;background:{{ stBg }};border:1px solid {{ stBorder }};font-size:12.5px;font-weight:600;color:{{ stFg }}">{{ status }}</span>
+        <span style="font-size:13px;color:#504E52">Raised {{ c.raised }} · waited {{ c.waited }} · {{ c.source }}</span>
+      </div>
+      <h1 style="margin:0;max-width:62ch;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.3;text-wrap:pretty">{{ c.reason }}</h1>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+
+      <div style="flex:999 1 560px;min-width:0;display:grid;gap:14px">
+
+        <section aria-label="Members" style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))">
+          <sc-for list="{{ c.members }}" as="m" hint-placeholder-count="2">
+            <div style="padding:14px 16px;display:grid;gap:8px;border-right:1px solid rgba(5,3,9,0.08)">
+              <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#504E52">{{ m.role }}</p>
+              <p style="margin:0;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">{{ m.id }}</p>
+              <p style="margin:0;font-size:13px;line-height:1.5;color:#1E1C21">{{ m.meta }}</p>
+            </div>
+          </sc-for>
+        </section>
+
+        <sc-for list="{{ c.sections }}" as="s" hint-placeholder-count="3">
+          <section style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;overflow:hidden">
+            <h2 style="margin:0;padding:11px 16px;border-bottom:1px solid rgba(5,3,9,0.1);background:#F6F2EA;font-size:13px;font-weight:600;letter-spacing:0.04em;color:#1E1C21">{{ s.title }}</h2>
+            <dl style="margin:0;display:grid">
+              <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:minmax(140px,220px) minmax(0,1fr);gap:16px;padding:9px 16px;border-top:1px solid rgba(5,3,9,0.06)">
+                  <dt style="font-size:13px;color:#504E52">{{ r.k }}</dt>
+                  <dd style="margin:0;font-size:13.5px;line-height:1.5;color:#050309;font-variant-numeric:tabular-nums;text-wrap:pretty">{{ r.v }}</dd>
+                </div>
+              </sc-for>
+            </dl>
+          </section>
+        </sc-for>
+
+        <section aria-labelledby="not-shown" style="border:1px dashed rgba(5,3,9,0.28);border-radius:10px;padding:14px 16px;display:grid;gap:10px;background:#F6F2EA">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:1px"><rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="#504E52" stroke-width="1.6"></rect><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="#504E52" stroke-width="1.6"></path></svg>
+            <div style="display:grid;gap:3px">
+              <h2 id="not-shown" style="margin:0;font-size:14px;font-weight:600;color:#050309">Not shown in review, by design</h2>
+              <p style="margin:0;font-size:13px;line-height:1.55;color:#1E1C21;text-wrap:pretty">The rules keep these out of every case. Nothing has failed to load.</p>
+            </div>
+          </div>
+          <ul style="margin:0;padding:0 0 0 28px;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:6px 16px">
+            <li style="font-size:13px;line-height:1.5;color:#1E1C21">Private message text</li>
+            <li style="font-size:13px;line-height:1.5;color:#1E1C21">Gist audio and transcripts</li>
+            <li style="font-size:13px;line-height:1.5;color:#1E1C21">Genotype</li>
+            <li style="font-size:13px;line-height:1.5;color:#1E1C21">Raw selfie and ID images (outcomes only)</li>
+          </ul>
+        </section>
+      </div>
+
+      <aside style="flex:1 1 320px;min-width:0;display:grid;gap:14px">
+
+        <section aria-labelledby="decide" style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;padding:14px;display:grid;gap:10px">
+          <h2 id="decide" style="margin:0 2px;font-size:14px;font-weight:600">Decision</h2>
+
+          <sc-if value="{{ deciding }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:8px">
+              <sc-for list="{{ actions }}" as="a" hint-placeholder-count="5">
+                <button type="button" aria-pressed="{{ a.on }}" sc-camel-on-click="{{ a.pick }}" style="width:100%;min-height:52px;padding:9px 12px;display:grid;gap:2px;text-align:left;border:1px solid {{ a.border }};border-radius:8px;background:{{ a.bg }};font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#00695C">
+                  <span style="font-size:14px;font-weight:600;color:#050309">{{ a.label }}</span>
+                  <span style="font-size:12.5px;line-height:1.45;color:#504E52">{{ a.sub }}</span>
+                </button>
+              </sc-for>
+
+              <sc-if value="{{ hasChoice }}">
+                <div style="display:grid;gap:8px;margin-top:4px;padding-top:12px;border-top:1px solid rgba(5,3,9,0.1)">
+                  <label for="reason" style="font-size:13px;font-weight:600;color:#050309">Reason for “{{ choiceLabel }}” <span style="font-weight:400;color:#504E52">(required)</span></label>
+                  <textarea id="reason" rows="3" value="{{ reason }}" sc-camel-on-change="{{ setReason }}" placeholder="What you saw and why this is the right call" style="width:100%;min-height:84px;padding:10px 11px;border:1px solid rgba(5,3,9,0.24);border-radius:8px;font-family:Inter,sans-serif;font-size:13.5px;line-height:1.5;color:#050309;resize:vertical"></textarea>
+                  <p style="margin:0;font-size:12px;line-height:1.5;color:#504E52">Saved to the decision history with your name and the time. {{ reasonHint }}</p>
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px">
+                    <button type="button" sc-camel-on-click="{{ confirm }}" disabled="{{ confirmDisabled }}" style="min-height:44px;padding:10px 14px;border:0;border-radius:8px;background:{{ confirmBg }};color:{{ confirmFg }};font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:{{ confirmCursor }}">Confirm: {{ choiceLabel }}</button>
+                    <button type="button" sc-camel-on-click="{{ cancel }}" style="min-height:44px;padding:10px 14px;border:1px solid rgba(5,3,9,0.2);border-radius:8px;background:transparent;font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#050309;cursor:pointer">Cancel</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ decided }}">
+            <div role="status" style="display:grid;gap:8px;padding:12px;border-radius:8px;background:#E5F0EE;border:1px solid rgba(0,105,92,0.3)">
+              <p style="margin:0;font-size:14px;font-weight:600;color:#00332C">Decision recorded: {{ choiceLabel }}</p>
+              <p style="margin:0;font-size:13px;line-height:1.5;color:#00332C">4 Oct 2026, 14:06 WAT · Adaeze O.</p>
+              <p style="margin:0;font-size:13px;line-height:1.5;color:#1E1C21;text-wrap:pretty">“{{ reason }}”</p>
+              <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:2px">
+                <a href="review-history.html" style="font-size:13px;font-weight:600">View decision history</a>
+                <a href="review-queue.html" style="font-size:13px;font-weight:600">Back to queue</a>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+
+        <section aria-labelledby="case-hist" style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;padding:14px;display:grid;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+            <h2 id="case-hist" style="margin:0 2px;font-size:14px;font-weight:600">On this case so far</h2>
+            <a href="review-history.html" style="font-size:13px;font-weight:600">Full history</a>
+          </div>
+          <ol style="margin:0;padding:0;list-style:none;display:grid;gap:10px">
+            <sc-for list="{{ c.history }}" as="h" hint-placeholder-count="2">
+              <li style="display:grid;gap:2px;padding-left:12px;border-left:2px solid #CCE1DE">
+                <span style="font-size:12px;color:#504E52;font-variant-numeric:tabular-nums">{{ h.when }} · {{ h.who }}</span>
+                <span style="font-size:13px;line-height:1.45;color:#050309">{{ h.what }}</span>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="">
+const R = (k, v) => ({ k, v });
+const CASES = [
+  {
+    id: "TC-20418", type: "Pricing signal", status: "New", raised: "2 Oct 2026, 18:02 WAT", waited: "1 d 20 h", source: "automatic signal",
+    reason: "On a naira plan, with a US card on file and a New York time zone for 31 days.",
+    members: [{ role: "Member", id: "M-48213", meta: "Premium (naira plan) · member since March 2026 · lists Lekki, Lagos" }],
+    sections: [
+      { title: "Signal details", rows: [R("Plan region", "Nigeria (₦), Premium"), R("Card on file", "Issued in the United States, added 15 Sep 2026"), R("Sign-in locations", "New York, US on 29 of the last 31 days; Lagos on 2"), R("Device time zone", "America/New_York (UTC−4) since 2 Sep 2026"), R("Threshold", "Raised after 21+ days of signals pointing abroad")] },
+      { title: "Verification outcomes", rows: [R("Phone", "+234 number verified, 12 Mar 2026"), R("Selfie liveness", "Passed, 12 Mar 2026"), R("ID (optional second ring)", "Passport, passed, 14 Mar 2026")] },
+      { title: "Report history", rows: [R("Reports about this member", "None"), R("Earlier cases", "None")] }
+    ],
+    history: [{ when: "2 Oct, 18:02", who: "System", what: "Case raised from pricing signal" }]
+  },
+  {
+    id: "TC-20407", type: "Locked-inbox report", status: "New", raised: "1 Oct 2026, 16:10 WAT", waited: "2 d 22 h", source: "member report",
+    reason: "Reported from a locked inbox as \u201cAsking for money\u201d. The reporter hasn't read the messages.",
+    members: [{ role: "Reported member", id: "M-55930", meta: "Starter · account opened 22 Sep 2026 · lists Abuja" }, { role: "Reporter", id: "M-51007", meta: "Starter, inbox locked · member since July 2026" }],
+    sections: [
+      { title: "Report", rows: [R("Category", "Asking for money"), R("Reporter could read messages", "No. Inbox locked on Starter; report made from the sender preview list"), R("Messages received from reported member", "6, over 2 days (count only)"), R("Reported at", "1 Oct 2026, 16:10 WAT")] },
+      { title: "Report history — reported member", rows: [R("Earlier reports", "1 · \u201cFeels like a scam\u201d, 27 Sep 2026, cleared (not enough to act on)"), R("New conversations opened", "41 in 9 days")] },
+      { title: "Verification outcomes — reported member", rows: [R("Phone", "+234 number verified, 22 Sep 2026"), R("Selfie liveness", "Passed on second attempt, 22 Sep 2026"), R("ID (optional second ring)", "Not added")] }
+    ],
+    history: [{ when: "27 Sep, 11:40", who: "Kemi A.", what: "Cleared earlier report TC-20311" }, { when: "1 Oct, 16:10", who: "System", what: "Case raised from locked-inbox report" }]
+  },
+  {
+    id: "TC-20391", type: "Date-attendance dispute", status: "In review", raised: "30 Sep 2026, 08:00 WAT", waited: "4 d 2 h", source: "dispute filed",
+    reason: "Both say they showed up at Café Neo, Ikeja. Only one check-in was recorded.",
+    members: [{ role: "Member A", id: "M-39920", meta: "Premium · 4 coin-deposit dates, 4 attended" }, { role: "Member B", id: "M-44105", meta: "Starter · 3 coin-deposit dates, 2 attended, 1 cancelled with notice" }],
+    sections: [
+      { title: "Date", rows: [R("Booked", "Sat 27 Sep 2026, 14:00 WAT · Café Neo, Ikeja"), R("Coins", "10 each, 20 held until a decision")] },
+      { title: "Check-in results", rows: [R("Member A", "Checked in 13:52 WAT, within 40 m of the venue"), R("Member B", "No check-in. App opened 14:06 WAT; location sharing off"), R("Member A says", "Both attended (dispute form)"), R("Member B says", "Both attended; check-in didn't work (dispute form)")] },
+      { title: "Report history", rows: [R("Member A", "None"), R("Member B", "None")] }
+    ],
+    history: [{ when: "30 Sep, 08:00", who: "System", what: "Case raised from dispute" }, { when: "2 Oct, 10:15", who: "Adaeze O.", what: "Assigned to self" }]
+  }
+];
+const ACTIONS = [
+  ["clear", "Clear", "No action. The case closes."],
+  ["switch", "Ask to switch plan", "Member is asked to move to the plan for where they live."],
+  ["reverify", "Request re-verification", "Member redoes selfie liveness. Account stays open."],
+  ["restrict", "Restrict", "Limits matching and messages until reviewed again."],
+  ["remove", "Remove", "Closes the account. The member can appeal."]
+];
+const ST = { "New": ["#E5F0EE", "rgba(0,105,92,0.3)", "#00453C"], "In review": ["#FFF7E5", "rgba(204,143,0,0.35)", "#4C3500"], "Decided": ["#FFFFFF", "rgba(5,3,9,0.18)", "#504E52"] };
+const MIN = 12;
+class Component extends DCLogic {
+  state = { ex: 0, choice: null, reason: "", decided: false };
+  renderVals() {
+    const { ex, choice, reason, decided } = this.state;
+    const c = CASES[ex];
+    const status = decided ? "Decided" : c.status;
+    const ok = reason.trim().length >= MIN;
+    const choiceLabel = choice ? ACTIONS.find(a => a[0] === choice)[1] : "";
+    return {
+      c, status, stBg: ST[status][0], stBorder: ST[status][1], stFg: ST[status][2],
+      examples: CASES.map((x, i) => ({ label: x.type, pick: () => this.setState({ ex: i, choice: null, reason: "", decided: false }), bg: ex === i ? "#001F1B" : "#FFFFFF", fg: ex === i ? "#FFFFFF" : "#504E52", border: ex === i ? "#001F1B" : "rgba(5,3,9,0.18)" })),
+      deciding: !decided, decided,
+      actions: ACTIONS.map(([k, label, sub]) => ({ label, sub, on: choice === k, pick: () => this.setState({ choice: k }), bg: choice === k ? "#E5F0EE" : "#FFFFFF", border: choice === k ? "#00695C" : "rgba(5,3,9,0.18)" })),
+      hasChoice: !!choice, choiceLabel, reason,
+      setReason: e => this.setState({ reason: e.target.value }),
+      reasonHint: ok ? "" : "A short sentence is enough.",
+      confirmDisabled: !ok,
+      confirmBg: ok ? "#001F1B" : "#D9D9DA", confirmFg: ok ? "#FFFFFF" : "#504E52", confirmCursor: ok ? "pointer" : "not-allowed",
+      confirm: () => ok && this.setState({ decided: true }),
+      cancel: () => this.setState({ choice: null, reason: "" })
+    };
+  }
+}
+</script>
+
+
+</body></html>
