@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { StandingNotice } from "@/components/app/standing-notice";
 import { BrandLockup } from "@/components/brand-mark";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { Notice } from "@/components/ui/notice";
@@ -44,6 +47,12 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // A removed account is closed: every screen shows why and how to appeal,
+  // except Your data — the member can always take their data or delete it.
+  const path = headers().get("x-pathname") ?? "";
+  const live = await requireLiveProfile(supabase);
+  const closed = live.standing === "removed" && !path.startsWith("/account");
+
   return (
     <div className="min-h-screen bg-paper">
       <header className="sticky top-0 z-50 border-b border-champagne/[.16] bg-green-800 font-sans">
@@ -61,7 +70,7 @@ export default async function AppLayout({
           </form>
         </div>
       </header>
-      <main>{children}</main>
+      <main>{closed ? <StandingNotice status={live} /> : children}</main>
     </div>
   );
 }

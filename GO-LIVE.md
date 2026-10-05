@@ -20,9 +20,16 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 **Held migrations — do not apply on their own.** `0013_live_profile_guard`,
 `0014_phone_identity_and_mutual_continue` and `0015_profile_photos_face_match`
 are committed but deliberately NOT applied (decided 2026-10-05).
-`0016_data_export_and_deletion` reads 0013's photo columns, and
-`0017_consents_and_onboarding_selfie` the onboarding order, so both ship in
-the same release; apply 0013–0017 in order. 0013 means
+`0016_data_export_and_deletion` reads 0013's photo columns,
+`0017_consents_and_onboarding_selfie` the onboarding order, and
+`0018_review_queue_and_removal` redefines 0013's live rule, so all ship in
+the same release; apply 0013–0018 in order.
+
+**Staff access to the review console (`/review`).** There is deliberately
+no self-service path. A reviewer signs up like a member, then is added in
+the Supabase SQL editor:
+`insert into staff_members (user_id, display_name, role) values ('<auth user id>', 'Name I.', 'reviewer');`
+(`role` is `reviewer` or `senior`). Anyone else gets a 404 at `/review`. 0013 means
 nobody can see anyone until their profile is live, and a profile can only go
 live through Prompt 14's photo upload and face match. Apply all three in the
 **same release** as the photo screens **and a working Smile ID face match**
@@ -41,6 +48,7 @@ Redirect URLs), or email sign-in links will point at localhost.
 |---|---|---|
 | Canonical domain | `NEXT_PUBLIC_SITE_URL` | Defaults to `https://trytoastly.com`. If the real origin differs, every canonical URL, OG image and sitemap entry is wrong in search results. |
 | Phone hashing | `PHONE_HASH_PEPPER` | **Verification refuses to run in production.** Phone numbers are stored only as hashes, and the number space is small enough to brute-force, so an unpeppered hash is effectively reversible. Generate once: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Changing it later invalidates every existing phone identity. |
+| ID fingerprint | `ID_FINGERPRINT_KEY` | **The ID check refuses to run in production.** The keyed hash of the NIN/BVN that stops one ID verifying several accounts and keeps removed members out for two years. Generate once like the pepper; changing it orphans every stored fingerprint and blocklist entry. |
 | Staff tooling and phone binding | `SUPABASE_SERVICE_ROLE_KEY` | The integrity review queue and report triage can't read, and (from 0014) phone confirmation can't complete. **Server-side only — never `NEXT_PUBLIC_`.** |
 
 ---

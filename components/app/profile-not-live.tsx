@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { LiveStatus } from "@/lib/live-profile";
 import { AppBand, AppColumn, LinkList } from "@/components/app/app-band";
+import { StandingNotice } from "@/components/app/standing-notice";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,6 +20,8 @@ import { cn } from "@/lib/utils";
  * (Prompt 15), so the row is left out rather than linking nowhere.
  */
 export async function ProfileNotLive({ status }: { status: LiveStatus }) {
+  // A person's review decision comes first: it's the reason, not the photos.
+  if (status.standing !== "good") return <StandingNotice status={status} />;
   const paused = status.wasLive && status.phoneConfirmed && status.verifiedReal;
   return paused ? <AccessPaused status={status} /> : <NotLiveYet status={status} />;
 }

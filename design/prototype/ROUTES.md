@@ -36,6 +36,14 @@ exists but this newer export changes it. **Not built** — no route yet.
 | `your-data` | `/account` | **Built.** Genotype and "Open to people living abroad" rows wait for those settings. |
 | `account-delete` | `/account/delete`, `/goodbye` | **Built.** The "open review" line waits for the review state. |
 
+## Review console (staff)
+
+| Prototype | Route | Status |
+|---|---|---|
+| `review-queue` | `/review` | **Built** |
+| `review-case` | `/review/[id]` | **Built.** Photo and selfie checks get Confirm match / Not a match in place of the generic five actions (flagged). |
+| `review-history` | `/review/history` | **Built** |
+
 ## Not built yet
 
 | Prototype(s) | Where it goes | Scheduled |
@@ -44,7 +52,6 @@ exists but this newer export changes it. **Not built** — no route yet.
 | `gist-invite-starter`, `-paid`, `-limit`, `-sent`, `-received`, `gist-accepted`, `gist-invite-outcomes`, `gists-list` | `/feed` reply flow, `/gist`, `/gist/[id]` — replace the invented UI there | Not in the current build order — **gap** |
 | `coins-balance`, `coins-get`, `coins-get-usd`, `coins-checkout` | `/coins` and checkout | Prompt 17 |
 | `date-stake-confirm`, `date-checkin`, `date-cancel`, `date-outcomes` | Dates (new routes) | Prompt 17 |
-| `review-queue`, `review-case`, `review-history` | Staff review screen (new, staff-only) | Next after Smile ID capture |
 | `open-to-abroad` | Match preferences, members in Nigeria | "Open to people living abroad" |
 | `pool-choice` | Match preferences, members abroad (today a select in `/profile`) | With the diaspora items |
 | `genotype-consent`, `-entry`, `-visibility`, `-display`, `-settings` | Profile and settings | Not scheduled — **gap** |
@@ -55,7 +62,7 @@ exists but this newer export changes it. **Not built** — no route yet.
 
 - **The selfie capture itself** — Smile ID's in-browser camera, onboarding and replacement. Its UI comes from the vendor SDK; how Toastly frames it isn't designed.
 - **"Before your selfie" and "Check your ID" consents.** The wording is final; the layout borrows `photo-replace-main`'s consent block.
-- **Telling a member their account is restricted or removed**, with a reason category (CLAUDE.md). Needed with the removal state.
+- **Telling a member their account is restricted or removed**, with a reason category (CLAUDE.md). Built as invented UI (`components/app/standing-notice.tsx`) — needs a design.
 - **Staff sign-in and access** for the review screen.
 - Long-standing, from earlier prompts: sign-up / sign-in, the profile editor, the feed match card, the Couple Mode screen and the in-app safety kit.
 

@@ -10,6 +10,9 @@ import { NextResponse, type NextRequest } from "next/server";
  * var takes down pages that never needed auth in the first place.
  */
 export async function updateSession(request: NextRequest) {
+  // The path, for the in-app layout: a closed account still reaches Your
+  // data (download, delete), and nothing else (0018).
+  request.headers.set("x-pathname", request.nextUrl.pathname);
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -544,6 +544,46 @@ in the build order); the "open review" line on deletion (needs the review
 state); Toastly Help rows the prototypes list. The app shell still has its
 own header above the new dark bands until the nav prototypes are built.
 
+## Review console, account standing and the blocklist (0018)
+
+The launch-blocking human review queue, against `review-queue`,
+`review-case` and `review-history`: `/review` (filters by status and type,
+counts, waited), `/review/[id]` (members, allowed evidence, "Not shown in
+review, by design", the decision with a required reason, case history) and
+`/review/history` (read-only, find by case). Staff are sign-ins listed in
+`staff_members`, added only by SQL; anyone else gets a 404, and every review
+function refuses non-staff in the database.
+
+Cases are raised automatically from reports (married-user and locked-inbox
+reports as their own types; a second report joins the open case), pricing
+signals, and borderline or member-requested photo and selfie checks. Date
+disputes join with Prompt 17. Evidence is built field by field — counts,
+categories, outcomes and dates; never message text, Gist content,
+genotype, selfies, phone numbers or fingerprints (a constraint check reads
+the function). Every decision is written to an append-only log, with the
+reviewer's name and the time, **before** it acts.
+
+**Decisions:** Clear (lifts a restriction this review placed), Ask to
+switch plan (pricing only), Request re-verification, Restrict (not live,
+Couple Mode closes — decided), Remove (closed; phone and ID fingerprints
+blocklisted two years). Photo and selfie checks take Confirm match / Not a
+match instead — **a deviation**, as the prototype shows one set of five for
+every case. A restricted or removed member is told why as a category, with
+how to appeal (`standing-notice.tsx`, **invented UI**); a removed account
+reaches only Your data.
+
+**Blocklist (decided):** voluntary deletion in good standing frees the
+number; deletion while a review is open holds the phone and ID fingerprints
+until it's settled — released on Clear, kept two years on Remove. The ID
+fingerprint (HMAC with `ID_FINGERPRINT_KEY`) is now recorded at the ID check
+and refused if another account or the blocklist already has it.
+
+**Not built:** the re-verification flow a "Request re-verification" sends
+the member into (the flag is set; nothing yet prompts them); a second
+reviewer's sign-off (the history prototype shows one; not required by the
+rules); notifying members of "Ask to switch plan"; purging expired
+blocklist entries.
+
 ## Docs synced to the 2026-10-05 drops
 
 PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after

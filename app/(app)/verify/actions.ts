@@ -1,6 +1,6 @@
 "use server";
 
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -41,6 +41,23 @@ function hashPhone(e164: string) {
   }
 
   return createHash("sha256").update(`${e164}:${pepper ?? ""}`).digest("hex");
+}
+
+/**
+ * The ID-number fingerprint: HMAC-SHA256 with a server-only key, so the
+ * stored value can't be reversed — the NIN/BVN space is small enough that a
+ * plain hash could be. Refuses to run in production without the key, for
+ * the same reason as the phone pepper above.
+ */
+function idFingerprint(digits: string) {
+  const key = process.env.ID_FINGERPRINT_KEY;
+  if (!key) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("ID_FINGERPRINT_KEY is not set. Refusing to fingerprint ID numbers without it.");
+    }
+    console.warn("[verify] ID_FINGERPRINT_KEY is not set — using a development key.");
+  }
+  return createHmac("sha256", key ?? "development-only-id-key").update(digits).digest("hex");
 }
 
 /** Very light E.164 normalisation for NG and common diaspora codes. */
@@ -265,10 +282,20 @@ export async function submitIdNumber(
     return { error: "ID confirmation isn't connected yet." };
   }
 
-  // The number itself is deliberately not stored: only the fact of a pass.
-  // Development stand-in, written as the server would.
+  // The number itself is never stored. What IS kept is a one-way, keyed
+  // fingerprint of it (decided 2026-10-05; consent wording §3), so one ID
+  // can't verify more than one account and a removed member can't return.
+  // Development stand-in for the pass itself, written as the server would.
   const admin = createAdminClient();
   if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY isn't set." };
+  const { error: fpError } = await admin.rpc("record_id_fingerprint", {
+    p_profile_id: user.id,
+    p_fingerprint: idFingerprint(value),
+  });
+  if (fpError?.message.includes("id_in_use")) {
+    return { error: "That ID is already verified on another account." };
+  }
+  if (fpError) return { error: "Your ID couldn't be checked. Try again." };
   await admin
     .from("profiles")
     .update({

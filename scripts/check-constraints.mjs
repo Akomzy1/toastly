@@ -942,6 +942,63 @@ checkOnce("every verification check records consent, with its version, first", (
   return hits;
 });
 
+// --- The human review queue (PRD §9, CLAUDE.md, 0018) ----------------------
+//
+// A person decides; every decision is logged with who, when and why; nothing
+// restricts or removes an account on its own; reviewers never see message
+// bodies, Gist content, genotype or raw biometric data.
+checkOnce("every review-console page and action is staff-only", () =>
+  appFiles
+    .filter((f) => /^app\/\(staff\)\//.test(f))
+    .filter((f) => entryKind(f, stripComments(fs.readFileSync(f, "utf8"), f)))
+    .flatMap((f) => {
+      const src = stripComments(fs.readFileSync(f, "utf8"), f);
+      if (entryKind(f, src) === "actions") {
+        return serverActions(src)
+          .filter((a) => !/\brequireStaff\s*\(/.test(a.body))
+          .map((a) => `${f} — ${a.name}() isn't staff-only`);
+      }
+      return /\brequireStaff\s*\(/.test(src) ? [] : [`${f} — no requireStaff()`];
+    }),
+);
+
+checkOnce("review functions are staff-only and decisions are logged first", () => {
+  const hits = [];
+  for (const fn of ["review_queue", "review_case_detail", "review_history"]) {
+    const f = latestFunction(fn);
+    if (!f || !/if not is_staff\(\) then raise/.test(f.body)) hits.push(`${fn}() doesn't refuse non-staff`);
+  }
+  const d = latestFunction("decide_case");
+  if (!d) return "decide_case() is missing";
+  if (!/from staff_members where user_id = auth\.uid\(\)/.test(d.body)) hits.push("decide_case() doesn't check the caller is staff");
+  const logAt = d.body.indexOf("insert into review_decisions (case_id, staff_id, staff_name, action, note)\n  values (c.id, v_me.user_id, v_me.display_name, p_action");
+  const actAt = d.body.search(/update profiles set standing|record_main_photo_match|record_onboarding_check|block_identifiers_of/);
+  if (logAt < 0) hits.push("decide_case() doesn't log the decision");
+  else if (actAt >= 0 && actAt < logAt) hits.push("decide_case() acts before logging");
+  if (!/interval '2 years'/.test(d.body)) hits.push("removal doesn't keep the blocklist for two years");
+  const trig = MIGRATIONS.some(({ sql }) => /before update or delete on public\.review_decisions/.test(sql));
+  if (!trig) hits.push("review_decisions isn't append-only");
+  return hits;
+});
+
+checkOnce("only a reviewer's decision changes an account's standing", () => {
+  const hits = [];
+  for (const { file, sql } of MIGRATIONS) {
+    for (const m of sql.matchAll(/create or replace function public\.(\w+)\s*\([\s\S]*?\$\$([\s\S]*?)\$\$/g)) {
+      if (m[1] === "decide_case") continue;
+      if (/set standing\s*=\s*'(restricted|removed)'/.test(m[2])) hits.push(`${file} — ${m[1]}() restricts or removes an account`);
+    }
+  }
+  return hits;
+});
+
+checkOnce("reviewers never see message text, Gist content, genotype or selfies", () => {
+  const f = latestFunction("review_case_detail");
+  if (!f) return "review_case_detail() is missing";
+  const leak = /\bm\.body\b|messages\.body|\bbody\b|transcript|audio|genotype|selfie_image|liveness_images|wants_to_continue|phone_hash|fingerprint/i.exec(f.body);
+  return leak ? `${f.file} — review evidence reads "${leak[0]}"` : [];
+});
+
 // --- Coins are not a "wallet" ---------------------------------------------
 //
 // Decided 2026-10-05: never say "wallet" in UI copy. Coins are a promise

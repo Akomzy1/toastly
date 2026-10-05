@@ -25,7 +25,10 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
  *     face-match outcomes a member may not write (0015);
  *   - app/(app)/account/actions.ts, account deletion: a member can't delete
  *     their own auth account. The session is verified first, and the only
- *     id acted on is the signed-in member's own.
+ *     id acted on is the signed-in member's own;
+ *   - the staff review console (app/(staff)/review), after requireStaff():
+ *     signing a case member's PROFILE photos for a few minutes, and
+ *     retiring a replaced main photo's file. Never a selfie or an ID image.
  *
  * Returns null when the key is unset, so callers degrade instead of throwing.
  */

@@ -17,9 +17,9 @@ export const metadata: Metadata = {
  *
  * ALWAYS OPEN: no plan, no live-profile guard.
  *
- * Not yet shown: the prototype's "Some safety records are kept until an open
- * review is settled." It needs the review and removal state, which comes
- * next in the build order.
+ * "Some safety records are kept until an open review is settled." shows when
+ * a review about the member is open: their phone and ID fingerprints are
+ * then held on the blocklist until a person settles it (0018).
  */
 export default async function DeleteAccountPage() {
   const supabase = createClient();
@@ -28,7 +28,10 @@ export default async function DeleteAccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: balance } = await supabase.rpc("coin_balance", { p_profile_id: user.id });
+  const [{ data: balance }, { data: reviewOpen }] = await Promise.all([
+    supabase.rpc("coin_balance", { p_profile_id: user.id }),
+    supabase.rpc("has_open_review"),
+  ]);
 
-  return <DeleteFlow coins={(balance as number | null) ?? 0} reviewOpen={false} />;
+  return <DeleteFlow coins={(balance as number | null) ?? 0} reviewOpen={reviewOpen === true} />;
 }

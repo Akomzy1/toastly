@@ -37,6 +37,10 @@ export type LiveStatus = {
   mainPhoto: "matched" | "checking" | "missing";
   /** A replacement main photo is being checked; the matched one stays live. */
   replacementChecking: boolean;
+  /** Set by a person in review (0018), never automatically. */
+  standing: "good" | "restricted" | "removed";
+  /** The category the member is told (CLAUDE.md: always told why). */
+  standingReason: "pricing" | "safety" | "married" | "photos" | "verification" | "other" | null;
 };
 
 const NOT_LIVE: LiveStatus = {
@@ -48,6 +52,8 @@ const NOT_LIVE: LiveStatus = {
   minPhotos: 4,
   mainPhoto: "missing",
   replacementChecking: false,
+  standing: "good",
+  standingReason: null,
 };
 
 /**
@@ -73,6 +79,8 @@ export async function requireLiveProfile(supabase: Supabase): Promise<LiveStatus
         ? s.main_photo
         : "missing",
     replacementChecking: s.replacement_checking === true,
+    standing: s.standing === "restricted" || s.standing === "removed" ? s.standing : "good",
+    standingReason: (s.standing_reason as LiveStatus["standingReason"]) ?? null,
   };
 }
 
