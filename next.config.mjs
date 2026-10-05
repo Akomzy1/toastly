@@ -6,6 +6,12 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  experimental: {
+    // A selfie check posts one selfie and 6–8 liveness frames, which pass
+    // straight through to Smile ID and are never stored. The 1 MB default
+    // can refuse a full capture; 4 MB covers it with room to spare.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   async headers() {
     return [
       {

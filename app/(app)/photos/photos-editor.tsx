@@ -8,6 +8,7 @@ import { Notice } from "@/components/ui/notice";
 import { VerifiedSeal } from "@/components/ui/verified-seal";
 import { AppBand, AppColumn } from "@/components/app/app-band";
 import { ConsentPanel } from "@/components/app/consent-panel";
+import { SelfieCapture } from "@/components/app/selfie-capture";
 import { cn } from "@/lib/utils";
 import {
   askForReview,
@@ -690,6 +691,7 @@ function ReplaceMain(props: {
 }) {
   const s = props.state;
   const failed = s === "face" || s === "selfie";
+  const [consented, setConsented] = React.useState<FormData | null>(null);
 
   if (s === "confirmed") {
     const shown = props.candidate ?? props.current;
@@ -748,17 +750,34 @@ function ReplaceMain(props: {
             Smile ID isn&rsquo;t connected in this environment, so your new main photo can&rsquo;t be checked yet. Your
             current photo stays up.
           </Notice>
-        ) : props.checksConnected ? (
-          <Notice tone="info" title="The selfie camera isn't wired up yet">
-            Smile ID is connected, but its in-browser capture isn&rsquo;t built into this screen yet. Your current
-            photo stays up.
-          </Notice>
+        ) : props.checksConnected && consented ? (
+          // Consent given: Smile ID's camera, then the check.
+          <SelfieCapture
+            onCaptured={({ selfie, liveness }) => {
+              const form = consented;
+              form.append("selfie", selfie);
+              liveness.forEach((f) => form.append("liveness", f));
+              setConsented(null);
+              props.onSubmit(form);
+            }}
+            onCancel={() => setConsented(null)}
+          />
         ) : (
-          <form action={props.onSubmit} className="grid gap-4">
+          <form
+            action={props.onSubmit}
+            onSubmit={(e) => {
+              if (!props.checksConnected) return; // development: the stand-in posts as is
+              e.preventDefault();
+              setConsented(new FormData(e.currentTarget));
+            }}
+            className="grid gap-4"
+          >
             <input type="hidden" name="photo_id" value={props.candidate?.id ?? ""} />
-            <Notice tone="info" title="Development stand-in">
-              Smile ID isn&rsquo;t connected here, so Start records a match without a camera.
-            </Notice>
+            {!props.checksConnected ? (
+              <Notice tone="info" title="Development stand-in">
+                Smile ID isn&rsquo;t connected here, so Start records a match without a camera.
+              </Notice>
+            ) : null}
             <ConsentPanel kind="replace_main_photo" busy={props.busy} onSecondary={props.onKeep} />
           </form>
         )

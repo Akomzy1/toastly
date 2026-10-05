@@ -10,12 +10,14 @@
     "typecheck": "tsc --noEmit",
     "check:constraints": "node scripts/check-constraints.mjs",
     "test:db": "node scripts/db-test/run.mjs",
-    "test:unit": "node scripts/unit/face-match.test.mjs",
+    "test:unit": "node scripts/unit/face-match.test.mjs && node scripts/unit/smile-webhook.test.mjs",
+    "smile:sandbox": "node scripts/smile-sandbox.mjs",
     "verify": "npm run typecheck && npm run lint && npm run check:constraints && npm run test:unit && npm run test:db && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.20",
     "@radix-ui/react-slot": "^1.3.3",
+    "@smileid/web-sdk": "12.1.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "class-variance-authority": "^0.7.0",

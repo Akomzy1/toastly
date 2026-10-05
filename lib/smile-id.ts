@@ -106,7 +106,10 @@ async function submit(
 
 function captureFields(form: FormData, capture: SelfieCapture) {
   form.append("selfie_image", capture.selfie, "selfie.jpg");
-  capture.livenessFrames.forEach((frame, i) => form.append("liveness_images", frame, `liveness-${i}.jpg`));
+  // The v3 API takes 6–8 liveness frames; send at most 8.
+  capture.livenessFrames
+    .slice(0, 8)
+    .forEach((frame, i) => form.append("liveness_images", frame, `liveness-${i}.jpg`));
 }
 
 /** Is this fresh selfie the member Smile ID enrolled at Verified Real? */
