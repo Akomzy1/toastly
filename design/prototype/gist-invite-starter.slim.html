@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/cb677e3a-6628-416d-8802-824fa4fc1cf0.js"></script>
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/ed8d7111-cdcf-4585-95aa-e713af00a8a5.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/0426c14b-2cb3-407e-a0b1-3fa9f0c2faf4.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/154a159b-6802-447d-b0dc-0086d00f217b.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/f591c23c-3cbb-4236-ae70-a61f2c817805.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Gist invite 1 of 8</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Reply to a prompt answer — Starter</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">Starters can't send text, so the reply screen holds one action and no message box. The answer being replied to sits quoted at the top. The Gist count is a quiet line under the button, never a badge.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Reply — Starter" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Reply to Amaka</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Today's six</p>
+        </div>
+      </div>
+
+      <div style="padding:20px 14px 24px;display:grid;gap:20px;align-content:start">
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:14px;display:grid;gap:14px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <img src="{{ amaka }}" alt="Amaka" style="width:44px;height:44px;border-radius:999px;object-fit:cover;flex-shrink:0;background:#D9D9DA">
+            <div style="display:grid;gap:2px;min-width:0">
+              <p style="margin:0;font-size:15px;font-weight:600;color:#050309">Amaka, 29</p>
+              <p style="margin:0;font-size:13px;color:#828184">Toronto · Marketing</p>
+            </div>
+          </div>
+          <div style="display:grid;gap:6px">
+            <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">You're replying to</p>
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:18px;font-weight:700;line-height:1.3;color:#050309;text-wrap:balance">A Sunday that feels like me…</p>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">“Jollof at my aunty's in Surulere, a long call with my brother in Leeds, then choir practice I pretend not to enjoy.”</p>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:12px">
+          <a href="gist-invite-sent.html" style="display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:14px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;text-decoration:none" style-hover="background:#FFC94C;color:#001F1B">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.6" stroke="#001F1B" stroke-width="1.6"></circle><path d="M12 7.4V12l3.2 2" stroke="#001F1B" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            Invite to a Gist
+          </a>
+          <p style="margin:0;padding:0 2px;font-size:14px;line-height:1.6;color:#504E52;text-wrap:pretty">An 18-minute voice chat, with questions to get you talking. You have {{ leftLabel }} left this month — it only counts if the call happens.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:900}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+class Component extends DCLogic {
+  state = { w: "360px", left: 2 };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, left } = this.state;
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [2, 1].map(n => this.chip(n === 1 ? "1 Gist left" : "2 Gists left", left === n, () => this.setState({ left: n }))),
+      leftLabel: left === 1 ? "1 Gist" : "2 Gists",
+      amaka: IMG("member-amaka")
+    };
+  }
+}
+</script>
+
+
+</body></html>

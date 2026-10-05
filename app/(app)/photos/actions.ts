@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { smileIdConfigured, submitAuthentication, submitCompare } from "@/lib/smile-id";
+import { recordConsent } from "@/lib/consent-record";
 
 /**
  * Profile photos (PRD §5.1.2, Prompt 14).
@@ -113,15 +114,44 @@ export async function setOnlyMatches(onlyMatches: boolean): Promise<PhotoState> 
 }
 
 /**
- * Check a main photo against a FRESH selfie (decided 2026-10-05).
+ * Choose a new main photo. It is nominated at once, so it stays private to
+ * its owner until a check matches it — and any matched main photo stays
+ * live meanwhile (0013).
  *
+ * During onboarding it then waits for the one selfie on the verify page,
+ * which checks liveness and this photo together (decided 2026-10-05); for a
+ * member who is already Verified Real, for the fresh selfie in
+ * checkMainPhoto().
+ */
+export async function nominateMainPhoto(photoId: string): Promise<PhotoState> {
+  const { supabase, user } = await signedIn();
+  if (!user) return { error: "Please sign in again." };
+  const { error } = await supabase.rpc("nominate_main_photo", { p_photo_id: photoId });
+  if (error) return { error: "That photo can't be your main photo." };
+  revalidatePath("/photos");
+  return { ok: "Saved." };
+}
+
+/**
+ * REPLACING the main photo: a FRESH selfie (decided 2026-10-05), only for a
+ * member who is already Verified Real.
+ *
+ * Consent (replace_main_photo) is recorded first, with the version shown.
  * The selfie and its liveness frames arrive in this request, go straight to
  * Smile ID, and are dropped — nothing here writes them anywhere. While the
- * check runs the previously matched main photo, if any, stays live.
+ * check runs the previously matched main photo stays live.
  */
 export async function checkMainPhoto(formData: FormData): Promise<PhotoState> {
   const { supabase, user } = await signedIn();
   if (!user) return { error: "Please sign in again." };
+
+  const { data: me } = await supabase.from("profiles").select("stage").eq("id", user.id).single();
+  if (me?.stage !== "verified_real" && me?.stage !== "id_confirmed") {
+    return { error: "Your first main photo is checked with your selfie on the verify page." };
+  }
+
+  const consent = await recordConsent(supabase, user.id, "replace_main_photo", formData);
+  if (!consent.ok) return { error: "Tick the box to agree before you start." };
 
   const photoId = String(formData.get("photo_id") ?? "");
   const { data: photo } = await supabase
@@ -172,7 +202,7 @@ export async function checkMainPhoto(formData: FormData): Promise<PhotoState> {
   const checkId = randomUUID();
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://trytoastly.com";
   const callbackUrl = `${site}/api/webhooks/smile-id`;
-  const consent = { grantedAt: new Date().toISOString(), language: "en" };
+  const smileConsent = { grantedAt: consent.agreedAt, language: "en" };
   const capture = { selfie, livenessFrames: frames };
 
   await admin.from("face_match_jobs").insert([
@@ -182,8 +212,18 @@ export async function checkMainPhoto(formData: FormData): Promise<PhotoState> {
 
   try {
     const [authJob, compareJob] = await Promise.all([
-      submitAuthentication({ checkId, profileId: user.id, capture, consent, callbackUrl }),
-      submitCompare({ checkId, profileId: user.id, capture, mainPhoto: file, consent, callbackUrl }),
+      submitAuthentication({ checkId, profileId: user.id, capture, consent: smileConsent, callbackUrl }),
+      // Never enrols: see submitCompare.
+      submitCompare({
+        checkId,
+        profileId: user.id,
+        capture,
+        mainPhoto: file,
+        consent: smileConsent,
+        callbackUrl,
+        step: "compare",
+        enrol: false,
+      }),
     ]);
     await admin.from("face_match_jobs").update({ provider_job_id: authJob }).eq("check_id", checkId).eq("step", "authenticate");
     await admin.from("face_match_jobs").update({ provider_job_id: compareJob }).eq("check_id", checkId).eq("step", "compare");

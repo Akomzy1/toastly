@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/61b35dfd-0ead-4b49-8b2b-3c05fd7b35a7.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/73507f63-f60c-4c35-a5de-ecc3e09e7a21.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/3145ec72-015a-4223-97eb-ae199a84f15b.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/d69a1601-0de9-4784-86c6-aa74af084aa4.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/d1a4aa69-ebb1-4735-a465-eff88590269f.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F2F2F2;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div data-screen-label="Decision history" style="min-height:100vh;display:flex;flex-direction:column">
+
+  <header style="background:#001F1B;min-height:52px;padding:8px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px">
+    <span style="display:flex;align-items:center;gap:9px">
+      <svg width="26" height="26" sc-camel-view-box="0 0 48 48" fill="none" aria-hidden="true"><circle cx="19" cy="20" r="9.5" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="29" cy="20" r="9.5" stroke="#FFB300" stroke-width="3"></circle><rect x="8" y="34" width="32" height="2.4" rx="1.2" fill="#EBD9AE"></rect></svg>
+      <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:18px;color:#FFFFFF">Toastly</span>
+      <span style="padding:3px 8px;border:1px solid rgba(235,217,174,0.4);border-radius:6px;font-size:12px;font-weight:600;color:#EBD9AE">Review console</span>
+    </span>
+    <nav aria-label="Console" style="display:flex;gap:4px">
+      <a href="review-queue.html" style="min-height:44px;padding:0 12px;display:flex;align-items:center;font-size:14px;font-weight:500;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Queue</a>
+      <a href="review-history.html" aria-current="page" style="min-height:44px;padding:0 12px;display:flex;align-items:center;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;box-shadow:inset 0 -2px 0 #FFB300">Decision history</a>
+    </nav>
+    <span style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.72)">Adaeze O. · Reviewer</span>
+  </header>
+
+  <main style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+
+    <aside aria-label="Cases" style="flex:1 1 280px;max-width:100%;display:grid;gap:10px">
+      <label style="display:grid;gap:6px;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#504E52">Find a case
+        <input type="search" value="{{ q }}" sc-camel-on-change="{{ setQ }}" placeholder="Case or member ID" style="min-height:40px;padding:8px 11px;border:1px solid rgba(5,3,9,0.22);border-radius:8px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:13.5px;font-weight:400;letter-spacing:0;text-transform:none;color:#050309">
+      </label>
+      <div style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;overflow:hidden">
+        <sc-for list="{{ list }}" as="l" hint-placeholder-count="5">
+          <button type="button" sc-camel-on-click="{{ l.pick }}" aria-current="{{ l.on }}" style="width:100%;min-height:56px;padding:10px 14px;display:grid;gap:3px;text-align:left;border:0;border-top:1px solid rgba(5,3,9,0.08);background:{{ l.bg }};box-shadow:inset 3px 0 0 {{ l.bar }};font-family:Inter,sans-serif;cursor:pointer" style-hover="background:#F6F2EA">
+            <span style="display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:600;color:#050309;font-variant-numeric:tabular-nums"><span>{{ l.id }}</span><span style="font-weight:500;color:#504E52">{{ l.outcome }}</span></span>
+            <span style="font-size:12.5px;color:#504E52">{{ l.type }}</span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ empty }}">
+          <p style="margin:0;padding:18px 14px;font-size:13px;color:#504E52">No case with that ID.</p>
+        </sc-if>
+      </div>
+    </aside>
+
+    <section aria-labelledby="h-title" style="flex:999 1 600px;min-width:0;display:grid;gap:14px">
+      <div style="display:grid;gap:6px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px">
+          <h1 id="h-title" style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2">{{ c.id }}</h1>
+          <span style="padding:3px 9px;border-radius:6px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.18);font-size:12.5px;font-weight:600;color:#1E1C21">{{ c.type }}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:6px;background:#F2F2F2;border:1px solid rgba(5,3,9,0.14);font-size:12.5px;font-weight:600;color:#1E1C21">
+            <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="#1E1C21" stroke-width="2"></rect><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="#1E1C21" stroke-width="2"></path></svg>
+            Read-only
+          </span>
+        </div>
+        <p style="margin:0;max-width:70ch;font-size:14px;line-height:1.55;color:#1E1C21;text-wrap:pretty">{{ c.reason }}</p>
+        <p style="margin:0;font-size:12.5px;color:#504E52">Entries are written when a decision is confirmed and can't be edited or deleted. Times in WAT.</p>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:128px 132px 170px minmax(0,1fr);gap:14px;padding:10px 16px;background:#F6F2EA;border-bottom:1px solid rgba(5,3,9,0.12);font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#504E52">
+          <span>When</span><span>Who</span><span>What</span><span>Why</span>
+        </div>
+        <ol style="margin:0;padding:0;list-style:none">
+          <sc-for list="{{ c.entries }}" as="e" hint-placeholder-count="5">
+            <li style="display:grid;grid-template-columns:128px 132px 170px minmax(0,1fr);gap:14px;align-items:start;padding:12px 16px;border-top:1px solid rgba(5,3,9,0.08)">
+              <span style="font-size:13px;line-height:1.45;color:#1E1C21;font-variant-numeric:tabular-nums">{{ e.when }}</span>
+              <span style="display:grid;gap:1px"><span style="font-size:13px;font-weight:600;color:#050309">{{ e.who }}</span><span style="font-size:12px;color:#504E52">{{ e.role }}</span></span>
+              <span style="justify-self:start;padding:3px 8px;border-radius:6px;background:{{ e.bg }};border:1px solid {{ e.border }};font-size:12.5px;font-weight:600;color:{{ e.fg }}">{{ e.what }}</span>
+              <span style="font-size:13.5px;line-height:1.5;color:#1E1C21;text-wrap:pretty">{{ e.why }}</span>
+            </li>
+          </sc-for>
+        </ol>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="">
+const E = (when, who, role, what, why, decision) => ({ when, who, role, what, why, decision });
+const CASES = [
+  { id: "TC-20377", type: "Pricing signal", outcome: "Switched plan", members: "M-40177", reason: "On a naira plan, paying by UK card and signing in from Manchester for 26 days.", entries: [
+    E("29 Sep, 09:20", "System", "Automatic", "Raised", "Pricing signal: 21+ days of UK card and Manchester sign-ins on a naira plan."),
+    E("29 Sep, 15:04", "Tunde B.", "Reviewer", "Ask to switch plan", "Card, sign-ins and time zone all point to the UK for nearly a month. Passport ring passed; nothing suggests a visit.", true),
+    E("30 Sep, 21:12", "System", "Automatic", "Member responded", "Member moved to Diaspora plan. Back-home matches kept."),
+    E("30 Sep, 21:12", "System", "Automatic", "Closed", "Plan change completed.")
+  ] },
+  { id: "TC-20380", type: "Date-attendance dispute", outcome: "Cleared", members: "M-38810, M-41562", reason: "Member says the other person didn't come. Both check-ins were recorded at the venue.", entries: [
+    E("29 Sep, 14:45", "System", "Automatic", "Raised", "Dispute filed by M-38810 for a date on 28 Sep."),
+    E("30 Sep, 10:02", "Kemi A.", "Reviewer", "Assigned", "Assigned to self."),
+    E("30 Sep, 10:31", "Kemi A.", "Reviewer", "Clear", "Both check-ins within 30 m of the venue, 4 minutes apart. Likely missed each other inside. Coins returned to both.", true)
+  ] },
+  { id: "TC-20352", type: "Married-user report", outcome: "Removed", members: "M-30984", reason: "Two matches said this member is married, three weeks apart.", entries: [
+    E("6 Sep, 19:30", "System", "Automatic", "Raised", "Married-user report from a match after a Gist."),
+    E("7 Sep, 11:15", "Adaeze O.", "Reviewer", "Request re-verification", "First report, no history. Re-verification to confirm the account holder before deciding.", true),
+    E("8 Sep, 08:40", "System", "Automatic", "Member responded", "Selfie liveness passed."),
+    E("8 Sep, 09:05", "Adaeze O.", "Reviewer", "Clear", "One report, verification passed, no other signals. Not enough to act on.", true),
+    E("27 Sep, 22:10", "System", "Automatic", "Reopened", "Second married-user report, from a different match."),
+    E("28 Sep, 10:48", "Tunde B.", "Reviewer", "Restrict", "Two independent reports with matching details. Restricting while a second reviewer looks.", true),
+    E("28 Sep, 16:20", "Kemi A.", "Senior reviewer", "Remove", "Agree with restriction notes. Two unconnected reporters, same account, same details. Member told how to appeal.", true)
+  ] },
+  { id: "TC-20391", type: "Date-attendance dispute", outcome: "In review", members: "M-39920, M-44105", reason: "Both say they showed up at Café Neo, Ikeja. Only one check-in was recorded.", entries: [
+    E("30 Sep, 08:00", "System", "Automatic", "Raised", "Dispute filed for a date on 27 Sep."),
+    E("2 Oct, 10:15", "Adaeze O.", "Reviewer", "Assigned", "Assigned to self.")
+  ] }
+];
+class Component extends DCLogic {
+  state = { sel: 2, q: "" };
+  renderVals() {
+    const { sel, q } = this.state;
+    const needle = q.trim().toLowerCase();
+    const list = CASES.map((c, i) => ({ c, i })).filter(({ c }) => !needle || c.id.toLowerCase().includes(needle) || c.members.toLowerCase().includes(needle));
+    const c = CASES[sel];
+    return {
+      q, setQ: e => this.setState({ q: e.target.value }),
+      empty: list.length === 0,
+      list: list.map(({ c: x, i }) => ({ id: x.id, type: x.type, outcome: x.outcome, on: i === sel, pick: () => this.setState({ sel: i }), bg: i === sel ? "#E5F0EE" : "#FFFFFF", bar: i === sel ? "#00695C" : "transparent" })),
+      c: Object.assign({}, c, { entries: c.entries.map(e => Object.assign({}, e, { bg: e.decision ? "#E5F0EE" : "#F2F2F2", border: e.decision ? "rgba(0,105,92,0.3)" : "rgba(5,3,9,0.12)", fg: e.decision ? "#00332C" : "#1E1C21" })) })
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -1,10 +1,12 @@
 "use server";
 
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { capture } from "@/lib/analytics";
+import { recordConsent } from "@/lib/consent-record";
+import { smileIdConfigured, submitCompare } from "@/lib/smile-id";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
@@ -131,18 +133,18 @@ export async function confirmPhoneCode(
 }
 
 /**
- * Liveness.
+ * The onboarding selfie — ONE check for both Verified Real and the main
+ * photo (decided 2026-10-05: photos first, then one selfie).
  *
- * NOT IMPLEMENTED — this records the result, it does not perform the check.
- * A three-second liveness capture matched against profile photos needs a
- * vendor SDK and a server-side decision; wiring one is its own piece of work
- * and is not something to fake. The screen and the state machine are real so
- * the rest of the flow can be built and tested; the capture itself must be
- * replaced before launch.
+ * Consent is recorded first, with the version of the wording shown
+ * (lib/consent.ts); without it the check doesn't run. The selfie and its
+ * liveness frames go straight to Smile ID — a single Compare against the
+ * main photo, which also enrols the member under their profile id for any
+ * later main-photo change — and are never stored.
  */
-export async function recordLiveness(
+export async function startSelfieCheck(
   _prev: VerifyState,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<VerifyState> {
   const supabase = createClient();
   const {
@@ -150,39 +152,96 @@ export async function recordLiveness(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
 
-  if (process.env.NODE_ENV === "production") {
-    return {
-      error:
-        "Liveness checks aren't connected yet. This step can't be completed.",
-    };
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("phone_verified_at, pending_main_photo_id")
+    .eq("id", user.id)
+    .single();
+  if (!me?.phone_verified_at) return { error: "Confirm your phone first." };
+  const photoId = me.pending_main_photo_id as string | null;
+  if (!photoId) return { error: "Add your main photo first." };
+
+  const { count } = await supabase
+    .from("profile_photos")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", user.id);
+  if ((count ?? 0) < 4) return { error: "Add four photos first, including your main photo." };
+
+  const consent = await recordConsent(supabase, user.id, "verification_selfie", formData);
+  if (!consent.ok) return { error: "Tick the box to agree before you start." };
+
+  const admin = createAdminClient();
+
+  if (!smileIdConfigured()) {
+    if (process.env.NODE_ENV === "production" || !admin) {
+      return { error: "Selfie checks aren't connected yet, so this step can't be completed." };
+    }
+    // Development stand-in for Smile ID's result, written as the webhook
+    // would: a member's session cannot set `stage` or a face match (0013).
+    await admin.rpc("record_onboarding_check", {
+      p_photo_id: photoId,
+      p_live: "passed",
+      p_match: "matched",
+    });
+    await capture("verification_complete", user.id, { stage: "verified_real" });
+    revalidatePath("/verify");
+    return { ok: "Matched (development stand-in — Smile ID isn't connected)." };
   }
 
-  // Development stand-in for the vendor's server-to-server result, so it
-  // writes as the server would: a member's session cannot set `stage` (0013).
-  const admin = createAdminClient();
-  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY isn't set." };
-  await admin
-    .from("profiles")
-    .update({
-      stage: "verified_real",
-      liveness_verified_at: new Date().toISOString(),
-    })
-    .eq("id", user.id);
+  if (!admin) return { error: "Selfie checks aren't connected yet." };
 
-  // Funnel step two. The badge is the product's central claim, so the drop-off
-  // between signup and this event is the number that matters most.
-  await capture("verification_complete", user.id, { stage: "verified_real" });
+  const selfie = formData.get("selfie");
+  const frames = formData.getAll("liveness").filter((f): f is File => f instanceof File);
+  if (!(selfie instanceof File) || frames.length < 6) {
+    return { error: "The selfie didn't come through. Try again." };
+  }
+
+  const { data: photo } = await supabase
+    .from("profile_photos")
+    .select("storage_path")
+    .eq("id", photoId)
+    .single();
+  const { data: file } = photo
+    ? await admin.storage.from("profile-photos").download(photo.storage_path)
+    : { data: null };
+  if (!file) return { error: "Your main photo couldn't be read. Try again." };
+
+  const checkId = randomUUID();
+  await admin.from("face_match_jobs").insert({
+    profile_id: user.id,
+    photo_id: photoId,
+    check_id: checkId,
+    step: "onboard",
+  });
+
+  try {
+    const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://trytoastly.com";
+    const jobId = await submitCompare({
+      checkId,
+      profileId: user.id,
+      capture: { selfie, livenessFrames: frames },
+      mainPhoto: file,
+      consent: { grantedAt: consent.agreedAt, language: "en" },
+      callbackUrl: `${site}/api/webhooks/smile-id`,
+      step: "onboard",
+      enrol: true,
+    });
+    await admin.from("face_match_jobs").update({ provider_job_id: jobId }).eq("check_id", checkId);
+  } catch {
+    // A provider failure is never held against the member.
+    await admin.rpc("record_onboarding_check", { p_photo_id: photoId, p_live: "review", p_match: "review" });
+  }
 
   revalidatePath("/verify");
-  return { ok: "Liveness passed. Your Verified Real seal is live." };
+  return { ok: "Checking." };
 }
 
 /**
  * NIN / BVN — the optional second ring.
  *
- * Optional forever. A member is fully functional on phone and liveness
- * alone, and the number is never displayed to anyone. Like liveness, the
- * check itself is not implemented here.
+ * Optional forever. A member is fully functional without it, and the number
+ * is never displayed to anyone. Consent (id_check) is recorded first. The
+ * check itself — Smile ID Biometric KYC with a new selfie — is not wired.
  */
 export async function submitIdNumber(
   _prev: VerifyState,
@@ -199,12 +258,15 @@ export async function submitIdNumber(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
 
+  const consent = await recordConsent(supabase, user.id, "id_check", formData);
+  if (!consent.ok) return { error: "Tick the box to agree before you continue." };
+
   if (process.env.NODE_ENV === "production") {
     return { error: "ID confirmation isn't connected yet." };
   }
 
   // The number itself is deliberately not stored: only the fact of a pass.
-  // Written as the server would, like the liveness stand-in above.
+  // Development stand-in, written as the server would.
   const admin = createAdminClient();
   if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY isn't set." };
   await admin
@@ -218,3 +280,4 @@ export async function submitIdNumber(
   revalidatePath("/verify");
   return { ok: "Second ring added to your seal." };
 }
+

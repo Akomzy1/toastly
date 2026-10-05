@@ -33,8 +33,15 @@ export async function GET() {
         .createSignedUrls(photos.map((p) => p.path), 60 * 60 * 24)
     : { data: [] };
 
+  // The consents the member gave, with the version of the wording each time.
+  const { data: consents } = await supabase
+    .from("consents")
+    .select("kind, version, agreed_at")
+    .order("agreed_at");
+
   const body = {
     about: "Everything Toastly holds about you, as of generated_at. Photo links expire 24 hours after download.",
+    consents: consents ?? [],
     account: {
       email: user.email ?? null,
       phone: user.phone ? `+${user.phone.replace(/^\+/, "")}` : null,

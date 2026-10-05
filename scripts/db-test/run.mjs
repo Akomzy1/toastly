@@ -11,7 +11,7 @@
 import { startDatabase } from "./stack.mjs";
 import { harness } from "./harness.mjs";
 
-const SUITES = ["./live-guard.test.mjs", "./phone-and-continue.test.mjs", "./photos.test.mjs", "./data-rights.test.mjs"];
+const SUITES = ["./live-guard.test.mjs", "./phone-and-continue.test.mjs", "./photos.test.mjs", "./data-rights.test.mjs", "./consent-onboarding.test.mjs"];
 
 const { db, stop, migrations } = await startDatabase();
 console.log(`${migrations} migrations applied to a throwaway database`);

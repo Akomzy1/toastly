@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhook } from "@/lib/smile-id";
-import { combineOutcomes, type ProviderStatus } from "@/lib/face-match";
+import { combineOutcomes, onboardingOutcome, type ProviderStatus } from "@/lib/face-match";
 
 /**
  * Smile ID webhook — main-photo face-match results (PRD §5.1.2).
@@ -22,7 +22,7 @@ type Callback = {
   partner_params?: {
     job_id?: string;
     toastly_check_id?: string;
-    toastly_step?: "authenticate" | "compare";
+    toastly_step?: "authenticate" | "compare" | "onboard";
   };
 };
 
@@ -61,6 +61,26 @@ export async function POST(request: NextRequest) {
     .from("face_match_jobs")
     .select("step, photo_id, provider_status, provider_reason")
     .eq("check_id", checkId);
+
+  // The onboarding selfie is one Compare that settles both Verified Real and
+  // the main photo (decided 2026-10-05).
+  const onboard = jobs?.find((j) => j.step === "onboard");
+  if (onboard?.provider_status) {
+    const r = onboardingOutcome({
+      status: onboard.provider_status as ProviderStatus,
+      reason: onboard.provider_reason,
+    });
+    const { error } = await admin.rpc("record_onboarding_check", {
+      p_photo_id: onboard.photo_id,
+      p_live: r.live,
+      p_match: r.match.outcome,
+      p_reason: r.match.outcome === "mismatch" ? r.match.reason : null,
+    });
+    if (error && !/not the pending main photo/.test(error.message)) {
+      return NextResponse.json({ error: "could not record" }, { status: 500 });
+    }
+    return NextResponse.json({ received: true });
+  }
 
   const auth = jobs?.find((j) => j.step === "authenticate");
   const compare = jobs?.find((j) => j.step === "compare");

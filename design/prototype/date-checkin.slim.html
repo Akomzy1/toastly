@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/48784df7-1a32-40a0-b80e-83510762e1c8.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/32e26f21-7689-4517-a5f2-ec8a82b8f57a.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/f0964158-ca22-45f6-b1bf-24804d0c2ccc.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/89451480-b1af-4bfd-97ff-590a9ea960f2.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/5ded4d3c-e34e-4120-8c07-a67dca5f5b04.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Coins and dates 4 of 7</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">The date — check in</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">One calm card on the day. Location is asked for only when "I'm here" is tapped, with the plain line shown first. "I don't feel safe" and the normal cancel sit below the card as two rows of equal size in every state.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="5">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Check in" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:14px 8px 14px 16px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="flex:1;min-width:0;display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Your date today</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">With Amaka · Saturday 10 Oct</p>
+        </div>
+        <button type="button" aria-label="Safety kit" style="flex-shrink:0;min-height:44px;min-width:44px;padding:0 12px 0 10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(235,217,174,0.3);border-radius:999px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#EBD9AE">
+          <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 18.8 6v5.2c0 4.3-2.8 7.9-6.8 9.6-4-1.7-6.8-5.3-6.8-9.6V6Z" stroke="#EBD9AE" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+          <span>Safety</span>
+        </button>
+      </div>
+
+      <div style="padding:16px 14px 24px;display:grid;gap:14px;align-content:start">
+
+        <div style="border-radius:16px;background:#001F1B;color:#FFFFFF;padding:20px 16px;display:grid;gap:16px">
+          <div style="display:grid;gap:6px">
+            <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#EBD9AE">Today · 7:00 pm</p>
+            <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2">Café Neo, Ikoyi</h2>
+            <p style="margin:0;display:flex;align-items:center;gap:6px;font-size:14px;color:rgba(255,255,255,0.76)">
+              <span>Awolowo Road ·</span>
+              <svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#EBD9AE" stroke-width="2.7"></circle></svg>
+              <span>10 coins each</span>
+            </p>
+          </div>
+
+          <sc-if value="{{ isReady }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:10px">
+              <button type="button" sc-camel-on-click="{{ toAsk }}" style="min-height:56px;padding:14px 20px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:17px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">I'm here</button>
+              <p style="margin:0;font-size:13.5px;line-height:1.55;color:rgba(255,255,255,0.76);text-align:center">Tap when you arrive.</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isAsk }}">
+            <div style="display:grid;gap:12px;padding:14px;border-radius:12px;background:#002A24;border:1px solid rgba(235,217,174,0.24)">
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:1px"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" stroke="#EBD9AE" stroke-width="1.5" stroke-linejoin="round"></path><circle cx="12" cy="10" r="2.3" stroke="#EBD9AE" stroke-width="1.5"></circle></svg>
+                <p style="margin:0;font-size:14.5px;line-height:1.55;color:#FFFFFF;text-wrap:pretty">We'll check you're near the venue. We keep the result, not your location.</p>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+                <button type="button" sc-camel-on-click="{{ toChecking }}" style="min-height:48px;padding:12px 10px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">Check now</button>
+                <button type="button" sc-camel-on-click="{{ toReady }}" style="min-height:48px;padding:12px 10px;border:1px solid rgba(235,217,174,0.4);border-radius:12px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#EBD9AE">Not yet</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isStatus }}">
+            <div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:12px;background:#002A24;border:1px solid {{ statusBorder }}">
+              <span style="flex-shrink:0;width:40px;height:40px;border-radius:999px;background:{{ statusDot }};display:grid;place-items:center">
+                <sc-if value="{{ isChecking }}"><svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#EBD9AE" stroke-width="2.7" stroke-dasharray="40 14" stroke-linecap="round"></circle></svg></sc-if>
+                <sc-if value="{{ isDoneCheck }}"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" stroke="#001F1B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+              </span>
+              <span style="display:grid;gap:3px;min-width:0">
+                <span style="font-size:16px;font-weight:600;color:#FFFFFF">{{ statusTitle }}</span>
+                <span style="font-size:13.5px;line-height:1.5;color:rgba(255,255,255,0.76);text-wrap:pretty">{{ statusBody }}</span>
+              </span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isBoth }}">
+            <div style="display:grid;gap:8px;padding:16px 14px;border-radius:12px;background:#002A24;border:1px solid rgba(255,179,0,0.5)">
+              <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.25;color:#FFFFFF">You're both here — enjoy it.</p>
+              <p style="margin:0;font-size:14px;line-height:1.55;color:rgba(255,255,255,0.76)">Your 10 coins are back in your balance.</p>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <a href="date-cancel.html" style="min-height:56px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid rgba(5,3,9,0.14);border-radius:14px;background:#FFFFFF;text-decoration:none" style-hover="border-color:#00695C">
+            <span style="flex-shrink:0;width:32px;height:32px;border-radius:999px;background:#E5F0EE;display:grid;place-items:center">
+              <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 18.8 6v5.2c0 4.3-2.8 7.9-6.8 9.6-4-1.7-6.8-5.3-6.8-9.6V6Z" stroke="#00695C" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+            </span>
+            <span style="flex:1;min-width:0;font-size:15px;font-weight:600;color:#050309">I don't feel safe</span>
+            <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+          </a>
+          <a href="date-cancel.html" style="min-height:56px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid rgba(5,3,9,0.14);border-radius:14px;background:#FFFFFF;text-decoration:none" style-hover="border-color:#00695C">
+            <span style="flex-shrink:0;width:32px;height:32px;border-radius:999px;background:#F6F2EA;display:grid;place-items:center">
+              <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" stroke="#504E52" stroke-width="1.5"></rect><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" stroke="#504E52" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            </span>
+            <span style="flex:1;min-width:0;font-size:15px;font-weight:600;color:#050309">Can't make it</span>
+            <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { w: "360px", s: "ready" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  go(s) {
+    clearTimeout(this.t);
+    this.setState({ s });
+    if (s === "checking") this.t = setTimeout(() => this.setState({ s: "in" }), 1600);
+  }
+  renderVals() {
+    const { w, s } = this.state, checking = s === "checking";
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [["ready", "Before"], ["ask", "Location line"], ["checking", "Checking"], ["in", "Waiting for them"], ["both", "Both here"]].map(([k, l]) => this.chip(l, s === k, () => { clearTimeout(this.t); this.setState({ s: k }); })),
+      isReady: s === "ready", isAsk: s === "ask", isStatus: checking || s === "in", isBoth: s === "both",
+      isChecking: checking, isDoneCheck: s === "in",
+      statusDot: checking ? "transparent" : "#2F8F5B",
+      statusBorder: checking ? "rgba(235,217,174,0.24)" : "rgba(47,143,91,0.6)",
+      statusTitle: checking ? "Checking…" : "You're checked in",
+      statusBody: checking ? "Seeing if you're near Café Neo." : "Waiting for Amaka. We'll let you know when they check in.",
+      toAsk: () => this.go("ask"), toReady: () => this.go("ready"), toChecking: () => this.go("checking")
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -34,8 +34,8 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 **Your genotype (optional — health information).** If you choose to add it, after giving separate permission. See section 5.
 
 **Verification.**
-- *Liveness check (everyone):* a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your **main profile photo** to confirm your photos are really you. We keep only the result of each check — never your face data.
-- *Verified Real (optional):* your NIN or BVN, checked by our verification provider against the official record and matched to your selfie. **We keep only the outcome** — whether it passed, a reference number and the date. We do not store the name, date of birth, photo, phone number or address held on the official record.
+- *Liveness check (everyone):* a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your **main profile photo** to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8).
+- *ID check (optional):* your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. **We keep only the outcome** — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.
 
 **Gist sessions.** We record that a session took place, when, how long it lasted, which questions from the structured question set were covered, and whether you both chose to continue. **We do not record the audio or video, and no transcript is ever created or kept.**
 
@@ -148,7 +148,9 @@ To spot scams and fake accounts, we look at **patterns of activity** — for exa
 - **Your account and profile:** while your account is open. When you delete your account, we delete your data within [30] days, and backup copies are overwritten within [7] days after that.
 - **Genotype:** until you delete it or your account, as in section 5.
 - **Verification results:** for as long as your account is open.
-- **Safety records** (reports, restrictions and removals): up to [2] years after your account closes, so removed members can't simply sign up again.
+- **Images held by Smile ID:** Smile ID keeps the selfie and photo images from verification checks for up to five years, under its own terms. Toastly never holds them.
+- **Safety records** (reports, restrictions and removals): up to [2] years after your account closes, so removed members can't simply sign up again. For a removed member, this includes a one-way fingerprint of their phone number and ID number. If an account is under review when it's deleted, these records are kept until the review is settled.
+- **Coins:** unspent coins are lost when you delete your account. We'll show you your balance and offer you the chance to use them before you confirm.
 - **Payment and financial records:** [6] years, as tax law requires.
 
 ---
@@ -171,7 +173,7 @@ Wherever you live, you can ask us to:
 - **withdraw consent** where we rely on it;
 - **review** any decision about your account.
 
-Many of these you can do directly in your settings. Otherwise, email **support@trytoastly.com** and we'll respond within [30] days. We may need to confirm your identity first.
+Many of these you can do directly in your settings. Otherwise, email **support@trytoastly.com** and we'll respond within one month. We may need to confirm your identity first. Where the law allows, we may withhold some safety records — for example, where sharing them would help someone get around our protections against fraud.
 
 **If you're unhappy with how we've handled your data,** you can complain to the **Nigeria Data Protection Commission (NDPC)**. If you live in the UK, you can contact our UK representative, [UK REPRESENTATIVE NAME AND CONTACT DETAILS], or complain to the **Information Commissioner's Office (ICO)**. We'd appreciate the chance to put things right first.
 

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/17ffd00c-d936-4ef5-9a0b-b88b67de9b50.js"></script>
+
+
+
+
+
+
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+@font-face{font-family:Aleo;src:url("assets/2086a4f6-ea9a-4a0e-93fc-cc02d768b363.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/2b0d5e28-a719-42ba-b037-d54af40a5db0.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/c3506ef4-50e6-4f90-9c3a-2a75e1cd4cee.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/6f7b8c32-feed-41b2-b4ff-49bec1fa89e3.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/02f92785-cecd-49d9-8d92-112f47074fe8.woff2") format("woff2");font-weight:700;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Navigation 1 of 5</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Tab bar on Today</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">Four tabs, tapping only. The active tab gets an amber bar, a white label and a heavier weight, so it reads without colour. Inbox carries the existing amber badge as a bare count, never a name or preview. Today and Gists carry no counts. Tap any tab to move between pages.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:stretch">
+      <sc-for list="{{ chipGroups }}" as="g" hint-placeholder-count="3">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding-right:8px;margin-right:2px;border-right:1px solid rgba(5,3,9,0.14)">
+          <sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="2">
+            <button type="button" sc-camel-on-click="{{ c.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:32px">
+    <sc-for list="{{ frames }}" as="f" hint-placeholder-count="1">
+      <div style="display:grid;gap:10px;width:{{ f.frameW }};max-width:100%">
+        <div data-screen-label="{{ f.label }}" style="width:100%;height:{{ f.frameH }};min-height:{{ f.minH }};display:flex;flex-direction:column;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+          <sc-if value="{{ f.mobile }}" hint-placeholder-val="{{ true }}">
+            <div style="flex-shrink:0;background:#001F1B;padding:14px 8px 14px 16px;display:flex;align-items:center;gap:10px">
+              <div style="flex:1;min-width:0;display:grid;gap:2px">
+                <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">{{ f.title }}</p>
+                <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">{{ f.sub }}</p>
+              </div>
+              <button type="button" aria-label="Safety kit" style="flex-shrink:0;min-height:44px;min-width:44px;padding:0 12px 0 10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(235,217,174,0.3);border-radius:999px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:{{ f.safetyOutline }};outline-offset:3px" style-hover="border-color:#EBD9AE">
+                <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 18.8 6v5.2c0 4.3-2.8 7.9-6.8 9.6-4-1.7-6.8-5.3-6.8-9.6V6Z" stroke="#EBD9AE" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+                <span>Safety</span>
+              </button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ f.desk }}">
+            <header style="flex-shrink:0;background:#001F1B;min-height:64px;padding:8px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px;border-bottom:1px solid rgba(235,217,174,0.16)">
+              <span style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                <svg width="30" height="30" sc-camel-view-box="0 0 48 48" fill="none" aria-hidden="true"><circle cx="19" cy="20" r="9.5" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="29" cy="20" r="9.5" stroke="#FFB300" stroke-width="3"></circle><rect x="8" y="34" width="32" height="2.4" rx="1.2" fill="#EBD9AE"></rect></svg>
+                <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:21px;color:#FFFFFF">Toastly</span>
+              </span>
+              <nav aria-label="Main" style="display:flex;align-items:center;gap:4px;flex:1;min-width:0">
+                <sc-for list="{{ f.tabs }}" as="t" hint-placeholder-count="4">
+                  <button type="button" sc-camel-on-click="{{ t.go }}" aria-current="{{ t.current }}" aria-label="{{ t.aria }}" style="position:relative;min-height:44px;padding:0 12px;display:flex;align-items:center;gap:7px;background:transparent;border:0;cursor:pointer;font-family:Inter,sans-serif;font-size:15px;font-weight:{{ t.lw }};color:{{ t.lc }}" style-hover="color:#FFFFFF">
+                    <span>{{ t.label }}</span>
+                    <sc-if value="{{ t.badge }}">
+                      <span style="min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums">{{ t.count }}</span>
+                    </sc-if>
+                    <sc-if value="{{ t.marker }}">
+                      <span aria-hidden="true" style="width:7px;height:7px;border-radius:999px;background:#EBD9AE"></span>
+                    </sc-if>
+                    <span aria-hidden="true" style="position:absolute;left:12px;right:12px;bottom:4px;height:2px;border-radius:2px;background:#FFB300;opacity:{{ t.barOp }}"></span>
+                  </button>
+                </sc-for>
+              </nav>
+              <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                <button type="button" style="min-height:44px;padding:0 14px 0 12px;display:flex;align-items:center;gap:7px;border:1px solid rgba(235,217,174,0.3);border-radius:999px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#EBD9AE">
+                  <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 18.8 6v5.2c0 4.3-2.8 7.9-6.8 9.6-4-1.7-6.8-5.3-6.8-9.6V6Z" stroke="#EBD9AE" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+                  <span>Safety kit</span>
+                </button>
+                <button type="button" style="min-height:44px;padding:0 12px;background:transparent;border:0;color:rgba(255,255,255,0.66);font-family:Inter,sans-serif;font-size:14px;font-weight:500;cursor:pointer" style-hover="color:#FFFFFF">Sign out</button>
+              </span>
+            </header>
+          </sc-if>
+
+          <div style="flex:1;min-height:0;overflow:auto">
+            <div style="max-width:{{ f.contentMax }};margin:0 auto;padding:{{ f.pad }};display:grid;gap:12px;align-content:start">
+
+              <sc-if value="{{ f.desk }}">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px 6px">
+                  <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:26px;font-weight:700;color:#050309">{{ f.title }}</h2>
+                  <p style="margin:0;font-size:14px;color:#504E52">{{ f.sub }}</p>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isToday }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;gap:12px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px">
+                    <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Your six</p>
+                    <p style="margin:0;font-size:12.5px;color:#828184">Saturday 3 Oct</p>
+                  </div>
+                  <sc-for list="{{ f.people }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex;gap:12px;align-items:center;padding:12px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.1);border-radius:14px">
+                      <img src="{{ p.img }}" alt="" style="width:56px;height:56px;border-radius:999px;object-fit:cover;flex-shrink:0;background:#D9D9DA">
+                      <div style="flex:1;min-width:0;display:grid;gap:3px">
+                        <p style="margin:0;font-size:15px;font-weight:600;color:#050309">{{ p.name }}</p>
+                        <p style="margin:0;font-size:13px;color:#828184">{{ p.meta }}</p>
+                      </div>
+                      <sc-if value="{{ p.verified }}">
+                        <span style="flex-shrink:0;padding:5px 9px;border-radius:999px;background:#E5F0EE;border:1px solid rgba(0,105,92,0.24);font-size:12px;font-weight:600;color:#00453C">Verified</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isGists }}">
+                <div style="display:grid;gap:22px">
+                  <sc-for list="{{ f.groups }}" as="g" hint-placeholder-count="3">
+                    <div style="display:grid;gap:10px">
+                      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px">
+                        <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">{{ g.title }}</h3>
+                        <p style="margin:0;font-size:12.5px;color:#828184">{{ g.count }}</p>
+                      </div>
+                      <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="1">
+                        <div style="display:grid;gap:10px;padding:12px;background:#FFFFFF;border:1px solid {{ r.border }};border-radius:14px">
+                          <span style="display:flex;align-items:center;gap:12px">
+                            <img src="{{ r.img }}" alt="" style="width:48px;height:48px;border-radius:999px;object-fit:cover;flex-shrink:0;background:#D9D9DA">
+                            <span style="flex:1;min-width:0;display:grid;gap:2px">
+                              <span style="font-size:15px;font-weight:600;color:#050309">{{ r.name }}</span>
+                              <span style="font-size:13px;line-height:1.45;color:{{ r.statusColor }}">{{ r.status }}</span>
+                            </span>
+                            <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+                          </span>
+                          <span style="display:grid;gap:3px;padding:10px 12px;border-radius:10px;background:#F6F2EA">
+                            <span style="font-size:12.5px;font-weight:600;line-height:1.45;color:#504E52">{{ r.whose }} · {{ r.prompt }}</span>
+                            <span style="font-size:14px;line-height:1.5;color:#1E1C21;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">“{{ r.answer }}”</span>
+                          </span>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{ g.empty }}">
+                        <p style="margin:0;padding:14px;border:1px solid rgba(5,3,9,0.1);border-radius:14px;background:#FFFFFF;font-size:14px;line-height:1.55;color:#504E52">{{ g.emptyText }}</p>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isInbox }}">
+                <div style="display:grid;gap:10px">
+                  <sc-if value="{{ f.locked }}">
+                    <button type="button" style="display:flex;gap:12px;align-items:center;padding:14px;background:#FFFFFF;border:1px solid rgba(235,217,174,0.55);border-radius:14px;text-align:left;width:100%;cursor:pointer;font-family:Inter,sans-serif" style-hover="border-color:#FFB300">
+                      <span style="width:40px;height:40px;border-radius:999px;background:#001F1B;display:grid;place-items:center;flex-shrink:0">
+                        <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#FFB300" stroke-width="1.6"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#FFB300" stroke-width="1.6" stroke-linecap="round"></path></svg>
+                      </span>
+                      <span style="flex:1;min-width:0;display:grid;gap:2px">
+                        <span style="font-size:14.5px;font-weight:600;color:#050309">{{ f.lockedLabel }}</span>
+                        <span style="font-size:13px;color:#828184">Unlock with Premium to view</span>
+                      </span>
+                      <span aria-hidden="true" style="color:#828184;font-size:16px;flex-shrink:0">›</span>
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ f.noLocked }}">
+                    <p style="margin:0;padding:14px;border:1px solid rgba(5,3,9,0.1);border-radius:14px;background:#FFFFFF;font-size:14px;line-height:1.55;color:#504E52">No messages yet.</p>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.isProfile }}">
+                <div style="display:grid;gap:12px">
+                  <div style="padding:14px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.1);border-radius:16px;display:grid;gap:14px">
+                    <div style="display:flex;align-items:center;gap:14px">
+                      <img src="{{ f.meImg }}" alt="" style="width:64px;height:64px;border-radius:999px;object-fit:cover;flex-shrink:0;background:#D9D9DA">
+                      <div style="flex:1;min-width:0;display:grid;gap:3px">
+                        <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#050309">Adaeze, 29</p>
+                        <p style="margin:0;font-size:13px;color:#504E52">Yaba, Lagos · Starter</p>
+                      </div>
+                      <span style="flex-shrink:0;padding:5px 9px;border-radius:999px;background:#E5F0EE;border:1px solid rgba(0,105,92,0.24);font-size:12px;font-weight:600;color:#00453C">Verified</span>
+                    </div>
+                    <button type="button" style="min-height:44px;padding:10px 12px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Edit profile and photos</button>
+                  </div>
+
+                  <p style="margin:8px 2px 0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Your prompts</p>
+                  <sc-for list="{{ f.prompts }}" as="q" hint-placeholder-count="2">
+                    <div style="display:grid;gap:3px;padding:12px 14px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.1);border-radius:14px">
+                      <span style="font-size:12.5px;font-weight:600;line-height:1.45;color:#504E52">{{ q.prompt }}</span>
+                      <span style="font-size:14px;line-height:1.5;color:#1E1C21">“{{ q.answer }}”</span>
+                    </div>
+                  </sc-for>
+
+                  <p style="margin:8px 2px 0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">More</p>
+                  <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+                    <sc-for list="{{ f.hub }}" as="h" hint-placeholder-count="6">
+                      <button type="button" style="min-height:60px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:transparent;border:0;border-top:{{ h.rule }};text-align:left;cursor:pointer;font-family:Inter,sans-serif" style-hover="background:#F6F2EA">
+                        <span style="display:grid;gap:2px;min-width:0">
+                          <span style="font-size:15px;font-weight:500;color:#050309">{{ h.label }}</span>
+                          <span style="font-size:13px;line-height:1.45;color:#504E52">{{ h.sub }}</span>
+                        </span>
+                        <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ f.mobile }}">
+                    <button type="button" style="justify-self:center;min-height:44px;padding:10px 18px;background:transparent;border:0;color:#504E52;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="color:#050309">Sign out</button>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+
+          <sc-if value="{{ f.mobile }}" hint-placeholder-val="{{ true }}">
+            <nav aria-label="Main" style="flex-shrink:0;background:#001F1B;border-top:1px solid rgba(235,217,174,0.16);display:grid;grid-template-columns:repeat(4,minmax(0,1fr))">
+              <sc-for list="{{ f.tabs }}" as="t" hint-placeholder-count="4">
+                <button type="button" sc-camel-on-click="{{ t.go }}" aria-current="{{ t.current }}" aria-label="{{ t.aria }}" style="position:relative;min-height:58px;padding:8px 2px 7px;display:grid;justify-items:center;align-content:center;gap:4px;background:transparent;border:0;cursor:pointer;font-family:Inter,sans-serif">
+                  <span aria-hidden="true" style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:0 0 3px 3px;background:#FFB300;opacity:{{ t.barOp }}"></span>
+                  <span style="position:relative;width:24px;height:24px;display:block">
+                    <sc-if value="{{ t.isToday }}"><svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" stroke="{{ t.ic }}" stroke-width="1.5"></rect><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" stroke="{{ t.ic }}" stroke-width="1.5" stroke-linecap="round"></path></svg></sc-if><sc-if value="{{ t.isGists }}"><svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="{{ t.ic }}" stroke-width="1.5"></circle><path d="M12 7.5V12l3 2" stroke="{{ t.ic }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if><sc-if value="{{ t.isInbox }}"><svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 1 1 3.5 6.6L4 20l1.2-3.8A7.9 7.9 0 0 1 4 12Z" stroke="{{ t.ic }}" stroke-width="1.5" stroke-linejoin="round"></path></svg></sc-if><sc-if value="{{ t.isProfile }}"><svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6" stroke="{{ t.ic }}" stroke-width="1.5"></circle><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="{{ t.ic }}" stroke-width="1.5" stroke-linecap="round"></path></svg></sc-if>
+                    <sc-if value="{{ t.badge }}">
+                      <span style="position:absolute;top:-6px;left:15px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px #001F1B">{{ t.count }}</span>
+                    </sc-if>
+                    <sc-if value="{{ t.marker }}">
+                      <span aria-hidden="true" style="position:absolute;top:0;right:-3px;width:8px;height:8px;border-radius:999px;background:#EBD9AE;box-shadow:0 0 0 2px #001F1B"></span>
+                    </sc-if>
+                  </span>
+                  <span style="font-size:12px;line-height:1.2;font-weight:{{ t.lw }};color:{{ t.lc }}">{{ t.label }}</span>
+                </button>
+              </sc-for>
+            </nav>
+            <sc-if value="{{ f.pwa }}">
+              <div aria-hidden="true" style="flex-shrink:0;height:22px;background:#001F1B;display:grid;place-items:center">
+                <span style="width:112px;height:4px;border-radius:999px;background:rgba(255,255,255,0.5)"></span>
+              </div>
+            </sc-if>
+          </sc-if>
+        </div>
+        <sc-if value="{{ f.hasCaption }}">
+          <p style="margin:0;padding:0 4px;font-size:13px;line-height:1.5;color:#504E52">{{ f.caption }}</p>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const SCREEN = "today";
+const IMG = function (n) { return (window.__resources && window.__resources[n]) || ("assets/img/" + n + ".jpeg"); };
+const PEOPLE = [
+  { name: "Amaka, 29", meta: "Lagos · Marketing · Igbo", img: "member-amaka", verified: true },
+  { name: "Kelechi, 31", meta: "Abuja · Civil engineer", img: "member-kelechi", verified: true },
+  { name: "Zainab, 27", meta: "Kaduna · Pharmacist", img: "member-zainab", verified: true },
+  { name: "Tobi, 30", meta: "Ibadan · Product designer", img: "member-tobi", verified: false },
+  { name: "Ifeoma, 28", meta: "Enugu · Teacher", img: "member-ifeoma", verified: true },
+  { name: "Ifeanyi, 33", meta: "Port Harcourt · Logistics", img: "member-ifeanyi", verified: false }
+];
+const GISTS = {
+  invites: [{ name: "Kelechi, 31", img: "member-kelechi", status: "Invited you · 2 hours ago", whose: "Your answer", prompt: "The way to win me over is…", answer: "Remember the small thing I mentioned weeks ago. Bonus points if there's suya involved.", invite: true }],
+  waiting: [{ name: "Amaka, 29", img: "member-amaka", status: "Invite sent · just now", whose: "Amaka's answer", prompt: "A Sunday that feels like me…", answer: "Jollof at my aunty's in Surulere, a long call with my brother in Leeds, then choir practice I pretend not to enjoy." }],
+  coming: [{ name: "Ifeoma, 28", img: "member-ifeoma", status: "Tomorrow, Sun 4 Oct · 7:30 pm", whose: "Your answer", prompt: "I'm weirdly good at…", answer: "Haggling at Balogun market. My mum taught me and I've never lost.", coming: true }]
+};
+const PROMPTS = [
+  { prompt: "The way to win me over is…", answer: "Remember the small thing I mentioned weeks ago. Bonus points if there's suya involved." },
+  { prompt: "I'm weirdly good at…", answer: "Haggling at Balogun market. My mum taught me and I've never lost." }
+];
+const HUB = [
+  ["Wallet", "Coins and date deposits"],
+  ["Couple Mode", "Free on every plan"],
+  ["Safety kit", "Free on every plan, always"],
+  ["Verification", "Selfie and ID checks"],
+  ["Toastly Help", "Answers, and a person when you need one"],
+  ["Your data", "See, download or delete what we hold"]
+];
+const PAGES = { today: ["Today's six", "Refreshes 6:00 am"], gists: ["Gists", "18-minute voice chats"], inbox: ["Inbox", "Messages"], profile: ["Profile", "You, as others see you"] };
+const TABS = [["today", "Today"], ["gists", "Gists"], ["inbox", "Inbox"], ["profile", "Profile"]];
+
+class Component extends DCLogic {
+  state = {
+    w: SCREEN === "desktop" ? "desk" : "360",
+    page: SCREEN === "desktop" ? "today" : (SCREEN === "safety" ? "gists" : SCREEN),
+    badge: true, marker: true, pwa: true, outline: SCREEN === "safety"
+  };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  pair(key, a, b) {
+    return { chips: [this.chip(a, this.state[key] === true, () => this.setState({ [key]: true })), this.chip(b, this.state[key] === false, () => this.setState({ [key]: false }))] };
+  }
+  frame(page, caption, fixed) {
+    const s = this.state, desk = s.w === "desk";
+    const count = s.badge ? 2 : 0;
+    const tabs = TABS.map(([k, l]) => {
+      const on = k === page, badge = k === "inbox" && count > 0, marker = k === "gists" && s.marker;
+      return {
+        label: l, go: fixed ? undefined : () => this.setState({ page: k }),
+        isToday: k === "today", isGists: k === "gists", isInbox: k === "inbox", isProfile: k === "profile",
+        current: on ? "page" : undefined,
+        ic: on ? "#FFB300" : "#EBD9AE", lc: on ? "#FFFFFF" : "rgba(255,255,255,0.66)", lw: on ? "600" : "500", barOp: on ? "1" : "0",
+        badge, marker, count: String(count),
+        aria: l + (badge ? ", " + count + " new" : "") + (marker ? ", an invite is waiting" : "")
+      };
+    });
+    const rowsFor = k => (k === "invites" && !s.marker ? [] : GISTS[k]).map(r => Object.assign({}, r, {
+      img: IMG(r.img), border: r.invite ? "rgba(235,217,174,0.95)" : "rgba(5,3,9,0.1)", statusColor: r.coming ? "#00695C" : "#504E52"
+    }));
+    const group = (k, title, emptyText) => { const rows = rowsFor(k); return { title, rows, empty: !rows.length, emptyText, count: rows.length ? String(rows.length) : "" }; };
+    return {
+      label: PAGES[page][0], title: PAGES[page][0], sub: PAGES[page][1],
+      desk, mobile: !desk,
+      frameW: desk ? "1040px" : s.w + "px", frameH: desk ? "auto" : "720px", minH: desk ? "640px" : "0",
+      contentMax: desk ? "680px" : "none", pad: desk ? "32px 24px 48px" : "16px 14px 24px",
+      isToday: page === "today", isGists: page === "gists", isInbox: page === "inbox", isProfile: page === "profile",
+      tabs,
+      people: PEOPLE.map(p => Object.assign({}, p, { img: IMG(p.img) })),
+      groups: [group("invites", "Invites for you", "No invites right now."), group("waiting", "Waiting on them", "Nothing waiting on a reply."), group("coming", "Coming up", "Nothing booked yet.")],
+      locked: count > 0, noLocked: count === 0, lockedLabel: count === 1 ? "1 new message" : count + " new messages",
+      meImg: IMG("verify-selfie"), prompts: PROMPTS,
+      hub: HUB.map(([label, sub], i) => ({ label, sub, rule: i ? "1px solid rgba(5,3,9,0.1)" : "0" })),
+      pwa: s.pwa && !desk,
+      safetyOutline: s.outline ? "2px dashed #CC8F00" : "none",
+      caption, hasCaption: !!caption
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const groups = [];
+    if (SCREEN !== "desktop") groups.push({ chips: [["360", "360px"], ["320", "320px"], ["desk", "Desktop"]].map(([v, l]) => this.chip(l, s.w === v, () => this.setState({ w: v }))) });
+    if (SCREEN === "desktop") groups.push({ chips: TABS.map(([k, l]) => this.chip(l, s.page === k, () => this.setState({ page: k }))) });
+    if (SCREEN === "today" || SCREEN === "desktop") groups.push(this.pair("badge", "Inbox badge “2”", "No badge"));
+    if (SCREEN === "gists" || SCREEN === "desktop") groups.push(this.pair("marker", "Invite waiting", "None waiting"));
+    if (SCREEN === "safety") groups.push(this.pair("outline", "Show tap target", "Hide target"));
+    if (SCREEN !== "desktop") groups.push(this.pair("pwa", "Installed PWA", "In browser"));
+    const frames = SCREEN === "safety"
+      ? [this.frame("gists", "On Gists: right end of the dark band.", true), this.frame("inbox", "On the locked Starter inbox: same place, same size. Never paywalled.", true)]
+      : [this.frame(s.page, "", false)];
+    return { chipGroups: groups, frames };
+  }
+}
+</script>
+
+
+</body></html>

@@ -45,6 +45,35 @@ export function compareOutcome(r: StepResult): MatchOutcome {
 }
 
 /**
+ * The ONE onboarding selfie (decided 2026-10-05): a single Compare of the
+ * live selfie against the main photo answers two questions at once — is a
+ * real person here (liveness, for Verified Real), and is the main photo
+ * them.
+ *
+ *   clear                       -> live, matched
+ *   face_verification_failed    -> live (the selfie passed liveness), but
+ *                                  the photo doesn't look like them
+ *   image_unavailable_or_invalid-> the check couldn't run: choose a clearer
+ *                                  main photo and take it again
+ *   anything else               -> a person decides both
+ */
+export type OnboardingOutcome = {
+  live: "passed" | "review" | "retake";
+  match: MatchOutcome;
+};
+
+export function onboardingOutcome(r: StepResult): OnboardingOutcome {
+  if (r.status === "clear") return { live: "passed", match: { outcome: "matched" } };
+  if (r.status === "block" && r.reason === "face_verification_failed") {
+    return { live: "passed", match: { outcome: "mismatch", reason: "not_matching" } };
+  }
+  if (r.status === "error" && r.reason === "image_unavailable_or_invalid") {
+    return { live: "retake", match: { outcome: "mismatch", reason: "face_not_clear" } };
+  }
+  return { live: "review", match: REVIEW };
+}
+
+/**
  * Both steps must pass. "Not the enrolled person" outranks everything,
  * then any other mismatch, then review.
  */

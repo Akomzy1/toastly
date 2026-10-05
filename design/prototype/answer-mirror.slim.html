@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/323350e6-bf64-42c2-9897-c1a5ff14a54b.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/37cd76b0-6be7-4dc4-abbe-2dd2b8ee9f17.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/d7d15ccb-1b68-46de-86d3-16eec3aea2e1.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/c9d1ac54-f10a-430b-92ac-152b73f75b0d.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/356139ca-4f14-481b-881c-d96e530260ab.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Answer Mirror</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Feedback on a prompt answer</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">A quiet, optional "Get feedback" under the answer. It returns one line from a fixed set: no rewritten text, no example wording, no rewrite button, no score. Every line looks the same, so none reads as a pass or a fail. Editing the answer clears the line.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="5">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Answer Mirror" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Edit answer</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Profile prompts</p>
+        </div>
+      </div>
+
+      <div style="padding:20px 14px 24px;display:grid;gap:18px;align-content:start">
+
+        <label style="display:grid;gap:10px">
+          <span style="padding:0 2px;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.25;color:#050309;text-wrap:balance">A Sunday that feels like me…</span>
+          <textarea value="{{ text }}" sc-camel-on-change="{{ onType }}" rows="5" style="width:100%;min-height:136px;padding:14px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;line-height:1.6;color:#050309;resize:vertical;outline-color:#00695C"></textarea>
+        </label>
+
+        <div style="display:grid;gap:10px">
+          <sc-if value="{{ showAction }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px">
+              <button type="button" sc-camel-on-click="{{ ask }}" style="min-height:44px;padding:10px 16px;border:1px solid rgba(0,105,92,0.35);border-radius:10px;background:#FFFFFF;color:#00695C;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#E5F0EE;border-color:#00695C">Get feedback</button>
+              <span style="font-size:13px;color:#504E52">Optional · AI feedback</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isReading }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="min-height:44px;display:flex;align-items:center;padding:0 2px;font-size:14px;color:#504E52">Reading your answer…</div>
+          </sc-if>
+
+          <sc-if value="{{ hasFeedback }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="border:1px solid rgba(5,3,9,0.12);border-radius:12px;background:#FFFFFF;padding:12px 6px 6px 14px;display:grid;gap:4px">
+              <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">AI feedback</p>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                <p style="margin:0;padding:2px 0 8px;font-size:15px;line-height:1.55;color:#050309;text-wrap:pretty">{{ feedback }}</p>
+                <button type="button" sc-camel-on-click="{{ hide }}" aria-label="Hide feedback" style="flex-shrink:0;width:44px;height:44px;margin-top:-10px;border:0;border-radius:10px;background:transparent;color:#504E52;font-family:Inter,sans-serif;font-size:20px;line-height:1;cursor:pointer" style-hover="background:#F2F2F2">×</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <p style="margin:0;padding:0 2px;font-size:13px;font-weight:600;line-height:1.5;color:#001F1B">Toastly AI will never write a word for you.</p>
+        </div>
+
+        <div style="display:grid;gap:10px;margin-top:6px">
+          <button type="button" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#005449">Save answer</button>
+          <button type="button" style="min-height:48px;padding:14px 20px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const LINES = {
+  great: "Great answer — this sounds like you.",
+  specific: "Try being more specific.",
+  detail: "Add a detail only you could say.",
+  short: "This is a bit short — say a little more."
+};
+const SAMPLES = {
+  great: "Jollof at my aunty's in Surulere, a long call with my brother in Leeds, then choir practice I pretend not to enjoy.",
+  specific: "Relaxing and spending quality time with family and friends.",
+  detail: "Church in the morning, lunch, then a film in the evening.",
+  short: "Sleeping."
+};
+function pickLine(t) {
+  const s = t.trim();
+  if (s.length < 25) return LINES.short;
+  if (/relax|quality time|family and friends|chill|good vibes/i.test(s)) return LINES.specific;
+  if (s.length < 80) return LINES.detail;
+  return LINES.great;
+}
+class Component extends DCLogic {
+  state = { w: "360px", preset: "detail", text: SAMPLES.detail, fb: LINES.detail, reading: false };
+  componentWillUnmount() { clearTimeout(this.t); }
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, preset, text, fb, reading } = this.state;
+    const set = (k, s) => () => { clearTimeout(this.t); this.setState({ preset: k, ...s }); };
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [
+        this.chip("Before feedback", preset === "none", set("none", { text: SAMPLES.detail, fb: null, reading: false })),
+        ...["great", "specific", "detail", "short"].map(k =>
+          this.chip({ great: "Great answer", specific: "More specific", detail: "Only you", short: "Too short" }[k], preset === k, set(k, { text: SAMPLES[k], fb: LINES[k], reading: false })))
+      ],
+      text,
+      onType: e => { clearTimeout(this.t); this.setState({ text: e.target.value, fb: null, reading: false, preset: "none" }); },
+      showAction: !fb && !reading,
+      isReading: reading,
+      hasFeedback: !!fb && !reading,
+      feedback: fb || "",
+      ask: () => {
+        this.setState({ reading: true });
+        clearTimeout(this.t);
+        this.t = setTimeout(() => this.setState(s => ({ reading: false, fb: pickLine(s.text) })), 900);
+      },
+      hide: () => this.setState({ fb: null, preset: "none" })
+    };
+  }
+}
+</script>
+
+
+</body></html>

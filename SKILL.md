@@ -32,6 +32,11 @@ Located in `/design/prototype/`:
 | `brand-the-stake.slim.html` | **Adopted brand mark ("The Stake") — binding.** Mark geometry, palette roles, lockups, do/don't |
 | `brand-assets.slim.html` | **Production brand assets.** PWA icons, favicons, vector masters, social exports, splash |
 
+**Plus the in-app screens exported since** — going live, photos, Your data,
+Gist invites, navigation, coins and dates, review, genotype, Toastly Help,
+Answer Mirror (46 screens, slimmed in 2026-10-05). Each one, the route it
+governs, and whether it's built: **`design/prototype/ROUTES.md`**.
+
 Open the specific file for the page you are building. Building the Pricing page from the Home page's components is not fidelity.
 
 ## Design tokens
@@ -112,7 +117,7 @@ inventing a new one.
 
 **App-surface screens built in Prompts 4–9, also outside the prototype.**
 The match card (feed), the Gist session list and room, the inbox list, the
-wallet, Couple Mode, and the safety kit at `/safety-kit` (`/safety` is the
+coins screen, Couple Mode, and the safety kit at `/safety-kit` (`/safety` is the
 marketing page). The inbox's locked row follows `locked-inbox.slim.html`; the
 list around it does not. New components with them: `SafetyActions` (the
 report/block disclosure), `ReportForm`, `BlockButton`, `BlurredImage`,

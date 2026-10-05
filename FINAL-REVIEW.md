@@ -503,6 +503,47 @@ Every erasure is logged with no personal data.
 — the word is now banned from UI copy. The hub isn't integrated; this is
 recorded for when it is.
 
+## Later on 2026-10-05: reorder, consent wording, the new prototypes
+
+**Onboarding reordered** (decided): phone → photos → ONE selfie that does
+both liveness and the main-photo match — a single Smile ID Compare that also
+enrols the member (`record_onboarding_check()`, 0017). A live person whose
+photo doesn't match still earns Verified Real but stays hidden; an
+unreadable check is a retake; anything uncertain goes to a person. The fresh
+selfie is now only for replacing the main photo, and that Compare never
+enrols — an impostor's selfie must not overwrite the enrolled face if the
+Authentication half fails. The superseded liveness step and the verify
+page's photo-visibility step are gone (`/photos` has the toggle, per its
+prototype).
+
+**Consent wording** (`Toastly-Verification-Consent-Wording.md`, now in the
+repo) replaces the placeholder on the onboarding selfie, replace-main-photo
+and ID-check screens — word for word, from one source (`lib/consent.ts`),
+with the bracketed retention line left visible. Every agreement is stored
+with its version in `consents` (0017, append-only), recorded by the server
+before the check runs. Two constraint checks enforce the exact wording and
+the consent-first order. The privacy policy took the matching update
+(Smile ID's five-year retention, the ID fingerprint, the blocklist, coins
+at deletion, one-month responses).
+
+**Data requests** (decided): the automatic download stays as built;
+manual requests are case by case and do not blanket-exclude fraud signals.
+
+**Prototypes:** all seven zips slimmed into `design/prototype/` (39 new
+screens; Home, Features, Diaspora and Pricing replaced by newer exports).
+Every one is mapped in **`design/prototype/ROUTES.md`**, with gaps and
+conflicts. Rebuilt against their new prototypes — **no longer invented
+UI**: not live yet, access paused, replace main photo, Your data, and
+account deletion (now two steps, with the coin balance shown and an offer
+to spend it first; deletion forfeits coins — decided). The selfie and ID
+consent screens borrow `photo-replace-main`'s consent layout, since only
+their wording was designed.
+
+**Still invented / not built:** the selfie capture itself (Smile ID SDK, next
+in the build order); the "open review" line on deletion (needs the review
+state); Toastly Help rows the prototypes list. The app shell still has its
+own header above the new dark bands until the nav prototypes are built.
+
 ## Docs synced to the 2026-10-05 drops
 
 PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after

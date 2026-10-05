@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/d9d135c4-c4a4-440f-bc21-57aa5c381c29.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/d88537e3-190d-460c-985c-8a41ef7407fc.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/b46dc52b-cffd-4981-8a45-7465b8d8af27.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/d153b1b3-21a8-41b0-a66d-c8bb05014af5.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/60a6ddfe-8263-4e8b-9c60-6a7301682e17.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F2F2F2;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div data-screen-label="Review queue" style="min-height:100vh;display:flex;flex-direction:column">
+
+  <header style="background:#001F1B;min-height:52px;padding:8px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px">
+    <span style="display:flex;align-items:center;gap:9px">
+      <svg width="26" height="26" sc-camel-view-box="0 0 48 48" fill="none" aria-hidden="true"><circle cx="19" cy="20" r="9.5" stroke="#EBD9AE" stroke-width="3"></circle><circle cx="29" cy="20" r="9.5" stroke="#FFB300" stroke-width="3"></circle><rect x="8" y="34" width="32" height="2.4" rx="1.2" fill="#EBD9AE"></rect></svg>
+      <span style="font-family:Aleo,Georgia,serif;font-weight:700;font-size:18px;color:#FFFFFF">Toastly</span>
+      <span style="padding:3px 8px;border:1px solid rgba(235,217,174,0.4);border-radius:6px;font-size:12px;font-weight:600;color:#EBD9AE">Review console</span>
+    </span>
+    <nav aria-label="Console" style="display:flex;gap:4px">
+      <a href="review-queue.html" aria-current="page" style="min-height:44px;padding:0 12px;display:flex;align-items:center;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;box-shadow:inset 0 -2px 0 #FFB300">Queue</a>
+      <a href="review-history.html" style="min-height:44px;padding:0 12px;display:flex;align-items:center;font-size:14px;font-weight:500;color:rgba(255,255,255,0.72);text-decoration:none" style-hover="color:#FFFFFF">Decision history</a>
+    </nav>
+    <span style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.72)">Adaeze O. · Reviewer</span>
+  </header>
+
+  <main style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+
+    <aside aria-label="Filters" style="flex:1 1 100%;display:grid;gap:12px;padding:14px 16px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px">
+      <div style="display:grid;gap:6px">
+        <p style="margin:0 0 2px;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#504E52">Status</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ statusFilters }}" as="f" hint-placeholder-count="5">
+            <button type="button" sc-camel-on-click="{{ f.pick }}" aria-pressed="{{ f.on }}" style="min-height:36px;padding:6px 11px;border-radius:8px;border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:500;cursor:pointer">{{ f.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;gap:6px">
+        <p style="margin:0 0 2px;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#504E52">Case type</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ typeFilters }}" as="f" hint-placeholder-count="8">
+          <button type="button" sc-camel-on-click="{{ f.pick }}" aria-pressed="{{ f.on }}" style="min-height:36px;padding:6px 11px;display:flex;align-items:center;gap:8px;border:1px solid {{ f.border }};border-radius:8px;background:{{ f.bg }};color:{{ f.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:{{ f.weight }};cursor:pointer">
+            <span>{{ f.label }}</span>
+            <span style="font-size:12px;color:{{ f.countFg }};font-variant-numeric:tabular-nums">{{ f.count }}</span>
+          </button>
+        </sc-for>
+        </div>
+      </div>
+    </aside>
+
+    <section aria-labelledby="q-title" style="flex:999 1 640px;min-width:0;display:grid;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px">
+        <div style="display:grid;gap:4px">
+          <h1 id="q-title" style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2">Queue</h1>
+          <p style="margin:0;font-size:13.5px;color:#504E52">{{ summary }}</p>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#504E52">Sort
+          <sc-raw-select sc-camel-on-change="{{ setSort }}" value="{{ sort }}" style="min-height:36px;padding:6px 10px;border:1px solid rgba(5,3,9,0.2);border-radius:8px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:13px;color:#050309">
+            <option value="oldest">Oldest first</option>
+            <option value="newest">Newest first</option>
+          </sc-raw-select>
+        </label>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);border-radius:10px;overflow:hidden">
+        <div role="row" style="display:grid;grid-template-columns:84px 160px minmax(0,1fr) 84px 132px;gap:14px;padding:10px 16px;border-bottom:1px solid rgba(5,3,9,0.12);background:#F6F2EA;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#504E52">
+          <span>Case</span><span>Type</span><span>Reason</span><span>Waited</span><span>Status</span>
+        </div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+          <a href="review-case.html" style="display:grid;grid-template-columns:84px 160px minmax(0,1fr) 84px 132px;gap:14px;align-items:center;min-height:56px;padding:10px 16px;border-top:1px solid rgba(5,3,9,0.08);color:#050309;text-decoration:none" style-hover="background:#F6F2EA;color:#050309">
+            <span style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#00695C">{{ r.id }}</span>
+            <span style="font-size:13px;font-weight:500;line-height:1.35">{{ r.type }}</span>
+            <span style="font-size:13.5px;line-height:1.45;color:#1E1C21;text-wrap:pretty">{{ r.reason }}</span>
+            <span style="font-size:13px;font-variant-numeric:tabular-nums;color:#1E1C21">{{ r.waited }}</span>
+            <span style="display:grid;gap:3px;justify-items:start">
+              <span style="padding:3px 8px;border-radius:6px;background:{{ r.stBg }};border:1px solid {{ r.stBorder }};font-size:12px;font-weight:600;color:{{ r.stFg }};white-space:nowrap">{{ r.status }}</span>
+              <sc-if value="{{ r.who }}"><span style="font-size:12px;color:#504E52">{{ r.who }}</span></sc-if>
+            </span>
+          </a>
+        </sc-for>
+        <sc-if value="{{ empty }}">
+          <p style="margin:0;padding:28px 16px;font-size:14px;color:#504E52;text-align:center">No cases match these filters.</p>
+        </sc-if>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="">
+const TYPES = [["pricing", "Pricing signal"], ["safety", "Safety flag"], ["photo", "Photo check"], ["selfie", "Selfie check"], ["blind", "Locked-inbox report"], ["married", "Married-user report"], ["date", "Date-attendance dispute"]];
+const TN = Object.fromEntries(TYPES);
+const CASES = [
+  ["TC-20377", "pricing", "On a naira plan, paying by UK card and signing in from Manchester for 26 days.", 7340, "Decided", "Tunde B."],
+  ["TC-20380", "date", "Member says the other person didn't come. Both check-ins were recorded at the venue.", 7015, "Decided", "Kemi A."],
+  ["TC-20391", "date", "Both say they showed up at Café Neo, Ikeja. Only one check-in was recorded.", 5880, "In review", "Adaeze O."],
+  ["TC-20398", "pricing", "On a naira plan, paying by UK card and signing in from London for 24 days.", 5460, "Waiting on member", "Tunde B."],
+  ["TC-20402", "married", "A match says this member is married. First report on the account.", 4680, "New", ""],
+  ["TC-20407", "blind", "Reported from a locked inbox as \u201cAsking for money\u201d. The reporter hasn't read the messages.", 4200, "New", ""],
+  ["TC-20410", "selfie", "Liveness check scored borderline after two retries in low light.", 3420, "In review", "Kemi A."],
+  ["TC-20413", "safety", "Signed in from a device linked to an account removed in August.", 2940, "New", ""],
+  ["TC-20418", "pricing", "On a naira plan, with a US card on file and a New York time zone for 31 days.", 2640, "New", ""],
+  ["TC-20421", "photo", "Main photo may not match the verified selfie. The automatic check was borderline.", 2280, "New", ""],
+  ["TC-20425", "blind", "Two locked-inbox reports in 48 hours, both \u201cHarassment\u201d.", 1620, "In review", "Adaeze O."],
+  ["TC-20429", "date", "Member says the other person didn't come. The other person disputes it.", 1320, "New", ""],
+  ["TC-20433", "married", "Two separate matches say this member is married.", 1020, "New", ""],
+  ["TC-20436", "safety", "Five matches cancelled dates with this member within a day of booking.", 540, "New", ""],
+  ["TC-20440", "photo", "New main photo may show a different person from the other photos.", 260, "New", ""],
+  ["TC-20444", "selfie", "Re-verification selfie borderline. First selfie passed in June.", 65, "New", ""]
+];
+const ST = {
+  "New": ["#E5F0EE", "rgba(0,105,92,0.3)", "#00453C"],
+  "In review": ["#FFF7E5", "rgba(204,143,0,0.35)", "#4C3500"],
+  "Waiting on member": ["#F2F2F2", "rgba(5,3,9,0.14)", "#1E1C21"],
+  "Decided": ["#FFFFFF", "rgba(5,3,9,0.18)", "#504E52"]
+};
+function fmt(m) {
+  const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+  return d ? d + " d " + h + " h" : h ? h + " h " + mm + " m" : mm + " m";
+}
+class Component extends DCLogic {
+  state = { status: "open", type: "all", sort: "oldest" };
+  renderVals() {
+    const { status, type, sort } = this.state;
+    const byStatus = c => status === "all" ? true : status === "open" ? c[4] !== "Decided" : c[4] === status;
+    const pool = CASES.filter(byStatus);
+    const list = pool.filter(c => type === "all" || c[1] === type).sort((a, b) => sort === "oldest" ? b[3] - a[3] : a[3] - b[3]);
+    const pill = (label, on, pick) => ({ label, on, pick, bg: on ? "#001F1B" : "#FFFFFF", fg: on ? "#FFFFFF" : "#1E1C21", border: on ? "#001F1B" : "rgba(5,3,9,0.18)" });
+    const row = (label, k, count) => ({ label, count: String(count), on: type === k, pick: () => this.setState({ type: k }), bg: type === k ? "#001F1B" : "#FFFFFF", fg: type === k ? "#FFFFFF" : "#1E1C21", border: type === k ? "#001F1B" : "rgba(5,3,9,0.18)", countFg: type === k ? "rgba(255,255,255,0.72)" : "#504E52", weight: 500 });
+    const stLabel = { open: "Open", "New": "New", "In review": "In review", "Waiting on member": "Waiting on member", "Decided": "Decided", all: "All" };
+    return {
+      statusFilters: ["open", "New", "In review", "Waiting on member", "Decided", "all"].map(k => pill(stLabel[k], status === k, () => this.setState({ status: k }))),
+      typeFilters: [row("All types", "all", pool.length)].concat(TYPES.map(([k, l]) => row(l, k, pool.filter(c => c[1] === k).length))),
+      summary: list.length + (list.length === 1 ? " case" : " cases") + " · " + stLabel[status].toLowerCase() + " · " + (sort === "oldest" ? "oldest first" : "newest first"),
+      sort,
+      setSort: e => this.setState({ sort: e.target.value }),
+      rows: list.map(c => ({ id: c[0], type: TN[c[1]], reason: c[2], waited: fmt(c[3]), status: c[4], who: c[5], stBg: ST[c[4]][0], stBorder: ST[c[4]][1], stFg: ST[c[4]][2] })),
+      empty: list.length === 0
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -893,6 +893,55 @@ checkOnce("deleting an account keeps payment and safety records, de-linked", () 
   return hits;
 });
 
+// --- Verification consent wording ------------------------------------------
+//
+// The consent a member agrees to must be the approved wording, word for word
+// (Toastly-Verification-Consent-Wording.md), and stored with its version.
+// The bracketed retention line stays visible until Smile ID confirms it.
+checkOnce("consent screens show the approved wording, exactly", () => {
+  const doc = "Toastly-Verification-Consent-Wording.md";
+  const lib = "lib/consent.ts";
+  if (!fs.existsSync(doc)) return `${doc} is missing`;
+  if (!fs.existsSync(lib)) return `${lib} is missing`;
+  const plain = (s) => s.replace(/\*\*/g, "").replace(/\\'/g, "'").replace(/\s+/g, " ").trim();
+  const quoted = fs
+    .readFileSync(doc, "utf8")
+    .split(/\r?\n/)
+    .filter((l) => l.startsWith("> ") && !/^> \*\*\[/.test(l) && !/^> \*\*[^*]+\*\*$/.test(l))
+    .map((l) => plain(l.slice(2).replace(/^☐ /, "")));
+  const libText = plain(fs.readFileSync(lib, "utf8").replace(/"\s*,?\s*\n\s*"/g, " "));
+  const missing = quoted.filter((q) => q && !libText.includes(q));
+  const hits = missing.map((q) => `${lib} — not shown verbatim: "${q.slice(0, 70)}…"`);
+  if (!/\[Purpose of retention, and any way to request earlier deletion — to be confirmed with Smile ID\.\]/.test(libText)) {
+    hits.push(`${lib} — the bracketed retention line must stay visible until Smile ID confirms it`);
+  }
+  return hits;
+});
+
+checkOnce("every verification check records consent, with its version, first", () => {
+  const hits = [];
+  const rules = [
+    ["app/(app)/verify/actions.ts", "startSelfieCheck", "verification_selfie"],
+    ["app/(app)/verify/actions.ts", "submitIdNumber", "id_check"],
+    ["app/(app)/photos/actions.ts", "checkMainPhoto", "replace_main_photo"],
+  ];
+  for (const [file, fn, kind] of rules) {
+    if (!fs.existsSync(file)) { hits.push(`${file} missing`); continue; }
+    const src = stripComments(fs.readFileSync(file, "utf8"), file);
+    const body = serverActions(src).find((a) => a.name === fn)?.body;
+    if (!body) { hits.push(`${file} — ${fn}() missing`); continue; }
+    const at = body.indexOf(`recordConsent(supabase, user.id, "${kind}"`);
+    if (at < 0) { hits.push(`${file} — ${fn}() never records "${kind}" consent`); continue; }
+    // The first thing that ACTS: a provider call, a recorded outcome, or the
+    // ID stand-in writing the stage (`stage: "id_confirmed"`, not a read of it).
+    const vendor = body.search(/submitCompare\(|submitAuthentication\(|record_onboarding_check|record_main_photo_match|stage: "id_confirmed"/);
+    if (vendor >= 0 && vendor < at) hits.push(`${file} — ${fn}() acts before recording consent`);
+  }
+  const record = fs.existsSync("lib/consent-record.ts") ? fs.readFileSync("lib/consent-record.ts", "utf8") : "";
+  if (!/version: CONSENT\[kind\]\.version/.test(record)) hits.push("lib/consent-record.ts — the version isn't the server's own");
+  return hits;
+});
+
 // --- Coins are not a "wallet" ---------------------------------------------
 //
 // Decided 2026-10-05: never say "wallet" in UI copy. Coins are a promise

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/57d62f6b-ac9c-40a7-9585-890a06e9740f.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/dd1b2fb4-b0ca-4104-846c-3be5e74f83a7.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/80f62cc7-f685-45ff-b598-a988413f3e92.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/0011bfd2-e77f-4b95-8637-07ceb020dae4.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/9b8dfe90-a07f-403f-ad1f-f817aed7c4f7.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Going live 1 of 2</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Not live yet</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">A new member sees this in place of Today, Gists and Inbox until their own profile is live. The steps run in order and each opens where it gets finished. The tab bar stays hidden until then, so nothing on screen leads to a closed door. Settings, Your data, Toastly Help and the Safety kit stay one tap away.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Not live yet" style="width:{{ frameW }};max-width:100%;min-height:640px;display:flex;flex-direction:column;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="flex-shrink:0;background:#001F1B;padding:14px 8px 14px 16px;display:flex;align-items:center;gap:10px">
+        <div style="flex:1;min-width:0;display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Your profile</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Almost ready</p>
+        </div>
+        <button type="button" aria-label="Safety kit" style="flex-shrink:0;min-height:44px;min-width:44px;padding:0 12px 0 10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(235,217,174,0.3);border-radius:999px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#EBD9AE">
+          <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 18.8 6v5.2c0 4.3-2.8 7.9-6.8 9.6-4-1.7-6.8-5.3-6.8-9.6V6Z" stroke="#EBD9AE" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+          <span>Safety</span>
+        </button>
+      </div>
+
+      <div style="width:100%;max-width:560px;margin:0 auto;padding:22px 14px 28px;display:grid;gap:24px;align-content:start">
+
+        <div style="display:grid;gap:10px;padding:0 2px">
+          <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.22;color:#050309;text-wrap:balance">Almost there — finish your profile to start meeting people.</h2>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">You'll see your six as soon as people can see you too.</p>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">What's left</p>
+          <ol style="margin:0;padding:0;list-style:none;border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+            <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+              <li style="display:block;border-top:{{ s.rule }}">
+                <button type="button" aria-label="{{ s.aria }}" aria-current="{{ s.current }}" style="width:100%;min-height:68px;padding:12px 15px;display:flex;align-items:center;gap:12px;background:transparent;border:0;text-align:left;cursor:pointer;font-family:Inter,sans-serif" style-hover="background:#F6F2EA">
+                  <span aria-hidden="true" style="flex-shrink:0;width:40px;height:40px;display:grid;place-items:center">
+                    <sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}">
+                      <span style="width:40px;height:40px;border-radius:999px;background:#E5F0EE;display:grid;place-items:center">
+                        <svg width="17" height="17" sc-camel-view-box="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="#00695C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                      </span>
+                    </sc-if>
+                    <sc-if value="{{ s.ring }}" hint-placeholder-val="{{ false }}">
+                      <svg width="40" height="40" sc-camel-view-box="12 12 24 24" fill="none">
+                        <circle cx="24" cy="24" r="9.5" stroke="#FFEFCC" stroke-width="3"></circle>
+                        <circle cx="24" cy="24" r="9.5" stroke="#CC8F00" stroke-width="3" stroke-dasharray="{{ s.dash }}" stroke-linecap="round" transform="rotate(-90 24 24)"></circle>
+                      </svg>
+                    </sc-if>
+                    <sc-if value="{{ s.num }}" hint-placeholder-val="{{ true }}">
+                      <span style="width:40px;height:40px;border-radius:999px;border:1.5px solid {{ s.numBorder }};background:{{ s.numBg }};display:grid;place-items:center;font-size:15px;font-weight:600;color:{{ s.numFg }}">{{ s.n }}</span>
+                    </sc-if>
+                  </span>
+                  <span style="flex:1;min-width:0;display:grid;gap:2px">
+                    <span style="font-size:15px;font-weight:600;color:#050309">{{ s.label }}</span>
+                    <span style="font-size:13px;line-height:1.45;color:#504E52;text-wrap:pretty">{{ s.sub }}</span>
+                  </span>
+                  <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+                </button>
+              </li>
+            </sc-for>
+          </ol>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Still open to you</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+            <sc-for list="{{ links }}" as="h" hint-placeholder-count="4">
+              <button type="button" style="min-height:56px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:transparent;border:0;border-top:{{ h.rule }};text-align:left;cursor:pointer;font-family:Inter,sans-serif" style-hover="background:#F6F2EA">
+                <span style="display:grid;gap:2px;min-width:0">
+                  <span style="font-size:15px;font-weight:500;color:#050309">{{ h.label }}</span>
+                  <sc-if value="{{ h.hasSub }}">
+                    <span style="font-size:13px;line-height:1.45;color:#504E52">{{ h.sub }}</span>
+                  </sc-if>
+                </span>
+                <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const LINKS = [
+  ["Settings", ""],
+  ["Your data", "See, download or delete what we hold"],
+  ["Toastly Help", "Answers, and a person when you need one"],
+  ["Safety kit", "Free on every plan, always"]
+];
+class Component extends DCLogic {
+  state = { w: "360px", stage: "photos" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  step(n, label, sub, kind, extra) {
+    const done = kind === "done", ring = kind === "ring", current = kind === "ring" || kind === "current";
+    return Object.assign({
+      n: String(n), label, sub, done, ring, num: !done && !ring,
+      numBorder: current ? "#CC8F00" : "#D9D9DA", numBg: current ? "#FFF7E5" : "#FFFFFF", numFg: current ? "#4C3500" : "#504E52",
+      current: current ? "step" : undefined,
+      aria: `Step ${n}, ${label}. ${done ? "Done" : current ? "Next" : "To do"}. ${sub}`,
+      rule: n > 1 ? "1px solid rgba(5,3,9,0.1)" : "0"
+    }, extra || {});
+  }
+  renderVals() {
+    const { w, stage } = this.state;
+    const sel = stage === "selfie";
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["680px", "Desktop"]].map(([v, l]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [["photos", "Photos 3 of 4"], ["selfie", "Selfie left"]].map(([k, l]) => this.chip(l, stage === k, () => this.setState({ stage: k }))),
+      steps: [
+        this.step(1, "Phone", "Confirmed", "done"),
+        sel ? this.step(2, "Photos", "4 of 4 added", "done") : this.step(2, "Photos", "3 of 4 added · add one more", "ring", { dash: "45 60" }),
+        this.step(3, "Selfie check", "Confirms you're real, and that your main photo is you", sel ? "current" : "todo")
+      ],
+      links: LINKS.map(([label, sub], i) => ({ label, sub, hasSub: !!sub, rule: i ? "1px solid rgba(5,3,9,0.1)" : "0" }))
+    };
+  }
+}
+</script>
+
+
+</body></html>

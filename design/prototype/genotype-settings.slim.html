@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/8bfcd86e-cb1e-4159-a17f-5c337f72143f.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/de79dab2-1f9d-4480-839d-073263825d23.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/219c1c17-99f2-47d9-a862-c6a5c6435162.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/4327ed37-3eab-4b51-aa34-96cfcf8cfab6.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/2a426463-7c7b-4a20-94a0-f95eb1ffd803.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Genotype 5 of 5</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Settings row and delete</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">The row shows your own value and who can see it, with Edit and Delete as equal 44px buttons. Delete opens a plain bottom sheet; Cancel and Delete are the same size and style, side by side. After deleting, the row goes back to "Not added" and adding again starts at the consent step.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div style="position:relative;width:{{ frameW }};max-width:100%;min-height:640px;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Settings</p>
+      </div>
+
+      <div style="padding:18px 14px 24px;display:grid;gap:10px;align-content:start">
+        <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Profile details</p>
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid">
+          <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <span style="font-size:15px;font-weight:500;color:#050309">City</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0">Yaba, Lagos <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+          </div>
+          <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+            <span style="font-size:15px;font-weight:500;color:#050309">Time zone</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0">WAT <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+          </div>
+
+          <div style="padding:14px 15px 15px;display:grid;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+            <sc-if value="{{ hasValue }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;gap:12px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                  <div style="display:grid;gap:3px;min-width:0">
+                    <span style="font-size:15px;font-weight:500;color:#050309">Genotype</span>
+                    <span style="font-size:13.5px;line-height:1.5;color:#504E52">Visible to: {{ visibility }}</span>
+                  </div>
+                  <span style="flex-shrink:0;font-size:15px;font-weight:600;color:#050309">{{ value }}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
+                  <button type="button" style="min-height:44px;padding:10px 12px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Edit</button>
+                  <button type="button" sc-camel-on-click="{{ openDelete }}" style="min-height:44px;padding:10px 12px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Delete</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isDeleted }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div style="display:grid;gap:3px;min-width:0">
+                  <span style="font-size:15px;font-weight:500;color:#050309">Genotype</span>
+                  <span style="font-size:13.5px;line-height:1.5;color:#504E52">Not added</span>
+                </div>
+                <button type="button" sc-camel-on-click="{{ restore }}" style="flex-shrink:0;min-height:44px;padding:10px 16px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Add</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ isDeleted }}">
+          <p style="margin:4px 2px 0;font-size:13px;line-height:1.6;color:#504E52;text-wrap:pretty">Adding it again starts with the permission step.</p>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ isDeleted }}">
+        <div role="status" style="position:absolute;left:14px;right:14px;bottom:18px;padding:14px 16px;border-radius:12px;background:#001F1B;color:#FFFFFF;font-size:14px;font-weight:500">Genotype deleted</div>
+      </sc-if>
+
+      <sc-if value="{{ isConfirm }}">
+        <div style="position:absolute;inset:0;background:rgba(0,31,27,0.55);display:flex;align-items:flex-end">
+          <div role="dialog" aria-modal="true" aria-labelledby="gt-del-title" style="width:100%;background:#FFFFFF;border-radius:20px 20px 0 0;padding:10px 16px 20px;display:grid;gap:14px">
+            <span aria-hidden="true" style="justify-self:center;width:36px;height:4px;border-radius:999px;background:#D9D9DA"></span>
+            <h2 id="gt-del-title" style="margin:4px 0 0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.25;color:#050309">Delete your genotype?</h2>
+            <p style="margin:0;font-size:14.5px;line-height:1.6;color:#1E1C21;text-wrap:pretty">It's removed from Toastly straight away, along with your permission. You can add it again later.</p>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:4px">
+              <button type="button" sc-camel-on-click="{{ cancel }}" style="min-height:48px;padding:12px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Cancel</button>
+              <button type="button" sc-camel-on-click="{{ confirm }}" style="min-height:48px;padding:12px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Delete</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:900},&quot;value&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;AA&quot;,&quot;AS&quot;,&quot;AC&quot;,&quot;SS&quot;,&quot;SC&quot;,&quot;I don't know yet&quot;],&quot;default&quot;:&quot;AS&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Row&quot;},&quot;visibility&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Only me&quot;,&quot;My matches&quot;,&quot;After a Gist we both continue&quot;,&quot;My partner in Couple Mode&quot;],&quot;default&quot;:&quot;Only me&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Row&quot;}}">
+class Component extends DCLogic {
+  state = { w: "360px", view: "row" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, view } = this.state;
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [["row", "Row"], ["confirm", "Confirm delete"], ["deleted", "Deleted"]]
+        .map(([k, l]) => this.chip(l, view === k, () => this.setState({ view: k }))),
+      value: this.props.value ?? "AS",
+      visibility: this.props.visibility ?? "Only me",
+      hasValue: view !== "deleted",
+      isDeleted: view === "deleted",
+      isConfirm: view === "confirm",
+      openDelete: () => this.setState({ view: "confirm" }),
+      cancel: () => this.setState({ view: "row" }),
+      confirm: () => this.setState({ view: "deleted" }),
+      restore: () => this.setState({ view: "row" })
+    };
+  }
+}
+</script>
+
+
+</body></html>

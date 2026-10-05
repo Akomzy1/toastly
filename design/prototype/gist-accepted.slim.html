@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/89ad35d9-6297-4788-b6f7-a51447f6c62d.js"></script>
+
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/3f32e03a-95e9-4521-a3b0-864a6ae21e0d.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/ad8552ae-493e-43ca-8e58-dc8122c98dc0.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/f6e071f4-bb69-4ba4-a2aa-9cc1a025f93d.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/4a886783-61eb-4318-98a2-daafd9b38d7f.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Gist invite 7 of 8</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">After accepting</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">If both people are online, offer the Gist now, with picking a time as an equal second choice. Otherwise go straight to scheduling. A cross-time-zone pair is handed to the existing Both Clocks screen, unchanged; the hand-off shows both local times so the jump isn't a surprise.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="After accepting" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Gist with Kelechi</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">{{ barSub }}</p>
+        </div>
+      </div>
+
+      <div style="padding:28px 14px 24px;display:grid;gap:22px;align-content:start">
+
+        <sc-if value="{{ online }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:22px">
+            <div style="display:grid;gap:14px;justify-items:center;text-align:center;padding:0 6px">
+              <span style="display:flex;align-items:center">
+                <img src="{{ me }}" alt="You" style="width:64px;height:64px;border-radius:999px;object-fit:cover;border:3px solid #F6F2EA;background:#D9D9DA">
+                <img src="{{ kelechi }}" alt="Kelechi" style="width:64px;height:64px;margin-left:-14px;border-radius:999px;object-fit:cover;border:3px solid #F6F2EA;background:#D9D9DA">
+              </span>
+              <p style="margin:0;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#2F8F5B">
+                <span aria-hidden="true" style="width:8px;height:8px;border-radius:999px;background:#2F8F5B"></span>
+                Kelechi is online now
+              </p>
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309;text-wrap:balance">You're both here — Gist now?</h2>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">18 minutes, voice only. The questions open once you've both joined.</p>
+            </div>
+            <div style="display:grid;gap:10px">
+              <button type="button" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">Start now</button>
+              <button type="button" sc-camel-on-click="{{ toSchedule }}" style="min-height:48px;padding:14px 20px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Pick a time instead</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ schedule }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;gap:22px">
+            <div style="display:grid;gap:8px;padding:0 2px">
+              <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">You said yes</p>
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309;text-wrap:balance">Next, pick a time with Kelechi.</h2>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">{{ scheduleLine }}</p>
+            </div>
+
+            <sc-if value="{{ crossTz }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1px solid rgba(5,3,9,0.12);border-radius:14px;background:#FFFFFF;padding:14px 13px;display:grid;gap:11px">
+                <span style="font-size:12.5px;font-weight:600;color:#504E52">Right now</span>
+                <span style="display:grid;grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);gap:12px;align-items:stretch">
+                  <span style="display:grid;gap:3px;min-width:0">
+                    <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#828184">You · Lagos</span>
+                    <span style="font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;color:#050309;font-variant-numeric:tabular-nums">4:40 pm</span>
+                  </span>
+                  <span style="background:rgba(5,3,9,0.1)"></span>
+                  <span style="display:grid;gap:3px;min-width:0">
+                    <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#828184">Kelechi · Toronto</span>
+                    <span style="font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;color:#050309;font-variant-numeric:tabular-nums">11:40 am</span>
+                  </span>
+                </span>
+              </div>
+            </sc-if>
+
+            <div style="display:grid;gap:10px">
+              <a href="{{ nextHref }}" style="display:flex;align-items:center;justify-content:center;min-height:48px;padding:14px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none" style-hover="background:#FFC94C;color:#001F1B">{{ nextLabel }}</a>
+              <p style="margin:0;font-size:13px;line-height:1.55;color:#504E52;text-align:center;text-wrap:pretty">Kelechi confirms the time before anything is set.</p>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ crossTz }}" hint-placeholder-val="{{ false }}">
+    <p style="margin:0;width:100%;max-width:700px;font-size:13px;line-height:1.6;color:#504E52;text-align:center">Hand-off → <a href="Toastly Both Clocks.html" style="font-weight:600">Both Clocks</a> (existing screen, unchanged)</p>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:900}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+class Component extends DCLogic {
+  state = { w: "360px", view: "online" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, view } = this.state;
+    const cross = view === "cross";
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [["online", "Both online"], ["cross", "Not online · Toronto"], ["same", "Not online · same zone"]].map(([k, l]) => this.chip(l, view === k, () => this.setState({ view: k }))),
+      online: view === "online",
+      schedule: view !== "online",
+      crossTz: cross,
+      barSub: view === "same" ? "Abuja" : "Toronto",
+      scheduleLine: cross ? "Kelechi is in Toronto, 5 hours behind you. Every time you see will show on both clocks." : "You're both on West Africa time, so one clock is all you need.",
+      nextLabel: cross ? "Pick a time on both clocks" : "Pick a time",
+      nextHref: cross ? "Toastly Both Clocks.html" : "#",
+      toSchedule: () => this.setState({ view: "cross" }),
+      me: IMG("member-tobi"),
+      kelechi: IMG("member-kelechi")
+    };
+  }
+}
+</script>
+
+
+</body></html>

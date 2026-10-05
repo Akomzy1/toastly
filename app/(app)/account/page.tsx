@@ -1,24 +1,30 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { DeleteAccountForm } from "./delete-form";
+import { AppBand, AppColumn, LinkList } from "@/components/app/app-band";
+import { DownloadCard } from "./download-card";
 
 export const metadata: Metadata = {
   title: "Your data",
   robots: { index: false, follow: false },
 };
 
+const REVEAL_LABEL: Record<string, string> = {
+  verified_members: "Everyone who sees your profile",
+  after_i_reply: "Only people you match with",
+  after_gist: "Only after a Gist you both want to continue",
+};
+
 /**
- * Your data — download it, or delete your account (privacy policy §8, §10).
+ * Your data — built against design/prototype/your-data.slim.html: download,
+ * privacy choices, delete.
  *
- * INVENTED UI — flagged. The nav export's profile hub lists this as "Your
- * data · See, download or delete what we hold", but no screen for it has
- * been designed. Built from existing primitives only.
+ * ALWAYS OPEN: no plan, no live-profile guard (PRD §5.1.2).
  *
- * ALWAYS OPEN: no tier, no live-profile guard. Leaving, and taking your data
- * with you, are never conditional on anything.
+ * Deviation: the prototype's privacy rows also list "Genotype visibility"
+ * and, for members in Nigeria, "Open to people living abroad". Neither
+ * setting exists yet, so their rows wait for them rather than linking
+ * nowhere.
  */
 export default async function AccountPage() {
   const supabase = createClient();
@@ -27,58 +33,43 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: me } = await supabase.from("profiles").select("photo_reveal").eq("id", user.id).single();
+
   return (
-    <div className="mx-auto grid max-w-[640px] gap-6 px-5 py-section-y">
-      <div className="grid gap-2">
-        <h1 className="text-h3 text-ink-900">Your data</h1>
-        <p className="text-ui text-grey-600">
-          See, download or delete what we hold. You can do both of these at any
-          time, on any plan.
-        </p>
-      </div>
+    <>
+      <AppBand title="Your data" sub="Settings" backHref="/profile" />
+      <AppColumn gap="gap-[26px]">
+        <section aria-labelledby="yd-download" className="grid gap-2.5">
+          <h2 id="yd-download" className="mx-0.5 text-chip font-semibold uppercase tracking-[0.12em] text-green-500">
+            Download your data
+          </h2>
+          <DownloadCard />
+        </section>
 
-      <Card className="grid gap-4 p-[26px]">
-        <h2 className="text-h5 text-ink-900">Download your data</h2>
-        <p className="text-ui text-grey-600">
-          One file with your profile, answers, photos, Gist history, messages
-          you can read, dates, coins and payments, and the reports you&rsquo;ve
-          filed. Photo links in it work for 24 hours.
-        </p>
-        <Button asChild variant="outline" className="justify-self-start">
-          {/* A plain link, not client navigation: the route answers with a file. */}
-          <a href="/account/export" download>
-            Download my data
-          </a>
-        </Button>
-      </Card>
+        <section aria-labelledby="yd-privacy" className="grid gap-2.5">
+          <h2 id="yd-privacy" className="mx-0.5 text-chip font-semibold uppercase tracking-[0.12em] text-green-500">
+            Your privacy choices
+          </h2>
+          <LinkList
+            items={[
+              {
+                href: "/safety-kit",
+                label: "Photo visibility",
+                sub: REVEAL_LABEL[me?.photo_reveal ?? "verified_members"],
+              },
+            ]}
+          />
+        </section>
 
-      <Card className="grid gap-4 p-[26px]">
-        <h2 className="text-h5 text-ink-900">Delete your account</h2>
-        <div className="grid gap-2 text-ui text-grey-600">
-          <p>
-            Your profile, photos, answers, Gists, messages and everything else
-            about you are deleted straight away. Anyone you&rsquo;re in Couple
-            Mode with is un-paused, and any date with coins staked is called
-            off with every stake returned.
-          </p>
-          {/* The durations stay out of this copy until the privacy policy's
-              bracketed [6] years and [2] years are confirmed. */}
-          <p>
-            Two things are kept, without your name on them, because the law or
-            members&rsquo; safety needs them: payment records, for as long as
-            tax law requires; and reports, for a limited time — see our privacy
-            policy.
-          </p>
-          <p>
-            If you have coins left, email{" "}
-            <a href="mailto:support@trytoastly.com" className="text-green-500">
-              support@trytoastly.com
-            </a>{" "}
-            before you delete.
-          </p>
-        </div>
-        <DeleteAccountForm />
-      </Card>
-    </div>
+        <section aria-labelledby="yd-delete" className="grid gap-2.5">
+          <h2 id="yd-delete" className="mx-0.5 text-chip font-semibold uppercase tracking-[0.12em] text-green-500">
+            Delete your account
+          </h2>
+          <LinkList
+            items={[{ href: "/account/delete", label: "Delete your account", sub: "See what's deleted and what's kept first" }]}
+          />
+        </section>
+      </AppColumn>
+    </>
   );
 }

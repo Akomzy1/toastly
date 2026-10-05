@@ -74,7 +74,7 @@ function consentField(c: CaptureConsent) {
   });
 }
 
-function partnerParams(checkId: string, step: "authenticate" | "compare") {
+function partnerParams(checkId: string, step: "authenticate" | "compare" | "onboard") {
   // Our own reference travels with the job, so the webhook can be matched
   // to a face_match_jobs row without trusting anything else in the body.
   return JSON.stringify({ toastly_check_id: checkId, toastly_step: step });
@@ -83,6 +83,7 @@ function partnerParams(checkId: string, step: "authenticate" | "compare") {
 async function submit(
   path: "/v3/authentication" | "/v3/compare",
   form: FormData,
+  userId?: string,
 ): Promise<string> {
   const { partnerId, base } = config();
   const res = await fetch(`${base}${path}`, {
@@ -91,6 +92,7 @@ async function submit(
       "SmileID-Token": await token(),
       "SmileID-Partner-ID": partnerId,
       Accept: "application/json",
+      ...(userId ? { "User-ID": userId } : {}),
     },
     body: form,
   });
@@ -124,7 +126,15 @@ export async function submitAuthentication(args: {
   return submit("/v3/authentication", form);
 }
 
-/** Does the fresh selfie match the proposed main photo? */
+/**
+ * Does the fresh selfie match the main photo?
+ *
+ * Compare also ENROLS the face it is given. So `enrol` is set only for the
+ * onboarding selfie — the one that earns Verified Real — which enrols the
+ * member under their profile id for later Authentication. A replacement
+ * check must never enrol: if the Authentication half failed, an impostor's
+ * selfie would overwrite the member's enrolled face.
+ */
 export async function submitCompare(args: {
   checkId: string;
   profileId: string;
@@ -132,6 +142,8 @@ export async function submitCompare(args: {
   mainPhoto: Blob;
   consent: CaptureConsent;
   callbackUrl: string;
+  step: "compare" | "onboard";
+  enrol: boolean;
 }): Promise<string> {
   const form = new FormData();
   captureFields(form, args.capture);
@@ -139,8 +151,8 @@ export async function submitCompare(args: {
   form.append("comparison_image_type", "PORTRAIT");
   form.append("consent", consentField(args.consent));
   form.append("callback_url", args.callbackUrl);
-  form.append("partner_params", partnerParams(args.checkId, "compare"));
-  return submit("/v3/compare", form);
+  form.append("partner_params", partnerParams(args.checkId, args.step));
+  return submit("/v3/compare", form, args.enrol ? args.profileId : undefined);
 }
 
 /**

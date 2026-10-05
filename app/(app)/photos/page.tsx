@@ -10,8 +10,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Profile photos — built against design/prototype/photos-upload.slim.html
- * and photos-main-check.slim.html (PRD §5.1.2, Prompt 14).
+ * Profile photos — built against design/prototype/photos-upload.slim.html,
+ * photos-main-check.slim.html and photo-replace-main.slim.html (PRD §5.1.2,
+ * Prompt 14).
  *
  * ALWAYS OPEN, whatever the member's live status: this is how a profile
  * goes live, and how paused access is restored.
@@ -59,7 +60,9 @@ export default async function PhotosPage() {
     candidate_id?: string | null;
     candidate_state?: string | null;
     candidate_reason?: string | null;
+    check_running?: boolean;
   };
+  const verifiedReal = profile?.stage === "verified_real" || profile?.stage === "id_confirmed";
 
   const toEditor = (p: (typeof photos)[number]): EditorPhoto => ({
     id: p.id,
@@ -69,9 +72,11 @@ export default async function PhotosPage() {
   const main = photos.find((p) => p.id === profile?.main_photo_id) ?? null;
   const candidate = photos.find((p) => p.id === c.candidate_id) ?? null;
 
+  // "waiting": chosen, but no check has run — during onboarding it waits for
+  // the one selfie on /verify; when replacing, for the fresh selfie.
   let candidateState: CandidateState = null;
   if (candidate) {
-    if (c.candidate_state === "pending") candidateState = "checking";
+    if (c.candidate_state === "pending") candidateState = c.check_running ? "checking" : "waiting";
     else if (c.candidate_state === "review") candidateState = "review";
     else if (c.candidate_reason === "face_not_clear") candidateState = "face";
     else if (c.candidate_reason) candidateState = "selfie";
@@ -89,7 +94,7 @@ export default async function PhotosPage() {
       candidateState={candidateState}
       others={others}
       onlyMatches={profile?.photo_reveal === "after_i_reply" || profile?.photo_reveal === "after_gist"}
-      verifiedReal={profile?.stage === "verified_real" || profile?.stage === "id_confirmed"}
+      verifiedReal={verifiedReal}
       checksConnected={smileIdConfigured()}
       devStandIn={process.env.NODE_ENV !== "production"}
     />

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/3ba11b09-5f0f-47f3-b881-bda4624e3818.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/e3dceec4-94f2-4f32-b0bd-1144ff5c911c.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/90d5446d-decc-4120-a7af-2577a815528d.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/71df39fe-fec0-4695-8a63-5294da934338.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/0edb71df-618e-4eb1-a098-5d1ff96b488e.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Genotype 3 of 5</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Visibility choice</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">Four options, exactly one selected. "Only me" is first, arrives selected, and carries a "Default" tag so it still reads as the default when another option is chosen. The whole row is the tap target.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Genotype</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Who can see it</p>
+        </div>
+      </div>
+
+      <div style="padding:20px 16px 24px;display:grid;gap:18px;align-content:start">
+
+        <div style="display:grid;gap:8px">
+          <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309">Who can see your genotype?</h2>
+          <p style="margin:0;font-size:14.5px;line-height:1.6;color:#504E52;text-wrap:pretty">You can change this or stop sharing at any time.</p>
+        </div>
+
+        <div role="radiogroup" aria-label="Who can see your genotype" style="display:grid;gap:8px">
+          <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+            <button type="button" role="radio" aria-checked="{{ o.selected }}" sc-camel-on-click="{{ o.pick }}" style="width:100%;min-height:64px;padding:14px 15px;display:flex;align-items:flex-start;gap:12px;border:{{ o.border }};border-radius:12px;background:{{ o.bg }};font-family:Inter,sans-serif;text-align:left;cursor:pointer" style-hover="border-color:#00695C">
+              <span aria-hidden="true" style="flex-shrink:0;margin-top:1px;width:22px;height:22px;border-radius:999px;border:1.5px solid {{ o.ring }};display:grid;place-items:center">
+                <span style="width:12px;height:12px;border-radius:999px;background:{{ o.dot }}"></span>
+              </span>
+              <span style="display:grid;gap:4px;min-width:0;flex:1">
+                <span style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                  <span style="font-size:15.5px;font-weight:600;line-height:1.35;color:#050309">{{ o.label }}</span>
+                  <sc-if value="{{ o.isDefault }}" hint-placeholder-val="{{ false }}">
+                    <span style="padding:3px 8px;border-radius:6px;background:#FFFFFF;border:1px solid rgba(0,105,92,0.3);font-size:11.5px;font-weight:600;color:#00453C">Default</span>
+                  </sc-if>
+                </span>
+                <span style="font-size:13.5px;line-height:1.5;color:#504E52;text-wrap:pretty">{{ o.sub }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+
+        <p style="margin:0;font-size:13.5px;line-height:1.6;color:#504E52;text-wrap:pretty">Whoever you choose sees your genotype only if they've also chosen to share theirs with you.</p>
+
+        <button type="button" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">Save</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:920}}">
+const OPTIONS = [
+  { label: "Only me", sub: "No one else can see it." },
+  { label: "My matches", sub: "People you've matched with." },
+  { label: "After a Gist we both continue", sub: "Only people you've both said continue to after a Gist." },
+  { label: "My partner in Couple Mode", sub: "Only your partner, once you're in Couple Mode together." }
+];
+
+class Component extends DCLogic {
+  state = { w: "360px", v: 0 };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, v } = this.state;
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [
+        this.chip("Default", v === 0, () => this.setState({ v: 0 })),
+        this.chip("Changed", v !== 0, () => this.setState({ v: 2 }))
+      ],
+      options: OPTIONS.map((o, i) => {
+        const sel = v === i;
+        return {
+          ...o, selected: sel, isDefault: i === 0,
+          pick: () => this.setState({ v: i }),
+          border: sel ? "2px solid #00695C" : "1px solid rgba(5,3,9,0.18)",
+          bg: sel ? "#E5F0EE" : "#FFFFFF",
+          ring: sel ? "#00695C" : "#828184",
+          dot: sel ? "#00695C" : "transparent"
+        };
+      })
+    };
+  }
+}
+</script>
+
+
+</body></html>

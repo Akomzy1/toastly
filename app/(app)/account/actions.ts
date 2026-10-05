@@ -12,8 +12,9 @@ export type DeleteState = { error?: string } | null;
  * ALWAYS OPEN: no tier check and no live-profile guard.
  *
  * Immediate, inside the policy's "within [30] days". In order:
- *   1. the member confirms by typing "delete" — a deliberate act, not a
- *      mis-tap;
+ *   1. the member has seen any unspent coins — which deletion forfeits
+ *      (decided 2026-10-05) — and confirms by typing DELETE, a deliberate
+ *      act rather than a mis-tap;
  *   2. prepare_account_deletion() (0016) ends any Couple Mode so the partner
  *      is un-paused, calls off any date with every stake returned, stamps
  *      the records the policy keeps, and logs the erasure;
@@ -27,8 +28,8 @@ export type DeleteState = { error?: string } | null;
  * and the only id ever acted on is the signed-in member's own.
  */
 export async function deleteAccount(_prev: DeleteState, formData: FormData): Promise<DeleteState> {
-  if (String(formData.get("confirm") ?? "").trim().toLowerCase() !== "delete") {
-    return { error: "Type delete to confirm." };
+  if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== "DELETE") {
+    return { error: "Type DELETE to confirm." };
   }
 
   const supabase = createClient();
@@ -57,5 +58,5 @@ export async function deleteAccount(_prev: DeleteState, formData: FormData): Pro
   await admin.from("account_deletions").update({ completed_at: new Date().toISOString() }).eq("id", p.log_id);
 
   await supabase.auth.signOut();
-  redirect("/");
+  redirect("/goodbye");
 }

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/ebf15fb7-427a-444b-a250-9f6b5ea675a6.js"></script>
+
+
+
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/1bf2a6cd-7ae2-4b27-ad15-3f84cef97849.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/d9c37a4b-a3b0-40bd-a55d-a5e8092ef636.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/df19af5e-58c8-4bc7-8d93-f78eff079bf2.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/2972aba8-40e4-41b6-9c9f-e96167d5934f.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Gist invite 5 of 8</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Your Gists</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">One list, three groups, always in this order. Every row carries the prompt answer the invite was about, labelled with whose answer it is. Invites for you sit on a sand edge; nothing else is ranked or badged. Empty groups say so in one line.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Gists list" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+        <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Gists</p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">18-minute voice chats</p>
+      </div>
+
+      <div style="padding:16px 14px 24px;display:grid;gap:24px;align-content:start">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+          <div style="display:grid;gap:10px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px">
+              <h2 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">{{ g.title }}</h2>
+              <p style="margin:0;font-size:12.5px;color:#828184">{{ g.count }}</p>
+            </div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="1">
+              <a href="{{ r.href }}" style="display:grid;gap:10px;padding:12px;background:#FFFFFF;border:1px solid {{ r.border }};border-radius:14px;text-decoration:none;color:inherit" style-hover="border-color:#00695C">
+                <span style="display:flex;align-items:center;gap:12px">
+                  <img src="{{ r.img }}" alt="" style="width:48px;height:48px;border-radius:999px;object-fit:cover;flex-shrink:0;background:#D9D9DA">
+                  <span style="flex:1;min-width:0;display:grid;gap:2px">
+                    <span style="font-size:15px;font-weight:600;color:#050309">{{ r.name }}</span>
+                    <span style="font-size:13px;line-height:1.45;color:{{ r.statusColor }}">{{ r.status }}</span>
+                  </span>
+                  <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+                </span>
+                <span style="display:grid;gap:3px;padding:10px 12px;border-radius:10px;background:#F6F2EA">
+                  <span style="font-size:12.5px;font-weight:600;line-height:1.45;color:#504E52">{{ r.whose }} · {{ r.prompt }}</span>
+                  <span style="font-size:14px;line-height:1.5;color:#1E1C21;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">“{{ r.answer }}”</span>
+                </span>
+              </a>
+            </sc-for>
+            <sc-if value="{{ g.empty }}">
+              <p style="margin:0;padding:14px;border:1px solid rgba(5,3,9,0.1);border-radius:14px;background:#FFFFFF;font-size:14px;line-height:1.55;color:#504E52">{{ g.emptyText }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1100}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+const DATA = {
+  invites: [
+    { name: "Kelechi, 31", img: "member-kelechi", status: "Invited you · 2 hours ago", whose: "Your answer", prompt: "The way to win me over is…", answer: "Remember the small thing I mentioned weeks ago. Bonus points if there's suya involved.", href: "gist-invite-received.html", invite: true }
+  ],
+  waiting: [
+    { name: "Amaka, 29", img: "member-amaka", status: "Invite sent · just now", whose: "Amaka's answer", prompt: "A Sunday that feels like me…", answer: "Jollof at my aunty's in Surulere, a long call with my brother in Leeds, then choir practice I pretend not to enjoy.", href: "gist-invite-outcomes.html" },
+    { name: "Zainab, 27", img: "member-zainab", status: "Invite sent · Tuesday", whose: "Zainab's answer", prompt: "My friends would describe me as…", answer: "The one who remembers everyone's birthday and still can't find her own keys.", href: "gist-invite-outcomes.html" }
+  ],
+  coming: [
+    { name: "Ifeoma, 28", img: "member-ifeoma", status: "Tomorrow, Sun 4 Oct · 7:30 pm", whose: "Your answer", prompt: "I'm weirdly good at…", answer: "Haggling at Balogun market. My mum taught me and I've never lost.", href: "#", coming: true }
+  ]
+};
+class Component extends DCLogic {
+  state = { w: "360px", view: "full" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, view } = this.state;
+    const quiet = view === "quiet";
+    const rowsFor = k => (quiet && k !== "waiting" ? [] : quiet ? DATA.waiting.slice(0, 1) : DATA[k]).map(r => ({
+      ...r, img: IMG(r.img),
+      border: r.invite ? "rgba(235,217,174,0.95)" : "rgba(5,3,9,0.1)",
+      statusColor: r.coming ? "#00695C" : "#504E52"
+    }));
+    const group = (k, title, emptyText) => {
+      const rows = rowsFor(k);
+      return { title, rows, empty: rows.length === 0, emptyText, count: rows.length ? String(rows.length) : "" };
+    };
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [["full", "Busy week"], ["quiet", "Quiet week"]].map(([k, l]) => this.chip(l, view === k, () => this.setState({ view: k }))),
+      groups: [
+        group("invites", "Invites for you", "No invites right now."),
+        group("waiting", "Waiting on them", "Nothing waiting on a reply."),
+        group("coming", "Coming up", "Nothing booked yet.")
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>
