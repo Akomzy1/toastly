@@ -12,7 +12,6 @@ import { TimeZoneField } from "@/components/app/time-zone-field";
 import {
   HISTORY_LABELS,
   INTENT_LABELS,
-  POOL_LABELS,
   VISIBILITY_LABELS,
   type Profile,
 } from "@/lib/types/profile";
@@ -109,17 +108,6 @@ export function ProfileForm({
             defaultValue={profile.bio ?? ""}
             maxLength={600}
           />
-        </Label>
-
-        <Label htmlFor="pool">
-          Match me with
-          <Select id="pool" name="pool" defaultValue={profile.pool}>
-            {(["back_home", "diaspora", "both"] as const).map((p) => (
-              <option key={p} value={p}>
-                {POOL_LABELS[p]}
-              </option>
-            ))}
-          </Select>
         </Label>
 
         {/* Only members abroad choose a diaspora city; it is what the

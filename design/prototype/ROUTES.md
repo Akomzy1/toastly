@@ -33,7 +33,7 @@ exists but this newer export changes it. **Not built** — no route yet.
 
 | Prototype | Route | Status |
 |---|---|---|
-| `your-data` | `/account` | **Built.** Genotype and "Open to people living abroad" rows wait for those settings. |
+| `your-data` | `/account` | **Built.** "Open to people living abroad" links to Match preferences; the Genotype row waits for that setting. |
 | `account-delete` | `/account/delete`, `/goodbye` | **Built.** The "open review" line waits for the review state. |
 
 ## Review console (staff)
@@ -53,14 +53,19 @@ exists but this newer export changes it. **Not built** — no route yet.
 | `coins-checkout` | `/coins/checkout?plan=` | **Built** — coins apply first on naira plans; Diaspora billed in USD. |
 | `date-stake-confirm`, `date-checkin`, `date-cancel`, `date-outcomes` | `/dates/[id]` | **Built**, one view over the date's state. |
 
+## Match preferences
+
+| Prototype | Route | Status |
+|---|---|---|
+| `open-to-abroad` | `/preferences`, members in Nigeria | **Built.** The "Age range" row waits for an age-range setting. The prototype notes the switch itself still needs design sign-off. |
+| `pool-choice` | `/preferences`, members abroad | **Built**; replaces the pool select that was on `/profile`. Two additions: a note when no city is chosen yet, and the saved message sits under the button rather than over the screen. |
+
 ## Not built yet
 
 | Prototype(s) | Where it goes | Scheduled |
 |---|---|---|
 | `nav-today`, `nav-gists`, `nav-profile-hub`, `nav-safety-entry`, `nav-desktop` | The app shell (`app/(app)/layout.tsx`): tab bar, profile hub, desktop header | Not in the current build order — **gap** |
 | `gist-invite-starter`, `-paid`, `-limit`, `-sent`, `-received`, `gist-accepted`, `gist-invite-outcomes`, `gists-list` | `/feed` reply flow, `/gist`, `/gist/[id]` — replace the invented UI there | Not in the current build order — **gap** |
-| `open-to-abroad` | Match preferences, members in Nigeria | "Open to people living abroad" |
-| `pool-choice` | Match preferences, members abroad (today a select in `/profile`) | With the diaspora items |
 | `genotype-consent`, `-entry`, `-visibility`, `-display`, `-settings` | Profile and settings | Not scheduled — **gap** |
 | `toastly-help`, `toastly-help-handoff` | Toastly Help (Prompt 15) | Not scheduled — **gap** |
 | `answer-mirror` | Prompt-answer feedback (Prompt 16) | Not scheduled — **gap** |
@@ -72,6 +77,8 @@ exists but this newer export changes it. **Not built** — no route yet.
 - **Telling a member their account is restricted or removed**, with a reason category (CLAUDE.md). Built as invented UI (`components/app/standing-notice.tsx`) — needs a design.
 - **Staff sign-in and access** for the review screen (built as: sign up, then added by SQL).
 - **Proposing a date's time** after a spot is accepted — built as invented UI (`arrange-date.tsx`).
+- **A member abroad without a Diaspora plan whose saved pool is diaspora** — the feed reuses `pool-choice`'s plan line and button, plus one added sentence ("Until then, your six are from back home.").
+- **Where a member lives.** Nothing lets a member say they live abroad, so every member counts as Nigeria-based — see FINAL-REVIEW.md.
 - Long-standing, from earlier prompts: sign-up / sign-in, the profile editor, the feed match card, the Couple Mode screen and the in-app safety kit.
 
 ## Prototype conflicts

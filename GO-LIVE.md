@@ -22,8 +22,9 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 are committed but deliberately NOT applied (decided 2026-10-05).
 `0016_data_export_and_deletion` reads 0013's photo columns,
 `0017_consents_and_onboarding_selfie` the onboarding order, and
-`0018_review_queue_and_removal` redefines 0013's live rule, so all ship in
-the same release; apply 0013–0018 in order.
+`0018_review_queue_and_removal` redefines 0013's live rule and
+`0020_abroad_offer_and_brief_rule` redefines 0013's feed, so all ship in
+the same release; apply 0013–0018, then 0020 (0019 is held separately).
 
 **`0019_coin_balance_and_attendance` (Prompt 17) is held separately** until
 the legal check in PRD §11 clears (`COINS_LEGAL_CLEARED`, below). It can

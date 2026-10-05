@@ -73,7 +73,6 @@ export async function saveProfile(
       display_name: displayName,
       city: optional(formData, "city"),
       bio: optional(formData, "bio"),
-      pool: String(formData.get("pool") ?? "back_home"),
       diaspora_city: diasporaCity,
       time_zone: optional(formData, "time_zone"),
 

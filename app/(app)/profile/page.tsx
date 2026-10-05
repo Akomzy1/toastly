@@ -63,10 +63,13 @@ export default async function ProfilePage() {
 
       {/* Labels and one-line descriptions from the profile hub in the nav
           export (nav-profile-hub, not yet integrated), which lists these as
-          plain rows. Only the two entries that exist so far. */}
+          plain rows. Only the entries that exist so far. */}
       <ul className="grid list-none gap-3 p-0">
         {[
           { href: "/photos", label: "Edit profile and photos", sub: "Four to go live, up to six" },
+          // Not in nav-profile-hub; the screen it opens is (open-to-abroad,
+          // pool-choice). Label from those prototypes' headers.
+          { href: "/preferences", label: "Match preferences", sub: "Who shows up in your six a day" },
           { href: "/account", label: "Your data", sub: "See, download or delete what we hold" },
         ].map((item) => (
           <li key={item.href}>

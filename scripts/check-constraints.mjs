@@ -579,7 +579,7 @@ const GUARDED_ROUTE =
 // profile reasons (it closes only on a review restriction or removal), and so
 // does the coin balance and buying coins or a plan. Stakes and dates do not.
 const ALWAYS_OPEN_ROUTE =
-  /^app\/\(app\)\/(verify|photos|help|settings|export|delete|account|safety-kit|couple|coins|profile\/(page|actions|profile-form))/;
+  /^app\/\(app\)\/(verify|photos|help|settings|preferences|export|delete|account|safety-kit|couple|coins|profile\/(page|actions|profile-form))/;
 
 // Reading or writing any of these is, by definition, one of the five kinds
 // of route — wherever the file lives.
@@ -1110,6 +1110,83 @@ check("no marital-status verification", (s) =>
 check("'user is married' is a first-class report reason", (s) => {
   if (!/create type report_reason/.test(s)) return false;
   return /user_is_married/.test(s) ? false : "missing from report_reason enum";
+});
+
+// --- The AriyaPlanner brief is the couple's own words ---------------------
+//
+// PRD §5.7 / CLAUDE.md: no agent or integration may read profile fields
+// (tribe, religion, language, home state, genotype…) to build a brief. It is
+// drafted only from what the couple enters, or chooses to copy across, at
+// the handoff. So: no database function that touches couple_briefs may read
+// profiles, no trigger on couple_briefs may run a function that does, and no
+// app code that handles the brief may query profiles.
+checkOnce("the AriyaPlanner brief is never filled from profiles", () => {
+  const hits = [];
+  for (const { file, sql } of MIGRATIONS) {
+    for (const m of sql.matchAll(/\$\$([\s\S]*?)\$\$/g)) {
+      if (/\bcouple_briefs\b/.test(m[1]) && /\bprofiles\b/.test(m[1])) {
+        hits.push(`${file} — a function touching couple_briefs reads profiles`);
+      }
+    }
+    for (const m of sql.matchAll(/create trigger \w+[\s\S]*?on (?:public\.)?couple_briefs[\s\S]*?execute (?:function|procedure) (?:public\.)?(\w+)/g)) {
+      const fn = latestFunction(m[1]);
+      if (fn && /\bprofiles\b/.test(fn.body)) hits.push(`${file} — trigger on couple_briefs runs ${m[1]}, which reads profiles`);
+    }
+  }
+  for (const f of files) {
+    const p = posix(f);
+    if (!/^(app|components|lib)\//.test(p)) continue;
+    const src = stripComments(fs.readFileSync(f, "utf8"), f);
+    if (!/couple_briefs|\bBriefSource\b|\bassembleBrief\b|\bdescribeBrief\b/.test(src)) continue;
+    if (/from\(\s*["']profiles["']\s*\)/.test(src)) hits.push(`${p} — handles the brief and queries profiles`);
+  }
+  return hits;
+});
+
+check("genotype can never be stored in the brief", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.couple_briefs/.test(s)) return false;
+  return MIGRATIONS.some(({ sql }) => /couple_briefs_no_genotype/.test(sql) && /aesthetic \? 'genotype'/.test(sql))
+    ? false
+    : "no constraint refuses genotype in couple_briefs";
+});
+
+// --- "Open to people living abroad" is the member's own filter -------------
+//
+// It shapes the six of the member who set it, never anyone else's: a member
+// who switches it off still appears to members abroad. So the setting may
+// only ever be read as the viewer's own value, never off a candidate row.
+check("'open to people living abroad' never hides anyone from others", (s, f) => {
+  // In SQL, an aliased read (p.open_to_abroad) is a candidate's row; the
+  // feed reads the viewer's own value into a variable instead.
+  const aliased = f.endsWith(".sql") && /\b(?!new\b|old\b|profiles\b)\w+\.open_to_abroad\b/.exec(s);
+  if (aliased) return `reads ${aliased[0]} — a candidate's setting`;
+  if (/\.(eq|neq|is|filter|match)\(\s*["']open_to_abroad["']/.test(s)) return "filters members on open_to_abroad";
+  return false;
+});
+
+checkOnce("the feed applies 'open to people living abroad' to the viewer only", () => {
+  const fn = latestFunction("build_daily_feed");
+  if (!fn) return [];
+  if (!/v_open_to_abroad/.test(fn.body)) return [`${fn.file} — build_daily_feed ignores the viewer's open_to_abroad`];
+  if (!/v_country = 'NG' and v_open_to_abroad/.test(fn.body)) return [`${fn.file} — open_to_abroad isn't scoped to a viewer in Nigeria`];
+  return [];
+});
+
+// --- The women's offer is the upper tier for where she lives ---------------
+//
+// CLAUDE.md: the full upper tier, never base Premium. Abroad that is Diaspora
+// Plus (decided 2026-10-05). The tier is chosen by the database from the
+// member's country, so no grant path can pick a lower one.
+checkOnce("the women's offer is Premium Plus at home and Diaspora Plus abroad", () => {
+  const tierFn = latestFunction("womens_offer_tier");
+  if (!tierFn) return ["womens_offer_tier() is missing"];
+  if (!/'NG' then 'premium_plus'::tier else 'diaspora_plus'::tier/.test(tierFn.body)) {
+    return [`${tierFn.file} — womens_offer_tier() doesn't map Nigeria to Premium Plus and abroad to Diaspora Plus`];
+  }
+  const all = MIGRATIONS.map((m) => m.sql).join("\n");
+  if (!/before insert on public\.entitlements[\s\S]*?womens_offer_tier_on_grant/.test(all)) return ["no grant-time trigger sets the women's offer tier"];
+  if (!/after update of country_code on public\.profiles[\s\S]*?womens_offer_follows_country/.test(all)) return ["the women's offer doesn't follow a change of country"];
+  return [];
 });
 
 console.log("");

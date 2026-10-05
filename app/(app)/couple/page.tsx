@@ -159,12 +159,12 @@ export default async function CouplePage() {
           <h2 className="text-h5 text-ink-900">Planning the wedding</h2>
           <p className="text-ui text-grey-600">
             AriyaPlanner can pick this up — introduction ceremony, traditional
-            wedding, white wedding — using what you&rsquo;ve already told
-            Toastly, so you don&rsquo;t start from a blank form.
+            wedding, white wedding — starting from a short brief you both
+            fill in at the handoff. Nothing is taken from your profiles.
           </p>
           {bothConsented ? (
             <Notice tone="info" title="You've both agreed to share your brief">
-              Your details are ready to carry across. The handoff itself
+              What you entered is ready to carry across. The handoff itself
               isn&rsquo;t switched on yet — nothing has been sent anywhere.
             </Notice>
           ) : (

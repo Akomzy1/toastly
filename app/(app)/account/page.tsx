@@ -21,10 +21,9 @@ const REVEAL_LABEL: Record<string, string> = {
  *
  * ALWAYS OPEN: no plan, no live-profile guard (PRD §5.1.2).
  *
- * Deviation: the prototype's privacy rows also list "Genotype visibility"
- * and, for members in Nigeria, "Open to people living abroad". Neither
- * setting exists yet, so their rows wait for them rather than linking
- * nowhere.
+ * Deviation: the prototype's privacy rows also list "Genotype visibility".
+ * That setting doesn't exist yet, so its row waits for it rather than
+ * linking nowhere.
  */
 export default async function AccountPage() {
   const supabase = createClient();
@@ -33,7 +32,7 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: me } = await supabase.from("profiles").select("photo_reveal").eq("id", user.id).single();
+  const { data: me } = await supabase.from("profiles").select("photo_reveal, country_code, open_to_abroad").eq("id", user.id).single();
 
   return (
     <>
@@ -57,6 +56,16 @@ export default async function AccountPage() {
                 label: "Photo visibility",
                 sub: REVEAL_LABEL[me?.photo_reveal ?? "verified_members"],
               },
+              // Members in Nigeria only, as in the prototype.
+              ...(me?.country_code === "NG"
+                ? [
+                    {
+                      href: "/preferences",
+                      label: "Open to people living abroad",
+                      sub: `${me.open_to_abroad ? "On" : "Off"} · for members in Nigeria`,
+                    },
+                  ]
+                : []),
             ]}
           />
         </section>

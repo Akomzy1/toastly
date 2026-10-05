@@ -54,6 +54,8 @@ export type Profile = {
    * for display and is never matched on.
    */
   diaspora_city: string | null;
+  /** Members in Nigeria: include members abroad in my own six (0020). */
+  open_to_abroad: boolean;
   /**
    * IANA time zone, for showing both local times when a pair is scheduling
    * across zones (PRD §5.6, Prompt 11). Display only, never a matching

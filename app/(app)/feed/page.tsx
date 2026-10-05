@@ -62,6 +62,21 @@ export default async function FeedPage() {
     p_profile_id: user.id,
   });
 
+  // A member abroad who asked for diaspora matching without a Diaspora plan
+  // is on back home because of the plan, not because their city is closed —
+  // so they get the plan line from pool-choice, never the fallback notice
+  // (which 0020 stops returning for them).
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("country_code, pool")
+    .eq("id", user.id)
+    .single();
+  const planLine =
+    me?.country_code !== "NG" &&
+    (me?.pool === "diaspora" || me?.pool === "both") &&
+    tier !== "diaspora" &&
+    tier !== "diaspora_plus";
+
   const ids = (feed ?? []).map((f: { candidate_id: string }) => f.candidate_id);
 
   const { data: candidates } = ids.length
@@ -128,6 +143,23 @@ export default async function FeedPage() {
           diaspora member to wonder why everyone is in Lagos. */}
       {fallbackCity ? <FeedFallbackNotice city={String(fallbackCity)} /> : null}
 
+      {/* The line and button from pool-choice.slim.html's free-plan state,
+          reused here — the feed has no prototype for this case (flagged). */}
+      {planLine ? (
+        <div className="grid gap-3 rounded-[14px] border border-ink-900/[.12] bg-white px-3.5 py-[15px]">
+          <p className="text-[14.5px] leading-[1.6] text-ink-800">
+            Match with Nigerians in your city on a Diaspora plan, from $15 a
+            month. Until then, your six are from back home.
+          </p>
+          <Link
+            href="/pricing"
+            className="grid min-h-12 place-items-center rounded-lg border border-ink-900/20 px-[18px] py-3 text-ui font-semibold text-ink-900 no-underline transition-colors hover:border-green-500 hover:bg-green-50 hover:text-ink-900"
+          >
+            See Diaspora plans
+          </Link>
+        </div>
+      ) : null}
+
       {cards.length === 0 ? (
         /* Empty state. NOT IN THE PROTOTYPE — flagged. */
         <Card className="grid gap-3 p-[26px]">
@@ -138,7 +170,7 @@ export default async function FeedPage() {
             settings gives it more to work with.
           </p>
           <Button variant="outline" asChild className="justify-self-start">
-            <Link href="/profile">Profile settings</Link>
+            <Link href="/preferences">Match preferences</Link>
           </Button>
         </Card>
       ) : (

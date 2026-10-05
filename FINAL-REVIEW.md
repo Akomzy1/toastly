@@ -640,6 +640,62 @@ constraint check names exactly these three.
 **Not connected:** Paystack/Stripe (purchases and part-coin checkouts run on a
 development stand-in); the 15-minute `settle_due_dates()` schedule.
 
+## Women abroad, "Open to people living abroad", the brief rule (0020)
+
+Ships with 0013–0018 (it redefines 0013's feed), not with the held 0019.
+
+**Women's offer abroad:** a women's-offer grant is now Diaspora Plus for a
+member abroad and Premium Plus in Nigeria — set by the database from the
+member's country when it is granted, and switched if she moves while it is
+running. The end date never moves; an offer that has ended is left as it
+was. Both are the full upper tier (live-video Gist, incognito).
+
+**BLOCKER — where a member lives is never set.** `profiles.country_code`
+defaults to `NG` and no screen, signup field or action writes it. So today
+every member counts as Nigeria-based: the women's offer is always Premium
+Plus, USD coin packs and Diaspora plans never show, the pool choice never
+appears, and diaspora matching can't be reached. Not built, because it
+needs decisions: where it's asked (sign-up, or Match preferences / profile),
+whether a member can change it freely, and how it ties to the
+pricing-integrity signals (phone origin, payment geography) — a mismatch
+should raise a review signal and never block (CLAUDE.md). No prototype
+covers it.
+
+**"Open to people living abroad"** (`/preferences`, members in Nigeria, on by
+default). Before this, the back-home pool only ever held members in
+Nigeria: a member abroad choosing "back home" saw Nigeria, but Nigeria never
+saw them. Now a member in Nigeria with the switch on also gets members
+abroad who want back home (their pool says so, their plan has no diaspora
+matching, or their city isn't open). It is the member's own filter only:
+switching it off never hides them from members abroad — **please confirm**
+that's the intended reading of "who you see".
+
+**Pool choice** moved from a select on `/profile` to `/preferences`, built
+against `pool-choice`. A member abroad without a Diaspora plan whose saved
+pool is diaspora no longer gets the "city not open" notice (the reason is
+the plan, not the city); the feed shows `pool-choice`'s plan line and button
+instead, with one added sentence.
+
+**The AriyaPlanner brief rule.** 0006 said the brief's cultural fields would
+be "copied from profiles at consent time"; nothing actually did, and that
+intent is withdrawn. The brief gains PRD §5.7's fields (wedding city, rough
+date, guest-count band, budget band, ceremony formats: introduction /
+traditional / white wedding); the older columns stay but hold only what the
+couple enters or copies. Genotype is refused in either free-form field. A
+constraint check fails if any database function or trigger touching the
+brief reads profiles, or app code handling the brief queries them. The
+Couple Mode screen said AriyaPlanner would use "what you've already told
+Toastly" — changed to "a short brief you both fill in at the handoff.
+Nothing is taken from your profiles." No entry screen for the brief is
+built (no prototype; the handoff is out of MVP).
+
+**Not done:** the marketing Home and Pricing pages still describe the
+women's offer as Premium Plus for everyone; the newer `home-diaspora-offer`
+and `pricing-offer` exports cover it (ROUTES.md, "Update").
+
+**Tests:** 295/295 database checks (25 new), five new constraint checks,
+45 planted violations caught (6 new).
+
 ## Docs synced to the 2026-10-05 drops
 
 PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after
