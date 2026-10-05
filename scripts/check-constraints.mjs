@@ -344,8 +344,12 @@ check("pool choice never changes the daily count", (s, f) => {
 // stake_credit_received as a trust-event kind and creates no ledger row at
 // all; the older selector failed it for the mere mention, which is the check
 // being wrong about the file rather than the file being wrong.
+// Selects the file that CREATES the ledger: 0016's export reads coin_ledger,
+// and a file that merely reads it was wrongly failed for not also defining
+// the constraint. (This check enforces the stake-credit model that Prompt 17's
+// coin balance replaces; it changes with that prompt.)
 check("stake credits can never be withdrawable", (s, f) => {
-  if (!f.endsWith(".sql") || !/coin_ledger/.test(s)) return false;
+  if (!f.endsWith(".sql") || !/create table public\.coin_ledger/.test(s)) return false;
   const hasConstraint = /kind <> 'stake_credit' or withdrawable = false/.test(s);
   const excluded = /withdrawable_balance[\s\S]*?withdrawable = true/.test(s);
   if (!hasConstraint) return "no constraint forcing stake credits non-withdrawable";
@@ -851,6 +855,42 @@ check("no photo-library scanning, attractiveness scoring or AI enhancement", (s,
       code,
     );
   return hit ? `found ${hit[0]}` : false;
+});
+
+// --- Download your data, delete your account (privacy policy §8, §10) -----
+//
+// Both are promised and both are always open: no plan, no live profile.
+check("data download and account deletion read no tier", (s, f) => {
+  if (!/^app\/\(app\)\/account\//.test(posix(f))) return false;
+  return /current_tier|capabilities\(|can_read_inbox|\btier\b|requireLiveProfile/i.test(stripStrings(s))
+    ? "the account route reads a plan or the live-profile guard"
+    : false;
+});
+
+checkOnce("the export keeps the locked inbox locked and the Sentinel log out", () => {
+  const fn = latestFunction("export_my_data");
+  if (!fn) return "export_my_data() is missing";
+  const hits = [];
+  if (!/can_read_inbox\(/.test(fn.body)) hits.push("the export doesn't check can_read_inbox");
+  const locked = /else\s*\(select coalesce\(jsonb_agg[\s\S]*?\)\s*end,/.exec(fn.body);
+  if (!locked || !/m\.sender_id = me\.id/.test(locked[0])) {
+    hits.push("the Starter branch can return messages the member didn't send");
+  }
+  if (/trust_events|integrity_reviews/.test(fn.body)) hits.push("the export reads the Sentinel or integrity log");
+  if (/gist_outcomes[^)]*profile_id\s*<>/.test(fn.body)) hits.push("the export reads the other side of a Gist outcome");
+  return hits.map((h) => `${fn.file} — ${h}`);
+});
+
+checkOnce("deleting an account keeps payment and safety records, de-linked", () => {
+  const hits = [];
+  for (const fk of ["payments_profile_id_fkey", "reports_reporter_id_fkey", "reports_reported_id_fkey"]) {
+    let last = null;
+    for (const { sql } of MIGRATIONS) {
+      for (const m of sql.matchAll(new RegExp(`add constraint ${fk}[\\s\\S]*?;`, "g"))) last = m[0];
+    }
+    if (!last || !/on delete set null/.test(last)) hits.push(`${fk} does not survive deletion (needs on delete set null)`);
+  }
+  return hits;
 });
 
 // --- Coins are not a "wallet" ---------------------------------------------

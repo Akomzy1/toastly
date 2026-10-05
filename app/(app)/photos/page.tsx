@@ -83,7 +83,6 @@ export default async function PhotosPage() {
 
   return (
     <PhotosEditor
-      userId={user.id}
       mode={profile?.first_live_at ? "edit" : "onboard"}
       main={main ? toEditor(main) : null}
       candidate={candidate ? toEditor(candidate) : null}

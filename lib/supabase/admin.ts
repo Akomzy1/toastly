@@ -20,6 +20,12 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
  *     and keep their real number free for a second account;
  *   - the development-only liveness and ID stand-ins, which impersonate a
  *     vendor's server-to-server result and refuse to run in production.
+ * And outside it:
+ *   - app/(app)/photos/actions.ts and the Smile ID webhook, which record
+ *     face-match outcomes a member may not write (0015);
+ *   - app/(app)/account/actions.ts, account deletion: a member can't delete
+ *     their own auth account. The session is verified first, and the only
+ *     id acted on is the signed-in member's own.
  *
  * Returns null when the key is unset, so callers degrade instead of throwing.
  */

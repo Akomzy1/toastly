@@ -31,6 +31,23 @@ async function signedIn() {
   return { supabase, user };
 }
 
+/**
+ * A one-time upload URL into the member's own folder.
+ *
+ * The browser PUTs the compressed photo straight to storage with this, so
+ * the photo screen ships no Supabase client at all — about 75 kB less on a
+ * screen every new member must load on mobile data (PRD §5.8). The path is
+ * chosen here, never by the browser.
+ */
+export async function prepareUpload(): Promise<PhotoState & { path?: string; url?: string }> {
+  const { supabase, user } = await signedIn();
+  if (!user) return { error: "Please sign in again." };
+  const path = `${user.id}/${randomUUID()}.jpg`;
+  const { data, error } = await supabase.storage.from("profile-photos").createSignedUploadUrl(path);
+  if (error || !data) return { error: "That photo couldn't be uploaded. Try again." };
+  return { path, url: data.signedUrl };
+}
+
 /** Record a photo the browser has just uploaded to `${user.id}/…`. */
 export async function registerPhoto(path: string, position: number): Promise<PhotoState & { id?: string }> {
   const { supabase, user } = await signedIn();

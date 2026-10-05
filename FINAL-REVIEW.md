@@ -459,6 +459,50 @@ with 0013–0015 applied.
 checks for 0015; five new constraint checks, each proven against a planted
 violation.
 
+## Download your data, delete your account (privacy policy §8, §10)
+
+Both promised, both launch blockers (decided 2026-10-05), both always open —
+no plan, no live-profile guard. `/account` ("Your data", reached from the
+profile page) — **invented UI, flagged**: the nav export's profile hub lists
+the entry with that label but no screen exists.
+
+**Download** (`/account/export`, built by `export_my_data()` in 0016): one
+JSON file with profile, plans, answers, photos (24-hour links), Gist
+history, messages, dates, coins, payments, Couple Mode, reports filed and
+the emergency contact. It keeps the locked Starter inbox locked (a count,
+no text, no sender), never includes the other side of a Gist "continue?",
+and lists what it leaves out.
+
+**Delete** (typed confirmation, immediate — inside the policy's [30] days):
+ends any Couple Mode first so the partner is un-paused, calls off staked
+dates with every stake returned, deletes photo and attachment files, then
+the account. **Payment records and reports are kept, de-linked** — before
+0016 they cascaded away, and four foreign keys had no delete rule, so
+deletion would have failed for anyone who had used dates or Couple Mode.
+Every erasure is logged with no personal data.
+
+**Open questions — need a person (legal or product):**
+- *Sentinel events and pricing-integrity signals are excluded from the
+  self-serve download* (0009's rule: a readable trust log teaches scammers
+  what is counted). Whether a subject-access request must include them
+  under NDPA / UK GDPR is a legal question; the export says to ask support.
+- *"Removed members can't simply sign up again"* (§8) needs a review-removal
+  state and a retained phone hash. Neither exists, so deletion currently
+  frees the number. Retaining it for ordinary leavers would be an automated
+  restriction, which the policy rules out.
+- *Smile ID keeps images for 5 years* and has no documented deletion API;
+  deleting an account doesn't reach it.
+- *Coins at deletion:* the page asks members with coins to email support
+  first, pending Prompt 17's no-cash-refund rule vs Pricing's "refundable
+  on request".
+- *Not built:* purging kept records after their retention period, and the
+  7-day backup overwrite (a Supabase setting). The policy's durations are
+  still in brackets, so the page doesn't quote numbers.
+
+**Prototype conflict:** the nav export's profile hub labels coins "Wallet"
+— the word is now banned from UI copy. The hub isn't integrated; this is
+recorded for when it is.
+
 ## Docs synced to the 2026-10-05 drops
 
 PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after

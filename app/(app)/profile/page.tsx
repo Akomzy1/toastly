@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
@@ -59,6 +60,26 @@ export default async function ProfilePage() {
         </p>
       </div>
       <ProfileForm profile={profile} cities={cityOptions} />
+
+      {/* Labels and one-line descriptions from the profile hub in the nav
+          export (nav-profile-hub, not yet integrated), which lists these as
+          plain rows. Only the two entries that exist so far. */}
+      <ul className="grid list-none gap-3 p-0">
+        {[
+          { href: "/photos", label: "Edit profile and photos", sub: "Four to go live, up to six" },
+          { href: "/account", label: "Your data", sub: "See, download or delete what we hold" },
+        ].map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className="grid min-h-11 gap-0.5 rounded-xl border border-ink-900/[.12] bg-white px-5 py-4 no-underline transition-colors hover:border-green-500/50"
+            >
+              <span className="text-ui font-semibold text-ink-900">{item.label}</span>
+              <span className="text-nav text-grey-600">{item.sub}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

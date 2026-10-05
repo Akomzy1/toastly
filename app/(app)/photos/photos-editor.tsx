@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { compressPhoto } from "@/lib/compress-photo";
 import { Notice } from "@/components/ui/notice";
 import { VerifiedSeal } from "@/components/ui/verified-seal";
@@ -12,6 +11,7 @@ import {
   askForReview,
   checkMainPhoto,
   keepAsOtherPhoto,
+  prepareUpload,
   registerPhoto,
   removePhoto,
   setOnlyMatches,
@@ -44,7 +44,6 @@ const MAX = 6;
 type View = "photos" | "selfie" | "check";
 
 export function PhotosEditor(props: {
-  userId: string;
   mode: "onboard" | "edit";
   main: EditorPhoto | null;
   candidate: EditorPhoto | null;
@@ -93,14 +92,16 @@ export function PhotosEditor(props: {
       } catch {
         return fail("That file isn't a photo we can use. Try a JPEG or PNG.");
       }
-      const path = `${props.userId}/${crypto.randomUUID()}.jpg`;
-      const supabase = createClient();
-      const { error } = await supabase.storage
-        .from("profile-photos")
-        .upload(path, blob, { contentType: "image/jpeg", upsert: false });
-      if (error) return fail();
+      const target = await prepareUpload();
+      if (target?.error || !target?.url || !target.path) return fail(target?.error);
+      const put = await fetch(target.url, {
+        method: "PUT",
+        headers: { "Content-Type": "image/jpeg", "x-upsert": "false" },
+        body: blob,
+      });
+      if (!put.ok) return fail();
 
-      const result = await registerPhoto(path, slot);
+      const result = await registerPhoto(target.path, slot);
       if (result?.error || !result?.id) return fail(result?.error);
 
       if (slot === 0) {

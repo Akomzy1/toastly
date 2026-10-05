@@ -19,7 +19,9 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 **Held migrations — do not apply on their own.** `0013_live_profile_guard`,
 `0014_phone_identity_and_mutual_continue` and `0015_profile_photos_face_match`
-are committed but deliberately NOT applied (decided 2026-10-05). 0013 means
+are committed but deliberately NOT applied (decided 2026-10-05).
+`0016_data_export_and_deletion` reads 0013's photo columns, so it ships in
+the same release; apply 0013–0016 in order. 0013 means
 nobody can see anyone until their profile is live, and a profile can only go
 live through Prompt 14's photo upload and face match. Apply all three in the
 **same release** as the photo screens **and a working Smile ID face match**
