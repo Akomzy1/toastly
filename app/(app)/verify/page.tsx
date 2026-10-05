@@ -83,11 +83,13 @@ export default async function VerifyPage() {
             You&rsquo;re verified, {profile?.display_name}.
           </h2>
           <p className="text-ui text-grey-600">
-            Your seal is live. Next, set up your profile — the prompts are what
-            your matches actually read.
+            Your seal is live. Next, set up your profile — four photos, then
+            the prompts your matches actually read.
           </p>
+          {/* Photos come next: a profile goes live only with four of them and
+              a main photo matched to this selfie (PRD §5.1.2). */}
           <Button asChild className="justify-self-start">
-            <Link href="/profile">Set up your profile</Link>
+            <Link href="/photos">Set up your profile</Link>
           </Button>
         </Card>
       ) : null}

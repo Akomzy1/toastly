@@ -25,7 +25,7 @@ const WIDTH = Number(process.argv[3] ?? 360);
 const ROUTES = [
   "/", "/features", "/how-it-works", "/pricing", "/safety", "/diaspora", "/stories",
   "/login", "/signup",
-  "/verify", "/profile", "/feed", "/inbox", "/gist", "/coins", "/couple", "/safety-kit",
+  "/verify", "/photos", "/profile", "/feed", "/inbox", "/gist", "/coins", "/couple", "/safety-kit",
 ];
 
 const browser = await puppeteer.launch({

@@ -17,13 +17,13 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 |---|---|---|
 | Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Migrations 0001–0012 are applied. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
 
-**Held migrations — do not apply on their own.** `0013_live_profile_guard`
-and `0014_phone_identity_and_mutual_continue` are committed but deliberately
-NOT applied (decided 2026-10-05). 0013 means nobody can see anyone until
-their profile is live, and a profile can only go live through Prompt 14's
-photo upload and face match. Apply 0013, 0014 and Prompt 14's migrations in
-the **same release** as the photo-upload screens, or every member is locked
-out. 0014 needs `SUPABASE_SERVICE_ROLE_KEY` server-side: phone confirmation
+**Held migrations — do not apply on their own.** `0013_live_profile_guard`,
+`0014_phone_identity_and_mutual_continue` and `0015_profile_photos_face_match`
+are committed but deliberately NOT applied (decided 2026-10-05). 0013 means
+nobody can see anyone until their profile is live, and a profile can only go
+live through Prompt 14's photo upload and face match. Apply all three in the
+**same release** as the photo screens **and a working Smile ID face match**
+(capture included, below), or every member is locked out. 0014 needs `SUPABASE_SERVICE_ROLE_KEY` server-side: phone confirmation
 now binds the number through the service role.
 
 **Still to do on Supabase even though it works:** add
@@ -50,6 +50,7 @@ machine; the check itself is missing and deliberately not faked.
 | Integration | Variables | Current behaviour |
 |---|---|---|
 | **Liveness capture** — Smile ID | `SMILE_ID_PARTNER_ID`, `SMILE_ID_API_KEY`, `SMILE_ID_ENVIRONMENT` | Vendor chosen, **integration not written**. `recordLiveness` refuses in production with "Liveness checks aren't connected yet"; in development it marks the profile Verified Real without checking anything. This gates the "Verified Real" badge, which is the product's central claim. |
+| **Main-photo face match** — Smile ID | same three variables, plus the webhook `https://trytoastly.com/api/webhooks/smile-id` registered with Smile ID | **Server side written, capture not.** Each main photo is checked with a fresh selfie: SmartSelfie Authentication (same person as enrolled) + Compare (selfie vs photo, as PORTRAIT); `lib/smile-id.ts`, the webhook and `0015` are built against the v3 docs but untested against the sandbox — the webhook body is documented only by example. Missing: Smile ID's web selfie capture (the same SDK liveness needs), and Verified Real enrolling each member with Smile ID under their profile id, which Authentication checks against. Without credentials the photo screen says checks aren't connected; in development a stand-in records a match. **The consent wording is held** until Smile ID's image retention (documented as 5 years) is confirmed. |
 | **NIN / BVN** — Smile ID | same three variables | Same vendor, same account. `submitIdNumber` refuses in production. The number itself is never stored, only the fact of a pass. Optional forever, so this blocks the second ring, not sign-up. |
 | **Paystack** (NGN) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` | The webhook verifies the HMAC-SHA512 signature correctly and then **grants nothing** — no payment recorded, no coins credited, no subscription. Returns 503 while the key is unset. |
 | **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Same: signature and replay window verified, **no entitlement granted**. |

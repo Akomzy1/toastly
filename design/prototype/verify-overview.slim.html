@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/518aceb5-1c99-4ed1-82ad-040730b6c4f4.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/a128ffdd-5206-4812-b75b-e464535d855f.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/e3c71bc6-848f-493b-8451-10aeff6c9d77.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/9e1d54c5-d851-446b-893e-9a6c147d9c65.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/a47d6546-3c63-4c92-9b38-32b187307df1.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Verification 1 of 6</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Overview</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">The verify page as the member returns to it. Three rings sit on a rule, as in The Stake: a ring closes when its step is done, and the rule fills behind it. The ID check ring is dashed and labelled Optional in every state, so it never reads as missing.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="4">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Verify overview" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Verification</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">{{ barSub }}</p>
+        </div>
+      </div>
+
+      <div style="padding:20px 16px 24px;display:grid;gap:18px;align-content:start">
+
+        <div role="list" aria-label="Verification steps" style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:18px 10px 16px;display:grid;gap:8px">
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+            <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+              <div style="display:grid;justify-items:center">
+                <svg width="40" height="40" sc-camel-view-box="12 12 24 24" fill="none" aria-hidden="true">
+                  <circle cx="24" cy="24" r="9.5" stroke="{{ s.track }}" stroke-width="3" stroke-dasharray="{{ s.trackDash }}"></circle>
+                  <circle cx="24" cy="24" r="9.5" stroke="{{ s.arc }}" stroke-width="3" stroke-dasharray="{{ s.arcDash }}" stroke-linecap="round" transform="rotate(-90 24 24)"></circle>
+                  <path d="m20.2 24.3 2.6 2.6 5-5.4" stroke="{{ s.tick }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+              </div>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="height:4px;margin:0 6px;border-radius:999px;background:#F2F2F2;overflow:hidden">
+            <div style="height:100%;width:{{ fill }};border-radius:999px;background:#00695C"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px">
+            <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+              <div role="listitem" style="display:grid;gap:2px;justify-items:center;text-align:center">
+                <p style="margin:0;font-size:13px;font-weight:600;line-height:1.35;color:#050309">{{ s.label }}</p>
+                <p style="margin:0;font-size:12px;line-height:1.35;color:{{ s.statusColor }}">{{ s.status }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ isStart }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:18px">
+            <div style="display:grid;gap:8px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309;text-wrap:balance">Verify your profile</h2>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Your phone number is confirmed. One more step and your profile can be seen by other members.</p>
+            </div>
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 15px;display:grid;gap:12px">
+              <div style="display:grid;gap:6px">
+                <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Next · Verified Real</h3>
+                <p style="margin:0;font-size:14.5px;line-height:1.6;color:#1E1C21;text-wrap:pretty">A quick selfie, checked by Smile ID, our verification provider. Toastly keeps only the result.</p>
+              </div>
+              <button type="button" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#005449">Get verified</button>
+            </div>
+            <div style="padding:2px 4px;display:grid;gap:4px">
+              <p style="margin:0;font-size:14px;font-weight:600;color:#050309">ID check · Optional</p>
+              <p style="margin:0;font-size:14px;line-height:1.55;color:#504E52;text-wrap:pretty">Available after Verified Real, if you'd like it. It adds a second ring to your seal.</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isChecking }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;gap:18px">
+            <div style="display:grid;gap:8px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309;text-wrap:balance">We're checking your selfie</h2>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">This usually takes a minute — you can leave this page and we'll show the result here next time.</p>
+            </div>
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 15px;display:grid;gap:6px">
+              <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Verified Real · Being checked</h3>
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Smile ID is confirming it's a live person. Toastly will keep only the result.</p>
+            </div>
+            <div style="padding:2px 4px;display:grid;gap:4px">
+              <p style="margin:0;font-size:14px;font-weight:600;color:#050309">ID check · Optional</p>
+              <p style="margin:0;font-size:14px;line-height:1.55;color:#504E52;text-wrap:pretty">Available after Verified Real, if you'd like it. It adds a second ring to your seal.</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPassed }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;gap:18px">
+            <div style="border-radius:16px;background:#001F1B;padding:22px 18px;display:grid;gap:14px;justify-items:start">
+              <svg width="64" height="64" sc-camel-view-box="-1.5 -1.5 27 27" fill="none" aria-hidden="true"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.1" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="display:grid;gap:6px">
+                <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#FFFFFF">You're Verified Real</h2>
+                <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.8);text-wrap:pretty">Your profile can now be seen by other members.</p>
+              </div>
+              <button type="button" style="width:100%;min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">Set up your profile</button>
+            </div>
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 15px;display:grid;gap:12px">
+              <div style="display:grid;gap:6px">
+                <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">ID check · Optional</h3>
+                <p style="margin:0;font-size:14.5px;line-height:1.6;color:#1E1C21;text-wrap:pretty">Check your NIN or BVN against the official record to add a second ring to your seal. You can do it any time, or never.</p>
+              </div>
+              <button type="button" style="min-height:48px;padding:14px 20px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Check my ID</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isBoth }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:16px;background:#001F1B;padding:22px 18px;display:grid;gap:14px;justify-items:start">
+            <svg width="64" height="64" sc-camel-view-box="-1.5 -1.5 27 27" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="12.2" stroke="#EBD9AE" stroke-width="0.9"></circle><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.1" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div style="display:grid;gap:6px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#FFFFFF">Verified Real, with ID</h2>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.8);text-wrap:pretty">Both checks are done and your seal has its second ring. There's nothing more to do here.</p>
+            </div>
+            <button type="button" style="width:100%;min-height:48px;padding:14px 20px;border:1px solid rgba(235,217,174,0.42);border-radius:12px;background:transparent;color:#EBD9AE;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:rgba(235,217,174,0.12)">Back to your profile</button>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:700px;display:grid;gap:8px;padding-top:12px;border-top:1px solid rgba(5,3,9,0.12)">
+    <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Not yet design-approved</p>
+    <p style="margin:0;font-size:13.5px;line-height:1.6;color:#504E52;max-width:60ch">The ring stepper is new: Stake ring geometry (radius 9.5, stroke 3) at 40px, on a 4px rule. Closed teal ring = done, amber-deep arc = being checked, grey = not started, dashed = optional. The second seal ring is drawn as a fine sand circle around the seal.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1100}}">
+class Component extends DCLogic {
+  state = { w: "360px", s: "start" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  ring(kind, label, status) {
+    const done = { track: "#00695C", trackDash: "none", arc: "transparent", arcDash: "none", tick: "#00695C", statusColor: "#00695C" };
+    const map = {
+      done,
+      checking: { track: "#F2F2F2", trackDash: "none", arc: "#CC8F00", arcDash: "24 60", tick: "transparent", statusColor: "#4C3500" },
+      todo: { track: "#D9D9DA", trackDash: "none", arc: "transparent", arcDash: "none", tick: "transparent", statusColor: "#504E52" },
+      optional: { track: "#828184", trackDash: "2.6 3.2", arc: "transparent", arcDash: "none", tick: "transparent", statusColor: "#504E52" }
+    };
+    return { ...map[kind], label, status };
+  }
+  renderVals() {
+    const { w, s } = this.state;
+    const phone = this.ring("done", "Phone", "Confirmed");
+    const steps = {
+      start: [phone, this.ring("todo", "Verified Real", "Next"), this.ring("optional", "ID check", "Optional")],
+      checking: [phone, this.ring("checking", "Verified Real", "Being checked"), this.ring("optional", "ID check", "Optional")],
+      passed: [phone, this.ring("done", "Verified Real", "Done"), this.ring("optional", "ID check", "Optional")],
+      both: [phone, this.ring("done", "Verified Real", "Done"), this.ring("done", "ID check", "Done")]
+    }[s];
+    const fill = { start: "33.3%", checking: "50%", passed: "66.6%", both: "100%" }[s];
+    const sub = { start: "Your profile goes live once you're Verified Real", checking: "Your profile goes live once you're Verified Real", passed: "Your profile is visible", both: "Your profile is visible" }[s];
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [
+        this.chip("Phone done", s === "start", () => this.setState({ s: "start" })),
+        this.chip("Being checked", s === "checking", () => this.setState({ s: "checking" })),
+        this.chip("Verified Real passed", s === "passed", () => this.setState({ s: "passed" })),
+        this.chip("Both done", s === "both", () => this.setState({ s: "both" }))
+      ],
+      steps, fill, barSub: sub,
+      isStart: s === "start", isChecking: s === "checking", isPassed: s === "passed", isBoth: s === "both"
+    };
+  }
+}
+</script>
+
+
+</body></html>

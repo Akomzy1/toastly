@@ -45,12 +45,18 @@ export const PHOTO_REVEAL_OPTIONS: {
  * else" (PRD §5.2.1). Its wording never suggests Toastly verifies marital
  * status — nobody can, and implying otherwise would undermine the claim that
  * IS verifiable.
+ *
+ * "These photos aren't them" is first-class too (PRD §5.1.2): a member who
+ * passed liveness and then shows someone else's photos is exactly the
+ * catfish the face match exists to catch, and reports are how a miss is
+ * found.
  */
 export const REPORT_REASONS = [
   { value: "scam_or_fraud", label: "Scam or fraud" },
   { value: "asked_for_money", label: "Asked me for money" },
   { value: "threats_or_coercion", label: "Threats or pressure" },
   { value: "harassment", label: "Harassment" },
+  { value: "photos_not_them", label: "These photos aren't them" },
   { value: "fake_profile", label: "Not who they say they are" },
   { value: "user_is_married", label: "They're married" },
   { value: "underage", label: "They seem underage" },

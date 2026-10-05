@@ -795,6 +795,64 @@ checkOnce("members cannot write their own verification or live state", () => {
   return missing.length ? `${fn.file} — client can still write ${missing.join(", ")}` : [];
 });
 
+// --- Profile photos (PRD §5.1.2, Prompt 14) -------------------------------
+//
+// The selfie taken for a main-photo check goes to Smile ID and nowhere
+// else: Toastly keeps only the outcome, never the image, a score or a face
+// template.
+check("selfies are passed through, never stored", (s, f) => {
+  if (!/\.(tsx?)$/.test(f) || !/selfie/i.test(s)) return false;
+  const code = stripComments(s, f);
+  const hit =
+    /\.upload\([^)]*selfie|selfie[^;\n]*\.upload\(|\.insert\([^)]*selfie|selfie_(url|path|image_path)|livenessFrames[^;\n]*\.upload\(/i.exec(
+      code,
+    );
+  return hit ? `selfie written somewhere: ${hit[0].slice(0, 60)}` : false;
+});
+
+check("face-match records keep outcomes only", (s, f) => {
+  if (!f.endsWith(".sql") || !/create table public\.face_match_jobs/.test(s)) return false;
+  const table = /create table public\.face_match_jobs \(([\s\S]*?)\n\);/.exec(s);
+  if (!table) return "face_match_jobs definition not found";
+  const leak = /\b(score|confidence|similarity|image|selfie|template|embedding|vector)\w*/i.exec(table[1]);
+  return leak ? `face_match_jobs stores "${leak[0]}"` : false;
+});
+
+check("'these photos aren't them' is a first-class report reason", (s, f) => {
+  if (posix(f) !== "lib/safety.ts") return false;
+  return /value: "photos_not_them"/.test(s) ? false : "missing from REPORT_REASONS";
+});
+
+checkOnce("'these photos aren't them' exists in the database enum", () =>
+  MIGRATIONS.some(({ sql }) => /alter type report_reason add value[^;]*'photos_not_them'/.test(sql))
+    ? []
+    : "no migration adds photos_not_them to report_reason",
+);
+
+checkOnce("photos: four to go live, six at most", () => {
+  const max = latestFunction("max_profile_photos");
+  const hits = [];
+  if (!max || !/select 6::smallint/.test(max.body)) hits.push("max_profile_photos() is not 6");
+  const editor = "app/(app)/photos/photos-editor.tsx";
+  if (fs.existsSync(editor)) {
+    const src = fs.readFileSync(editor, "utf8");
+    if (!/const MIN = 4;/.test(src)) hits.push(`${editor} — MIN is not 4`);
+    if (!/const MAX = 6;/.test(src)) hits.push(`${editor} — MAX is not 6`);
+  }
+  return hits;
+});
+
+// PRD §5.1.2 and the §5.9 do-not-build list: no camera-roll or photo-library
+// scanning, no AI attractiveness scoring, no AI photo enhancement.
+check("no photo-library scanning, attractiveness scoring or AI enhancement", (s, f) => {
+  const code = stripStrings(stripComments(s, f));
+  const hit =
+    /\b(attractiveness\w*|beautyScore|faceScore|hotness\w*|rateFace\w*|enhancePhoto\w*|beautify\w*|faceRetouch\w*|showDirectoryPicker|cameraRoll\w*|scanLibrary\w*|photoLibrary\w*)\b/i.exec(
+      code,
+    );
+  return hit ? `found ${hit[0]}` : false;
+});
+
 // --- Coins are not a "wallet" ---------------------------------------------
 //
 // Decided 2026-10-05: never say "wallet" in UI copy. Coins are a promise

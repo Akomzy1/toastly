@@ -111,20 +111,21 @@ export function ProfileNotLive({ status }: { status: LiveStatus }) {
           </Button>
         ) : null}
 
-        {/* The photo-upload screens are Prompt 14 and don't exist yet, so
-            there is nowhere to send the member. Said plainly rather than a
-            dead link — the same honesty as "Calling isn't connected yet". */}
         {needsPhotos && !needsVerification ? (
-          <Notice tone="info" title="Adding photos isn’t available yet">
-            Photo upload isn&rsquo;t connected in this build. Your profile goes
-            live once your photos are in and your main photo matches your
-            selfie.
-          </Notice>
+          <Button asChild className="justify-self-start">
+            <Link href="/photos">
+              {status.mainPhoto === "checking" ? "See your photo check" : "Add your photos"}
+            </Link>
+          </Button>
         ) : null}
       </Card>
 
       <p className="text-nav text-grey-600">
         Still open to you whatever your status: verification, your{" "}
+        <Link href="/photos" className="text-green-500">
+          photos
+        </Link>
+        , your{" "}
         <Link href="/profile" className="text-green-500">
           profile settings
         </Link>{" "}

@@ -411,6 +411,54 @@ dropped-to-three and main-removed members, live controls, restore, and the
 replacement flow. Six new constraint checks, each proven to fail against a
 planted violation.
 
+## Prompt 14 — profile photos, four minimum, one face-matched
+
+**Smile ID checked first, as the prompt requires.** SmartSelfie Compare
+matches a live selfie against a photo we supply (`PORTRAIT`), so the face
+match stays with Smile ID — no new vendor. It can't re-check a still upload
+against the enrolled face, so **every main photo is checked with a fresh
+selfie** (decided 2026-10-05): Authentication (same enrolled person?) plus
+Compare (selfie vs photo). Verdicts map to the screens: borderline, spoof,
+fraud and provider errors all go to a person — never an automatic
+rejection; only a clear non-match is "We couldn't confirm".
+
+**Built:** `/photos` against `photos-upload.slim.html` and
+`photos-main-check.slim.html` — 4:5 tiles, the main photo card with its
+status, Optional slots 5–6, the quiet counter, Continue grey until four are
+in, the replace/remove sheet, and all five check states (checking, matched,
+face not clear, doesn't look like your selfie, with a person). Photos are
+compressed on the phone (1600px long edge, JPEG, metadata dropped) before
+upload. `0015` adds the six-photo limit, outcome-only job records, "ask a
+person to look", replace-on-match, private unconfirmed candidates, the
+`verification_drift` Sentinel event and the **"these photos aren't them"**
+report reason (now in the report form). The verify page's "Set up your
+profile" now leads to photos.
+
+**Deviations, flagged:**
+- *Invented UI:* the fresh-selfie step between choosing a main photo and its
+  check. No prototype; the approved design assumed no new selfie.
+- *Onboarding takes two selfies* while the prototype order stands (Verified
+  Real, then photos): one for liveness, one for the main photo. Moving the
+  photo step before Verified Real would make it one — the server handles
+  either order. Needs a design decision.
+- The phone-frame bar of the export ("‹ Your photos / Profile setup") is
+  rendered as the page heading inside the app shell, as on every in-app
+  screen so far.
+
+**Not done — launch blockers:** Smile ID's web selfie capture (the same SDK
+Verified Real liveness needs) and Verified Real enrolling members with Smile
+ID; the webhook is written to the v3 docs but untested against the sandbox.
+The consent wording is a marked placeholder until Smile ID's retention
+(documented as 5 years) is confirmed. The human review queue that "With our
+team" relies on doesn't exist yet. Without credentials the screen says
+checks aren't connected; in development a stand-in records a match. **Not
+rendered or audited at 320/360px in this session** — it needs a database
+with 0013–0015 applied.
+
+**Tests:** `npm run test:unit` (10 outcome rules) and 21 more database
+checks for 0015; five new constraint checks, each proven against a planted
+violation.
+
 ## Docs synced to the 2026-10-05 drops
 
 PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after

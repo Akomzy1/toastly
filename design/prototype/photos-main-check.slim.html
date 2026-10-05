@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/6f1c9b67-af5e-418e-8063-6898082b41be.js"></script>
+
+
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/7a88d29d-79e7-4491-8386-6b978b238443.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/9c8edcb4-88cf-48a9-b4f7-09d5f08d83d0.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/a683a2ef-8f35-49af-9d9c-873347adb6ea.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/5b0fa501-1bb0-432b-a043-adc921d22d2e.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Profile photos 2 of 2</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Main photo check</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch">The main photo is compared with the Verified Real selfie. The photo always sits beside its status: the amber ring while checking or with a person, the seal once matched, the teal ring when we couldn't confirm. Headlines say "We couldn't confirm", never "rejected" or "failed". No red.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="5">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Main photo check" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Main photo</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Profile setup</p>
+        </div>
+      </div>
+
+      <div role="status" style="padding:20px 14px 24px;display:grid;gap:20px;align-content:start">
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:12px;display:flex;align-items:center;gap:14px">
+          <img src="{{ o.img }}" alt="{{ o.alt }}" style="flex-shrink:0;width:96px;aspect-ratio:4/5;object-fit:cover;border-radius:10px;display:block;background:#D9D9DA">
+          <div style="display:grid;gap:10px;min-width:0">
+            <sc-if value="{{ o.seal }}" hint-placeholder-val="{{ false }}">
+              <span aria-hidden="true" style="width:40px;height:40px;border-radius:999px;background:#001F1B;display:grid;place-items:center">
+                <svg width="28" height="28" sc-camel-view-box="-1.5 -1.5 27 27" fill="none"><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </span>
+            </sc-if>
+            <sc-if value="{{ o.ring }}" hint-placeholder-val="{{ true }}">
+              <svg width="40" height="40" sc-camel-view-box="12 12 24 24" fill="none" aria-hidden="true">
+                <circle cx="24" cy="24" r="9.5" stroke="{{ o.track }}" stroke-width="3"></circle>
+                <circle cx="24" cy="24" r="9.5" stroke="{{ o.arc }}" stroke-width="3" stroke-dasharray="{{ o.dash }}" stroke-linecap="round" transform="rotate(-90 24 24)"></circle>
+              </svg>
+            </sc-if>
+            <span style="display:grid;gap:2px">
+              <span style="font-size:15px;font-weight:600;color:#050309">{{ o.status }}</span>
+              <span style="font-size:13px;line-height:1.45;color:#504E52;text-wrap:pretty">{{ o.sub }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:10px;padding:0 2px">
+          <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309;text-wrap:balance">{{ o.title }}</h2>
+          <sc-for list="{{ o.paras }}" as="p" hint-placeholder-count="1">
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">{{ p }}</p>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ o.hasTips }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 15px;display:grid;gap:10px">
+            <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">What works best</h3>
+            <ul style="margin:0;padding:0;list-style:none;display:grid;gap:8px">
+              <sc-for list="{{ o.tips }}" as="t" hint-placeholder-count="3">
+                <li style="display:flex;gap:10px;align-items:baseline;font-size:14.5px;line-height:1.55;color:#1E1C21"><span aria-hidden="true" style="flex-shrink:0;width:6px;height:6px;border-radius:999px;background:#00695C;transform:translateY(-2px)"></span><span>{{ t }}</span></li>
+              </sc-for>
+            </ul>
+          </div>
+        </sc-if>
+
+        <div style="display:grid;gap:10px">
+          <sc-if value="{{ o.hasPrimary }}" hint-placeholder-val="{{ false }}">
+            <button type="button" style="width:100%;min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:#00695C;color:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#005449">{{ o.primary }}</button>
+          </sc-if>
+          <sc-if value="{{ o.hasSecondary }}" hint-placeholder-val="{{ true }}">
+            <button type="button" sc-camel-on-click="{{ o.onSecondary }}" style="width:100%;min-height:48px;padding:14px 20px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">{{ o.secondary }}</button>
+          </sc-if>
+          <sc-if value="{{ o.hasFoot }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;font-size:13px;line-height:1.55;color:#504E52;text-wrap:pretty">{{ o.foot }}</p>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+const AMBER = { track: "#FFEFCC", arc: "#CC8F00" }, TEAL = { track: "#CCE1DE", arc: "#00695C" };
+const OUT = {
+  checking: {
+    img: "member-amaka", alt: "Your main photo", ring: true, ...AMBER, dash: "24 60",
+    status: "Checking", sub: "Against your Verified Real selfie",
+    title: "We're checking your main photo",
+    paras: ["This usually takes a minute. You can leave this page or keep adding photos — we'll show the result here."],
+    secondary: "Keep adding photos"
+  },
+  matched: {
+    img: "member-amaka", alt: "Your main photo", seal: true,
+    status: "Verified Real", sub: "Matches your selfie",
+    title: "Your main photo matches your selfie",
+    paras: ["The Verified Real seal shows beside it, so people know your photos are really you."],
+    primary: "Continue"
+  },
+  face: {
+    img: "ariya-gathering", alt: "Your chosen photo, a crowd at an evening party", ring: true, ...TEAL, dash: "46 60",
+    status: "Not confirmed yet", sub: "Face not clear",
+    title: "We couldn't confirm it's you",
+    paras: ["Your face isn't clear enough in this photo for us to compare it with your selfie."],
+    tips: ["Just you in the photo, facing the camera", "Your whole face in view, without sunglasses", "Good light, and no filters that change your face"],
+    primary: "Choose another photo", secondary: "Use it as another photo",
+    foot: "Your other photos don't need to show your face, so this one can go there."
+  },
+  selfie: {
+    img: "member-zainab", alt: "Your chosen photo", ring: true, ...TEAL, dash: "46 60",
+    status: "Not confirmed yet", sub: "Doesn't look like your selfie",
+    title: "We couldn't confirm it's you",
+    paras: ["This photo doesn't look enough like your Verified Real selfie for us to be sure it's you. An older photo, a very different angle or strong light can cause this."],
+    tips: ["Use a recent photo", "Face the camera, the way you did for your selfie"],
+    primary: "Choose another photo", secondary: "Ask a person to look", toReview: true
+  },
+  review: {
+    img: "member-zainab", alt: "Your chosen photo", ring: true, ...AMBER, dash: "40 60",
+    status: "With our team", sub: "You don't need to do anything",
+    title: "Your photo is being reviewed",
+    paras: ["A person on our team is taking a look.", "You can keep setting up your profile. We'll show the result here."],
+    secondary: "Keep setting up"
+  }
+};
+class Component extends DCLogic {
+  state = { w: "360px", s: "checking" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, s } = this.state;
+    const o = OUT[s];
+    return {
+      frameW: w,
+      widths: [
+        this.chip("360px", w === "360px", () => this.setState({ w: "360px" })),
+        this.chip("320px", w === "320px", () => this.setState({ w: "320px" })),
+        this.chip("Desktop", w === "680px", () => this.setState({ w: "680px" }))
+      ],
+      states: [["checking", "Checking"], ["matched", "Matched"], ["face", "Face not clear"], ["selfie", "Doesn't match selfie"], ["review", "With a person"]]
+        .map(([k, l]) => this.chip(l, s === k, () => this.setState({ s: k }))),
+      o: {
+        ...o, img: IMG(o.img), seal: !!o.seal, ring: !!o.ring,
+        tips: o.tips || [], hasTips: !!(o.tips && o.tips.length),
+        hasPrimary: !!o.primary, hasSecondary: !!o.secondary, hasFoot: !!o.foot,
+        onSecondary: o.toReview ? () => this.setState({ s: "review" }) : undefined
+      }
+    };
+  }
+}
+</script>
+
+
+</body></html>
