@@ -10,6 +10,7 @@ import { SafetyActions } from "@/components/safety/safety-actions";
 import { ReadyForm } from "./ready-form";
 import { OutcomeForm } from "./outcome-form";
 import { SpotSuggestions, type Spot } from "./spot-suggestions";
+import { ArrangeDate } from "./arrange-date";
 import { placesConfigured } from "@/lib/places";
 import {
   canUseVideo,
@@ -93,6 +94,16 @@ export default async function GistSessionPage({
         .eq("session_id", params.id)
         .order("created_at", { ascending: false })
     : { data: [] };
+
+  const acceptedSpot = (spots ?? []).find((s) => s.status === "accepted") ?? null;
+  const { data: existingDate } = acceptedSpot
+    ? await supabase
+        .from("date_commitments")
+        .select("id")
+        .eq("date_spot_id", acceptedSpot.id)
+        .is("settled_at", null)
+        .maybeSingle()
+    : { data: null };
 
   // Video is only ever offered when the entitlement allows it AND the session
   // was proposed as video. The token itself withholds camera publish rights
@@ -199,6 +210,17 @@ export default async function GistSessionPage({
         configured={placesConfigured()}
         matchFirst={otherName.split(" ")[0]}
       />
+
+      {/* An accepted spot leads to a date: arrange it, then stake it. */}
+      {acceptedSpot ? (
+        existingDate ? (
+          <Button asChild className="justify-self-start">
+            <Link href={`/dates/${existingDate.id}`}>See your date</Link>
+          </Button>
+        ) : (
+          <ArrangeDate spotId={acceptedSpot.id} venue={acceptedSpot.name} />
+        )
+      ) : null}
 
       {/* Safety & Trust promises "every screen has a report action, including
           inside a Gist session". Until now this screen had none. Never behind

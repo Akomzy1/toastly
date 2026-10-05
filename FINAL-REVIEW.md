@@ -584,6 +584,62 @@ reviewer's sign-off (the history prototype shows one; not required by the
 rules); notifying members of "Ask to switch plan"; purging expired
 blocklist entries.
 
+## Prompt 17 — the coin balance and date attendance (0019) — HELD
+
+**Held from production** until the PRD §11 legal check: every action that
+moves coins refuses in production unless `COINS_LEGAL_CLEARED=true`.
+
+**The balance:** an append-only ledger (edits refused by trigger), balance
+derived; purchased coins (stakeable) and bonus coins (spendable, never
+stakeable). No withdrawal, payout, refund-to-cash or send flow anywhere;
+`withdrawable_balance()` is gone. Coins pay Premium and Premium Plus only —
+the database refuses a Diaspora plan; a member abroad paying a naira plan
+in coins raises a pricing case for a person, never a block.
+
+**Dates:** arrange from an accepted spot, both stake from purchased coins,
+"I'm here" checks distance to the venue in the database and keeps only the
+time; both here settles at once. One absent → 24 hours to answer:
+"Something came up" (the stake goes), "I didn't feel safe" (it comes back in
+full), or "I was there" (a person decides; nothing moves until then — a
+date-dispute case with "Both attended" / "The no-show stands", **a
+deviation** from the prototype's generic five). Cancelling is free before
+the 12-hour cut-off; after it, the canceller's stake goes to the other.
+**Safety overrides everything:** a safety cancellation, "I didn't feel
+safe", or a report about the other person returns the stake in full — the
+required test proves it in four ways. Every date's coins sum to zero:
+Toastly keeps nothing.
+
+**Built against** `coins-balance`, `coins-get`, `coins-get-usd`,
+`coins-checkout`, `date-stake-confirm`, `date-checkin`, `date-cancel`,
+`date-outcomes`. **Invented UI:** proposing a date's time
+(`arrange-date.tsx`, one date-and-time field). **Deviation:** coin history
+says "a date" without the other person's name, because the coin page stays
+open whatever the member's status and so never reads date rows.
+
+**Attendance exemption (decided here, please confirm):** arranging and
+staking need a live profile; checking in, cancelling and answering a no-show
+on a date already arranged do not, so a member whose profile was hidden on
+the day can't lose a stake for it, and a safety exit is never blocked. A
+constraint check names exactly these three.
+
+**Conflicts and choices to confirm:**
+- *Pricing page vs coin screens:* the newest Pricing export still says coins
+  are "Refundable to your original payment method on request"; the coin
+  screens and PRD §5.5 say never. The live Pricing page must change in the
+  same release 0019 ships.
+- *Coin packs:* Pricing lists 10 / 30 at ₦1,000 / ₦2,700 and 30 at $6; the
+  in-app prototypes list 5 / 10 / 25 / 50 at ₦100 or $0.20 each (built).
+- *Coin value at checkout:* the checkout prototype values 35 coins at
+  ₦2,000; built at ₦100 a coin, matching every pack (`coin_naira_value()`).
+- *"Bank transfer"* as a payment-method label (from the prototype) is the
+  one allowed use of "transfer" in coin copy.
+- *Coins from a no-show* land in the attendee's purchased (stakeable)
+  bucket — PRD §5.5 doesn't say.
+- *Both absent:* both stakes come back — PRD §5.5 is silent.
+
+**Not connected:** Paystack/Stripe (purchases and part-coin checkouts run on a
+development stand-in); the 15-minute `settle_due_dates()` schedule.
+
 ## Docs synced to the 2026-10-05 drops
 
 PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after

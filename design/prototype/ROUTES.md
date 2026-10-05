@@ -44,14 +44,21 @@ exists but this newer export changes it. **Not built** — no route yet.
 | `review-case` | `/review/[id]` | **Built.** Photo and selfie checks get Confirm match / Not a match in place of the generic five actions (flagged). |
 | `review-history` | `/review/history` | **Built** |
 
+## Coins and dates (Prompt 17 — held from production)
+
+| Prototype | Route | Status |
+|---|---|---|
+| `coins-balance` | `/coins` | **Built.** History says "a date" without the other person's name (flagged). |
+| `coins-get`, `coins-get-usd` | `/coins/get` | **Built** — currency follows where the member lives. |
+| `coins-checkout` | `/coins/checkout?plan=` | **Built** — coins apply first on naira plans; Diaspora billed in USD. |
+| `date-stake-confirm`, `date-checkin`, `date-cancel`, `date-outcomes` | `/dates/[id]` | **Built**, one view over the date's state. |
+
 ## Not built yet
 
 | Prototype(s) | Where it goes | Scheduled |
 |---|---|---|
 | `nav-today`, `nav-gists`, `nav-profile-hub`, `nav-safety-entry`, `nav-desktop` | The app shell (`app/(app)/layout.tsx`): tab bar, profile hub, desktop header | Not in the current build order — **gap** |
 | `gist-invite-starter`, `-paid`, `-limit`, `-sent`, `-received`, `gist-accepted`, `gist-invite-outcomes`, `gists-list` | `/feed` reply flow, `/gist`, `/gist/[id]` — replace the invented UI there | Not in the current build order — **gap** |
-| `coins-balance`, `coins-get`, `coins-get-usd`, `coins-checkout` | `/coins` and checkout | Prompt 17 |
-| `date-stake-confirm`, `date-checkin`, `date-cancel`, `date-outcomes` | Dates (new routes) | Prompt 17 |
 | `open-to-abroad` | Match preferences, members in Nigeria | "Open to people living abroad" |
 | `pool-choice` | Match preferences, members abroad (today a select in `/profile`) | With the diaspora items |
 | `genotype-consent`, `-entry`, `-visibility`, `-display`, `-settings` | Profile and settings | Not scheduled — **gap** |
@@ -63,7 +70,8 @@ exists but this newer export changes it. **Not built** — no route yet.
 - **The selfie capture itself** — Smile ID's in-browser camera, onboarding and replacement. Its UI comes from the vendor SDK; how Toastly frames it isn't designed.
 - **"Before your selfie" and "Check your ID" consents.** The wording is final; the layout borrows `photo-replace-main`'s consent block.
 - **Telling a member their account is restricted or removed**, with a reason category (CLAUDE.md). Built as invented UI (`components/app/standing-notice.tsx`) — needs a design.
-- **Staff sign-in and access** for the review screen.
+- **Staff sign-in and access** for the review screen (built as: sign up, then added by SQL).
+- **Proposing a date's time** after a spot is accepted — built as invented UI (`arrange-date.tsx`).
 - Long-standing, from earlier prompts: sign-up / sign-in, the profile editor, the feed match card, the Couple Mode screen and the in-app safety kit.
 
 ## Prototype conflicts
@@ -71,3 +79,6 @@ exists but this newer export changes it. **Not built** — no route yet.
 - `nav-profile-hub` labels the coins entry **"Wallet"**. "Wallet" is banned from UI copy (decided 2026-10-05); build it as "Coins".
 - `profile-not-live` and `profile-access-paused` list **Toastly Help**, which doesn't exist yet; the row is left out until it does.
 - `verify-overview` shows the selfie before photos; the decided order is photos first, then one selfie.
+- `pricing` still says coins are "Refundable to your original payment method on request"; the coin screens and PRD §5.5 say never.
+- `pricing` lists 10 / 30 coin packs (₦1,000 / ₦2,700, $6 for 30); `coins-get` lists 5 / 10 / 25 / 50 at ₦100 or $0.20 each.
+- `coins-checkout` values 35 coins at ₦2,000; every pack prices a coin at ₦100.

@@ -339,24 +339,6 @@ check("pool choice never changes the daily count", (s, f) => {
     : "the feed limit is not daily_match_count()";
 });
 
-// --- Stake credits --------------------------------------------------------
-// Selects on the ledger TABLE, not on the words "stake_credit". 0009 names
-// stake_credit_received as a trust-event kind and creates no ledger row at
-// all; the older selector failed it for the mere mention, which is the check
-// being wrong about the file rather than the file being wrong.
-// Selects the file that CREATES the ledger: 0016's export reads coin_ledger,
-// and a file that merely reads it was wrongly failed for not also defining
-// the constraint. (This check enforces the stake-credit model that Prompt 17's
-// coin balance replaces; it changes with that prompt.)
-check("stake credits can never be withdrawable", (s, f) => {
-  if (!f.endsWith(".sql") || !/create table public\.coin_ledger/.test(s)) return false;
-  const hasConstraint = /kind <> 'stake_credit' or withdrawable = false/.test(s);
-  const excluded = /withdrawable_balance[\s\S]*?withdrawable = true/.test(s);
-  if (!hasConstraint) return "no constraint forcing stake credits non-withdrawable";
-  if (!excluded) return "withdrawable_balance does not exclude locked entries";
-  return false;
-});
-
 check("pricing-integrity signals trigger no automatic consequence", (s, f) => {
   if (!/integrity_(signal|reviews)/.test(s)) return false;
   return /auto_?(suspend|ban|lock)|suspend\(\)|autoSuspend/i.test(
@@ -997,6 +979,112 @@ checkOnce("reviewers never see message text, Gist content, genotype or selfies",
   if (!f) return "review_case_detail() is missing";
   const leak = /\bm\.body\b|messages\.body|\bbody\b|transcript|audio|genotype|selfie_image|liveness_images|wants_to_continue|phone_hash|fingerprint/i.exec(f.body);
   return leak ? `${f.file} — review evidence reads "${leak[0]}"` : [];
+});
+
+// --- The coin balance (PRD §5.5, Prompt 17, 0019) --------------------------
+//
+// Replaces the stake-credit check: the "future-deposit-only credit" model is
+// superseded. Coins are a closed loop — never withdrawn, refunded as cash or
+// sent between members by choice; they move between members only as a stake
+// outcome, and Toastly keeps none of it.
+checkOnce("coins are never withdrawable, refundable as cash or sent between members", () => {
+  // Replay creates and drops, so only functions that survive are judged.
+  const live = new Map();
+  for (const { file, sql } of MIGRATIONS) {
+    for (const m of sql.matchAll(/(create or replace|drop) function (?:if exists )?public\.(\w+)/g)) {
+      if (m[1] === "drop") live.delete(m[2]);
+      else live.set(m[2], file);
+    }
+  }
+  return [...live]
+    .filter(([name]) => /withdraw|payout|cash_?out|refund_coins|send_coins|transfer_coins|gift_coins/i.test(name))
+    .map(([name, file]) => `${file} — ${name}() moves coins out of the closed loop`);
+});
+
+checkOnce("a stake outcome pays only the two members — Toastly keeps nothing", () => {
+  const f = latestFunction("settle_commitment");
+  if (!f) return "settle_commitment() is missing";
+  const targets = [...f.body.matchAll(/insert into coin_ledger[^;]*?values \((\w+(?:\.\w+)?)/g)].map((m) => m[1]);
+  const bad = targets.filter((t) => !["c.member_a", "c.member_b", "v_present"].includes(t));
+  return bad.length ? `${f.file} — settle_commitment() credits ${bad.join(", ")}` : [];
+});
+
+checkOnce("safety always returns the stake", () => {
+  const hits = [];
+  const cancel = latestFunction("cancel_date");
+  if (!cancel || !/if p_safety or[\s\S]*?settle_commitment\(c\.id, 'cancelled'\)/.test(cancel.body)) {
+    hits.push("a safety cancellation doesn't return the stakes");
+  }
+  const answer = latestFunction("answer_no_show");
+  if (!answer || !/p_answer = 'unsafe' then[\s\S]*?settle_commitment\(c\.id, 'cancelled'\)/.test(answer.body)) {
+    hits.push("'I didn't feel safe' doesn't return the stake");
+  }
+  if (!MIGRATIONS.some(({ sql }) => /after insert on public\.reports\s+for each row execute function public\.safety_report_returns_stakes/.test(sql))) {
+    hits.push("a safety report doesn't return the reporter's stake");
+  }
+  return hits;
+});
+
+checkOnce("only purchased coins are staked, and coins never pay a Diaspora plan", () => {
+  const hits = [];
+  const stake = latestFunction("stake_date");
+  if (!stake || !/stakeable_balance\(v_me\) < c\.stake_coins/.test(stake.body)) hits.push("stake_date() doesn't check purchased coins");
+  if (!MIGRATIONS.some(({ sql }) => /constraint promotional_never_staked/.test(sql))) hits.push("bonus coins can enter a stake");
+  const price = latestFunction("plan_naira_price");
+  if (!price || /diaspora/.test(price.body)) hits.push("a Diaspora plan has a naira price, so coins could pay it");
+  const quote = latestFunction("coin_checkout_quote");
+  if (!quote || !/coins_naira_only/.test(quote.body)) hits.push("coin_checkout_quote() doesn't refuse a Diaspora plan");
+  return hits;
+});
+
+// PRD §11: held from production until the legal check confirms a closed-loop
+// coin balance is outside CBN e-money licensing.
+checkOnce("coin and date actions are held from production until legal clears", () => {
+  const hits = [];
+  for (const [file, fns] of [
+    ["app/(app)/coins/actions.ts", ["buyCoins", "payPlanWithCoins"]],
+    ["app/(app)/dates/actions.ts", ["createDate", "stakeDate"]],
+  ]) {
+    if (!fs.existsSync(file)) { hits.push(`${file} missing`); continue; }
+    const acts = serverActions(stripComments(fs.readFileSync(file, "utf8"), file));
+    for (const fn of fns) {
+      const a = acts.find((x) => x.name === fn);
+      if (!a || !/if \(!coinsOpen\(\)\) return/.test(a.body)) hits.push(`${file} — ${fn}() isn't held`);
+    }
+  }
+  const lib = fs.existsSync("lib/coins.ts") ? fs.readFileSync("lib/coins.ts", "utf8") : "";
+  if (!/process\.env\.COINS_LEGAL_CLEARED === "true"/.test(lib)) hits.push("lib/coins.ts — coinsOpen() doesn't wait for COINS_LEGAL_CLEARED");
+  return hits;
+});
+
+// Arranging and staking a date need a live profile (0013). Checking in,
+// cancelling and answering a no-show on a date ALREADY arranged are the
+// only exemptions — a stake must never pressure anyone, and a safety exit
+// is never blocked — and they refuse only a member a reviewer removed.
+checkOnce("dates: only attendance and safety are exempt from the live guard", () => {
+  const file = "app/(app)/dates/actions.ts";
+  if (!fs.existsSync(file)) return [];
+  const acts = serverActions(stripComments(fs.readFileSync(file, "utf8"), file));
+  const hits = [];
+  for (const a of acts) {
+    const strict = /if \(!live\.live\) return \{ error: notLiveError\(live\) \};/.test(a.body);
+    const exempt = ["checkIn", "cancelDate", "answerNoShow"].includes(a.name);
+    if (!exempt && !strict) hits.push(`${file} — ${a.name}() isn't behind the live guard`);
+    if (exempt && strict) hits.push(`${file} — ${a.name}() blocks attendance or a safety exit`);
+  }
+  return hits;
+});
+
+// PRD §5.5 rule 1 and the warm framing: none of these in coin or date copy.
+// "Bank transfer" names a way to pay Paystack — the one approved use, kept
+// in lib/coins.ts and nowhere else (flagged for confirmation).
+check("coin and date copy never says escrow, transfer, cash out or fine", (s, f) => {
+  const p = posix(f);
+  if (!/^(app|components|lib)\//.test(p) || !/\.(tsx?)$/.test(p)) return false;
+  if (!/coins?|dates?|stake/i.test(p)) return false;
+  const text = (stringsIn(s).join(" ") + " " + s.replace(/<[^>]+>/g, " ")).replace(/Bank transfer/g, "");
+  const hit = /\bescrow\b|\btransfer(s|red|ring)?\b|\bcash(ed)? out\b|\bfined?\b/i.exec(stripComments(text, f));
+  return hit ? `"${hit[0]}"` : false;
 });
 
 // --- Coins are not a "wallet" ---------------------------------------------

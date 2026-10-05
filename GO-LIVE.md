@@ -25,6 +25,13 @@ are committed but deliberately NOT applied (decided 2026-10-05).
 `0018_review_queue_and_removal` redefines 0013's live rule, so all ship in
 the same release; apply 0013–0018 in order.
 
+**`0019_coin_balance_and_attendance` (Prompt 17) is held separately** until
+the legal check in PRD §11 clears (`COINS_LEGAL_CLEARED`, below). It can
+follow 0013–0018 in a later release. When it ships, schedule
+`select settle_due_dates();` every 15 minutes (Supabase cron) so
+provisional no-shows and unconfirmed dates settle on time — the date page
+also settles lazily when opened.
+
 **Staff access to the review console (`/review`).** There is deliberately
 no self-service path. A reviewer signs up like a member, then is added in
 the Supabase SQL editor:
@@ -48,6 +55,7 @@ Redirect URLs), or email sign-in links will point at localhost.
 |---|---|---|
 | Canonical domain | `NEXT_PUBLIC_SITE_URL` | Defaults to `https://trytoastly.com`. If the real origin differs, every canonical URL, OG image and sitemap entry is wrong in search results. |
 | Phone hashing | `PHONE_HASH_PEPPER` | **Verification refuses to run in production.** Phone numbers are stored only as hashes, and the number space is small enough to brute-force, so an unpeppered hash is effectively reversible. Generate once: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Changing it later invalidates every existing phone identity. |
+| Coin balance and date stakes | `COINS_LEGAL_CLEARED` | **Held.** Until it's `true`, production refuses buying coins, paying a plan with coins, arranging and staking dates; the balance is still visible. Set it only when a Nigerian lawyer has confirmed the closed-loop balance is outside CBN e-money licensing (PRD §11). Coin purchases also need Paystack/Stripe connected. |
 | ID fingerprint | `ID_FINGERPRINT_KEY` | **The ID check refuses to run in production.** The keyed hash of the NIN/BVN that stops one ID verifying several accounts and keeps removed members out for two years. Generate once like the pepper; changing it orphans every stored fingerprint and blocklist entry. |
 | Staff tooling and phone binding | `SUPABASE_SERVICE_ROLE_KEY` | The integrity review queue and report triage can't read, and (from 0014) phone confirmation can't complete. **Server-side only — never `NEXT_PUBLIC_`.** |
 
