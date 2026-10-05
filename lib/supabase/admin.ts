@@ -13,6 +13,14 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
  * that runs on behalf of a member — those have a session and should use it,
  * so that RLS still applies.
  *
+ * Narrow exceptions, all in app/(app)/verify/actions.ts, all writing
+ * verification state a member's own session may not write (0013):
+ *   - recording a confirmed phone and binding its peppered hash (0014). The
+ *     hash must come from the server, or a member could register a junk value
+ *     and keep their real number free for a second account;
+ *   - the development-only liveness and ID stand-ins, which impersonate a
+ *     vendor's server-to-server result and refuse to run in production.
+ *
  * Returns null when the key is unset, so callers degrade instead of throwing.
  */
 export function createAdminClient() {

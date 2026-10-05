@@ -560,6 +560,255 @@ check("trust instrumentation stays events-only (no Phase 2 scoring)", (s, f) => 
   return hit ? `found ${hit[0]} — that is Phase 2` : false;
 });
 
+// --- No live profile, no access (PRD §5.1.2) -------------------------------
+//
+// "You can't look at people who can't see you." Every feed, profile-view,
+// invite, message and date route must carry the live-profile guard, in the
+// app AND in the database. These checks look at both, because either one
+// alone leaves a door open: the app guard is skipped by anyone calling the
+// API directly, and the database guard alone leaves members staring at empty
+// screens with no explanation.
+
+/** Like check(), for rules that need the whole repo rather than one file. */
+function checkOnce(name, test) {
+  const hits = [].concat(test() || []);
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
+const posix = (f) => f.replace(/\\/g, "/");
+
+// Route segments that ARE feed, profile-view, invite, message or date
+// routes. A new one (say app/(app)/messages or app/(app)/profile/[id]) is
+// guarded the moment it exists, by name.
+const GUARDED_ROUTE =
+  /^app\/\(app\)\/(feed|gist|inbox|messages?|chat|threads?|dates?|matches|members?|people|profiles?\/\[)/;
+
+// Routes that must stay open whatever the member's status (PRD §5.1.2):
+// verification, photo upload, Toastly Help, settings, data export and
+// deletion, plus the safety kit. A guard here would lock a member out of the
+// very screens that restore their profile.
+//
+// Decided 2026-10-05: Couple Mode also stays open while access is paused for
+// profile reasons (it closes only on a review restriction or removal), and so
+// does the coin balance and buying coins or a plan. Stakes and dates do not.
+const ALWAYS_OPEN_ROUTE =
+  /^app\/\(app\)\/(verify|photos|help|settings|export|delete|account|safety-kit|couple|coins|profile\/(page|actions|profile-form))/;
+
+// Reading or writing any of these is, by definition, one of the five kinds
+// of route — wherever the file lives.
+const GUARDED_DATA =
+  /from\(\s*["'](daily_feed|replies|gist_sessions|gist_outcomes|threads|messages|message_attachments|date_spots|date_commitments)["']\s*\)|rpc\(\s*["'](build_daily_feed|unread_count)["']/;
+
+const GUARD_CALL = /\brequireLiveProfile\s*\(/;
+const GUARD_USED = /!\s*\(?\s*(await\s+requireLiveProfile\([^)]*\)\s*\)|\w+)\.live\b/;
+
+/** A server entry point: a page, layout, route handler or "use server" file. */
+function entryKind(f, src) {
+  if (/\/(page|layout)\.tsx$/.test(f)) return "page";
+  if (/\/route\.ts$/.test(f)) return "route";
+  if (/^\s*["']use server["']/.test(src)) return "actions";
+  return null;
+}
+
+/** Each exported function in a "use server" file, with its body. */
+function serverActions(src) {
+  const starts = [...src.matchAll(/export\s+async\s+function\s+(\w+)/g)];
+  return starts.map((m, i) => ({
+    name: m[1],
+    body: src.slice(m.index, starts[i + 1]?.index ?? src.length),
+  }));
+}
+
+function lacksGuard(f, raw) {
+  const src = stripComments(raw, f);
+  const kind = entryKind(f, src);
+  if (!kind) return [];
+  if (kind === "actions") {
+    return serverActions(src)
+      .filter((a) => !GUARD_CALL.test(a.body) || !GUARD_USED.test(a.body))
+      .map((a) => `${f} — ${a.name}() has no live-profile guard`);
+  }
+  return GUARD_CALL.test(src) && GUARD_USED.test(src)
+    ? []
+    : [`${f} — no live-profile guard`];
+}
+
+const appFiles = ["app", "lib"]
+  .flatMap((r) => walk(r))
+  .map((f) => posix(f))
+  .filter((f) => /\.tsx?$/.test(f));
+
+checkOnce("every feed, profile-view, invite, message and date route is live-guarded", () =>
+  appFiles
+    .filter((f) => GUARDED_ROUTE.test(f))
+    .flatMap((f) => lacksGuard(f, fs.readFileSync(f, "utf8"))),
+);
+
+checkOnce("any route touching feed, invite, message or date data is live-guarded", () =>
+  appFiles
+    .filter((f) => !GUARDED_ROUTE.test(f))
+    .filter((f) => GUARDED_DATA.test(stripComments(fs.readFileSync(f, "utf8"), f)))
+    .flatMap((f) => lacksGuard(f, fs.readFileSync(f, "utf8"))),
+);
+
+checkOnce("verification, photos, help, settings, export and deletion stay open", () =>
+  appFiles
+    .filter((f) => ALWAYS_OPEN_ROUTE.test(f))
+    .filter((f) => GUARD_CALL.test(stripComments(fs.readFileSync(f, "utf8"), f)))
+    .map((f) => `${f} — calls requireLiveProfile on an always-open route`),
+);
+
+// The database side. Migrations are replayed in order so that only the
+// policies and functions that actually survive are judged — a guard added in
+// 0013 and silently dropped by 0020 must fail.
+const MIGRATIONS = fs.existsSync("supabase/migrations")
+  ? fs
+      .readdirSync("supabase/migrations")
+      .filter((f) => f.endsWith(".sql"))
+      .sort()
+      .map((f) => ({
+        file: `supabase/migrations/${f}`,
+        sql: stripComments(fs.readFileSync(`supabase/migrations/${f}`, "utf8"), f),
+      }))
+  : [];
+
+function survivingPolicies() {
+  const live = new Map();
+  for (const { file, sql } of MIGRATIONS) {
+    const re =
+      /(drop policy (?:if exists )?"([^"]+)" on ([\w.]+)\s*;)|(create policy "([^"]+)"\s+on ([\w.]+)[\s\S]*?;)/g;
+    for (const m of sql.matchAll(re)) {
+      if (m[1]) live.delete(`${m[3]}::${m[2]}`);
+      else live.set(`${m[6]}::${m[5]}`, { file, text: m[4] });
+    }
+  }
+  return live;
+}
+
+function latestFunction(name) {
+  let found = null;
+  for (const { file, sql } of MIGRATIONS) {
+    const re = new RegExp(
+      `create or replace function public\\.${name}\\s*\\([\\s\\S]*?\\$\\$([\\s\\S]*?)\\$\\$`,
+      "g",
+    );
+    for (const m of sql.matchAll(re)) found = { file, body: m[1] };
+  }
+  return found;
+}
+
+// Tables whose every policy must require the caller to be live.
+const GUARDED_TABLES = [
+  "daily_feed",
+  "replies",
+  "gist_sessions",
+  "gist_outcomes",
+  "threads",
+  "messages",
+  "date_spots",
+  "date_commitments",
+];
+
+checkOnce("every feed, invite, message and date policy requires a live caller", () => {
+  const hits = [];
+  for (const [key, p] of survivingPolicies()) {
+    const table = key.split("::")[0].replace(/^public\./, "");
+    if (!GUARDED_TABLES.includes(table)) continue;
+    if (!/profile_is_live\(\s*auth\.uid\(\)\s*\)/.test(p.text)) {
+      hits.push(`${p.file} — policy ${key} has no profile_is_live(auth.uid())`);
+    }
+  }
+  return hits;
+});
+
+// Profiles and prompt answers: a member always reads their OWN row; any
+// policy that shows them someone else's must require both sides live.
+checkOnce("other members' profiles and answers are visible only live-to-live", () => {
+  const hits = [];
+  const ownOnly =
+    /^create policy "[^"]+"\s+on [\w.]+\s+for (select|update|insert|all)\s+(using|with check)\s*\(\s*auth\.uid\(\)\s*=\s*(id|profile_id)\s*\)(\s*with check\s*\(\s*auth\.uid\(\)\s*=\s*(id|profile_id)\s*\))?\s*;$/;
+  for (const [key, p] of survivingPolicies()) {
+    const table = key.split("::")[0].replace(/^public\./, "");
+    if (table !== "profiles" && table !== "prompt_answers") continue;
+    const text = p.text.replace(/\s+/g, " ").trim();
+    if (ownOnly.test(text)) continue;
+    const both =
+      /profile_is_live\(\s*auth\.uid\(\)\s*\)/.test(text) &&
+      /profile_is_live\(\s*(prompt_answers\.profile_id|id)\s*\)/.test(text);
+    if (!both) hits.push(`${p.file} — policy ${key} shows other members without the live guard`);
+  }
+  return hits;
+});
+
+checkOnce("feed, inbox count and photos refuse a member who isn't live", () => {
+  const hits = [];
+  for (const fn of ["build_daily_feed", "unread_count"]) {
+    const f = latestFunction(fn);
+    if (!f) hits.push(`${fn}() is missing`);
+    else if (!/assert_live\(/.test(f.body)) hits.push(`${f.file} — ${fn}() never calls assert_live`);
+  }
+  const feed = latestFunction("build_daily_feed");
+  if (feed && !/p_profile_id is distinct from auth\.uid\(\)/.test(feed.body)) {
+    hits.push(`${feed.file} — build_daily_feed() does not refuse another member's feed`);
+  }
+  if (feed && !/profile_is_live\(p\.id\)/.test(feed.body)) {
+    hits.push(`${feed.file} — build_daily_feed() can place a profile that isn't live`);
+  }
+  const photos = latestFunction("can_see_photos");
+  if (
+    !photos ||
+    !/profile_is_live\(p_viewer\)/.test(photos.body) ||
+    !/profile_is_live\(p_owner\)/.test(photos.body)
+  ) {
+    hits.push("can_see_photos() does not require both viewer and owner to be live");
+  }
+  return hits;
+});
+
+// The definition itself is the ruling: phone, Verified Real, four photos,
+// a face-matched main photo. Loosening any of them is a product decision.
+checkOnce("a live profile means phone, Verified Real, 4 photos and a matched main photo", () => {
+  const live = latestFunction("profile_is_live");
+  const min = latestFunction("min_live_photos");
+  if (!live) return "profile_is_live() is missing";
+  const hits = [];
+  if (!/phone_verified_at is not null/.test(live.body)) hits.push("phone is not required");
+  if (!/stage in \('verified_real', 'id_confirmed'\)/.test(live.body)) hits.push("Verified Real is not required");
+  if (!/face_match = 'matched'/.test(live.body)) hits.push("a face-matched main photo is not required");
+  if (!/>= min_live_photos\(\)/.test(live.body)) hits.push("the photo minimum is not applied");
+  if (!min || !/select 4::smallint/.test(min.body)) hits.push("min_live_photos() is not 4");
+  return hits.map((h) => `${live.file} — ${h}`);
+});
+
+// A member who could write their own `stage` or main-photo pointer could
+// make themselves live. Those columns are server-owned.
+checkOnce("members cannot write their own verification or live state", () => {
+  const fn = latestFunction("protect_server_owned_profile_state");
+  if (!fn) return "protect_server_owned_profile_state() is missing";
+  const missing = ["stage", "phone_verified_at", "liveness_verified_at", "main_photo_id", "pending_main_photo_id"]
+    .filter((c) => !new RegExp(`new\\.${c} is distinct from old\\.${c}`).test(fn.body));
+  const face = latestFunction("protect_face_match");
+  if (!face || !/new\.face_match is distinct from old\.face_match/.test(face.body)) {
+    missing.push("face_match");
+  }
+  return missing.length ? `${fn.file} — client can still write ${missing.join(", ")}` : [];
+});
+
+// --- Coins are not a "wallet" ---------------------------------------------
+//
+// Decided 2026-10-05: never say "wallet" in UI copy. Coins are a promise
+// between two people, not money Toastly holds — "wallet" implies custody and
+// cash-out. Checked across code, copy AND file paths, because a route segment
+// is copy too: members see it in the address bar.
+check("UI never says 'wallet'", (s, f) => {
+  const p = posix(f);
+  if (!/^(app|components|lib)\//.test(p)) return false;
+  if (/wallet/i.test(p)) return "a route or file is named wallet";
+  const hit = /wallet/i.exec(s);
+  return hit ? `"${s.slice(Math.max(0, hit.index - 30), hit.index + 20).trim()}"` : false;
+});
+
 // --- Marital status is never presented as verifiable ---------------------
 check("no marital-status verification", (s) =>
   /marital_status_verified|verified_single|maritalStatusVerified/i.test(s),

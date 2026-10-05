@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LockedRow } from "./locked-row";
 import { BlindSafety } from "@/components/safety/blind-safety";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { requireLiveProfile } from "@/lib/live-profile";
 import {
   canReadInbox,
   lockedLabel,
@@ -34,6 +36,11 @@ export default async function InboxPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No live profile, no access (PRD §5.1.2) — and that includes the bare
+  // locked-inbox count, which 0013 refuses for a member who isn't live.
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: tierRow } = await supabase.rpc("current_tier", {
     p_profile_id: user.id,

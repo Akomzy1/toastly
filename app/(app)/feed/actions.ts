@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canSendText, replyKindFor } from "@/lib/feed";
+import { isNotLiveError, notLiveError, requireLiveProfile } from "@/lib/live-profile";
 import type { Tier } from "@/lib/types/profile";
 
 export type ReplyState = { error?: string; ok?: string } | null;
@@ -27,6 +28,9 @@ export async function replyToAnswer(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const recipientId = String(formData.get("recipient_id") ?? "");
   const promptAnswerId = String(formData.get("prompt_answer_id") ?? "");
@@ -62,6 +66,9 @@ export async function replyToAnswer(
     body: kind === "text" ? body : null,
   });
 
+  if (isNotLiveError(error)) {
+    return { error: "Their profile isn't visible any more, so this can't be sent." };
+  }
   if (error) return { error: error.message };
 
   revalidatePath("/feed");

@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { capture } from "@/lib/analytics";
 
 export type VerifyState = { error?: string; ok?: string } | null;
@@ -64,14 +65,13 @@ export async function startPhoneVerification(
   if (!user) return { error: "Please sign in again." };
 
   // One number, one account, permanently — this is what makes a block stick.
-  const hash = hashPhone(phone);
-  const { data: taken } = await supabase
-    .from("phone_identities")
-    .select("profile_id")
-    .eq("phone_hash", hash)
-    .maybeSingle();
+  // phone_in_use() answers yes or no and nothing else (0014); the hashes
+  // themselves are never readable by a member.
+  const { data: taken } = await supabase.rpc("phone_in_use", {
+    p_phone_hash: hashPhone(phone),
+  });
 
-  if (taken && taken.profile_id !== user.id) {
+  if (taken === true) {
     return { error: "That number is already verified on another account." };
   }
 
@@ -102,15 +102,29 @@ export async function confirmPhoneCode(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
 
-  await supabase.from("phone_identities").upsert({
-    phone_hash: hashPhone(phone),
-    profile_id: user.id,
-  });
+  // Binding the number and recording the stage are server-owned (0013,
+  // 0014). The hash is computed here from the number Supabase Auth has just
+  // confirmed — never accepted from the client — and written with the
+  // service role, so nobody can register a junk hash to keep their real
+  // number free for a second account.
+  const confirmed = user.phone ? `+${user.phone.replace(/^\+/, "")}` : phone;
+  const admin = createAdminClient();
+  if (!admin) return { error: "Phone confirmation isn't connected yet." };
 
-  await supabase
-    .from("profiles")
-    .update({ stage: "phone_verified", phone_verified_at: new Date().toISOString() })
-    .eq("id", user.id);
+  const { error: bindError } = await admin.rpc("record_phone_verified", {
+    p_profile_id: user.id,
+    p_phone_hash: hashPhone(confirmed),
+  });
+  if (bindError?.message.includes("phone_in_use")) {
+    return { error: "That number is already verified on another account." };
+  }
+  if (bindError?.message.includes("account_has_other_phone")) {
+    return {
+      error:
+        "Your account is already verified with a different number. Contact support to change it.",
+    };
+  }
+  if (bindError) return { error: "We couldn't confirm that number. Try again." };
 
   revalidatePath("/verify");
   return { ok: "Phone confirmed." };
@@ -143,7 +157,11 @@ export async function recordLiveness(
     };
   }
 
-  await supabase
+  // Development stand-in for the vendor's server-to-server result, so it
+  // writes as the server would: a member's session cannot set `stage` (0013).
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY isn't set." };
+  await admin
     .from("profiles")
     .update({
       stage: "verified_real",
@@ -186,7 +204,10 @@ export async function submitIdNumber(
   }
 
   // The number itself is deliberately not stored: only the fact of a pass.
-  await supabase
+  // Written as the server would, like the liveness stand-in above.
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY isn't set." };
+  await admin
     .from("profiles")
     .update({
       stage: "id_confirmed",

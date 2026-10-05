@@ -13,16 +13,23 @@ export const metadata: Metadata = {
 };
 
 /**
- * Wallet.
+ * Coins — the member's balance and top-ups.
  *
  * NOT IN THE PROTOTYPE — flagged. Pricing shows the coin packs as marketing;
- * there is no in-app wallet screen in the approved design.
+ * there is no in-app coins screen in the approved design.
+ *
+ * Never called a "wallet", in copy or in the URL: coins are not money held
+ * for the member (scripts/check-constraints.mjs enforces the word).
+ *
+ * Deliberately NOT behind the live-profile guard: a member whose access is
+ * paused can still see their balance and buy coins or a plan. Stakes and
+ * dates stay blocked, by the database (0013).
  *
  * Copy here stays warm: coins are a promise, not a fee, and a locked stake
  * credit is framed as something the member was given because somebody stood
  * them up — never as a punishment ledger.
  */
-export default async function WalletPage() {
+export default async function CoinsPage() {
   const supabase = createClient();
   const {
     data: { user },

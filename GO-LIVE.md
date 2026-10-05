@@ -15,7 +15,16 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 | Integration | Variables | Notes |
 |---|---|---|
-| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All eleven migrations are applied. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+| Supabase (database, auth) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Migrations 0001–0012 are applied. Without these, every signed-in page shows a "Supabase isn't configured" notice and the marketing site is unaffected. |
+
+**Held migrations — do not apply on their own.** `0013_live_profile_guard`
+and `0014_phone_identity_and_mutual_continue` are committed but deliberately
+NOT applied (decided 2026-10-05). 0013 means nobody can see anyone until
+their profile is live, and a profile can only go live through Prompt 14's
+photo upload and face match. Apply 0013, 0014 and Prompt 14's migrations in
+the **same release** as the photo-upload screens, or every member is locked
+out. 0014 needs `SUPABASE_SERVICE_ROLE_KEY` server-side: phone confirmation
+now binds the number through the service role.
 
 **Still to do on Supabase even though it works:** add
 `https://trytoastly.com` to Authentication → URL Configuration (Site URL and
@@ -29,7 +38,7 @@ Redirect URLs), or email sign-in links will point at localhost.
 |---|---|---|
 | Canonical domain | `NEXT_PUBLIC_SITE_URL` | Defaults to `https://trytoastly.com`. If the real origin differs, every canonical URL, OG image and sitemap entry is wrong in search results. |
 | Phone hashing | `PHONE_HASH_PEPPER` | **Verification refuses to run in production.** Phone numbers are stored only as hashes, and the number space is small enough to brute-force, so an unpeppered hash is effectively reversible. Generate once: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Changing it later invalidates every existing phone identity. |
-| Staff tooling | `SUPABASE_SERVICE_ROLE_KEY` | The integrity review queue and report triage can't read. **Server-side only — never `NEXT_PUBLIC_`.** |
+| Staff tooling and phone binding | `SUPABASE_SERVICE_ROLE_KEY` | The integrity review queue and report triage can't read, and (from 0014) phone confirmation can't complete. **Server-side only — never `NEXT_PUBLIC_`.** |
 
 ---
 

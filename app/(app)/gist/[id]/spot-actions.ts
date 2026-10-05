@@ -3,6 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { findPublicVenues, placesConfigured } from "@/lib/places";
+import { isNotLiveError, notLiveError, requireLiveProfile } from "@/lib/live-profile";
+
+// The database refuses a spot unless both people in the session are live
+// (0013); for a live caller that means the other profile has been hidden.
+const OTHER_NOT_LIVE =
+  "Their profile isn't visible right now, so a date can't be arranged.";
 
 export type SpotState = { error?: string; ok?: string } | null;
 
@@ -34,6 +40,9 @@ export async function suggestSpots(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const sessionId = String(formData.get("session_id") ?? "");
   if (!sessionId) return { error: "Which session is this for?" };
@@ -103,6 +112,7 @@ export async function suggestSpots(
     })),
   );
 
+  if (isNotLiveError(error)) return { error: OTHER_NOT_LIVE };
   if (error) return { error: error.message };
 
   revalidatePath(`/gist/${sessionId}`);
@@ -125,6 +135,9 @@ export async function setSpotStatus(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
 
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
+
   const spotId = String(formData.get("spot_id") ?? "");
   const sessionId = String(formData.get("session_id") ?? "");
   const status = String(formData.get("status") ?? "");
@@ -138,6 +151,7 @@ export async function setSpotStatus(
     .update({ status })
     .eq("id", spotId);
 
+  if (isNotLiveError(error)) return { error: OTHER_NOT_LIVE };
   if (error) return { error: error.message };
 
   revalidatePath(`/gist/${sessionId}`);

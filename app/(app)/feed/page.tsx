@@ -7,12 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
 import { MatchCard } from "./match-card";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
 import { canSendText, DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
-import {
-  isVerifiedReal,
-  type Profile,
-  type Tier,
-} from "@/lib/types/profile";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { type Profile, type Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
   title: "Today's matches",
@@ -40,14 +38,11 @@ export default async function FeedPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: me } = await supabase
-    .from("profiles")
-    .select("stage, display_name")
-    .eq("id", user.id)
-    .single();
-
-  // The trust layer: you cannot browse before you are verified.
-  if (!me || !isVerifiedReal(me)) redirect("/verify");
+  // No live profile, no access (PRD §5.1.2): checked before anything about
+  // anyone else is read. The database refuses the feed regardless (0013);
+  // this is so the member is told why rather than shown an empty six.
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: tierRow } = await supabase.rpc("current_tier", {
     p_profile_id: user.id,
@@ -85,14 +80,17 @@ export default async function FeedPage() {
         .in("profile_id", ids)
     : { data: [] };
 
-  const cards: FeedCandidate[] = (feed ?? []).map(
+  // A candidate whose profile was hidden after today's six were built is no
+  // longer readable (0013), and is dropped rather than shown as a blank card.
+  const cards: FeedCandidate[] = (feed ?? []).flatMap(
     (f: { candidate_id: string }) => {
       const c = (candidates ?? []).find((x) => x.id === f.candidate_id);
+      if (!c) return [];
       return {
         id: f.candidate_id,
-        display_name: c?.display_name ?? "Member",
-        city: c?.city ?? null,
-        stage: (c?.stage as FeedCandidate["stage"]) ?? "verified_real",
+        display_name: c.display_name,
+        city: c.city ?? null,
+        stage: c.stage as FeedCandidate["stage"],
         answers: (answers ?? [])
           .filter((a) => a.profile_id === f.candidate_id)
           .map((a) => ({
@@ -101,7 +99,7 @@ export default async function FeedPage() {
               (a.prompts as unknown as { text: string } | null)?.text ?? "Prompt",
             answer: a.answer,
           })),
-        tags: visibleTags(c ?? {}),
+        tags: visibleTags(c),
       };
     },
   );

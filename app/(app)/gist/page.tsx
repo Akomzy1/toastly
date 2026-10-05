@@ -13,6 +13,8 @@ import {
   type GistStatus,
 } from "@/lib/gist";
 import { BothClocks } from "@/components/gist/both-clocks";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { requireLiveProfile } from "@/lib/live-profile";
 import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
@@ -36,6 +38,10 @@ export default async function GistPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No live profile, no access (PRD §5.1.2).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: tierRow } = await supabase.rpc("current_tier", {
     p_profile_id: user.id,

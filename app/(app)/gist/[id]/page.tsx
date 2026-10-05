@@ -19,6 +19,8 @@ import {
   type GistStatus,
 } from "@/lib/gist";
 import { isLiveKitConfigured } from "@/lib/livekit";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { requireLiveProfile } from "@/lib/live-profile";
 import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = {
@@ -36,6 +38,10 @@ export default async function GistSessionPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No live profile, no access (PRD §5.1.2).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: session } = await supabase
     .from("gist_sessions")

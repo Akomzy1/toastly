@@ -332,6 +332,121 @@ provider the flow refuses rather than storing a number it cannot reach.
 resolve a charge by provider reference, and nothing writes `payments` rows
 yet. Whoever builds the payment loop gets both by inserting the row first.
 
+## No live profile, no access (PRD §5.1.2, part of Prompt 14)
+
+`0013_live_profile_guard.sql` — **committed, deliberately NOT applied**: it
+ships in the same release as Prompt 14's photo upload and face match, so
+members can actually go live (decided 2026-10-05; GO-LIVE.md). Live = phone confirmed + Verified Real + four photos + a
+main photo face-matched to the selfie. Computed by `profile_is_live()`, never
+stored, so dropping below four photos or deleting the main photo hides the
+profile and pauses access on the next query, and restoring them un-pauses it.
+
+**Where it is enforced.** In the database, so a direct API call is refused
+exactly like the app: row-level security on profiles, prompt answers, photos
+(rows and files), the daily feed, replies, Gist sessions and outcomes,
+threads, messages, date spots and date commitments; `assert_live()` in
+`build_daily_feed()` and `unread_count()`; triggers that stop a Gist moving
+forward or a date being created unless both people are live. In the app,
+`requireLiveProfile()` on every feed, Gist, inbox and date page and server
+action, so the member is told why instead of seeing an empty screen.
+
+**Left open, deliberately:** verification, own profile and settings, own
+photos, the safety kit, report, block and blind report. **Decided
+2026-10-05:** Couple Mode also stays open while access is paused for profile
+reasons — it closes only if the account is restricted or removed by review —
+and so does the coin balance, with coins and plans still purchasable. Stakes
+and dates stay blocked. There is no review-restriction state yet, so "closes
+on restriction" has nothing to hook into until the review queue exists. The
+`/wallet` route is now `/coins`, and "wallet" is banned from UI copy and
+paths by a constraint check.
+
+**Replacing the main photo.** `nominate_main_photo()` makes the new photo
+pending; the matched one stays live and the pending one is visible only to
+its owner. `record_main_photo_match()` (service role only) swaps it in on a
+match, keeps it pending on a borderline result (human review, never
+auto-rejection) and drops it on a mismatch. Smile ID is **not** wired — that
+and the `verification_drift` Sentinel event are the rest of Prompt 14.
+
+**Three holes closed, because each made the guard bypassable:**
+- members could write their own `stage` (self-award Verified Real) — a trigger
+  now refuses client writes to verification and live-state columns, and phone
+  confirmation goes through `mark_phone_verified()`, which trusts Supabase
+  Auth's OTP record. The dev-only liveness and ID stand-ins now write with the
+  service-role client;
+- `build_daily_feed()` built and returned any member's feed for any id;
+- `settle_commitment()` was executable by any member, for any commitment —
+  i.e. anyone could credit themselves coins.
+
+**Fixed in passing:** `replies` had no insert policy, so every reply failed.
+The new policy carries the live guard and only accepts answers the sender was
+shown today.
+
+**Two more bugs, fixed in `0014` with minimum-disclosure functions:**
+- *One phone, one account never worked.* The duplicate check read a table
+  members can't read, and the binding insert was silently refused, so no
+  number was ever bound. Now `phone_in_use()` answers yes/no only, and
+  `record_phone_verified()` (service role) binds the hash the server computes
+  from the number Supabase Auth confirmed — never one the client supplies. An
+  account already bound to another number is refused rather than rebound;
+  changing number is a support action.
+- *"Did both say continue?" was always false for members*, so date spots and
+  the "after a Gist" photo reveal never opened. `gist_mutual_continue()` is
+  now security definer and still returns one boolean: true only when both
+  said yes. "Not answered" and "said no" give the same answer, outsiders and
+  members who aren't live always get false.
+
+`npm run test:db` (part of `npm run verify`) applies every migration to a
+throwaway PostgreSQL and runs these rules as members — see
+`scripts/db-test/`.
+
+**Invented UI — flagged.** `components/app/profile-not-live.tsx`, the "not live
+yet" / "access paused" screen, has no prototype. It reuses the approved
+wording "goes live" and "Four photos to go live" and existing primitives only.
+It says photo upload isn't available because **the photo-upload screens don't
+exist yet** — until they do, no member can go live outside test data.
+
+**Tested** against real PostgreSQL with each call made as the member (role
+`authenticated` + JWT claims, as Supabase's API does), covering never-live,
+dropped-to-three and main-removed members, live controls, restore, and the
+replacement flow. Six new constraint checks, each proven to fail against a
+planted violation.
+
+## Docs synced to the 2026-10-05 drops
+
+PRD.md, CLAUDE.md and the privacy policy adopted the latest drops whole after
+proving every removed line was replaced by a ratified ruling. build-prompts.md
+took the drop as its base but **kept the repo's prototype references** — the
+drop was on a stale base and would have reverted nine lines to the old
+`Toastly_*.html` export names, "ten" files and a 22-step ramp with the false
+"fails at build time" claim. No SKILL.md drop existed; SKILL.md is
+unchanged. All `(N).md` copies are deleted.
+
+**Where the new docs now contradict code that already exists** — each needs
+building, not a doc change:
+- *Women abroad get Diaspora Plus, not Premium Plus.* `handle_new_user()`
+  (0001) grants Premium Plus to every woman.
+- *Coin balance replaces the locked stake credit* (Prompt 17). 0005's
+  `stake_credit`, `withdrawable_balance()` and the coins screen's "refundable
+  to your original payment method … can't be cashed out" copy all describe
+  the superseded model; the "stake credits can never be withdrawable"
+  constraint check enforces it.
+- *No agent or integration may read profile fields to build an AriyaPlanner
+  brief.* 0006's `couple_briefs` copies tribes, languages and home states
+  from profiles at consent time.
+- *Diaspora pools:* "Open to people living abroad" (default on) for
+  Nigeria-based members, and an upgrade line rather than the fallback notice
+  for non-Diaspora-plan members abroad — neither exists.
+- *A staff screen for the single human-review queue is a launch blocker*
+  (PRD §9). Not built.
+- *Genotype* (PRD §5.2) — a full set of handling rules; not built.
+
+**Design exports not yet in `design/prototype/`:** six zips at the repo
+root hold ~45 newer screens — Gist invite flows, an app nav shell, coins and
+date check-in screens, the review queue, diaspora pools, genotype — plus
+seven loose exports (photos-upload, photos-main-check, verify-overview,
+toastly-help, toastly-help-handoff, answer-mirror, genotype consent) and
+updated Home / How It Works / Features. None are slimmed or wired yet.
+
 ## Environment
 
 **OneDrive breaks the build.** It renames Next's output (`BUILD_ID` →

@@ -1,6 +1,6 @@
 # Toastly — Claude Code Build Prompt Sequence
 
-Run these **in order**, one per session or one per major work block. **Phase 1 is Prompts 0–12** — 0–9 build the core, 10–12 close gaps found in a post-build audit (diaspora pools, date-spot and time-zone scheduling, domain/icons/housekeeping). Phase 2 items are listed at the end and are not to be started before launch. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
+Run these **in order**, one per session or one per major work block. **Phase 1 is Prompts 0–17** — 0–9 build the core, 10–12 close audit gaps, 13 (issued in chat) wires email, analytics and SMS, 14–16 add the photo requirement and the two launch AI agents, and 17 adds the coin balance and date attendance. Phase 2 items are listed at the end and are not to be started before launch. Each assumes `PRD.md`, `CLAUDE.md`, and `SKILL.md` are in the repo root, and the approved Claude Design prototype export is at `/design/prototype/`.
 
 **Before running any of these:** confirm the sixteen prototype files are in `/design/prototype/`:
 
@@ -215,19 +215,88 @@ Three things drifted during the build. Fix them in one pass and report each.
 
 ---
 
-## PHASE 2 — not yet due; do not run until Phase 1 is live and there is real usage data
+## PROMPT 14 — Profile photos: four minimum, one face-matched (Phase 1)
 
-These are recorded so the sequence is honest about what remains. None should be started before launch.
+Read PRD §5.1.2 and the new CLAUDE.md photo rule first. *(Prompt 13 — Resend, PostHog and SMS wiring — was issued directly in chat.)*
 
-- **P2-A · Trust Sentinel scoring agent + human review queue** (`PRD.md` §5.1.1). Consumes the events instrumented in Phase 1. Thresholds are set from the first cohort's data, not guessed. All six constraints in CLAUDE.md apply: behavioural events only, no protected attributes, score-never-act, no auto-ban, audit-logged, never paywalled.
-- **P2-B · Hosted live-streaming / matchmaker channel** (`PRD.md` §9, strategy doc Part 5.5). Verified participants only; structured question deck from Gist; clearly separated in tone from the private core. MyPerson already runs this live, so it should not be pushed indefinitely — but it needs verified liquidity to be worth opening.
-- **P2-C · Diaspora-to-diaspora per-city activation.** Flip the per-city flags built in Prompt 10 as each city reaches a verified-user threshold (set from data).
-- **P2-D · Live video Gist transport.** Already built in Prompt 5 ahead of phase — nothing owed here beyond connecting LiveKit credentials.
-
-## LATER — correctly not scoped
-
-Live AriyaPlanner handoff integration (shared identity layer) · curated/partnered venue directory · Facebook/TikTok matchmaker partnerships · the two follow-on agents recorded as intent in `PRD.md` §11 (adaptive Gist deck with private debrief; autonomous wedding-brief drafting).
+- A profile cannot go live with fewer than **4 photos**; max from config, default 6.
+- **No live profile, no access** — enforce on the server in every feed, profile-view, invite, message and date route: a member who isn't live can't see or reach anyone. Allow only verification, photo upload, Toastly Help, settings, data export and deletion. Falling below 4 photos or removing the main photo hides the profile and pauses access; replacing the main photo keeps the old matched photo live until the new one passes. Add a constraint check for the guard.
+- The **primary photo must be a face photo that matches the member's liveness selfie.** Check Smile ID's docs for comparing an uploaded photo against the enrolled liveness face. **If Smile ID can't, stop and report options before building** — do not add a new biometric vendor.
+- Borderline results go to the human review queue, never auto-rejection. Changing the primary photo re-runs the match; a mismatch emits a Sentinel `verification_drift` event.
+- Store only the match outcome, never a face template. Compress client-side before upload.
+- Add **"these photos aren't them"** as a first-class report category.
+- The other three photos have no face requirement. The "show photos only to matches" setting still applies.
+- Extend the liveness consent to cover comparing the selfie with the main profile photo — but **hold the final consent wording** until Smile ID's retention terms are confirmed.
+- Build the photo-upload screens against their prototype once it exists; flag them as invented UI until then. Add them to the mobile audit.
 
 ---
 
-*End of sequence. Phase 1 = Prompts 0–12. Prompts 0–9 alone are not a complete Phase 1.*
+## PROMPT 15 — Verification & Support Concierge (Phase 1)
+
+Read PRD §5.9 and the CLAUDE.md agent rules first.
+
+- An in-app help panel, **labelled as AI at first contact** ("Toastly Help — an AI assistant. A person handles refunds, disputes and appeals."). No persona name, no small talk beyond the task.
+- Scope: why a liveness check failed (from Smile ID **status codes only**), ID-check options, payment problems, coin deposits, tier questions, how features work. English and Pidgin.
+- **Tools: read-only** — verification status code, subscription status, coin balance — plus `create_support_ticket`. No tool that moves money, changes an account or reads chats.
+- Model: Claude Haiku via stateless calls; conversation state in Supabase. Build each request payload from an **allow-list** of permitted fields — never protected attributes, genotype, messages, Gist data, selfies or ID numbers.
+- If a member raises distress or a safety emergency, stop the task, surface safety resources and hand to a person.
+- Retain support transcripts for a short, disclosed period (default 30 days, configurable). PostHog gets event metadata only.
+- Free on every tier. Add a constraint check that fails the build if the concierge's tool list includes any write action on money or accounts.
+
+---
+
+## PROMPT 16 — Answer Mirror (Phase 1)
+
+Read PRD §5.9 first.
+
+- When a member edits a profile prompt answer, an optional "Get feedback" action returns private feedback **from a fixed enum only** — e.g. `great_answer`, `be_more_specific`, `add_a_personal_detail`, `too_short`, `reads_generic`. Map each value to fixed, human-written UI copy.
+- **Never return suggested wording.** Enforce with structured output; reject and log any response containing free text beyond the enum. Add a constraint check for this.
+- Operates only on the member's own draft answer. Never comments on faith, tribe or other protected topics.
+- Claude Haiku, stateless. Show the pledge in the UI: *"Toastly AI will never write a word for you."*
+- Feedback UI is invented — flag it until a prototype exists.
+
+---
+
+## PROMPT 17 — Coin balance and date attendance (Phase 1)
+
+Read PRD §5.5 and the CLAUDE.md coin-balance and attendance rules first. This replaces the earlier "stake credit usable only as a future deposit" mechanic.
+
+**Coin balance**
+- A per-member coin balance backed by an **append-only ledger** — every movement is a ledger row; the balance is derived, never edited directly.
+- Two buckets: **purchased** (stakeable) and **promotional** (not stakeable). Stakes draw only from purchased coins.
+- Stake outcomes are **single atomic transactions**: both attend → each stake returns to its owner; one absent → that stake moves to the attending member. Toastly keeps nothing.
+- Coins can pay **Premium and Premium Plus (naira) only**. At checkout, coins apply first and Paystack covers any remainder. Diaspora dollar subscriptions cannot be paid with coins — enforce on the server, not just the UI.
+- No withdrawal, payout, refund-to-cash or member-to-member send flow, anywhere. Add a constraint check that fails the build if UI copy contains "wallet", "escrow", "transfer" or "cash out".
+
+**Attendance**
+- During the date window, each member taps **"I'm here"**, confirmed by location within a set radius of the agreed venue. Ask for location only at that moment, with plain consent copy; keep only the check-in result, not the coordinates.
+- One checks in, the other doesn't → provisional no-show, with a **24-hour window** to contest. Contested cases go to the human review queue; nothing moves until it's resolved.
+- Cancelling before the cut-off (config, default 12 hours) and mutually agreed rescheduling return both stakes.
+- **Safety cancellation and safety reports return the reporter's stake in full, always, and override every other rule.** Add a test proving a member who reports or cancels for safety can never lose coins.
+- Emit Sentinel events for no-shows (as the absent party), contests and outcomes — outcome only.
+
+**Copy** stays warm: "showing up for each other". A member who was stood up sees: *"They didn't make it — their coins are now in your balance."* Never "forfeit", "penalty" or "fine".
+
+The coin-balance screen, check-in, contest and outcome screens are invented UI — flag them until prototypes exist, and add them to the mobile audit. **Do not ship to production until the legal check in PRD §11 is confirmed.**
+
+---
+
+## PHASE 2 — not yet due; do not run until Phase 1 is live and there is real usage data
+
+None should be started before launch.
+
+- **P2-A · Trust Sentinel+** (PRD §5.1.1). Scoring by deterministic rules plus a classical model, Claude Sonnet for reviewer summaries only; human review queue; **step-up re-liveness** above a high threshold before the next Gist or date commitment; a user-triggered, chat-free **Safety Check** on any match. Off-platform-contact signals from UI events only. All six CLAUDE.md Sentinel constraints apply.
+- **P2-B · Hosted live-streaming / matchmaker channel.** Verified participants only; Gist question deck; no virtual gifts or paid attention of any kind.
+- **P2-C · Diaspora-to-diaspora per-city activation.** Flip the Prompt 10 flags as each city reaches a verified-user threshold.
+- **P2-D · Live video Gist transport.** Built in Prompt 5; credentials only.
+- **P2-E · Plan the Toast** (PRD §5.9 #4). Three slots from structured availability, three vetted public venues, both pick by tapping; coin deposit, reminders, optional share-my-date link, "home safe?" check-in; system-authored confirmations only. **Blocked on the share-your-date / panic design**, which is still unspecified.
+- **P2-F · Diaspora home windows** (PRD §5.9 #5). Member-entered travel windows visible to matches; diaspora status never a ranking or scoring input.
+- **P2-G · Adaptive Gist deck** (PRD §5.9 #6). Both opt in; curated card bank; skip/extend/star metadata only; private self-authored reflections; no audio, no transcript, no inference about the other person.
+
+## LATER — correctly not scoped
+
+Live AriyaPlanner handoff integration with the **consent-gated engagement-brief agent** (PRD §5.7, §5.9 #7) · a **read-only AriyaPlanner MCP tool** (§5.9 #8) · curated/partnered venue directory · Facebook/TikTok matchmaker partnerships.
+
+---
+
+*End of sequence. Phase 1 = Prompts 0–17 (Prompt 13 issued in chat).*

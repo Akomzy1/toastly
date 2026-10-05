@@ -4,9 +4,16 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canUseVideo, type GistMedium } from "@/lib/gist";
 import { capture } from "@/lib/analytics";
+import { isNotLiveError, notLiveError, requireLiveProfile } from "@/lib/live-profile";
 import type { Tier } from "@/lib/types/profile";
 
 export type GistState = { error?: string; ok?: string } | null;
+
+// The database refuses a Gist moving forward unless BOTH people are live
+// (0013). When the caller is live, the refusal means the other profile has
+// since been hidden.
+const OTHER_NOT_LIVE =
+  "Their profile isn't visible right now, so this Gist can't go ahead.";
 
 async function me() {
   const supabase = createClient();
@@ -37,6 +44,9 @@ export async function proposeGist(
 ): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const inviteeId = String(formData.get("invitee_id") ?? "");
   const medium = (String(formData.get("medium") ?? "voice") as GistMedium);
@@ -72,6 +82,7 @@ export async function proposeGist(
     if (/Premium Plus/i.test(error.message)) {
       return { error: "Live video Gist is part of Premium Plus." };
     }
+    if (isNotLiveError(error)) return { error: OTHER_NOT_LIVE };
     return { error: error.message };
   }
 
@@ -96,6 +107,9 @@ export async function respondToGist(
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
 
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
+
   const id = String(formData.get("session_id") ?? "");
   const accept = String(formData.get("accept") ?? "") === "yes";
 
@@ -105,6 +119,7 @@ export async function respondToGist(
     .eq("id", id)
     .eq("invitee_id", user.id);
 
+  if (isNotLiveError(error)) return { error: OTHER_NOT_LIVE };
   if (error) return { error: error.message };
   revalidatePath("/gist");
   return { ok: accept ? "Accepted." : "Declined." };
@@ -124,6 +139,9 @@ export async function markReady(
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
 
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
+
   const id = String(formData.get("session_id") ?? "");
   const { data: session } = await supabase
     .from("gist_sessions")
@@ -141,6 +159,7 @@ export async function markReady(
     .update({ [field]: new Date().toISOString() })
     .eq("id", id);
 
+  if (isNotLiveError(error)) return { error: OTHER_NOT_LIVE };
   if (error) return { error: error.message };
   revalidatePath(`/gist/${id}`);
   return { ok: "Ready. Waiting for them to join." };
@@ -156,6 +175,7 @@ export async function markReady(
 export async function recordDegraded(sessionId: string) {
   const { supabase, user } = await me();
   if (!user) return;
+  if (!(await requireLiveProfile(supabase)).live) return;
   await supabase
     .from("gist_sessions")
     .update({ degraded_to_voice_at: new Date().toISOString() })
@@ -174,6 +194,9 @@ export async function submitOutcome(
 ): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const id = String(formData.get("session_id") ?? "");
   const wants = String(formData.get("continue") ?? "") === "yes";

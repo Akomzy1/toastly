@@ -85,6 +85,16 @@ export type Profile = {
   id_confirmed_at: string | null;
   profession_verified_at: string | null;
 
+  /**
+   * Live-profile state (0013, PRD §5.1.2). All three are server-owned: a
+   * member's own session cannot write them. Whether a profile is live is
+   * computed by profile_is_live(), never stored — see lib/live-profile.ts.
+   */
+  main_photo_id: string | null;
+  /** Replacement main photo being face-matched; the old one stays live. */
+  pending_main_photo_id: string | null;
+  first_live_at: string | null;
+
   paused: boolean;
 };
 
