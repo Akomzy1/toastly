@@ -155,7 +155,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         items: [
           "You must be 18 or over to use Toastly.",
           "We collect what we need to verify you're real, match you, keep you safe and run your subscription.",
-          "Optional details stay optional. Religion, tribe, language, relationship history, profession, education and genotype never decide who you're matched with unless you choose a filter for your own search — and genotype can't be filtered on at all.",
+          "Optional details stay optional. Religion, denomination, tribe, language, relationship history, profession, education and genotype never decide who you're matched with unless you choose a filter for your own search — and denomination and genotype can't be filtered on at all.",
           "Your genotype is health information. It's private by default, shared only with people you choose, and never used by our analytics, AI systems or safety screening.",
           "We don't record your Gist calls, and we never keep transcripts.",
           "We don't store your NIN or BVN record. When you verify, we keep only the result.",
@@ -182,7 +182,12 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Optional profile details.",
-        text: "Religion, tribe or ethnicity, languages, relationship history (single, divorced, widowed, single parent, whether you have children), profession and education. You decide whether to add these and who can see them.",
+        text: "Religion and denomination, tribe or ethnicity, languages, relationship history (single, divorced, widowed, single parent, whether you have children), profession and education. You decide whether to add these and who can see them.",
+      },
+      {
+        kind: "p",
+        lead: "Your religion and denomination (optional — sensitive data).",
+        text: "We add them only with your explicit consent, which we record, with the date and the wording you agreed to, the first time you add either. One setting shows or hides both; hiding religion hides denomination. They appear only on your full profile — never on the cards in anyone's daily six — and never decide who sees you. Removing them deletes them.",
       },
       {
         kind: "p",
@@ -259,6 +264,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           ["Answer your questions through our AI help assistant, and give optional feedback on your profile answers", "To help you use Toastly", "Contract; legitimate interest"],
           ["Store and share your genotype", "Only to show it to the people you choose", "Your explicit consent"],
           ["Show optional profile details", "Because you chose to add them", "Your consent"],
+          ["Show your religion and denomination", "Because you chose to show them", "Your explicit consent (sensitive data)"],
           ["Detect scams, fake accounts and abuse; act on reports", "To keep members safe", "Legitimate interest; legal obligation where applicable"],
           ["Process payments and keep financial records", "To run subscriptions and coins, and meet tax law", "Contract; legal obligation"],
           ["Send emergency alerts and confirm emergency contacts", "To support your safety", "Your consent; vital interests in an emergency"],
@@ -305,14 +311,14 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           ["Termii", "Text messages to Nigerian numbers (emergency contacts and alerts)", "[Termii's processing location — awaiting Termii's written reply]"],
           ["Twilio", "Text messages to numbers outside Nigeria (emergency contacts and alerts)", "United States"],
           ["Google (Places)", "Suggesting public venues for dates", "United States"],
-          ["PostHog", "Product analytics (never receives your genotype)", "Germany (EU); its staff or subcontractors may access it from outside the EU"],
+          ["PostHog", "Product analytics (never receives your genotype, religion or denomination)", "Germany (EU); its staff or subcontractors may access it from outside the EU"],
           ["Anthropic", "AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers, surname or genotype", "Stored in the United States; processing may take place in the US or other countries"],
         ],
       },
       {
         kind: "p",
         lead: "AriyaPlanner.",
-        text: "AriyaPlanner is a wedding and event-planning service also run by Ariya Planner Ltd. If you and your partner choose to move from Toastly into planning your wedding with AriyaPlanner, we'll pass across only what you agree to share at that moment. Your genotype is never included.",
+        text: "AriyaPlanner is a wedding and event-planning service also run by Ariya Planner Ltd. If you and your partner choose to move from Toastly into planning your wedding with AriyaPlanner, we'll pass across only what you agree to share at that moment. Your genotype, religion and denomination are never included.",
       },
       {
         kind: "p",
@@ -367,7 +373,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        text: "Our AI never reads your private messages, never listens to Gist sessions, and never uses your genotype, religion, tribe, language, relationship history, profession or where you live. We don't use your data to train AI models.",
+        text: "Our AI never reads your private messages, never listens to Gist sessions, and never uses your genotype, religion, denomination, tribe, language, relationship history, profession or where you live. We don't use your data to train AI models.",
       },
     ],
   },
@@ -382,7 +388,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "We don't read your messages to do this, and we don't use Gist audio, your genotype, religion, tribe, language, relationship history, profession or where you live.",
+          "We don't read your messages to do this, and we don't use Gist audio, your genotype, religion, denomination, tribe, language, relationship history, profession or where you live.",
           "To keep pricing fair, we check whether the country you tell us you live in matches your phone number's country code, the country you pay from and the country your card was issued in. A mismatch is looked at by a person; it never blocks you on its own.",
           "If our team asks you to check again, you take a fresh selfie, which Smile ID compares with the face registered when you verified.",
           "A person makes every decision. Automated tools may flag an account for review, but no account is restricted or removed by a machine alone. If we restrict your account, we'll tell you why, and you can ask us to look again.",
