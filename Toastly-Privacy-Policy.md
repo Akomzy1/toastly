@@ -34,6 +34,7 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 **Your genotype (optional — health information).** If you choose to add it, after giving separate permission. See section 5.
 
 **Verification.**
+<!-- SMILE-RETENTION: if Smile ID confirms it uses images to improve its technology and we can't opt out, append "Smile ID may also use them to improve its own technology." -->
 - *Liveness check (everyone):* a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your **main profile photo** to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8). Smile ID also registers your face against your Toastly account, so that a later selfie — when you change your main photo, or if our team asks you to check again — can be compared with it.
 - *What Smile ID receives:* the selfie, your first name, your email address and your **surname**. You type your surname in only for this check: **we pass it to Smile ID and don't keep it.** It's never shown on your profile, and never goes to our analytics, our AI systems or AriyaPlanner.
 - *ID check (optional):* your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie — which is also checked against the face registered when you verified, so the ID is yours. You give the names on your ID for the check; like your surname, we pass them to Smile ID and don't keep them. **We keep only the outcome** — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.
@@ -90,9 +91,9 @@ Where we rely on consent, you can withdraw it at any time in your settings, with
 | Smile ID | Liveness checks, the face check on your main photo, and NIN/BVN verification | United States, and its affiliates or subcontractors in other countries |
 | Paystack | Payments in Naira | Ireland (EU), and Paystack group companies outside Nigeria |
 | Stripe | Payments in US dollars | United States, and also the EU and India |
-| LiveKit | Delivering Gist voice and video sessions (not recorded) | Calls pass through LiveKit's nearest servers worldwide and are never stored; call records are kept in the United States |
+| LiveKit | Delivering Gist voice and video sessions (not recorded) | Routed through LiveKit's servers nearest the callers; calls are never recorded |
 | Resend | Receipts and account notices | United States |
-| Termii | Text messages to Nigerian numbers (emergency contacts and alerts) | A Nigerian provider; may process data outside Nigeria |
+| Termii | Text messages to Nigerian numbers (emergency contacts and alerts) | [Termii's processing location — awaiting Termii's written reply] |
 | Twilio | Text messages to numbers outside Nigeria (emergency contacts and alerts) | United States |
 | Google (Places) | Suggesting public venues for dates | United States |
 | PostHog | Product analytics (never receives your genotype) | Germany (EU); its staff or subcontractors may access it from outside the EU |
@@ -150,6 +151,7 @@ To spot scams and fake accounts, we look at **patterns of activity** — for exa
 - **Your account and profile:** while your account is open. When you delete your account, it's deleted from our live systems straight away, and from backups within 7 days — except the records below that we have to keep.
 - **Genotype:** until you delete it or your account, as in section 5.
 - **Verification results:** for as long as your account is open.
+<!-- SMILE-RETENTION: if Smile ID confirms it uses images to improve its technology and we can't opt out, append "Smile ID may also use them to improve its own technology." -->
 - **Images held by Smile ID:** Smile ID keeps the selfie and photo images from verification checks for up to five years, under its own terms. Toastly never holds them.
 - **Safety records** (reports, restrictions and removals): up to 2 years after your account closes, so removed members can't simply sign up again. For a removed member, this includes a one-way fingerprint of their phone number and ID number. If an account is under review when it's deleted, these records are kept until the review is settled.
 - **Coins:** unspent coins are lost when you delete your account. We'll show you your balance and offer you the chance to use them before you confirm.
