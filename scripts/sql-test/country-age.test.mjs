@@ -7,7 +7,7 @@
  */
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { freshDb, as, asService, makeUser } from "./harness.mjs";
+import { freshDb, as, asService, makeUser, goLive } from "./harness.mjs";
 
 let db;
 let gbCity;
@@ -21,6 +21,7 @@ async function member(name, { phone = null, gender = "prefer_not_to_say", dob = 
   const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com`, gender, dob });
   await db.query("update auth.users set phone = $2 where id = $1", [id, phone]);
   await db.query("update profiles set stage = 'verified_real', phone_verified_at = now() where id = $1", [id]);
+  await goLive(db, id);
   return id;
 }
 const me = (id, sql, params) => as(db, id, (tx) => tx.query(sql, params));

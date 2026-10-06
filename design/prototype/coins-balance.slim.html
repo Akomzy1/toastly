@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/1d42f8df-15d7-47b3-b8c7-e7491ebef85e.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/56e22ce4-0175-4a59-a1ee-39c597e435d9.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/06ef667c-e7a6-4916-aa00-cbd376989d54.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/20a36ca0-ab58-447a-90b0-08f9245533fb.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/11fc75c3-c6fb-4f69-85d7-7b1d2829bf88.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Coins and dates 1 of 7</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Coin balance</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">The total first, then the two kinds of coins stated plainly. Every movement gets a line in the history, in the words the member would use. Two actions of equal size, and the no-refund line sits beside them, not in a footer.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Coin balance" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Coin balance</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Profile</p>
+        </div>
+      </div>
+
+      <div style="padding:16px 14px 24px;display:grid;gap:18px;align-content:start">
+
+        <div style="border-radius:16px;background:#001F1B;color:#FFFFFF;padding:18px 16px 6px;display:grid;gap:14px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#EBD9AE" stroke-width="2.7"></circle></svg>
+            <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#EBD9AE">Your coin balance</p>
+          </div>
+          <p style="margin:0;display:flex;align-items:baseline;gap:8px">
+            <span style="font-family:Aleo,Georgia,serif;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">{{ total }}</span>
+            <span style="font-size:15px;color:rgba(255,255,255,0.76)">coins</span>
+          </p>
+          <div style="display:grid">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid rgba(235,217,174,0.2)">
+              <span style="display:grid;gap:2px;min-width:0">
+                <span style="font-size:15px;font-weight:600;color:#FFFFFF">Your coins</span>
+                <span style="font-size:13px;color:rgba(255,255,255,0.7)">Can be staked</span>
+              </span>
+              <span style="font-size:18px;font-weight:600;color:#FFFFFF;font-variant-numeric:tabular-nums">{{ own }}</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid rgba(235,217,174,0.2)">
+              <span style="display:grid;gap:2px;min-width:0">
+                <span style="font-size:15px;font-weight:600;color:#FFFFFF">Bonus coins</span>
+                <span style="font-size:13px;color:rgba(255,255,255,0.7)">Can't be staked</span>
+              </span>
+              <span style="font-size:18px;font-weight:600;color:#FFFFFF;font-variant-numeric:tabular-nums">{{ bonus }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px">
+            <a href="coins-get.html" style="min-height:48px;padding:12px 10px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center;text-align:center" style-hover="background:#FFC94C;color:#001F1B">Get coins</a>
+            <a href="coins-checkout.html" style="min-height:48px;padding:12px 10px;border-radius:12px;border:1px solid rgba(5,3,9,0.2);color:#050309;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center;text-align:center" style-hover="border-color:#00695C;background:#E5F0EE;color:#050309">Use for Premium</a>
+          </div>
+          <p style="margin:0;padding:0 2px;font-size:13px;line-height:1.55;color:#504E52;text-wrap:pretty">Coins can be spent on Toastly. They can't be refunded or exchanged for money.</p>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">History</p>
+          <sc-if value="{{ hasHistory }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+              <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:{{ h.rule }}">
+                  <span style="flex:1;min-width:0;display:grid;gap:2px">
+                    <span style="font-size:14.5px;font-weight:500;line-height:1.4;color:#050309;text-wrap:pretty">{{ h.label }}</span>
+                    <span style="font-size:12.5px;color:#828184">{{ h.meta }}</span>
+                  </span>
+                  <span style="flex-shrink:0;font-size:15px;font-weight:600;color:{{ h.c }};font-variant-numeric:tabular-nums">{{ h.amt }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noHistory }}">
+            <p style="margin:0;padding:14px;border:1px solid rgba(5,3,9,0.1);border-radius:14px;background:#FFFFFF;font-size:14px;line-height:1.55;color:#504E52">Nothing here yet. When you get coins, stake them for a date, or they come back to you, each one shows up here.</p>
+          </sc-if>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const HISTORY = [
+  ["10 coins from Femi — they didn't make it", "25 Sep", "+10", 1],
+  ["Your 10 coins came back", "25 Sep", "+10", 1],
+  ["Staked 10 coins for a date with Femi", "23 Sep", "−10", 0],
+  ["Your 10 coins came back — you both showed up", "13 Sep", "+10", 1],
+  ["Staked 10 coins for a date with Tolu", "12 Sep", "−10", 0],
+  ["Bonus coins added", "9 Sep · Bonus, can't be staked", "+15", 1],
+  ["Bought 35 coins", "8 Sep", "+35", 1],
+  ["Used 35 coins for Premium", "1 Sep", "−35", 0],
+  ["Bonus coins added", "30 Aug · Bonus, can't be staked", "+15", 1],
+  ["Bought 20 coins", "30 Aug", "+20", 1]
+];
+class Component extends DCLogic {
+  state = { w: "360px", s: "full" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, s } = this.state, full = s === "full";
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [["full", "With history"], ["new", "New member"]].map(([k, l]) => this.chip(l, s === k, () => this.setState({ s: k }))),
+      total: full ? "60" : "0", own: full ? "45" : "0", bonus: full ? "15" : "0",
+      hasHistory: full, noHistory: !full,
+      history: HISTORY.map(([label, meta, amt, inc], i) => ({ label, meta, amt, c: inc ? "#00695C" : "#504E52", rule: i ? "1px solid rgba(5,3,9,0.1)" : "0" }))
+    };
+  }
+}
+</script>
+
+
+</body></html>

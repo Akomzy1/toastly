@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/8f5098bf-a833-4ab0-87e8-0f47403f44b1.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/bf13c3c7-3087-4118-9b65-43a09550b186.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/540302e4-8132-4531-b98b-d663ec3f87e4.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/0127b5f1-98b0-4d88-98f2-23efa2063856.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/8f6aa6f3-ab1a-4b39-b27e-00f667bdb397.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Coins and dates 6 of 7</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Outcomes</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">Every outcome uses the same card: one plain sentence, the coin movements as lines, then the next step. Being marked absent is a question, not a verdict, with a 24-hour window to answer.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:stretch">
+      <sc-for list="{{ chipGroups }}" as="g" hint-placeholder-count="2">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding-right:8px;margin-right:2px;border-right:1px solid rgba(5,3,9,0.14)">
+          <sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="3">
+            <button type="button" sc-camel-on-click="{{ c.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Outcome" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Your date with Amaka</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Café Neo · Sat 10 Oct, 7:00 pm</p>
+        </div>
+      </div>
+
+      <div style="padding:16px 14px 24px;display:grid;gap:14px;align-content:start">
+
+        <sc-if value="{{ hasCard }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:20px 16px;display:grid;gap:12px">
+            <span style="width:44px;height:44px;border-radius:999px;background:{{ o.iconBg }};display:grid;place-items:center">
+              <sc-if value="{{ o.ring }}"><svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#CC8F00" stroke-width="2.7"></circle></svg></sc-if>
+              <sc-if value="{{ o.person }}"><svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6" stroke="#00695C" stroke-width="1.6"></circle><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="#00695C" stroke-width="1.6" stroke-linecap="round"></path></svg></sc-if>
+            </span>
+            <sc-if value="{{ o.hasEyebrow }}"><p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">{{ o.eyebrow }}</p></sc-if>
+            <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.3;color:#050309;text-wrap:pretty">{{ o.title }}</h2>
+            <sc-if value="{{ o.hasBody }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;text-wrap:pretty">{{ o.body }}</p></sc-if>
+            <sc-if value="{{ o.hasLines }}">
+              <div style="display:grid;gap:8px;padding:12px;border-radius:12px;background:#F6F2EA">
+                <sc-for list="{{ o.lines }}" as="l" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <span style="font-size:13.5px;line-height:1.45;color:#1E1C21">{{ l.label }}</span>
+                    <span style="flex-shrink:0;font-size:14px;font-weight:600;color:{{ l.c }};font-variant-numeric:tabular-nums">{{ l.amt }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isBoth }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:10px">
+            <a href="nav-today.html" style="min-height:48px;padding:12px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center" style-hover="background:#FFC94C;color:#001F1B">Back to today's six</a>
+            <a href="coins-balance.html" style="min-height:48px;padding:12px 20px;border-radius:12px;border:1px solid rgba(5,3,9,0.2);color:#050309;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center" style-hover="border-color:#00695C;background:#E5F0EE;color:#050309">See coin balance</a>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isNoShow }}">
+          <div style="display:grid;gap:10px">
+            <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">What next</p>
+            <button type="button" style="width:100%;min-height:56px;padding:12px 14px;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid rgba(5,3,9,0.14);border-radius:14px;background:#FFFFFF;font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#00695C">
+              <span style="flex-shrink:0;width:32px;height:32px;border-radius:999px;background:#E5F0EE;display:grid;place-items:center">
+                <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 20.5V4.5M6 5h10.5l-2 3.5 2 3.5H6" stroke="#00695C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </span>
+              <span style="flex:1;min-width:0;display:grid;gap:2px">
+                <span style="font-size:15px;font-weight:600;color:#050309">Report something that felt wrong</span>
+                <span style="font-size:13px;color:#504E52">The safety team reads every one</span>
+              </span>
+              <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+            </button>
+            <a href="nav-today.html" style="min-height:48px;padding:12px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center" style-hover="background:#FFC94C;color:#001F1B">Back to today's six</a>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isAbsent }}">
+          <div style="display:grid;gap:14px">
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:20px 16px;display:grid;gap:10px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.3;color:#050309">We didn't see you check in.</h2>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;text-wrap:pretty">If something got in the way, tell us what happened.</p>
+              <p style="margin:0;display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#E5F0EE;font-size:14px;font-weight:600;color:#00453C">
+                <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0"><circle cx="12" cy="12" r="8.6" stroke="#00695C" stroke-width="1.6"></circle><path d="M12 7.4V12l3.2 2" stroke="#00695C" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                You have 24 hours to respond — until 9:30 pm on Sunday.
+              </p>
+            </div>
+
+            <div role="radiogroup" aria-label="What happened?" style="display:grid;gap:10px">
+              <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">What happened?</p>
+              <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{ r.on }}" sc-camel-on-click="{{ r.pick }}" style="width:100%;min-height:52px;padding:12px 13px;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid {{ r.border }};border-radius:14px;background:{{ r.bg }};font-family:Inter,sans-serif;cursor:pointer">
+                  <span style="flex:1;min-width:0;font-size:15px;font-weight:600;color:#050309">{{ r.label }}</span>
+                  <span style="flex-shrink:0;width:20px;height:20px;border-radius:999px;border:1px solid {{ r.dotBorder }};background:{{ r.dotBg }};display:grid;place-items:center">
+                    <sc-if value="{{ r.on }}"><svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                  </span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ hasReasonNote }}">
+                <p style="margin:0;padding:12px 14px;border-radius:12px;background:{{ reasonNoteBg }};font-size:14px;line-height:1.55;color:#1E1C21;text-wrap:pretty">{{ reasonNote }}</p>
+              </sc-if>
+            </div>
+
+            <label style="display:grid;gap:8px">
+              <span style="padding:0 2px;font-size:14px;font-weight:600;color:#050309">Anything you'd like us to know <span style="font-weight:400;color:#504E52">(optional)</span></span>
+              <textarea value="{{ note }}" sc-camel-on-change="{{ onNote }}" rows="3" placeholder="A line or two is plenty." style="width:100%;min-height:96px;padding:14px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;line-height:1.6;color:#050309;resize:vertical;outline-color:#00695C"></textarea>
+            </label>
+            <button type="button" sc-camel-on-click="{{ send }}" disabled="{{ sendDisabled }}" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:{{ sendBg }};color:{{ sendFg }};font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:{{ sendCursor }}">Send</button>
+            <p style="margin:0;padding:0 2px;font-size:13px;line-height:1.55;color:#504E52;text-wrap:pretty">If we don't hear from you by then, your 10 coins go to Amaka.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isReview }}">
+          <p style="margin:0;padding:0 2px;font-size:13.5px;line-height:1.55;color:#504E52;text-align:center">We'll let you know here when it's settled.</p>
+        </sc-if>
+
+        <sc-if value="{{ isSettled }}">
+          <div style="display:grid;gap:10px">
+            <a href="coins-balance.html" style="min-height:48px;padding:12px 20px;border-radius:12px;border:1px solid rgba(5,3,9,0.2);color:#050309;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center" style-hover="border-color:#00695C;background:#E5F0EE;color:#050309">See coin balance</a>
+            <a href="nav-today.html" style="min-height:48px;padding:12px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center" style-hover="background:#FFC94C;color:#001F1B">Back to today's six</a>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const IN = "#00695C", OUT = "#504E52";
+const OUTCOMES = {
+  both: { ring: true, title: "You both showed up. Your coins are back in your balance.", lines: [["Your 10 coins came back", "+10", IN]] },
+  noshow: { ring: true, title: "They didn't make it — their 10 coins are now in your balance.", lines: [["Your 10 coins came back", "+10", IN], ["10 coins from Amaka — they didn't make it", "+10", IN]] },
+  review: { person: true, eyebrow: "Being reviewed", title: "A person on our team is looking at this. Nothing moves until it's settled.", lines: [["You said", "I was there", OUT], ["Sent", "Sat 10 Oct, 9:52 pm", OUT]] },
+  settledBack: { ring: true, eyebrow: "Settled", title: "You were there. Your 10 coins are back in your balance.", body: "Amaka's 10 coins came back to them too.", lines: [["Your 10 coins came back", "+10", IN]] },
+  unsafe: { ring: true, eyebrow: "Settled", title: "Your 10 coins came back to you in full.", body: "You don't owe anyone a meeting. If you'd like to talk to the safety team, Toastly Help can connect you.", lines: [["Your 10 coins came back", "+10", IN]] },
+  cameup: { ring: true, eyebrow: "Settled", title: "Your 10 coins went to Amaka.", body: "Thanks for letting us know something came up.", lines: [["10 coins to Amaka", "−10", OUT]] },
+  settledThem: { ring: true, eyebrow: "Settled", title: "Your 10 coins went to Amaka.", body: "We couldn't confirm you were at Café Neo, so the stake went to Amaka, as you both agreed before the date.", lines: [["10 coins to Amaka", "−10", OUT]] }
+};
+const REASONS = [["there", "I was there"], ["cameup", "Something came up"], ["unsafe", "I didn't feel safe"]];
+const NOTES = {
+  there: ["A person on our team will look at it. Nothing moves until it's settled.", "#F6F2EA"],
+  cameup: ["Thanks for telling us. Your 10 coins go to Amaka, as you both agreed.", "#F6F2EA"],
+  unsafe: ["Your 10 coins come back to you in full. If you'd like to talk to the safety team, we'll offer that next.", "#E5F0EE"]
+};
+class Component extends DCLogic {
+  state = { w: "360px", s: "both", reason: null, note: "" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, s, reason, note } = this.state;
+    const d = OUTCOMES[s] || {};
+    const o = {
+      ring: !!d.ring, person: !!d.person, iconBg: d.person ? "#E5F0EE" : "#FFF7E5",
+      eyebrow: d.eyebrow || "", hasEyebrow: !!d.eyebrow, title: d.title || "", body: d.body || "", hasBody: !!d.body,
+      lines: (d.lines || []).map(([label, amt, c]) => ({ label, amt, c })), hasLines: !!(d.lines && d.lines.length)
+    };
+    const ok = reason !== null;
+    return {
+      frameW: w,
+      chipGroups: [
+        { chips: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))) },
+        { chips: [["both", "Both showed up"], ["noshow", "They didn't make it"], ["absent", "Marked absent"], ["review", "Being reviewed"], ["settledBack", "Settled · came back"], ["settledThem", "Settled · went to them"]].map(([k, l]) => this.chip(l, s === k, () => this.setState({ s: k }))) }
+      ],
+      hasCard: s !== "absent", o,
+      isBoth: s === "both", isNoShow: s === "noshow", isAbsent: s === "absent", isReview: s === "review", isSettled: ["settledBack", "settledThem", "unsafe", "cameup"].includes(s),
+      reasons: REASONS.map(([k, label]) => {
+        const on = reason === k;
+        return { label, on, pick: () => this.setState({ reason: k }), bg: on ? "#E5F0EE" : "#FFFFFF", border: on ? "#00695C" : "rgba(5,3,9,0.14)", dotBg: on ? "#00695C" : "transparent", dotBorder: on ? "#00695C" : "rgba(5,3,9,0.22)" };
+      }),
+      hasReasonNote: ok, reasonNote: ok ? NOTES[reason][0] : "", reasonNoteBg: ok ? NOTES[reason][1] : "transparent",
+      note, onNote: e => this.setState({ note: e.target.value }),
+      sendDisabled: !ok, sendBg: ok ? "#FFB300" : "#D9D9DA", sendFg: ok ? "#001F1B" : "#504E52", sendCursor: ok ? "pointer" : "not-allowed",
+      send: () => this.setState({ s: reason === "there" ? "review" : reason, reason: null, note: "" })
+    };
+  }
+}
+</script>
+
+
+</body></html>

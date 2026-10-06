@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/8e245139-d652-4609-99c1-88d383ac9847.js"></script>
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/1b72bedb-45b1-48b2-b864-c69c12ca8172.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/02c126b0-5110-4439-883c-affe3f00f557.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/95bde64d-0b6a-47ca-8be7-3a7b86c82d98.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/bc213e17-1dd9-4141-8fd0-b336db4623d3.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Coins and dates 3 of 7</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Confirm your date and stake</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">Shown to each person once both have accepted the spot and the time. Venue, time and stake on one card, the stake explained in one short paragraph, and the free-cancellation deadline stated before anything is confirmed. Confirm and Not now are the same size.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="4">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Confirm date and stake" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Confirm your date</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">You and Amaka agreed a spot and a time</p>
+        </div>
+      </div>
+
+      <div style="padding:14px 14px 24px;display:grid;gap:14px;align-content:start">
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;overflow:hidden">
+          <div style="aspect-ratio:16/9;background:#001F1B;overflow:hidden">
+            <img src="{{ cafe }}" alt="Placeholder: café interior in Lagos with window seating" style="width:100%;height:100%;object-fit:cover;opacity:.94">
+          </div>
+          <div style="padding:16px 15px;display:grid;gap:12px">
+            <div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between">
+              <div style="display:grid;gap:4px;min-width:0">
+                <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;line-height:1.2;color:#050309">Café Neo, Ikoyi</h2>
+                <p style="margin:0;font-size:13.5px;color:#504E52">Café · Awolowo Road</p>
+              </div>
+              <span style="flex-shrink:0;padding:6px 11px;border-radius:6px;background:#E5F0EE;border:1px solid rgba(0,105,92,0.24);font-size:12px;font-weight:600;color:#00453C">Public</span>
+            </div>
+            <div style="display:grid;gap:8px;padding:12px;border-radius:12px;background:#F6F2EA">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <span style="font-size:13px;color:#504E52">When</span>
+                <span style="font-size:14px;font-weight:600;color:#050309;text-align:right">Saturday 10 Oct · 7:00 pm</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <span style="font-size:13px;color:#504E52">Stake</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#050309">
+                  <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#CC8F00" stroke-width="2.7"></circle></svg>
+                  10 coins each
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 15px;display:grid;gap:12px">
+          <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Showing up for each other</p>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">You both put in 10 coins. Show up and they come back to you. If one of you can't make it, their coins go to the other.</p>
+          <p style="margin:0;display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#E5F0EE;font-size:14px;font-weight:600;color:#00453C">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0"><circle cx="12" cy="12" r="8.6" stroke="#00695C" stroke-width="1.6"></circle><path d="M12 7.4V12l3.2 2" stroke="#00695C" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            Cancel free until 8pm on Friday.
+          </p>
+          <p style="margin:0;font-size:13px;line-height:1.55;color:#504E52">Toastly never keeps any of it.</p>
+        </div>
+
+        <sc-if value="{{ isReady }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:12px">
+            <p style="margin:0;padding:0 2px;font-size:13.5px;line-height:1.55;color:#504E52;text-wrap:pretty">Staked from Your coins. You have 45, and 35 after you confirm.</p>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+              <button type="button" sc-camel-on-click="{{ confirm }}" style="min-height:48px;padding:12px 10px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">Confirm</button>
+              <button type="button" style="min-height:48px;padding:12px 10px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Not now</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isShort }}">
+          <div style="display:grid;gap:12px">
+            <div style="padding:14px;border-radius:14px;background:#FFF7E5;border:1px solid rgba(204,143,0,0.32);display:grid;gap:4px">
+              <p style="margin:0;font-size:14.5px;font-weight:600;color:#050309">You have 6 coins that can be staked. This date needs 10.</p>
+              <p style="margin:0;font-size:13.5px;line-height:1.55;color:#1E1C21;text-wrap:pretty">Your 15 bonus coins can be spent on Toastly, but they can't be staked.</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+              <a href="coins-get.html" style="min-height:48px;padding:12px 10px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center;text-align:center" style-hover="background:#FFC94C;color:#001F1B">Get coins</a>
+              <button type="button" style="min-height:48px;padding:12px 10px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Not now</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDone }}">
+          <div style="display:grid;gap:12px">
+            <div style="border:1px solid {{ doneBorder }};border-radius:16px;background:#FFFFFF;padding:16px 15px;display:grid;gap:6px">
+              <p style="margin:0;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:{{ doneColor }}">
+                <svg width="16" height="16" sc-camel-view-box="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="{{ doneColor }}" stroke-width="1.3"></circle><path d="m5 8.2 2 2 4-4.4" stroke="{{ doneColor }}" stroke-width="1.5" stroke-linecap="round"></path></svg>
+                {{ doneTitle }}
+              </p>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52;text-wrap:pretty">{{ doneBody }}</p>
+            </div>
+            <a href="date-cancel.html" style="justify-self:center;min-height:44px;padding:10px 14px;display:grid;place-items:center;color:#00695C;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:4px">Change of plans</a>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+class Component extends DCLogic {
+  state = { w: "360px", s: "ready" };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, s } = this.state, both = s === "both";
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [["ready", "Ready"], ["short", "Not enough coins"], ["waiting", "Waiting for Amaka"], ["both", "Both confirmed"]].map(([k, l]) => this.chip(l, s === k, () => this.setState({ s: k }))),
+      cafe: IMG("matches-cafe"),
+      isReady: s === "ready", isShort: s === "short", isDone: s === "waiting" || both,
+      confirm: () => this.setState({ s: "waiting" }),
+      doneColor: both ? "#2F8F5B" : "#00695C",
+      doneBorder: both ? "#2F8F5B" : "rgba(5,3,9,0.12)",
+      doneTitle: both ? "You're both in. See you Saturday." : "You're confirmed",
+      doneBody: both ? "You each have 10 coins staked. Check in at Café Neo when you arrive, and they come back to you." : "Your 10 coins are staked. Waiting for Amaka to confirm. If they don't, your coins come back to you."
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -10,7 +10,7 @@
  */
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { freshDb, as, asService, makeUser } from "./harness.mjs";
+import { freshDb, as, asService, makeUser, goLive } from "./harness.mjs";
 
 let db;
 before(async () => {
@@ -23,6 +23,7 @@ const LNG = 3.4219;
 async function verified(name) {
   const id = await makeUser(db, { name, email: `${name.toLowerCase().replace(/\W/g, "")}-${crypto.randomUUID()}@example.com` });
   await db.query("update profiles set stage = 'verified_real' where id = $1", [id]);
+  await goLive(db, id);
   return id;
 }
 

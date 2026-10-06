@@ -117,6 +117,30 @@ export async function asService(db, fn) {
   });
 }
 
+/**
+ * Make a member's profile LIVE (0029): phone confirmed, Verified Real, four
+ * photos and a main photo that matched. Runs as the database owner, the way
+ * the server records these results — every member-facing rule still applies
+ * to what the test does next.
+ */
+export async function goLive(db, id) {
+  await db.query(
+    "update profiles set phone_verified_at = coalesce(phone_verified_at, now()), stage = case when stage in ('verified_real', 'id_confirmed') then stage else 'verified_real' end where id = $1",
+    [id],
+  );
+  const photos = [];
+  for (let i = 0; i < 4; i++) {
+    const { rows } = await db.query(
+      "insert into profile_photos (profile_id, storage_path, position) values ($1, $2, $3) returning id",
+      [id, `${id}/live-${i}.jpg`, i],
+    );
+    photos.push(rows[0].id);
+  }
+  await db.query("update profiles set pending_main_photo_id = $2 where id = $1", [id, photos[0]]);
+  await db.query("select record_main_photo_match($1, 'matched')", [photos[0]]);
+  return photos;
+}
+
 /** Create an auth user; the signup trigger creates the profile. */
 export async function makeUser(db, { name, email, gender = "prefer_not_to_say", dob = "1995-01-01" }) {
   const id = crypto.randomUUID();

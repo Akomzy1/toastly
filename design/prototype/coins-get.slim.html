@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/0064747a-7f92-4ff0-a772-f1f5fd35859d.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/bc72dfc6-0010-4934-96c1-913f4d65c591.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/e08bb5ac-c394-42c7-aeb1-b1f658f24353.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/954701df-3ed0-426f-96c4-ccd072ead657.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/1dab81bd-51b2-4957-a05d-4bc374d3d0bb.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Coins and dates 2 of 7</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Get coins</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">Four packs built from one card: same size, same weight, nothing preselected, no badges. Card, bank transfer or USSD. The no-refund line sits directly above the pay button, so it is read before payment. Pack amounts are placeholders.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Get coins" style="width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="flex:1;min-width:0;display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Get coins</p>
+          <p style="margin:0;display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,0.66)">
+            <svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#EBD9AE" stroke-width="2.7"></circle></svg>
+            <span>Coin balance · {{ balance }}</span>
+          </p>
+        </div>
+      </div>
+
+      <sc-if value="{{ choosing }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:18px 14px 24px;display:grid;gap:20px;align-content:start">
+
+          <div role="radiogroup" aria-label="Choose a pack" style="display:grid;gap:10px">
+            <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Choose a pack</p>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+              <sc-for list="{{ packs }}" as="p" hint-placeholder-count="4">
+                <button type="button" role="radio" aria-checked="{{ p.on }}" sc-camel-on-click="{{ p.pick }}" style="min-height:104px;padding:14px 12px;display:grid;gap:8px;align-content:center;justify-items:start;text-align:left;border:1px solid {{ p.border }};border-radius:14px;background:{{ p.bg }};font-family:Inter,sans-serif;cursor:pointer">
+                  <span style="display:flex;align-items:baseline;gap:6px">
+                    <span style="font-family:Aleo,Georgia,serif;font-size:26px;font-weight:700;line-height:1;color:#050309;font-variant-numeric:tabular-nums">{{ p.coins }}</span>
+                    <span style="font-size:14px;color:#504E52">coins</span>
+                  </span>
+                  <span style="font-size:16px;font-weight:600;color:#050309;font-variant-numeric:tabular-nums">{{ p.price }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <p style="margin:0;padding:0 2px;font-size:13px;line-height:1.55;color:#504E52">Coins you buy go into Your coins, so they can be staked.</p>
+          </div>
+
+          <div role="radiogroup" aria-label="Pay with" style="display:grid;gap:10px">
+            <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Pay with</p>
+            <sc-for list="{{ methods }}" as="m" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{ m.on }}" sc-camel-on-click="{{ m.pick }}" style="width:100%;min-height:60px;padding:12px 13px;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid {{ m.border }};border-radius:14px;background:{{ m.bg }};font-family:Inter,sans-serif;cursor:pointer">
+                <span style="flex:1;min-width:0;display:grid;gap:2px">
+                  <span style="font-size:15px;font-weight:600;color:#050309">{{ m.label }}</span>
+                  <span style="font-size:13px;line-height:1.45;color:#504E52">{{ m.sub }}</span>
+                </span>
+                <span style="flex-shrink:0;width:20px;height:20px;border-radius:999px;border:1px solid {{ m.dotBorder }};background:{{ m.dotBg }};display:grid;place-items:center">
+                  <sc-if value="{{ m.on }}"><svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;gap:10px">
+            <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;background:#FFF7E5;border:1px solid rgba(204,143,0,0.32)">
+              <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="8.5" stroke="#CC8F00" stroke-width="2.7"></circle></svg>
+              <span style="display:grid;gap:3px">
+                <span style="font-size:14px;font-weight:600;color:#050309">Before you pay</span>
+                <span style="font-size:14px;line-height:1.55;color:#1E1C21;text-wrap:pretty">Coins can be spent on Toastly. They can't be refunded or exchanged for money.</span>
+              </span>
+            </div>
+            <button type="button" sc-camel-on-click="{{ pay }}" disabled="{{ payDisabled }}" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:{{ payBg }};color:{{ payFg }};font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:{{ payCursor }}">{{ payLabel }}</button>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ done }}">
+        <div style="padding:18px 14px 24px;display:grid;gap:14px;align-content:start">
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:22px 16px;display:grid;gap:12px;justify-items:start">
+            <span style="width:48px;height:48px;border-radius:999px;background:#FFF7E5;display:grid;place-items:center">
+              <svg width="26" height="26" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#CC8F00" stroke-width="2.7"></circle></svg>
+            </span>
+            <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;line-height:1.25;color:#050309">{{ doneTitle }}</h2>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;text-wrap:pretty">They're in Your coins, ready to stake on a date or spend on Toastly.</p>
+            <div style="width:100%;display:flex;justify-content:space-between;gap:10px;padding:12px;border-radius:12px;background:#F6F2EA">
+              <span style="font-size:13.5px;color:#504E52">Coin balance</span>
+              <span style="font-size:14px;font-weight:600;color:#050309;font-variant-numeric:tabular-nums">{{ newBalance }}</span>
+            </div>
+          </div>
+          <a href="coins-balance.html" style="min-height:48px;padding:14px 20px;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none;display:grid;place-items:center" style-hover="background:#FFC94C;color:#001F1B">Back to coin balance</a>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const PACKS = [[5, "₦500"], [10, "₦1,000"], [25, "₦2,500"], [50, "₦5,000"]];
+const METHODS = [["card", "Card", "Visa, Mastercard or Verve"], ["transfer", "Bank transfer", "From any Nigerian bank"], ["ussd", "USSD", "Dial a code from any phone"]];
+const BAL = 60;
+class Component extends DCLogic {
+  state = { w: "360px", pack: null, method: null, done: false };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  sel(on) {
+    return { bg: on ? "#E5F0EE" : "#FFFFFF", border: on ? "#00695C" : "rgba(5,3,9,0.14)", dotBg: on ? "#00695C" : "transparent", dotBorder: on ? "#00695C" : "rgba(5,3,9,0.22)" };
+  }
+  renderVals() {
+    const { w, pack, method, done } = this.state;
+    const ready = pack !== null && method !== null;
+    const p = pack !== null ? PACKS[pack] : null;
+    const st = done ? "done" : ready ? "ready" : "choose";
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["Desktop", "680px"]].map(([l, v]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [
+        this.chip("Choosing", st === "choose", () => this.setState({ pack: null, method: null, done: false })),
+        this.chip("Ready to pay", st === "ready", () => this.setState({ pack: 1, method: 0, done: false })),
+        this.chip("Coins added", st === "done", () => this.setState({ pack: pack ?? 1, method: method ?? 0, done: true }))
+      ],
+      balance: String(BAL),
+      choosing: !done, done,
+      packs: PACKS.map(([coins, price], i) => Object.assign({ coins: String(coins), price, on: pack === i, pick: () => this.setState({ pack: i }) }, this.sel(pack === i))),
+      methods: METHODS.map(([k, label, sub], i) => Object.assign({ label, sub, on: method === i, pick: () => this.setState({ method: i }) }, this.sel(method === i))),
+      payDisabled: !ready,
+      payLabel: ready ? "Pay " + p[1] : (pack === null ? "Choose a pack" : "Choose how to pay"),
+      payBg: ready ? "#FFB300" : "#D9D9DA", payFg: ready ? "#001F1B" : "#504E52", payCursor: ready ? "pointer" : "not-allowed",
+      pay: () => this.setState({ done: true }),
+      doneTitle: (p ? p[0] : 10) + " coins added",
+      newBalance: String(BAL + (p ? p[0] : 10)) + " coins"
+    };
+  }
+}
+</script>
+
+
+</body></html>

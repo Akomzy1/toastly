@@ -7,7 +7,7 @@
  */
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { freshDb, as, asService, makeUser } from "./harness.mjs";
+import { freshDb, as, asService, makeUser, goLive } from "./harness.mjs";
 
 let db;
 let staff;
@@ -20,6 +20,7 @@ before(async () => {
 async function member(name = "Member Test", { country = "NG", gender = "prefer_not_to_say", verified = true } = {}) {
   const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com`, gender });
   await db.query("update profiles set country_code = $2, stage = $3 where id = $1", [id, country, verified ? "verified_real" : "unverified"]);
+  if (verified) await goLive(db, id);
   return id;
 }
 const svc = (sql, params) => asService(db, (tx) => tx.query(sql, params));
@@ -155,7 +156,8 @@ test("restrict hides the member and stops new contact; safety tools still work; 
   // Hidden from others' six, and no six of their own.
   const feedC = await as(db, c, (tx) => tx.query("select candidate_id from build_daily_feed($1)", [c]));
   assert.ok(!feedC.rows.some((r) => r.candidate_id === b));
-  assert.equal((await as(db, b, (tx) => tx.query("select * from build_daily_feed($1)", [b]))).rows.length, 0);
+  // A restricted account isn't live (0029), so the feed refuses outright.
+  await assert.rejects(as(db, b, (tx) => tx.query("select * from build_daily_feed($1)", [b])), /isn't live/);
 
   // No new contact.
   await assert.rejects(as(db, b, (tx) => tx.query("insert into gist_sessions (proposer_id, invitee_id) values ($1, $2)", [b, c])), /restricted/);
