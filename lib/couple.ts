@@ -9,6 +9,14 @@
  * the brief and can serialise one, and that is all it does. There is no
  * client, no endpoint, no queue and no outbound call anywhere here. Writing
  * one needs an explicit decision first (PRD §6, Prompt 8).
+ *
+ * THE BRIEF IS THE COUPLE'S OWN WORDS (PRD §5.7). Every field in a
+ * BriefSource comes from what the couple enters, or explicitly chooses to
+ * copy across, at the handoff — never from their profiles. Tribe, religion,
+ * language and similar fields are protected attributes no agent or
+ * integration may read (§5.9), and genotype is refused by the database.
+ * scripts/check-constraints.mjs fails the build if code that touches the
+ * brief also reads profiles.
  */
 
 export type MilestoneKind =
@@ -38,13 +46,30 @@ export const HANDOFF_TRIGGER: MilestoneKind = "engagement";
  * be built at different times, so the consumer needs to know which shape it
  * is reading. Bump `version` on any breaking change.
  */
-export const BRIEF_VERSION = 1 as const;
+export const BRIEF_VERSION = 2 as const;
+
+/** The ceremony formats a couple can pick (PRD §5.7). */
+export const CEREMONY_FORMATS = {
+  introduction: "Introduction",
+  traditional: "Traditional wedding",
+  white_wedding: "White wedding",
+} as const;
+export type CeremonyFormat = keyof typeof CEREMONY_FORMATS;
 
 export type CoupleBrief = {
   version: typeof BRIEF_VERSION;
   coupleId: string;
   /** Always true in a serialised brief — see assembleBrief(). */
   bothConsented: true;
+  /** The fields PRD §5.7 names, as the couple entered them. */
+  wedding: {
+    city: string | null;
+    roughDate: string | null;
+    guestCountBand: string | null;
+    budgetBand: string | null;
+    ceremonyFormats: CeremonyFormat[];
+  };
+  /** Only what the couple chose to copy across — never read from a profile. */
   culture: {
     tribes: string[];
     languages: string[];
@@ -65,6 +90,11 @@ export type BriefSource = {
   coupleId: string;
   aConsentedAt: string | null;
   bConsentedAt: string | null;
+  weddingCity: string | null;
+  roughDate: string | null;
+  guestCountBand: string | null;
+  budgetBand: string | null;
+  ceremonyFormats: CeremonyFormat[];
   tribes: string[];
   languages: string[];
   homeStates: string[];
@@ -91,6 +121,13 @@ export function assembleBrief(source: BriefSource): CoupleBrief | null {
     version: BRIEF_VERSION,
     coupleId: source.coupleId,
     bothConsented: true,
+    wedding: {
+      city: source.weddingCity,
+      roughDate: source.roughDate,
+      guestCountBand: source.guestCountBand,
+      budgetBand: source.budgetBand,
+      ceremonyFormats: source.ceremonyFormats,
+    },
     culture: {
       tribes: source.tribes,
       languages: source.languages,
@@ -115,6 +152,14 @@ export function assembleBrief(source: BriefSource): CoupleBrief | null {
  */
 export function describeBrief(source: BriefSource): string[] {
   const lines: string[] = [];
+  if (source.weddingCity) lines.push(`Wedding city: ${source.weddingCity}`);
+  if (source.roughDate) lines.push(`Rough date: ${source.roughDate}`);
+  if (source.guestCountBand) lines.push(`Guests: ${source.guestCountBand}`);
+  if (source.budgetBand) lines.push(`Budget: ${source.budgetBand}`);
+  if (source.ceremonyFormats.length)
+    lines.push(
+      `Ceremonies: ${source.ceremonyFormats.map((f) => CEREMONY_FORMATS[f]).join(", ")}`,
+    );
   if (source.tribes.length) lines.push(`Tribes: ${source.tribes.join(", ")}`);
   if (source.languages.length)
     lines.push(`Languages: ${source.languages.join(", ")}`);

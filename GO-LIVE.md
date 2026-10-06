@@ -117,6 +117,18 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
+## 0e. Ported fixes and the AriyaPlanner brief rule (migration 0028) — NOT APPLIED
+
+Run after 0027, on staging first. Apply it **before** deploying the code:
+the phone step calls `phone_in_use` and `record_phone_verified`.
+
+- **Phone binding needs `SUPABASE_SERVICE_ROLE_KEY`** server-side: the number
+  is now bound by the server. Before 0028 no number was ever bound (the
+  member's own write was refused), so existing members have no row in
+  `phone_identities`; they are bound the next time they confirm a number.
+- `build_daily_feed` refuses any id but the caller's; `gist_mutual_continue`
+  is now true for members when both said yes (it was always false); text
+  replies work (replies had no insert policy).
 ## 0d. Where you live, two-way "open to abroad", age range (migration 0027) — NOT APPLIED
 
 1. Run `supabase/migrations/0027_country_age_two_way.sql` in the SQL editor

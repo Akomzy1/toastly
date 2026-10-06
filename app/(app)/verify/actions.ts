@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
@@ -83,13 +84,10 @@ export async function startPhoneVerification(
       error: "That number can't be used to verify a new account. If you think this is a mistake, email support@trytoastly.com.",
     };
   }
-  const { data: taken } = await supabase
-    .from("phone_identities")
-    .select("profile_id")
-    .eq("phone_hash", hash)
-    .maybeSingle();
-
-  if (taken && taken.profile_id !== user.id) {
+  // Yes or no, never whose (0028). Reading phone_identities directly always
+  // came back empty — members can't read it — so this never fired before.
+  const { data: taken } = await supabase.rpc("phone_in_use", { p_hash: hash });
+  if (taken === true) {
     return { error: "That number is already verified on another account." };
   }
 
@@ -132,10 +130,28 @@ export async function confirmPhoneCode(
     console.error("[verify] phone hashing unavailable:", (e as Error).message);
     return { error: PHONE_UNAVAILABLE };
   }
-  await supabase.from("phone_identities").upsert({
-    phone_hash: phoneHash,
-    profile_id: user.id,
+  // Bind the number to the account (0028). Members can't write
+  // phone_identities, so this goes through the service role; before 0028 the
+  // member's own upsert failed silently and no number was ever bound.
+  const admin = createAdminClient();
+  if (!admin) {
+    console.error("[verify] SUPABASE_SERVICE_ROLE_KEY is not set; can't bind the phone number.");
+    return { error: PHONE_UNAVAILABLE };
+  }
+  const { data: bound, error: bindError } = await admin.rpc("record_phone_verified", {
+    p_profile: user.id,
+    p_hash: phoneHash,
   });
+  if (bindError) {
+    console.error("[verify] binding the phone failed:", bindError.message);
+    return { error: PHONE_UNAVAILABLE };
+  }
+  if (bound === "in_use") return { error: "That number is already verified on another account." };
+  if (bound === "blocked") {
+    return {
+      error: "That number can't be used to verify a new account. If you think this is a mistake, email support@trytoastly.com.",
+    };
+  }
 
   await supabase
     .from("profiles")

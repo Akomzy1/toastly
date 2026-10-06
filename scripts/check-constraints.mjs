@@ -1172,6 +1172,67 @@ check("the age range is free on every plan", (s, f) => {
   return body && /current_tier|entitlement|\btier\b|premium/i.test(body) ? "reads a plan" : false;
 });
 
+// --- Ported fixes and the brief rule (0028) ---------------------------------
+
+const MIGS = fs.readdirSync("supabase/migrations").filter((m) => /\.sql$/.test(m)).sort()
+  .map((m) => ({ m, sql: fs.readFileSync(`supabase/migrations/${m}`, "utf8") }));
+const latestFn = (name) => {
+  let body = null;
+  for (const { sql } of MIGS) {
+    const re = new RegExp(`create or replace function public\\.${name}\\s*\\([\\s\\S]*?\\$\\$([\\s\\S]*?)\\$\\$`, "g");
+    for (const x of sql.matchAll(re)) body = x[0];
+  }
+  return body;
+};
+
+// The feed builder is security definer; it must refuse any id but the
+// caller's, or anyone can read anyone's six.
+check("the daily feed refuses any member but the caller", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false; // run once
+  const body = latestFn("build_daily_feed");
+  return body && /p_profile_id is distinct from auth\.uid\(\)/.test(body) ? false : "build_daily_feed trusts p_profile_id";
+});
+
+// Members see only their own Gist outcome, so the yes/no must be answered
+// by a definer function — and only ever a yes/no, to the two people.
+check("'did both say continue?' works for members and reveals only a yes/no", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false;
+  const body = latestFn("gist_mutual_continue");
+  if (!body || !/security definer/.test(body)) return "gist_mutual_continue runs under the caller's RLS (always false for members)";
+  if (!/returns boolean/.test(body)) return "gist_mutual_continue returns more than a yes/no";
+  if (!/auth\.uid\(\) in \(g\.proposer_id, g\.invitee_id\)/.test(body)) return "answers people outside the Gist";
+  return false;
+});
+
+// phone_identities is never client-writable; the server binds the number.
+check("phone numbers are bound by the server, never by the member", (s, f) => {
+  if (!/\.(tsx?)$/.test(f)) return false;
+  return /from\(\s*["']phone_identities["']\s*\)\s*\.(upsert|insert|update)/.test(s) ? "writes phone_identities with the member's client" : false;
+});
+
+check("replies can be sent", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false;
+  return MIGS.some(({ sql }) => /create policy "[^"]+" on public\.replies for insert/.test(sql)) ? false : "replies has no insert policy — every reply is refused";
+});
+
+// PRD §5.7 / CLAUDE.md: the AriyaPlanner brief is drafted only from what
+// the couple enters or chooses to copy at the handoff. No database function
+// touching couple_briefs may read profiles; no app code handling the brief
+// may query them. (Genotype is held off the brief by "genotype is read only
+// on the display path" above.)
+check("the AriyaPlanner brief is never filled from profiles", (s, f) => {
+  const n = norm(f);
+  if (n.endsWith(".sql")) {
+    for (const x of s.matchAll(/\$\$([\s\S]*?)\$\$/g)) {
+      if (/\bcouple_briefs\b/.test(x[1]) && /\bprofiles\b/.test(x[1])) return "a function touching couple_briefs reads profiles";
+    }
+    return false;
+  }
+  if (!/^(app|components|lib)\//.test(n)) return false;
+  if (!/couple_briefs|\bBriefSource\b|\bassembleBrief\b|\bdescribeBrief\b/.test(s)) return false;
+  return /from\(\s*["']profiles["']\s*\)/.test(s) ? "handles the brief and queries profiles" : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

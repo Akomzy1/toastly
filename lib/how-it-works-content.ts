@@ -108,7 +108,11 @@ export const steps: Step[] = [
     n: "6",
     kicker: "Plan the wedding",
     title: "AriyaPlanner takes it from here.",
-    lede: "The handoff is one tap. Everything you've already told Toastly — cities, families, dates — carries across into a real wedding plan.",
+    // CORRECTED (PRD §5.7): the prototype said "Everything you've already told
+    // Toastly — cities, families, dates — carries across". The brief is
+    // drafted only from what the couple enters or chooses to copy at the
+    // handoff; nothing flows from profiles.
+    lede: "The handoff is one tap each. What you both choose to share — your city, a rough date, the ceremonies you want — carries across into a real wedding plan.",
     points: [
       "Introduction ceremony, traditional wedding, white wedding.",
       "Budgets in Naira or USD, vendor shortlists by city.",

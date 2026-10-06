@@ -97,6 +97,7 @@ A pre-build audit found these. **`PRD.md` wins on content; the prototype wins on
 7. **"Boosts".** Pricing's Why-pay line says paying "boosts your position". Boosts are cut from the product (PRD §7.2). Shipped: "raises your position" — within the member's own six only.
 8. **AI "handling the safety checks".** Home's "AI, on your side" says Toastly AI "handles the admin and the safety checks". **Wrong** — no AI runs safety checks (the Sentinel scoring agent is Phase 2, and a person decides every outcome). Shipped: "It helps with the admin — verification and payment questions, feedback on your own answers."
 9. **"Unlimited voice notes"** on Premium Plus (`pricing-offer`). The feature doesn't exist — removed (decided 6 October 2026).
+10. **The AriyaPlanner handoff "carries across everything you've already told Toastly".** How It Works (step 6) and the in-app Couple Mode screen said so. **Wrong** — the brief is drafted only from what the couple enters or chooses to copy at the handoff; nothing flows from profiles (PRD §5.7). Shipped: "What you both choose to share — your city, a rough date, the ceremonies you want — carries across" and "a short brief you both fill in at the handoff. Nothing is taken from your profiles."
 
 ## Gaps: decided here, not transcribed
 
