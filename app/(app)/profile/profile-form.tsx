@@ -11,8 +11,6 @@ import { Notice } from "@/components/ui/notice";
 import { CityPicker, type PickerCity } from "@/components/app/city-picker";
 import { TimeZoneField } from "@/components/app/time-zone-field";
 import { COUNTRY_NAME } from "@/lib/countries";
-import { DENOMINATIONS, FAITH_OTHER_MAX, RELIGIONS, isListedReligion } from "@/lib/faith";
-import { FAITH_CONSENT } from "@/lib/consent";
 import {
   HISTORY_LABELS,
   INTENT_LABELS,
@@ -67,116 +65,14 @@ function Visibility({
  *   - relationship history defaults to revealed-on-match, not public;
  *   - intent is collected but never required.
  */
-/**
- * Religion and denomination (PRD §5.2.3). Follows the religion row's existing
- * pattern — a field with its Optional badge and one "Who can see this" — until
- * the Claude Design update lands. NOT IN A PROTOTYPE, flagged in SKILL.md: the
- * denomination select beneath religion, the two "Other" text fields, and the
- * one-line consent.
- *
- *   - denomination appears only for Christian or Muslim;
- *   - one visibility covers both: on my profile, or only me (hidden);
- *   - a religion stored before the option list keeps its own option, so
- *     saving never changes it unless the member picks something else.
- */
-function FaithFields({ profile, consented }: { profile: Profile; consented: boolean }) {
-  const legacy = profile.religion && !isListedReligion(profile.religion) ? profile.religion : null;
-  const [religion, setReligion] = React.useState(profile.religion ?? "");
-  const [denomination, setDenomination] = React.useState<string>(profile.denomination ?? "");
-  const options = isListedReligion(religion) ? DENOMINATIONS[religion] : undefined;
-  // The consent line: the first time a member adds either field.
-  const adding =
-    (religion !== "" && religion !== (profile.religion ?? "")) ||
-    (denomination !== "" && denomination !== (profile.denomination ?? ""));
-  const firstTime = adding && !consented;
-
-  return (
-    <div className="grid gap-2">
-      <Label htmlFor="religion">
-        <span className="flex items-center gap-2">
-          Religion <Badge variant="optional">Optional</Badge>
-        </span>
-        <Select
-          id="religion"
-          name="religion"
-          value={religion}
-          onChange={(e) => {
-            setReligion(e.target.value);
-            setDenomination("");
-          }}
-        >
-          <option value="">Not added</option>
-          {legacy ? <option value={legacy}>{legacy}</option> : null}
-          {RELIGIONS.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </Select>
-      </Label>
-      {religion === "Other" ? (
-        <Label htmlFor="religion_other">
-          Your religion
-          <Input id="religion_other" name="religion_other" maxLength={FAITH_OTHER_MAX} defaultValue={profile.religion_other ?? ""} required />
-        </Label>
-      ) : null}
-
-      {options ? (
-        <Label htmlFor="denomination">
-          <span className="flex items-center gap-2">
-            Denomination <Badge variant="optional">Optional</Badge>
-          </span>
-          <Select id="denomination" name="denomination" value={denomination} onChange={(e) => setDenomination(e.target.value)}>
-            <option value="">Not added</option>
-            {options.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </Select>
-        </Label>
-      ) : null}
-      {options && denomination === "other" ? (
-        <Label htmlFor="denomination_other">
-          Your denomination
-          <Input
-            id="denomination_other"
-            name="denomination_other"
-            maxLength={FAITH_OTHER_MAX}
-            defaultValue={profile.denomination_other ?? ""}
-            required
-          />
-        </Label>
-      ) : null}
-
-      {/* One setting for both. "Shown" is the default when first entered. */}
-      <Visibility
-        name="religion_visibility"
-        value={profile.religion_visibility === "public" || !profile.religion ? "public" : "private"}
-        options={["public", "private"]}
-      />
-
-      {firstTime ? (
-        <label className="flex min-h-11 cursor-pointer items-start gap-3 text-ui leading-[1.55] text-ink-900">
-          <input type="checkbox" name="faith_agreed" required className="mt-1 h-5 w-5 flex-shrink-0 accent-green-500" />
-          {FAITH_CONSENT.checkbox}
-        </label>
-      ) : null}
-    </div>
-  );
-}
-
 export function ProfileForm({
   profile,
   history,
   cities,
-  faithConsented = false,
 }: {
   profile: Profile;
   history: ProfileHistory;
   cities: PickerCity[];
-  /** The member has agreed to the current faith wording before. */
-  faithConsented?: boolean;
 }) {
   const [state, action] = useFormState(saveProfile, null);
   const country = profile.country_code || "NG";
@@ -277,7 +173,6 @@ export function ProfileForm({
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <FaithFields profile={profile} consented={faithConsented} />
 
           <div className="grid gap-2">
             <Label htmlFor="tribe">

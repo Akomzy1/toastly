@@ -7,6 +7,7 @@ import { GenotypeSection } from "@/components/genotype/genotype-section";
 import { ScreenBand } from "@/components/app/screen-band";
 import type { Profile, ProfileHistory } from "@/lib/types/profile";
 import { FAITH_CONSENT } from "@/lib/consent";
+import { FaithSection } from "@/components/profile/faith-section";
 
 export const metadata: Metadata = {
   title: "Edit profile",
@@ -97,7 +98,19 @@ export default async function EditProfilePage() {
             ›
           </span>
         </Link>
-        <ProfileForm profile={profile} history={history} cities={cityOptions} faithConsented={Boolean(faithConsent?.length)} />
+        <ProfileForm profile={profile} history={history} cities={cityOptions} />
+        {/* Separate from the form: Faith saves as the member picks, with its
+            own consent sheet (faith-editor.slim.html; PRD §5.2.3). */}
+        <FaithSection
+          initial={{
+            religion: profile.religion,
+            religion_other: profile.religion_other,
+            denomination: profile.denomination,
+            denomination_other: profile.denomination_other,
+            religion_visibility: profile.religion_visibility,
+          }}
+          consented={Boolean(faithConsent?.length)}
+        />
         {/* Separate from the form on purpose: genotype has its own consent
             step and its own save, and never travels with other fields. */}
         <GenotypeSection />

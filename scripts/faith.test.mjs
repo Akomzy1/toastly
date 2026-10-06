@@ -13,7 +13,7 @@ const base = { religion: "Christian", religion_other: null, denomination: "pente
 
 test("the full profile shows faith on one line: 'Christian · Pentecostal'", () => {
   assert.equal(faithLine(base, "other"), "Christian · Pentecostal");
-  assert.equal(faithLine({ ...base, denomination: "white_garment" }, "other"), "Christian · White-garment");
+  assert.equal(faithLine({ ...base, denomination: "white_garment" }, "other"), "Christian · White-garment (Celestial, C&S, CAC)");
   assert.equal(faithLine({ ...base, denomination: null }, "other"), "Christian");
   assert.equal(faithLine({ ...base, religion: "Muslim", denomination: "other", denomination_other: "Tijaniyya" }, "other"), "Muslim · Tijaniyya");
   assert.equal(faithLine({ ...base, religion: "Other", religion_other: "Eckankar", denomination: null }, "other"), "Eckankar");

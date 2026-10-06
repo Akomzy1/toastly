@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("4d4869cd-878c-4acc-8aac-cdc44f4c7c22") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("f629d276-c114-4782-8d21-4324f6f9b984") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("8c17ef7b-ced7-458c-a890-196fe9b74252") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("13c93cca-3fce-4079-a55b-77a40b01b254") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:Inter;src:url("c8407fa1-e402-4bbd-a7e6-55f8ac5183a8") format("woff2");font-weight:700;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Faith 3 of 3 · Premium</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Premium filters — religion stays, no denomination</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">The religion filter is unchanged. There is no denomination filter: choosing Christian or Muslim filters by religion only. A short note sits directly under the religion filter to say filters only change your own search.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Premium filters" style="width:{{ frameW }};max-width:100%;min-height:560px;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <p style="margin:0;flex:1;min-width:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Filters</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#FFB300;color:#001F1B;font-size:12px;font-weight:700;letter-spacing:0.04em">Premium</span>
+      </div>
+
+      <div style="padding:18px 14px 24px;display:grid;gap:10px;align-content:start">
+        <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Your search</p>
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+
+          <div style="display:grid">
+            <button type="button" aria-expanded="{{ open }}" aria-controls="flt-rel-list" sc-camel-on-click="{{ toggleOpen }}" style="width:100%;min-height:56px;padding:12px 15px 4px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:transparent;font-family:Inter,sans-serif;text-align:left;cursor:pointer">
+              <span style="font-size:15px;font-weight:500;color:#050309">Religion</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0;text-align:right">{{ summary }} <span aria-hidden="true" style="display:inline-block;color:#828184;font-size:16px;transform:rotate({{ rot }});transition:transform .18s ease">›</span></span>
+            </button>
+            <p style="margin:0;padding:0 15px 14px;font-size:13.5px;line-height:1.5;color:#504E52;text-wrap:pretty">Filters only change your own search. They never change who sees you.</p>
+            <sc-if value="{{ open }}">
+              <div id="flt-rel-list" role="group" aria-label="Religion" style="padding:0 15px 15px;display:grid;gap:8px">
+                <sc-for list="{{ options }}" as="o" hint-placeholder-count="6">
+                  <label style="position:relative;display:flex;gap:12px;align-items:center;padding:0 13px;min-height:52px;border:1px solid {{ o.border }};border-radius:12px;background:{{ o.bg }};cursor:pointer">
+                    <input type="checkbox" checked="{{ o.on }}" sc-camel-on-change="{{ o.pick }}" style="position:absolute;opacity:0;width:1px;height:1px;margin:0">
+                    <span aria-hidden="true" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;border:1.5px solid {{ o.tickBorder }};background:{{ o.tickBg }};display:grid;place-items:center">
+                      <sc-if value="{{ o.on }}">
+                        <svg width="14" height="14" sc-camel-view-box="0 0 16 16" fill="none"><path d="m3.5 8.4 3 3 6-6.6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                      </sc-if>
+                    </span>
+                    <span style="font-size:15px;font-weight:500;color:#050309">{{ o.label }}</span>
+                  </label>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+            <span style="font-size:15px;font-weight:500;color:#050309">Tribe</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0">Any <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000}}">
+const OPTS = ["Christian", "Muslim", "Traditional", "Spiritual but not religious", "Not religious", "Other"];
+class Component extends DCLogic {
+  state = { w: "390px", sel: [], open: false };
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  renderVals() {
+    const { w, sel, open } = this.state;
+    const isAny = sel.length === 0;
+    return {
+      frameW: w,
+      widths: [["390px", "390px"], ["320px", "320px"], ["680px", "Desktop"]].map(([v, l]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [
+        this.chip("Any", isAny && !open, () => this.setState({ sel: [], open: false })),
+        this.chip("Christian chosen", !open && sel.length === 1 && sel[0] === 0, () => this.setState({ sel: [0], open: false })),
+        this.chip("List open", open, () => this.setState({ open: true }))
+      ],
+      open,
+      rot: open ? "90deg" : "0deg",
+      toggleOpen: () => this.setState({ open: !open }),
+      summary: isAny ? "Any" : sel.length === 1 ? OPTS[sel[0]] : sel.length + " chosen",
+      options: OPTS.map((label, i) => {
+        const on = sel.includes(i);
+        return {
+          label, on,
+          pick: () => this.setState(s => ({ sel: on ? s.sel.filter(x => x !== i) : [...s.sel, i].sort() })),
+          border: on ? "#00695C" : "rgba(5,3,9,0.2)",
+          bg: on ? "#E5F0EE" : "#FFFFFF",
+          tickBorder: on ? "#00695C" : "#828184",
+          tickBg: on ? "#00695C" : "#FFFFFF"
+        };
+      })
+    };
+  }
+}
+</script>
+
+
+</body></html>

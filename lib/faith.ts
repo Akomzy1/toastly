@@ -92,7 +92,8 @@ export function faithLine(p: FaithFields, viewer: "owner" | "other"): string | n
   if (!religion) return null;
   const options = isListedReligion(p.religion) ? DENOMINATIONS[p.religion] : undefined;
   const found = options?.find((d) => d.value === p.denomination);
-  const denomination =
-    p.denomination === "other" ? p.denomination_other : found ? found.label.replace(/\s*\(.*\)$/, "") : null;
+  // The full label, as faith-profile-view.slim.html shows it:
+  // "Christian · White-garment (Celestial, C&S, CAC)".
+  const denomination = p.denomination === "other" ? p.denomination_other : found ? found.label : null;
   return denomination ? `${religion} · ${denomination}` : religion;
 }

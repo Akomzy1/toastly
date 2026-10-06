@@ -1,68 +1,41 @@
 import { notFound } from "next/navigation";
 import { requireAuditHarness } from "@/lib/audit-harness";
-import { ProfileForm } from "@/app/(app)/profile/profile-form";
-import type { Profile, ProfileHistory } from "@/lib/types/profile";
+import { FaithSection } from "@/components/profile/faith-section";
+import type { FaithFields } from "@/lib/faith";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Mobile-audit harness: the profile form's religion and denomination fields
- * (PRD §5.2.3), with mock data — Christian with a denomination, Muslim with
- * an "Other" denomination, religion "Other", a religion stored before the
- * option list, and hidden.
+ * Mobile-audit harness: Edit profile — Faith (faith-editor.slim.html;
+ * PRD §5.2.3), with mock data: not added, the consent sheet, Christian ·
+ * Pentecostal, Muslim · Sunni, Traditional, "Other" typed, hidden, the
+ * religion list open, the denomination list open, and a religion stored
+ * before the option list.
  */
-const BASE: Profile = {
-  id: "00000000-0000-0000-0000-0000000000f1",
-  created_at: "2026-10-01T09:00:00Z",
-  updated_at: "2026-10-06T09:00:00Z",
-  display_name: "Adaeze",
-  city: "Lagos",
-  country_code: "NG",
-  bio: null,
-  gender: null,
-  intent: null,
-  pool: "back_home",
-  diaspora_city: null,
-  time_zone: "Africa/Lagos",
-  religion: null,
-  religion_other: null,
-  denomination: null,
-  denomination_other: null,
-  tribe: null,
-  languages: [],
-  profession: null,
-  education: null,
-  religion_visibility: "public",
-  tribe_visibility: "public",
-  languages_visibility: "public",
-  profession_visibility: "public",
-  education_visibility: "public",
-  stage: "verified_real",
-  phone_verified_at: "2026-10-01T09:00:00Z",
-  liveness_verified_at: "2026-10-01T09:10:00Z",
-  id_confirmed_at: null,
-  profession_verified_at: null,
-  paused: false,
-};
+const BLANK: FaithFields = { religion: null, religion_other: null, denomination: null, denomination_other: null, religion_visibility: "public" };
 
-const STATES: Record<string, Partial<Profile>> = {
-  empty: {},
-  christian: { religion: "Christian", denomination: "pentecostal" },
-  "muslim-other": { religion: "Muslim", denomination: "other", denomination_other: "Tijaniyya" },
-  "religion-other": { religion: "Other", religion_other: "Eckankar" },
-  legacy: { religion: "Christianity (RCCG)" },
-  hidden: { religion: "Christian", denomination: "white_garment", religion_visibility: "private" },
+const STATES: Record<string, { faith: Partial<FaithFields>; consented: boolean; preview?: { open?: "rel" | "denom"; sheetFor?: string } }> = {
+  empty: { faith: {}, consented: false },
+  sheet: { faith: {}, consented: false, preview: { sheetFor: "Christian" } },
+  christian: { faith: { religion: "Christian", denomination: "pentecostal" }, consented: true },
+  muslim: { faith: { religion: "Muslim", denomination: "sunni" }, consented: true },
+  traditional: { faith: { religion: "Traditional" }, consented: true },
+  other: { faith: { religion: "Christian", denomination: "other", denomination_other: "Seventh-day Adventist" }, consented: true },
+  hidden: { faith: { religion: "Christian", denomination: "pentecostal", religion_visibility: "private" }, consented: true },
+  "religion-open": { faith: { religion: "Christian" }, consented: true, preview: { open: "rel" } },
+  "denomination-open": { faith: { religion: "Christian", denomination: "pentecostal" }, consented: true, preview: { open: "denom" } },
+  legacy: { faith: { religion: "Christianity (RCCG)" }, consented: false },
 };
-
-const HISTORY: ProfileHistory = { history: null, has_children: null, visibility: "on_match" };
 
 export default function AuditProfileFaith({ params }: { params: { state: string } }) {
   requireAuditHarness();
   const s = STATES[params.state];
   if (!s) notFound();
   return (
-    <div className="mx-auto grid max-w-[720px] gap-6 px-5 py-6">
-      <ProfileForm profile={{ ...BASE, ...s }} history={HISTORY} cities={[]} faithConsented />
+    <div className="min-h-screen bg-paper">
+      <div className="mx-auto grid max-w-[720px] gap-6 px-3.5 pb-24 pt-[18px]">
+        <FaithSection initial={{ ...BLANK, ...s.faith }} consented={s.consented} preview={s.preview} />
+      </div>
     </div>
   );
 }

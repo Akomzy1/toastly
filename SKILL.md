@@ -214,18 +214,29 @@ gained a "Your plan" row and the locked inbox's upgrade link points here
 instead of the marketing Pricing page. Send the plan page through the design
 pipeline.
 
-**Religion and denomination — NOT IN A PROTOTYPE (0030; PRD §5.2.3).** The
-profile form (itself unapproved) keeps the religion row's existing pattern —
-a field with its Optional badge and the "Who can see this" select, here
-limited to "On my profile" / "Only me" — until the Claude Design update
-lands. Added, flagged: religion becomes a select (the decided list); a
-denomination select beneath it only for Christian or Muslim; "Other" text
-fields (30 characters) for each; and the one-line consent ("I choose to show
-my faith on my profile…") as a plain checkbox under the row, the first time
-either is added. Religion left the feed card (full profile only) — but no
-screen shows another member's full profile yet, so the one-line "Christian ·
-Pentecostal" (lib/faith.ts, faithLine) is built and tested with nowhere to
-appear. Send all of it through the design pipeline.
+**Built against the faith prototypes (6 October 2026; 0030; PRD §5.2.3)** —
+`faith-editor`, `faith-profile-view`, `premium-filters` (design/prototype,
+with .slim.html copies):
+- **Edit profile — Faith** (`faith-editor`): components/profile/faith-section
+  .tsx, its own section saving as the member picks (app/(app)/profile/faith-
+  actions.ts), apart from the profile form. The religion row opens the list
+  in place; denomination slides in for Christian or Muslim; "Other" fields
+  count to 30; one "Show on my profile" switch; the consent sheet ("Your
+  faith, your choice") the first time; "Remove faith from my profile" deletes
+  both fields and the permission (0030's remove_faith) and shows "Faith
+  removed and deleted". Audit: `/audit/profile-faith/*` (ten states).
+  Added, flagged: a religion stored before the option list (free text) shows
+  as the row's value and as a selected option until the member picks from
+  the list.
+- **Full profile view** (`faith-profile-view`): NOT BUILT — the app has no
+  screen for another member's full profile. The Faith row's value is ready
+  (lib/faith.ts `faithLine`, e.g. "Christian · White-garment (Celestial,
+  C&S, CAC)"; nothing at all when hidden). The prototype's details block also
+  shows Work and "Children: Wants children", a field that doesn't exist.
+- **Premium filters** (`premium-filters`): NOT BUILT — no filters screen and
+  no filter logic exist. Its religion filter is multi-select (no "Prefer not
+  to say"), with "Filters only change your own search. They never change who
+  sees you." beneath it, and a Tribe row. No denomination filter, ever.
 
 **Member notices — NOT IN A PROTOTYPE (0025).** All built from the in-app
 Notice: the restricted, re-verify and switch-plan notices under the app

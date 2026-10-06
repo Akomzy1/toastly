@@ -93,17 +93,17 @@ export const CONSENT: Record<ConsentKind, ConsentText> = {
     primary: "Continue to selfie",
     secondary: "Not now",
   },
-  // Showing your faith (PRD §5.2.3; decided 6 October 2026): a one-line
-  // consent the first time a member adds religion or denomination, recorded
-  // in the same consents table with its own version. Not a Smile ID consent:
-  // only the checkbox line is shown, inside the profile form.
+  // Showing your faith (PRD §5.2.3; decided 6 October 2026): the consent
+  // sheet the first time a member adds religion or denomination
+  // (faith-editor.slim.html), recorded in the same consents table with its
+  // own version. Not a Smile ID consent.
   faith_display: {
     kind: "faith_display",
     version: "2026-10-06",
-    title: "Your faith",
-    body: [],
+    title: "Your faith, your choice",
+    body: ["Religion is personal. Add it only if you want it on your profile. You can hide or remove it any time, and removing it deletes it."],
     checkbox: "I choose to show my faith on my profile. Toastly never uses it to decide who sees me.",
-    primary: "Save profile",
+    primary: "Add to my profile",
     secondary: "Not now",
   },
 };

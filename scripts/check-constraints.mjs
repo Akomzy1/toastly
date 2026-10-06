@@ -1414,7 +1414,7 @@ check("a selfie check records consent first and never stores the selfie", (s, f)
 // --- Religion and denomination (PRD §5.2.3; decided 6 October 2026) --------
 // Toastly is non-religious: faith is shown, never sorted on. There is no
 // denomination filter, now or planned.
-const FAITH_GUARDS = /^(faith_rules|faith_meta_is_clean)$/;
+const FAITH_GUARDS = /^(faith_rules|faith_meta_is_clean|remove_faith)$/;
 check("no denomination filter on any search or feed query", (s, f) => {
   if (f.endsWith(".sql")) {
     if (!/\bdenomination\b/.test(s)) return false;
@@ -1439,6 +1439,9 @@ const DENOMINATION_FILES = [
   /lib\/types\/profile\.ts$/,
   /app\/\(app\)\/profile\/actions\.ts$/,
   /app\/\(app\)\/profile\/profile-form\.tsx$/,
+  /app\/\(app\)\/profile\/faith-actions\.ts$/,
+  /app\/\(app\)\/profile\/edit\/page\.tsx$/,
+  /components\/profile\/faith-section\.tsx$/,
   /app\/\(audit\)\/audit\/profile-faith\//, // mock profile data for the mobile audit
   /lib\/analytics\.ts$/,
   /lib\/privacy-content\.ts$/,

@@ -119,6 +119,23 @@ drop trigger if exists faith_rules on public.profiles;
 create trigger faith_rules before insert or update of religion, religion_other, denomination, denomination_other
   on public.profiles for each row execute function public.faith_rules();
 
+-- "Remove faith from my profile" (faith-editor.slim.html): deletes religion,
+-- denomination and the permission, so adding faith again asks again — as
+-- deleting a genotype deletes its permission (0014). Consents are otherwise
+-- append-only (0029), hence a function, for the caller's own row only.
+create or replace function public.remove_faith()
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'Not signed in.' using errcode = '42501'; end if;
+  update profiles
+     set religion = null, religion_other = null, denomination = null, denomination_other = null
+   where id = auth.uid();
+  delete from consents where profile_id = auth.uid() and kind = 'faith_display';
+end;
+$$;
+revoke all on function public.remove_faith() from public, anon;
+grant execute on function public.remove_faith() to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- 3. Never an input
 -- ---------------------------------------------------------------------------

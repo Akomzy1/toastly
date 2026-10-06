@@ -122,3 +122,22 @@ test("visibility: one setting for both, 'shown' by default", async () => {
   const m = await member("Default Shown");
   assert.equal((await faith(m)).religion_visibility, "public");
 });
+
+test("'Remove faith from my profile' deletes both fields and the permission — adding again asks again", async () => {
+  const m = await member("Removes Faith");
+  await me(m, "update profiles set religion = 'Christian', denomination = 'methodist' where id = $1", [m]);
+  await me(m, "select remove_faith()");
+  const f = await faith(m);
+  assert.deepEqual([f.religion, f.denomination], [null, null]);
+  const { rows } = await db.query("select 1 from consents where profile_id = $1 and kind = 'faith_display'", [m]);
+  assert.equal(rows.length, 0, "the permission is gone");
+  await assert.rejects(me(m, "update profiles set religion = 'Christian' where id = $1", [m]), /Agree to show your faith/);
+});
+
+test("a member can only remove their own faith", async () => {
+  const a = await member("Owner A");
+  const b = await member("Other B");
+  await me(a, "update profiles set religion = 'Muslim' where id = $1", [a]);
+  await me(b, "select remove_faith()");
+  assert.equal((await faith(a)).religion, "Muslim");
+});
