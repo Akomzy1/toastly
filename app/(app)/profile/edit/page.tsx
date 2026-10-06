@@ -6,6 +6,7 @@ import { ProfileForm } from "../profile-form";
 import { GenotypeSection } from "@/components/genotype/genotype-section";
 import { ScreenBand } from "@/components/app/screen-band";
 import type { Profile, ProfileHistory } from "@/lib/types/profile";
+import { FAITH_CONSENT } from "@/lib/consent";
 
 export const metadata: Metadata = {
   title: "Edit profile",
@@ -26,6 +27,15 @@ export default async function EditProfilePage() {
     .single<Profile>();
 
   if (!profile) redirect("/verify");
+
+  // Showing your faith: agreed to the current wording before? (PRD §5.2.3)
+  const { data: faithConsent } = await supabase
+    .from("consents")
+    .select("id")
+    .eq("profile_id", user.id)
+    .eq("kind", "faith_display")
+    .eq("version", FAITH_CONSENT.version)
+    .limit(1);
 
   // Own row only — RLS on profile_history (0013) enforces who else may read it.
   const { data: historyRow } = await supabase
@@ -87,7 +97,7 @@ export default async function EditProfilePage() {
             ›
           </span>
         </Link>
-        <ProfileForm profile={profile} history={history} cities={cityOptions} />
+        <ProfileForm profile={profile} history={history} cities={cityOptions} faithConsented={Boolean(faithConsent?.length)} />
         {/* Separate from the form on purpose: genotype has its own consent
             step and its own save, and never travels with other fields. */}
         <GenotypeSection />

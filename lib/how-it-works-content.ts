@@ -75,14 +75,13 @@ export const steps: Step[] = [
     points: [
       "The date isn't confirmed until both stakes are down.",
       "Cancelling with notice costs nothing.",
-      // OMITTED third point: "A genuine no-show sends their coins to a
-      // charity the other person picks." The charity mechanic is rejected
-      // (PRD §5.5); the ratified rule is a non-withdrawable stake credit for
-      // whoever showed up, which does not ship until Prompt 7. Replaced with
-      // a statement that is true today and says nothing about destination.
-      // Worded without "forfeit" or "penalty": CLAUDE.md requires the coin
-      // copy stay warm ("showing up for each other"), never punitive.
-      "The only way a stake doesn't come back is a genuine no-show.",
+      // The prototype's third point sent a no-show's coins "to a charity the
+      // other person picks" — rejected (PRD §5.5). The coin balance has
+      // shipped (Prompt 17), so the ratified rule is stated (decided
+      // 6 October 2026): the coins go to the person who showed up, and
+      // Toastly never keeps any. Worded without "forfeit" or "penalty":
+      // CLAUDE.md keeps the coin copy warm ("showing up for each other").
+      "The only way a stake doesn't come back is a genuine no-show — then their coins go to the person who showed up. Toastly never keeps any of it.",
     ],
     meta: "₦500 typical stake",
     img: "/img/how-it-works/step-commit-date.webp",
@@ -159,13 +158,15 @@ export const faqs: [string, string][] = [
     "What happens to my coin deposit?",
     // REWRITTEN. The prototype answered: "...that money goes to a charity the
     // other person chooses — never to Toastly." The charity mechanic is
-    // rejected (PRD §5.5). This answers the question truthfully and stops
-    // before the destination, which is not built yet.
-    "It comes back when you both show up, or when either of you cancels with notice. The only way it doesn't come back is a genuine no-show.",
+    // rejected (PRD §5.5); the coin balance's rule replaces it (decided
+    // 6 October 2026).
+    "It comes back when you both show up, or when either of you cancels with notice. The only way it doesn't come back is a genuine no-show — then their coins go to the person who showed up. Toastly never keeps any of it.",
   ],
   [
     "Do religion, tribe or language affect my feed?",
-    "No. They are display-only fields you opt into. Toastly is non-religious and does not filter matches on any of them.",
+    // Decided 6 October 2026 (PRD §5.2.3): members may filter their OWN
+    // search; nothing ever changes who sees them.
+    "Not unless you choose to filter your own search. They never change who sees you. Toastly is non-religious and doesn't sort people by faith.",
   ],
   [
     "What is the AriyaPlanner handoff?",

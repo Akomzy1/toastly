@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isLiveCountry } from "@/lib/countries";
 import type { FieldVisibility } from "@/lib/types/profile";
+import { DENOMINATIONS, FAITH_OTHER_MAX, isListedReligion, type Denomination } from "@/lib/faith";
+import { FAITH_CONSENT } from "@/lib/consent";
+import { recordConsent } from "@/lib/consent-record";
 
 export type ProfileState = { error?: string; ok?: string } | null;
 
@@ -19,6 +22,34 @@ function vis(formData: FormData, key: string, fallback: FieldVisibility) {
 function optional(formData: FormData, key: string): string | null {
   const v = String(formData.get(key) ?? "").trim();
   return v === "" ? null : v;
+}
+
+type FaithInput = {
+  religion: string | null;
+  religion_other: string | null;
+  denomination: Denomination | null;
+  denomination_other: string | null;
+};
+
+/**
+ * The faith fields from the form. A religion stored before the option list
+ * (free text) comes back unchanged and is kept as it was — the database only
+ * checks the list when religion changes.
+ */
+function readFaith(formData: FormData): FaithInput | { error: string } {
+  const religion = optional(formData, "religion");
+  const religionOther = religion === "Other" ? optional(formData, "religion_other") : null;
+  if (religion === "Other" && (!religionOther || religionOther.length > FAITH_OTHER_MAX)) {
+    return { error: `Tell us your religion, in ${FAITH_OTHER_MAX} characters or fewer.` };
+  }
+  const options = isListedReligion(religion) ? DENOMINATIONS[religion] : undefined;
+  const raw = optional(formData, "denomination");
+  const denomination = options?.find((d) => d.value === raw)?.value ?? null;
+  const denominationOther = denomination === "other" ? optional(formData, "denomination_other") : null;
+  if (denomination === "other" && (!denominationOther || denominationOther.length > FAITH_OTHER_MAX)) {
+    return { error: `Tell us your denomination, in ${FAITH_OTHER_MAX} characters or fewer.` };
+  }
+  return { religion, religion_other: religionOther, denomination, denomination_other: denominationOther };
 }
 
 /**
@@ -74,6 +105,36 @@ export async function saveProfile(
     diasporaCity = city.slug;
   }
 
+  // Religion and denomination (PRD §5.2.3). The database enforces the lists,
+  // denomination only with Christian or Muslim, and changing religion
+  // clearing denomination (0030). Here: the consent line, the first time.
+  const faith = readFaith(formData);
+  if ("error" in faith) return { error: faith.error };
+  const { data: stored } = await supabase
+    .from("profiles")
+    .select("religion, denomination")
+    .eq("id", user.id)
+    .single();
+  const adding =
+    (faith.religion !== null && faith.religion !== (stored?.religion ?? null)) ||
+    (faith.denomination !== null && faith.denomination !== (stored?.denomination ?? null));
+  if (adding) {
+    const { data: agreed } = await supabase
+      .from("consents")
+      .select("id")
+      .eq("profile_id", user.id)
+      .eq("kind", "faith_display")
+      .eq("version", FAITH_CONSENT.version)
+      .limit(1);
+    if (!agreed?.length) {
+      if (formData.get("faith_agreed") !== "on") {
+        return { error: "Tick the box to show your faith on your profile — or leave religion blank." };
+      }
+      const consent = await recordConsent(supabase, user.id, "faith_display");
+      if (!consent.ok) return { error: "That didn't save. Try again." };
+    }
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -86,13 +147,18 @@ export async function saveProfile(
       // Never a gate: stored when offered, null when not.
       intent: intent || null,
 
-      religion: optional(formData, "religion"),
+      // Removing either deletes the value.
+      religion: faith.religion,
+      religion_other: faith.religion_other,
+      denomination: faith.denomination,
+      denomination_other: faith.denomination_other,
       tribe: optional(formData, "tribe"),
       languages,
       profession: optional(formData, "profession"),
       education: optional(formData, "education"),
 
-      religion_visibility: vis(formData, "religion_visibility", "public"),
+      // One setting covers religion and denomination: shown or hidden.
+      religion_visibility: formData.get("religion_visibility") === "private" ? "private" : "public",
       tribe_visibility: vis(formData, "tribe_visibility", "public"),
       languages_visibility: vis(formData, "languages_visibility", "public"),
       profession_visibility: vis(formData, "profession_visibility", "public"),

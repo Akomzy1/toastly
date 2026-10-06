@@ -81,7 +81,7 @@ The liveness selfie proves a real person is behind the phone; it does **not** pr
 **Signals it must never use:**
 - **Message content.** The Sentinel does not read, parse, classify or score free-text chat. This extends the existing hard boundary in CLAUDE.md ("never scan chat for phone numbers") to *all* content analysis. Behaviour, not words.
 - **Gist audio or transcripts.** Session *outcomes* from the structured deck (which questions were answered, the double-opt-in result) are usable. Raw audio and any transcript are not — and are not retained.
-- **Protected attributes.** Tribe, religion, language, relationship history, profession, genotype and diaspora status are never inputs. A signal that would correlate with any of these (e.g. "diaspora accounts flagged more often") is a defect to be corrected, not a finding.
+- **Protected attributes.** Tribe, religion, denomination, language, relationship history, profession, genotype and diaspora status are never inputs. A signal that would correlate with any of these (e.g. "diaspora accounts flagged more often") is a defect to be corrected, not a finding.
 
 **Review-queue design:**
 1. **Score, don't decide.** The Sentinel produces a confidence score and a plain-language reason ("declined 4 Gist invitations in 6 days while sending 40+ messages; 2 independent scam reports"). It never takes action on an account.
@@ -140,6 +140,20 @@ Toastly supports working professionals as a **served segment**, not a gated tier
 - **Married users are not welcome.** This directly targets the sponsor / side-chick / transactional dynamic ("runs" culture) the brand is built against, and is the single clearest expression of the intentionality positioning.
 - **Enforcement reality — do not over-promise.** Marital status **cannot be reliably verified**: NIN and BVN do not expose it dependably, and liveness checks cannot detect it. This is enforceable as a **stated community standard plus report-and-remove**, not as a verification gate. Public copy must never imply Toastly *checks* marital status the way it checks identity — conflating the two would undermine trust in "Verified Real," which is genuinely verifiable. State it as a rule enforced on report, not a guarantee.
 - Reporting a user as married must be a first-class report category, not buried under "other."
+
+### 5.2.3 Religion and denomination (decided)
+
+Toastly is non-religious: faith is something members may show, never something the product sorts people by.
+
+- **Religion (optional):** Christian, Muslim, Traditional, Spiritual but not religious, Not religious, Other (up to 30 characters), Prefer not to say.
+- **Denomination (optional, new):** appears only after a member picks Christian or Muslim.
+  - Christian: Catholic, Anglican, Methodist, Baptist, Presbyterian, Pentecostal, Orthodox, White-garment (Celestial, C&S, CAC), Non-denominational, Other (up to 30 characters).
+  - Muslim: Sunni, Shia, Ahmadiyya, Other (up to 30 characters).
+  - "Other" text is shown as typed and goes through the normal profile-text report flow. It is not pre-screened by a model.
+- **One visibility setting covers both:** shown on the profile, or hidden. Hiding religion hides denomination. Default when first entered: shown. Never on the feed card; full profile only.
+- **Consent:** the first time a member adds either field, record explicit consent with timestamp and wording version: "I choose to show my faith on my profile. Toastly never uses it to decide who sees me." Removing the field deletes the value.
+- **Filters:** Premium and Premium Plus may filter their own search by religion only. There is no denomination filter, now or planned.
+- **Never an input to anything else:** not the six-a-day selection, not ranking, not the Trust Sentinel, not any AI model or agent payload, not PostHog (no property, no event value), not the AriyaPlanner handoff.
 
 ### 5.3 Intent Spectrum (critical constraint)
 - Do not hard-gate on marriage at signup. Stated preference on a spectrum: *Just vibing → Getting to know people → Something serious → Marriage-minded.*
@@ -218,7 +232,7 @@ Source: the AI-agent research report (October 2026). The market is splitting: in
 **Governing principles (apply to every agent):**
 1. **Agents in the infrastructure, never in the intimacy.** No agent writes, suggests or rewrites messages or profile text, coaches a live conversation, or speaks for a member.
 2. **Never reads private chats, never hears Gist audio.** Agents work from structured data, status codes and metadata.
-3. **Protected attributes and genotype are never inputs** — blocked at the schema/feature-store level, not just in prompts.
+3. **Protected attributes (tribe, religion, denomination, language, relationship history, profession, diaspora status) and genotype are never inputs** — blocked at the schema/feature-store level, not just in prompts.
 4. **Always labelled as AI** at first contact (the EU AI Act Article 50 standard, used as the design bar everywhere). **No persona, no ongoing emotional chat** — task-scoped helpers only, which keeps Toastly clear of US companion-chatbot laws.
 5. **Humans make consequential decisions.** No auto-bans; refunds, disputes and appeals go to people.
 6. **Never paywalled** where an agent touches safety or verification.
@@ -275,7 +289,7 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Gist sessions (video) | ❌ | ❌ | ✅ Live-video Gist |
 | Coin-deposit dates | ✅ | ✅ | ✅ |
 | **Couple Mode + AriyaPlanner handoff** | ✅ **Free/universal — moved here, not tier-gated** | ✅ | ✅ |
-| Advanced filters (tribe, religion, state, diaspora, intent) | ❌ | ✅ | ✅ |
+| Advanced filters (tribe, religion, state, diaspora, intent) — faith: religion only, never denomination (§5.2.3) | ❌ | ✅ | ✅ |
 | Incognito mode | ❌ | ❌ | ✅ |
 | See-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included |
 | Priority support | ❌ | ❌ | ✅ ("from Lagos") |

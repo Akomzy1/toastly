@@ -1411,6 +1411,56 @@ check("a selfie check records consent first and never stores the selfie", (s, f)
   return false;
 });
 
+// --- Religion and denomination (PRD §5.2.3; decided 6 October 2026) --------
+// Toastly is non-religious: faith is shown, never sorted on. There is no
+// denomination filter, now or planned.
+const FAITH_GUARDS = /^(faith_rules|faith_meta_is_clean)$/;
+check("no denomination filter on any search or feed query", (s, f) => {
+  if (f.endsWith(".sql")) {
+    if (!/\bdenomination\b/.test(s)) return false;
+    const bad = [];
+    for (const m of s.matchAll(/create or replace function public\.(\w+)[\s\S]*?\$\$([\s\S]*?)\$\$/g)) {
+      if (/\bdenomination\b/.test(m[2]) && !FAITH_GUARDS.test(m[1])) bad.push(m[1]);
+    }
+    if (/create policy[^;]*\bdenomination\b/.test(s)) bad.push("a policy");
+    if (/create (or replace )?(materialized )?view[^;]*\bdenomination\b/.test(s)) bad.push("a view");
+    return bad.length ? `reads denomination in ${bad.join(", ")}` : false;
+  }
+  return /\.(eq|neq|in|not|filter|match|contains|containedBy|or|like|ilike|order)\(\s*["'`{][^)]*denomination/.test(s)
+    ? "a query filters or sorts on denomination"
+    : false;
+});
+
+// Denomination stays on the profile path: never a model or agent payload,
+// never PostHog, never the Sentinel (0030's guard), never the AriyaPlanner
+// brief. Only these files may mention it.
+const DENOMINATION_FILES = [
+  /lib\/faith\.ts$/,
+  /lib\/types\/profile\.ts$/,
+  /app\/\(app\)\/profile\/actions\.ts$/,
+  /app\/\(app\)\/profile\/profile-form\.tsx$/,
+  /app\/\(audit\)\/audit\/profile-faith\//, // mock profile data for the mobile audit
+  /lib\/analytics\.ts$/,
+  /lib\/privacy-content\.ts$/,
+];
+check("denomination never reaches a model, PostHog, the Sentinel or the AriyaPlanner brief", (s, f) => {
+  if (f.endsWith(".sql") || !/denomination/i.test(s)) return false;
+  const n = norm(f);
+  if (!DENOMINATION_FILES.some((r) => r.test(n))) return "mentions denomination outside the profile path";
+  if (/lib\/analytics\.ts$/.test(n)) {
+    const rest = s.replace(/const FORBIDDEN_PROPERTIES = \[[\s\S]*?\];/, "");
+    return /denomination/i.test(rest) ? "analytics uses denomination beyond its forbidden list" : false;
+  }
+  if (/\bcapture\([^;]*denomination/.test(s)) return "sends denomination to PostHog";
+  return false;
+});
+
+// Never on the feed card: the full profile only.
+check("religion and denomination are never on the feed card", (s, f) => {
+  if (!/app\/\(app\)\/feed\//.test(norm(f))) return false;
+  return /\b(religion|denomination)\b/.test(s) ? "the feed reads religion or denomination" : false;
+});
+
 // A re-check never says why the member was asked (decided 6 October 2026):
 // the reason category is shown only when an account is restricted.
 check("a re-check never gives a reason", (s, f) => {

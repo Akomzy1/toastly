@@ -5,6 +5,8 @@
  * types are documentation, not a control.
  */
 
+import type { Denomination } from "@/lib/faith";
+
 export type IntentLevel =
   | "casual"
   | "open_to_serious"
@@ -63,6 +65,11 @@ export type Profile = {
 
   // Optional, display-only. Never used to exclude anyone from anyone's feed.
   religion: string | null;
+  /** Religion "Other": shown as typed, 30 characters at most (PRD §5.2.3). */
+  religion_other: string | null;
+  /** Only with Christian or Muslim; hidden whenever religion is (lib/faith.ts). */
+  denomination: Denomination | null;
+  denomination_other: string | null;
   tribe: string | null;
   languages: string[];
   profession: string | null;

@@ -28,7 +28,8 @@ export const metadata: Metadata = {
 function visibleTags(p: Partial<Profile>): string[] {
   const out: string[] = [];
   if (p.tribe && p.tribe_visibility === "public") out.push(p.tribe);
-  if (p.religion && p.religion_visibility === "public") out.push(p.religion);
+  // Religion (and denomination) are never on the feed card — the full
+  // profile only (PRD §5.2.3; decided 6 October 2026).
   if (p.languages?.length && p.languages_visibility === "public") {
     out.push(...p.languages);
   }
@@ -93,7 +94,7 @@ export default async function FeedPage() {
     ? await supabase
         .from("profiles")
         .select(
-          "id, display_name, city, stage, tribe, religion, languages, profession, tribe_visibility, religion_visibility, languages_visibility, profession_visibility",
+          "id, display_name, city, stage, tribe, languages, profession, tribe_visibility, languages_visibility, profession_visibility",
         )
         .in("id", ids)
     : { data: [] };

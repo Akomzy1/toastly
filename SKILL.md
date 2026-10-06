@@ -98,6 +98,8 @@ A pre-build audit found these. **`PRD.md` wins on content; the prototype wins on
 8. **AI "handling the safety checks".** Home's "AI, on your side" says Toastly AI "handles the admin and the safety checks". **Wrong** — no AI runs safety checks (the Sentinel scoring agent is Phase 2, and a person decides every outcome). Shipped: "It helps with the admin — verification and payment questions, feedback on your own answers."
 9. **"Unlimited voice notes"** on Premium Plus (`pricing-offer`). The feature doesn't exist — removed (decided 6 October 2026).
 10. **The AriyaPlanner handoff "carries across everything you've already told Toastly".** How It Works (step 6) and the in-app Couple Mode screen said so. **Wrong** — the brief is drafted only from what the couple enters or chooses to copy at the handoff; nothing flows from profiles (PRD §5.7). Shipped: "What you both choose to share — your city, a rough date, the ceremonies you want — carries across" and "a short brief you both fill in at the handoff. Nothing is taken from your profiles."
+11. **"Do religion, tribe or language affect my feed?"** The prototype (How It Works FAQ) answers "No… Toastly is non-religious and does not filter matches on any of them." **Superseded by PRD §5.2.3** (decided 6 October 2026): members may filter their own search. Shipped: "Not unless you choose to filter your own search. They never change who sees you. Toastly is non-religious and doesn't sort people by faith." (The FAQ titled "Do religion and tribe affect my matches?" doesn't exist in the build; this is its only form.)
+12. **No-show coins to charity on How It Works.** The prototype's step 4 and FAQ send a no-show's coins "to a charity the other person picks". **Wrong** — they go to the person who showed up, and Toastly never keeps any (PRD §5.5). The build had already dropped the charity line but stopped before saying where the coins go, because the coin balance hadn't shipped. Shipped (decided 6 October 2026): "…then their coins go to the person who showed up. Toastly never keeps any of it."
 
 ## Gaps: decided here, not transcribed
 
@@ -211,6 +213,19 @@ and Stripe's hosted page, so no card form was designed or built. The hub
 gained a "Your plan" row and the locked inbox's upgrade link points here
 instead of the marketing Pricing page. Send the plan page through the design
 pipeline.
+
+**Religion and denomination — NOT IN A PROTOTYPE (0030; PRD §5.2.3).** The
+profile form (itself unapproved) keeps the religion row's existing pattern —
+a field with its Optional badge and the "Who can see this" select, here
+limited to "On my profile" / "Only me" — until the Claude Design update
+lands. Added, flagged: religion becomes a select (the decided list); a
+denomination select beneath it only for Christian or Muslim; "Other" text
+fields (30 characters) for each; and the one-line consent ("I choose to show
+my faith on my profile…") as a plain checkbox under the row, the first time
+either is added. Religion left the feed card (full profile only) — but no
+screen shows another member's full profile yet, so the one-line "Christian ·
+Pentecostal" (lib/faith.ts, faithLine) is built and tested with nowhere to
+appear. Send all of it through the design pipeline.
 
 **Member notices — NOT IN A PROTOTYPE (0025).** All built from the in-app
 Notice: the restricted, re-verify and switch-plan notices under the app

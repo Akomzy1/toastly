@@ -117,6 +117,28 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
+## 0h. Religion and denomination (migration 0030) — NOT APPLIED, branch `faith-denomination`
+
+Decided 6 October 2026 (PRD §5.2.3). Built on `faith-denomination`, stacked on
+`port-live-profile` (0030 follows 0029). **Not merged; not applied anywhere
+until staging exists** — then staging first, as in §0g, after 0029.
+
+- Adds `denomination` (enum) and the 30-character "Other" texts for religion
+  and denomination to `profiles`; one visibility (`religion_visibility`)
+  covers both. A trigger enforces the lists, denomination only with
+  Christian or Muslim, changing religion clearing denomination, and consent
+  first (`consent_kind` gains `faith_display`).
+- **Stored religion values are not changed.** Religion was free text before;
+  the list is checked only when a member changes it. Count what's stored
+  before release (read-only):
+
+  ```sql
+  select religion, religion_visibility, count(*) from profiles
+   where religion is not null group by 1, 2 order by 3 desc;
+  ```
+- New guards: no trust event or AriyaPlanner brief can carry religion or
+  denomination (`faith_meta_is_clean`).
+
 ## 0g. Staging, then the release — 0027, 0028, 0029
 
 Decided 6 October 2026: **staging gates every merge.** A branch is merged

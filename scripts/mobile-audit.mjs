@@ -71,6 +71,12 @@ const ROUTES = [
   { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },
   { route: "/audit/nav/gists", label: "Nav · gists" },
   { route: "/audit/nav/profile", label: "Nav · profile" },
+  { route: "/audit/profile-faith/empty", label: "Profile faith · empty" },
+  { route: "/audit/profile-faith/christian", label: "Profile faith · christian" },
+  { route: "/audit/profile-faith/muslim-other", label: "Profile faith · muslim-other" },
+  { route: "/audit/profile-faith/religion-other", label: "Profile faith · religion-other" },
+  { route: "/audit/profile-faith/legacy", label: "Profile faith · legacy" },
+  { route: "/audit/profile-faith/hidden", label: "Profile faith · hidden" },
   // Gist invites — every state of prototypes 1–8 and Both Clocks
   { route: "/audit/gist-invite/reply-starter", label: "Gist invite · reply-starter" },
   { route: "/audit/gist-invite/reply-paid", label: "Gist invite · reply-paid" },
