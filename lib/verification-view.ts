@@ -110,6 +110,18 @@ export function latestIdCheck(rows: IdCheckRow[]): SessionSummary | null {
   return { status: "clear", result_code: null, created_at };
 }
 
+/**
+ * A refused re-check reads as "That selfie didn't match the face you verified
+ * with" — unless Smile ID's reason is about the picture itself (a photo of a
+ * screen, or too dark), which has its own advice. Never why the member was
+ * asked.
+ */
+export function selfieSummary(s: (SessionSummary & { step?: string | null }) | null): SessionSummary | null {
+  if (!s || s.step !== "reverify" || s.status !== "block") return s;
+  const ownAdvice = s.result_code === "spoof_detected" || s.result_code === "image_unavailable_or_invalid";
+  return ownAdvice ? s : { ...s, result_code: "not_same_person" };
+}
+
 export function isVerifiedReal(view: VerifyView): boolean {
   return !["phone", "start", "selfie_checking", "selfie_review", "selfie_retry"].includes(view.kind);
 }

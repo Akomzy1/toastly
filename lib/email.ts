@@ -10,8 +10,8 @@
  * Copy rules that apply to every template below:
  *   - warm, never punitive. The coin-deposit wording is "showing up for each
  *     other" — never "forfeit" or "penalty" (CLAUDE.md).
- *   - a re-verification notice tells the member a human reviews it, names a
- *     reason category, and never implies an automatic ban (PRD §5.1.1).
+ *   - a restriction notice names a reason category and never implies an
+ *     automatic ban (PRD §5.1.1); a re-check notice gives no reason at all.
  *   - no message content, no Gist audio, no transcript, ever.
  */
 
@@ -150,27 +150,25 @@ export function sendPlanEnding(to: string, { plan, ends }: { plan: string; ends:
 }
 
 /**
- * The re-verification notice (PRD §5.1.1).
+ * The re-check notice (PRD §5.1.1).
  *
- * Constraints this template exists to honour: the member is always told; a
- * reason CATEGORY is given, never a score, never the underlying signals; a
- * human reviews it; and nothing is decided automatically. Do not add a
- * deadline, a threat, or language implying the account is already judged.
+ * The member is always told, and never told why (decided 6 October 2026):
+ * a re-check carries NO reason — the reason category is given only when an
+ * account is restricted. The words are screen 4's (lib/consent.ts). Do not
+ * add a reason, a deadline, a threat, or language implying the account is
+ * already judged.
  */
-export function sendReverificationNotice(
-  to: string,
-  { reasonCategory }: { reasonCategory: string },
-) {
-  const line = `We'd like you to verify again before you carry on — the reason category is "${reasonCategory}". A person on our team reviews every one of these, and nothing about your account has been decided.`;
+export function sendReverificationNotice(to: string) {
+  const line = "We sometimes ask members to confirm it's still them. One selfie, about a minute.";
   return sendEmail({
     to,
-    subject: "A quick re-verification on your Toastly account",
-    text: `${line} Re-verifying takes about four minutes: trytoastly.com/verify`,
+    subject: "A quick re-check on your Toastly account",
+    text: `${line} trytoastly.com/verify`,
     html: shell(
-      "A quick re-verification",
+      "Quick re-check",
       `<p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#1E1C21">${line}</p>
-       <p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#504E52">It takes about four minutes, and your matches and conversations stay where they are.</p>
-       <p style="margin:0"><a href="https://trytoastly.com/verify" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#FFB300;color:#050309;font-size:15px;font-weight:600;text-decoration:none">Re-verify</a></p>`,
+       <p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#504E52">Your conversations stay where they are.</p>
+       <p style="margin:0"><a href="https://trytoastly.com/verify" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#FFB300;color:#050309;font-size:15px;font-weight:600;text-decoration:none">Start the re-check</a></p>`,
     ),
   });
 }

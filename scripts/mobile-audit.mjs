@@ -310,8 +310,14 @@ async function main() {
   const browser = await chromium.launch();
   const results = [];
 
-  for (const { route, label, viewports } of ROUTES) {
-    for (const vp of viewports ?? VIEWPORTS) {
+  // A partial re-run: AUDIT_ONLY=/stories,/audit/verify/reverify and/or
+  // AUDIT_WIDTHS=360. It prints its results and leaves the full report alone.
+  const only = (process.env.AUDIT_ONLY ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  const widths = (process.env.AUDIT_WIDTHS ?? "").split(",").map(Number).filter(Boolean);
+  const partial = only.length > 0 || widths.length > 0;
+
+  for (const { route, label, viewports } of ROUTES.filter((r) => !only.length || only.includes(r.route))) {
+    for (const vp of (viewports ?? VIEWPORTS).filter((v) => !widths.length || widths.includes(v.width))) {
       const context = await browser.newContext({
         viewport: vp,
         deviceScaleFactor: 2,
@@ -358,8 +364,10 @@ async function main() {
   }
 
   await browser.close();
-  await writeFile(path.join(OUT_DIR, "mobile-audit.json"), JSON.stringify(results, null, 2));
-  await writeFile(path.join(OUT_DIR, "MOBILE-AUDIT.md"), render(results));
+  if (!partial) {
+    await writeFile(path.join(OUT_DIR, "mobile-audit.json"), JSON.stringify(results, null, 2));
+    await writeFile(path.join(OUT_DIR, "MOBILE-AUDIT.md"), render(results));
+  }
 
   const failures = results.filter(
     (r) => r.error || r.status >= 400 || !r.networkIdle || r.inspection.overflow || r.inspection.targets.length || r.inspection.small.length,

@@ -71,6 +71,16 @@ export async function startSelfieCheck(mode: Mode, formData: FormData): Promise<
     if (!asked || (me.stage !== "verified_real" && me.stage !== "id_confirmed")) {
       return { error: "There's nothing to re-check on your account." };
     }
+    // After three mismatches in 24 hours a person looks instead (0029).
+    const { data: last } = await supabase
+      .from("verification_sessions")
+      .select("status")
+      .eq("profile_id", user.id)
+      .eq("step", "reverify")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (last?.status === "attention") return { error: "A person on our team is taking a look. We'll show the result here." };
   } else {
     photoId = me.pending_main_photo_id as string | null;
     if (!photoId) return { error: mode === "onboard" ? "Choose your main photo first." : "Choose your new main photo first." };

@@ -10,7 +10,6 @@ import { Notice } from "@/components/ui/notice";
 import {
   GENERIC_BLOCK,
   GENERIC_ERROR,
-  ID_CONSENT,
   ID_TYPE_OPTIONS,
   REASON_COPY,
 } from "@/lib/verification-copy";
@@ -174,7 +173,10 @@ export function VerifyFlow({
   selfieStep,
   live = true,
   reverify = false,
+  idTypes = ["NIN_V2", "BVN"],
 }: {
+  /** The ID types offered, from the server (enabledIdTypes()). */
+  idTypes?: readonly string[];
   /** A re-check a reviewer asked for: "Verified Real · Re-check". */
   reverify?: boolean;
   view: VerifyView;
@@ -275,14 +277,15 @@ export function VerifyFlow({
     const namesOk = useSandbox || (givenNames.trim().length > 0 && surname.trim().length > 0);
     const ready = agreed && numberOk && namesOk && !busy;
     const hint = ID_TYPE_OPTIONS.find((o) => o.value === idType)?.hint;
+    const offered = ID_TYPE_OPTIONS.filter((o) => idTypes.includes(o.value));
     return (
       <Shell view={view} reverify={reverify}>
         <div className="grid gap-[18px]">
           <Heading title={ID_COPY.title} lead={ID_COPY.body[0]} />
           <fieldset className="m-0 grid gap-2 border-0 p-0">
             <legend className="mb-2 text-nav font-medium text-grey-600">Which ID?</legend>
-            <div className="grid grid-cols-3 gap-2">
-              {ID_TYPE_OPTIONS.map((o) => (
+            <div className={`grid gap-2 ${offered.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+              {offered.map((o) => (
                 <label
                   key={o.value}
                   className={`grid min-h-12 cursor-pointer place-items-center rounded-lg border px-2 py-3 text-center text-[14.5px] font-semibold ${
@@ -340,7 +343,6 @@ export function VerifyFlow({
               </Label>
             </>
           )}
-          <p className="m-0 text-nav leading-[1.55] text-grey-600">{ID_CONSENT.secondSelfie}</p>
           {ID_COPY.body.slice(1).map((p, i) => (
             <p key={i} className={CARD_BODY}>
               {boldRuns(p).map((r, j) => (r.bold ? <strong key={j}>{r.text}</strong> : <React.Fragment key={j}>{r.text}</React.Fragment>))}

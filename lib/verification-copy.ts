@@ -1,8 +1,7 @@
 /**
  * Verification copy — shared by the flow and the audit harness.
  *
- * The hosted flow's copy — used only for the ID check now; the hosted selfie
- * is retired (decided 6 October 2026). Every selfie consent, and the
+ * The ID types and the plain-language reasons. Every consent, and the
  * versions recorded with every agreement, are in lib/consent.ts
  * (Toastly-Verification-Consent-Wording.md).
  */
@@ -19,19 +18,11 @@ export const SMILE_TERMS_CONFIRMED = false;
 export const SMILE_PROCESSING_SENTENCE =
   "Smile ID processes your images to run this check and protect against fraud, under contract with us.";
 
-export const ID_CONSENT = {
-  title: "Check your ID",
-  intro:
-    "We'll ask Smile ID to check your number against the official record and match it to a new selfie.",
-  // §3 of the wording document.
-  keeps:
-    "Toastly keeps only whether it passed, and when — plus a one-way fingerprint of your number, so the same ID can't be used on more than one account. We can't turn the fingerprint back into your number. We don't keep the number itself, or the name, photo, date of birth, phone number or address on the record. Smile ID keeps the images and the check record for up to five years, under its own terms.",
-  checkbox: "I agree to Smile ID checking my ID against the official record.",
-  start: "Continue to selfie",
-  decline: "Not now",
-  secondSelfie: "This needs one more quick selfie — Smile ID matches it to the photo on the record.",
-} as const;
-
+/**
+ * Every ID type the form knows. Which are OFFERED is decided on the server
+ * (enabledIdTypes() in lib/smile-id.ts): Virtual NIN stays hidden until Smile
+ * ID enables it for our account.
+ */
 export const ID_TYPE_OPTIONS = [
   { value: "NIN_V2", label: "NIN", hint: "11 digits" },
   { value: "V_NIN", label: "Virtual NIN", hint: "16 letters and numbers, from the NIMC app" },
@@ -56,9 +47,10 @@ export const REASON_COPY: Record<string, string> = {
   id_mismatch:
     "The number that was checked wasn't the one you entered. Please start again.",
   high_risk: "We couldn't confirm it this time.",
-  // The ID check's selfie must also be the face you verified with (decided
-  // 6 October 2026). NOT IN THE WORDING DOCUMENT — flagged in SKILL.md.
-  not_same_person: "The selfie didn't match the one you verified with. Try again yourself, in good light.",
+  // The selfie wasn't the face registered at onboarding — the ID check's
+  // selfie, or a re-check (decided 6 October 2026). After three in 24 hours
+  // a person looks instead (0029, repeated_mismatch).
+  not_same_person: "That selfie didn't match the face you verified with. Try again in good light, facing the camera.",
 };
 
 export const GENERIC_BLOCK = "We couldn't confirm it this time.";

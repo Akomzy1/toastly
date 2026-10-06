@@ -200,3 +200,81 @@ test("a member can't record a re-check step themselves", async () => {
     me(hosted, "insert into verification_sessions (profile_id, product, environment, step, status, passed) values ($1, 'smartselfie', 'sandbox', 'reverify', 'clear', true)", [hosted]),
   );
 });
+
+// --- Three failed matches in 24 hours go to a person (decided 6 October 2026) ---
+
+async function verifiedMember(name) {
+  const m = await user(name);
+  await db.query("update profiles set stage = 'verified_real', phone_verified_at = now() where id = $1", [m]);
+  return m;
+}
+
+/** One refused attempt at `step`, made `minutesAgo` minutes ago, as the callback records it. */
+async function failedAttempt(m, step, minutesAgo = 1) {
+  const product = step === "reverify" ? "smartselfie" : "biometric_kyc";
+  const { rows: [s] } = await db.query(
+    `insert into verification_sessions (profile_id, product, environment, step, status, created_at)
+     values ($1, $2, 'sandbox', $3, 'submitted', now() - make_interval(mins => $4)) returning id`,
+    [m, product, step, minutesAgo],
+  );
+  await db.query("update verification_sessions set status = 'block', passed = false, result_code = 'face_mismatch' where id = $1", [s.id]);
+  return (await db.query("select id, status, result_code from verification_sessions where id = $1", [s.id])).rows[0];
+}
+
+const caseFor = async (sessionId) =>
+  (await db.query("select id, kind, stage from review_items where source_table = 'verification_sessions' and source_id = $1", [sessionId])).rows[0];
+
+let threeStrikes;
+
+test("two failed re-checks are refusals the member can retry; the third goes to a person instead", async () => {
+  const m = await verifiedMember("Three Strikes");
+  const a1 = await failedAttempt(m, "reverify");
+  const a2 = await failedAttempt(m, "reverify");
+  assert.equal(a1.status, "block");
+  assert.equal(a2.status, "block");
+  assert.equal(await caseFor(a2.id), undefined, "no case yet");
+  const a3 = await failedAttempt(m, "reverify");
+  assert.deepEqual([a3.status, a3.result_code], ["attention", "repeated_mismatch"]);
+  const item = await caseFor(a3.id);
+  assert.equal(item.kind, "selfie_review", "a person reviews it");
+  threeStrikes = { m, item, a3 };
+});
+
+test("failures older than 24 hours don't count towards the three", async () => {
+  const m = await verifiedMember("Old Failures");
+  await failedAttempt(m, "reverify", 25 * 60);
+  await failedAttempt(m, "reverify", 25 * 60);
+  const now = await failedAttempt(m, "reverify");
+  assert.equal(now.status, "block");
+});
+
+test("the ID check's selfie: the third mismatch in 24 hours goes to an ID review", async () => {
+  const m = await verifiedMember("ID Three Strikes");
+  await failedAttempt(m, "id_auth");
+  await failedAttempt(m, "id_auth");
+  const a3 = await failedAttempt(m, "id_auth");
+  assert.deepEqual([a3.status, a3.result_code], ["attention", "repeated_mismatch"]);
+  assert.equal((await caseFor(a3.id)).kind, "id_review");
+});
+
+test("a person asking for a fresh selfie lets the member try again — and a further failure goes straight back", async () => {
+  const { m, item, a3 } = threeStrikes;
+  await as(db, staff, (tx) => tx.query("select staff_decide($1, 'request_reverification', 'Please try again in good light.')", [item.id]));
+  const after = (await db.query("select status from verification_sessions where id = $1", [a3.id])).rows[0];
+  assert.equal(after.status, "block", "no longer waiting on a person: the member can retry");
+  const a4 = await failedAttempt(m, "reverify");
+  assert.deepEqual([a4.status, a4.result_code], ["attention", "repeated_mismatch"]);
+});
+
+test("a person's 'clear' on a repeated mismatch passes the re-check and clears the request", async () => {
+  const m = await verifiedMember("Cleared After Review");
+  await db.query("insert into reverification_requests (profile_id, reason_category, requested_by) values ($1, 'verification', $2)", [m, staff]);
+  // Attempts made after the request (a passing re-check clears requests made before it).
+  await failedAttempt(m, "reverify", 0);
+  await failedAttempt(m, "reverify", 0);
+  const a3 = await failedAttempt(m, "reverify", 0);
+  const item = await caseFor(a3.id);
+  await as(db, staff, (tx) => tx.query("select staff_decide($1, 'clear', 'Same person.')", [item.id]));
+  assert.equal((await db.query("select status from verification_sessions where id = $1", [a3.id])).rows[0].status, "clear");
+  assert.equal((await db.query("select 1 from reverification_requests where profile_id = $1", [m])).rows.length, 0);
+});

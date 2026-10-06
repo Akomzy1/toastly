@@ -10,8 +10,8 @@ import { WhereYouLiveSignup } from "@/components/where-you-live/flows";
 import { guessCountryFromPhone } from "@/lib/countries";
 import { loadCities } from "@/lib/where-you-live";
 import { PhotosStep } from "./photos-step";
-import { SANDBOX_IDENTITIES, sandboxPickerAllowed, smileConfig } from "@/lib/smile-id";
-import { deriveVerifyView, isVerifiedReal, latestIdCheck, type SessionSummary } from "@/lib/verification-view";
+import { SANDBOX_IDENTITIES, enabledIdTypes, sandboxPickerAllowed, smileConfig } from "@/lib/smile-id";
+import { deriveVerifyView, isVerifiedReal, latestIdCheck, selfieSummary, type SessionSummary } from "@/lib/verification-view";
 import type { PhotoReveal } from "@/lib/safety";
 import type { VerificationStage } from "@/lib/types/profile";
 
@@ -60,12 +60,12 @@ export default async function VerifyPage() {
 
   // A selfie counts only from the in-page check (step set): a retired hosted
   // selfie's result decides nothing (decided 6 October 2026).
-  const latest = (product: string): SessionSummary | null =>
+  const latest = (product: string): (SessionSummary & { step: string | null }) | null =>
     (sessions ?? []).find((s) => s.product === product && (product !== "smartselfie" || s.step !== null)) ?? null;
 
   const stage: VerificationStage = profile?.stage ?? "unverified";
   const idCheck = latestIdCheck((sessions ?? []).filter((s) => s.product === "biometric_kyc"));
-  const view = deriveVerifyView(stage, latest("smartselfie"), idCheck, Date.now(), reverify?.requested_at ?? null);
+  const view = deriveVerifyView(stage, selfieSummary(latest("smartselfie")), idCheck, Date.now(), reverify?.requested_at ?? null);
 
   const sandbox = sandboxPickerAllowed(smileConfig(), user.email)
     ? SANDBOX_IDENTITIES.map(({ key, label, products }) => ({ key, label, products }))
@@ -90,6 +90,7 @@ export default async function VerifyPage() {
       sandbox={sandbox}
       live={Boolean(live.live)}
       reverify={reverifying}
+      idTypes={enabledIdTypes()}
       selfieStep={
         onboarding || reverifying ? (
           <SelfieCheckStep

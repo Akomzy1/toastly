@@ -260,26 +260,20 @@ ported from live-profile-and-prompt-14)** — no longer invented UI:
   hosted "Get verified" button, with the wording document's consent. Added,
   flagged: a "Next · Your photos" card when photos aren't ready, and a surname
   field (main's own wording) because Smile ID's REST API requires it.
-- **The re-check selfie** (a reviewer's "Request re-verification") is the
-  same in-page step with its own consent, `reverify_selfie` in
-  lib/consent.ts — NOT IN THE WORDING DOCUMENT, flagged for approval. It is
-  main's retired hosted-selfie consent plus one clause saying what
-  Authentication compares: "…and the same person who verified this
-  account" / "I agree to Smile ID checking my selfie against the one I
-  verified with." The hosted "Before your selfie" screen is gone (decided
-  6 October 2026); `/audit/verify/reverify` replaces `/audit/verify/before-selfie`.
-  WAITING on the updated Toastly-Verification-Consent-Wording.md (screen 4
-  is the re-check): its wording replaces this, with a version bump. The
-  stepper already reads "Verified Real · Re-check", and the onboarding
-  heading ("Verify your profile… One more step") and the optional-ID note
-  are gone from the re-check.
+- **The re-check** (a reviewer's "Request re-verification") is the same
+  in-page step with screen 4 of the wording document ("Quick re-check"),
+  `reverify_selfie` in lib/consent.ts. The stepper and band read "Verified
+  Real · Re-check"; no onboarding heading or optional-ID note. Its notice
+  and email use screen 4's opening line and NEVER give a reason (decided
+  6 October 2026; constraint check "a re-check never gives a reason").
+  `/audit/verify/reverify` replaces `/audit/verify/before-selfie`.
 - **The ID check, in the page** (decided 6 October 2026): the ID form is
   unchanged, and "Continue to selfie" opens Smile ID's own camera in the page
-  instead of the hosted overlay. The form now shows `CONSENT.id_check` from
-  lib/consent.ts — the wording recorded with the agreement — instead of
-  main's `ID_CONSENT` copy. Added, NOT IN THE WORDING DOCUMENT: the retry
-  reason `not_same_person` — "The selfie didn't match the one you verified
-  with. Try again yourself, in good light." (`/audit/verify/id-not-same-person`).
+  instead of the hosted overlay. The form shows screen 3 (`CONSENT.id_check`)
+  — the wording recorded with the agreement. Virtual NIN is hidden unless
+  `SMILE_ID_VNIN_ENABLED=true`. The retry reason `not_same_person` is the
+  owner's wording: "That selfie didn't match the face you verified with. Try
+  again in good light, facing the camera." (`/audit/verify/id-not-same-person`).
 
 **Built against the diaspora-review prototypes (4 October 2026)** — no
 longer invented UI:

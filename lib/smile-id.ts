@@ -30,12 +30,22 @@ export type SmileIdType = "NIN_V2" | "V_NIN" | "BVN";
 export type SmileStatus = "clear" | "attention" | "block" | "error";
 
 /**
- * The ID types offered. /v3/biometric_kyc takes these names as they are:
- * NIN_V2 and BVN were accepted in the sandbox on 6 October 2026. V_NIN was
- * refused there — "ID type not enabled for this partner" — an account setting
- * at Smile ID, flagged in GO-LIVE.
+ * Every ID type the code supports. /v3/biometric_kyc takes these names as
+ * they are: NIN_V2 and BVN were accepted in the sandbox on 6 October 2026.
+ * V_NIN was refused there — "ID type not enabled for this partner" — an
+ * account setting at Smile ID. Which types are OFFERED: enabledIdTypes().
  */
 export const SMILE_ID_TYPES: SmileIdType[] = ["NIN_V2", "V_NIN", "BVN"];
+
+/**
+ * The ID types offered to members. Virtual NIN is hidden until Smile ID
+ * enables it for our account (decided 6 October 2026); turn it on with
+ * SMILE_ID_VNIN_ENABLED=true in the environment — no code change.
+ */
+export function enabledIdTypes(): SmileIdType[] {
+  const vnin = (process.env.SMILE_ID_VNIN_ENABLED ?? "").trim().toLowerCase() === "true";
+  return SMILE_ID_TYPES.filter((t) => t !== "V_NIN" || vnin);
+}
 
 /** Format rules from Smile ID's Nigeria coverage page. */
 export const ID_NUMBER_PATTERN: Record<SmileIdType, RegExp> = {

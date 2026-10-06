@@ -463,6 +463,39 @@ $$;
 revoke all on function public.record_id_check(uuid) from public, anon, authenticated;
 grant execute on function public.record_id_check(uuid) to service_role;
 
+-- Three failed matches against the registered face in 24 hours go to a
+-- person instead of a fourth try (decided 6 October 2026): the third refusal
+-- of a re-check, or of an ID check's selfie, becomes 'attention' with reason
+-- 'repeated_mismatch', and queue_from_source hands it to a reviewer (a
+-- selfie review or an ID review). While it waits, the member sees "a person
+-- is taking a look" and the server refuses another attempt. A reviewer's
+-- 'clear' settles it as clear; any other decision returns it to a refusal,
+-- so the member can try again — and a further failure goes straight back.
+create or replace function public.route_repeated_mismatch()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_n integer;
+begin
+  if new.step in ('reverify', 'id_auth') and new.status = 'block'
+     and old.status in ('started', 'submitted') then
+    select count(*) into v_n from verification_sessions s
+     where s.profile_id = new.profile_id and s.step = new.step and s.id <> new.id
+       and s.created_at > now() - interval '24 hours'
+       and (s.status = 'block' or (s.status = 'attention' and s.result_code = 'repeated_mismatch'));
+    if v_n >= 2 then
+      new.status := 'attention';
+      new.result_code := 'repeated_mismatch';
+      new.passed := false;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.route_repeated_mismatch() from public, anon, authenticated;
+drop trigger if exists route_repeated_mismatch on public.verification_sessions;
+create trigger route_repeated_mismatch before update of status on public.verification_sessions
+  for each row execute function public.route_repeated_mismatch();
+
 -- A person's decision settles the photo and, for an onboarding selfie, Verified
 -- Real. main's staff_decide closes the case; this applies what it means:
 --   photo_match:  clear -> matched; anything else -> not matching
@@ -489,6 +522,17 @@ begin
       -- The member chose another photo meanwhile: nothing left to decide.
       null;
     end;
+  end if;
+
+  -- A re-check or ID-check half a person did NOT clear — repeated mismatches
+  -- included (route_repeated_mismatch) — goes back to a refusal, so the
+  -- member can try again: on any other decision, or when the person asks for
+  -- a fresh selfie (which waits on the member, not decided).
+  if new.kind in ('selfie_review', 'id_review') and new.source_table = 'verification_sessions'
+     and new.stage in ('decided', 'waiting_member') and old.stage not in ('decided', 'waiting_member')
+     and new.decision is distinct from 'clear' then
+    update verification_sessions set status = 'block', passed = false
+     where id = new.source_id and status = 'attention' and step in ('reverify', 'id_kyc', 'id_auth');
   end if;
 
   if new.stage <> 'decided' or old.stage = 'decided' then return new; end if;

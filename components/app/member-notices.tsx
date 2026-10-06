@@ -6,8 +6,10 @@ import { DismissNotice } from "./dismiss-notice";
 
 /**
  * What a member is told after a staff decision (0025): restricted, asked to
- * re-verify, or asked to switch plan. A reason category only — never the
- * signal, the reporter or the evidence — and always a way to reach a person.
+ * re-verify, or asked to switch plan. A restriction gives its reason category
+ * only — never the signal, the reporter or the evidence — and always a way to
+ * reach a person. A re-check gives NO reason at all (decided 6 October 2026):
+ * the reason is shown only when an account is restricted.
  *
  * NOT IN A PROTOTYPE — flagged in SKILL.md. Built from the in-app Notice.
  */
@@ -15,7 +17,9 @@ export async function MemberNotices() {
   const supabase = createClient();
   const [{ data: restriction }, { data: reverify }, { data: notices }] = await Promise.all([
     supabase.from("account_restrictions").select("reason_category").is("lifted_at", null).maybeSingle(),
-    supabase.from("reverification_requests").select("reason_category").maybeSingle(),
+    // Never the reason (decided 6 October 2026): the re-check is never
+    // explained, so its reason category isn't even read here.
+    supabase.from("reverification_requests").select("profile_id").maybeSingle(),
     supabase.from("member_notices").select("id, kind").is("dismissed_at", null).order("created_at", { ascending: false }),
   ]);
   return <MemberNoticesView restriction={restriction} reverify={reverify} notices={notices ?? []} />;
@@ -28,7 +32,7 @@ export function MemberNoticesView({
   notices,
 }: {
   restriction: { reason_category: string } | null;
-  reverify: { reason_category: string } | null;
+  reverify: { profile_id: string } | null;
   notices: { id: string; kind: string }[];
 }) {
   if (!restriction && !reverify && !notices.length) return null;
@@ -43,12 +47,11 @@ export function MemberNoticesView({
         </Notice>
       ) : null}
       {reverify ? (
-        <Notice tone="info" title="Please take the selfie check again">
-          We&rsquo;d like you to verify again — the reason is {reasonLabel(reverify.reason_category)}. A person asked for
-          this; nothing has been decided. Until it&rsquo;s done you won&rsquo;t appear in new matches, but your
-          conversations carry on.{" "}
+        <Notice tone="info" title="Quick re-check">
+          We sometimes ask members to confirm it&rsquo;s still them. One selfie, about a minute. Until it&rsquo;s done
+          you won&rsquo;t appear in new matches, but your conversations carry on.{" "}
           <Link href="/verify" className="mt-1 flex min-h-11 items-center font-semibold underline">
-            Take the selfie check
+            Start the re-check
           </Link>
         </Notice>
       ) : null}

@@ -60,7 +60,8 @@ export async function decide(id: string, action: string, note: string): Promise<
 
   if (email) {
     if (action === "ask_switch_plan") await sendSwitchPlanNotice(email);
-    if (action === "request_reverification") await sendReverificationNotice(email, { reasonCategory: category });
+    // A re-check never says why (decided 6 October 2026).
+    if (action === "request_reverification") await sendReverificationNotice(email);
     if (action === "restrict") await sendRestrictionNotice(email, { reasonCategory: category });
     if (action === "lift_restriction") await sendRestrictionLifted(email);
   }

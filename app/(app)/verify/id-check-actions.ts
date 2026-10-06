@@ -8,7 +8,7 @@ import { recordConsent } from "@/lib/consent-record";
 import {
   ID_NUMBER_PATTERN,
   SANDBOX_IDENTITIES,
-  SMILE_ID_TYPES,
+  enabledIdTypes,
   hashIdNumber,
   sandboxPickerAllowed,
   smileConfig,
@@ -51,7 +51,19 @@ export async function startIdCheck(_prev: IdCheckState, formData: FormData): Pro
   const { data: me } = await supabase.from("profiles").select("stage").eq("id", user.id).single();
   if (me?.stage !== "verified_real") return { error: "The ID check opens once you're Verified Real." };
 
-  const idType = SMILE_ID_TYPES.find((t) => t === formData.get("id_type")) as SmileIdType | undefined;
+  // A half waiting on a person — including three selfie mismatches in 24
+  // hours (0029, repeated_mismatch) — means no new attempt until it's decided.
+  const { data: waiting } = await supabase
+    .from("verification_sessions")
+    .select("id")
+    .eq("profile_id", user.id)
+    .in("step", ["id_kyc", "id_auth"])
+    .eq("status", "attention")
+    .limit(1);
+  if (waiting?.length) return { error: "A person on our team is taking a look. We'll show the result here." };
+
+  // Only the types offered: Virtual NIN stays off until Smile ID enables it.
+  const idType = enabledIdTypes().find((t) => t === formData.get("id_type")) as SmileIdType | undefined;
   const raw = String(formData.get("id_number") ?? "").replace(/\s+/g, "");
   if (!idType || !ID_NUMBER_PATTERN[idType].test(raw)) return { error: "That number isn't in the right format. Check it and try again." };
   const idNumber = idType === "V_NIN" ? raw.toUpperCase() : raw;

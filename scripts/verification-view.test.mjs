@@ -47,3 +47,55 @@ test("a Verified Real member with a refused selfie half is asked to retry, not s
   const id = latestIdCheck([half("id_kyc", "clear"), half("id_auth", "block")]);
   assert.equal(deriveVerifyView("verified_real", null, id).kind, "id_retry");
 });
+
+// --- Decided 6 October 2026 ------------------------------------------------
+
+import { selfieSummary } from "../lib/verification-view.ts";
+import { REASON_COPY } from "../lib/verification-copy.ts";
+import { CONSENT } from "../lib/consent.ts";
+import { enabledIdTypes } from "../lib/smile-id.ts";
+
+test("a refused re-check reads as 'didn't match the face you verified with' — unless the picture itself was the problem", () => {
+  const refused = selfieSummary({ step: "reverify", status: "block", result_code: "face_mismatch", created_at: at(1) });
+  assert.equal(refused.result_code, "not_same_person");
+  assert.equal(REASON_COPY.not_same_person, "That selfie didn't match the face you verified with. Try again in good light, facing the camera.");
+  assert.equal(selfieSummary({ step: "reverify", status: "block", result_code: "spoof_detected", created_at: at(1) }).result_code, "spoof_detected");
+  assert.equal(selfieSummary({ step: "onboard", status: "block", result_code: "face_mismatch", created_at: at(1) }).result_code, "face_mismatch", "onboarding keeps its own reason");
+});
+
+test("Virtual NIN is hidden until the flag is set — no code change to turn it on", () => {
+  const before = process.env.SMILE_ID_VNIN_ENABLED;
+  try {
+    delete process.env.SMILE_ID_VNIN_ENABLED;
+    assert.deepEqual(enabledIdTypes(), ["NIN_V2", "BVN"]);
+    process.env.SMILE_ID_VNIN_ENABLED = "true";
+    assert.deepEqual(enabledIdTypes(), ["NIN_V2", "V_NIN", "BVN"]);
+    process.env.SMILE_ID_VNIN_ENABLED = "1";
+    assert.deepEqual(enabledIdTypes(), ["NIN_V2", "BVN"], "only 'true' turns it on");
+  } finally {
+    if (before === undefined) delete process.env.SMILE_ID_VNIN_ENABLED;
+    else process.env.SMILE_ID_VNIN_ENABLED = before;
+  }
+});
+
+test("the consent screens carry the owner's wording, with new versions so members are asked again", () => {
+  const s1 = CONSENT.verification_selfie;
+  assert.notEqual(s1.version, "2026-10-05");
+  assert.match(s1.body[1], /never your images\. Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you\.$/);
+  assert.equal(s1.checkbox, "I agree to Smile ID checking my selfie, comparing it with my main photo and registering my face for later re-checks, as described above.");
+
+  const s3 = CONSENT.id_check;
+  assert.notEqual(s3.version, "2026-10-05");
+  assert.equal(s3.body[0], "We'll ask Smile ID to check your number against the official record, and to match a new selfie to both the record and the face you verified with.");
+
+  const s4 = CONSENT.reverify_selfie;
+  assert.equal(s4.title, "Quick re-check");
+  assert.deepEqual(s4.body, [
+    "We sometimes ask members to confirm it's still them. One selfie, about a minute.",
+    "Smile ID compares it with the face registered when you verified. Toastly keeps only the result. Smile ID keeps the images for up to five years, under its own terms.",
+  ]);
+  assert.equal(s4.checkbox, "I agree to Smile ID checking that I'm a real person, here now, and the same person who verified this account.");
+  assert.deepEqual([s4.primary, s4.secondary], ["Start", "Not now"]);
+  assert.notEqual(s4.version, "2026-10-06", "the interim wording's version is retired");
+  assert.equal(CONSENT.replace_main_photo.version, "2026-10-05", "screen 2 didn't change");
+});

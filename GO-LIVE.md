@@ -207,9 +207,18 @@ open. Consider telling members before it ships.
   against its photo) AND to Authentication (the same selfie against the face
   registered at onboarding). `record_id_check` grants the second ring only
   when both are clear; a borderline half goes to a person as an ID review.
-  **Virtual NIN is refused by Smile ID on this account ("ID type not enabled
-  for this partner")** — enable it in the Smile ID portal, or say so and
-  it comes out of the ID-type picker.
+- **Three failed matches in 24 hours go to a person.** The third refused
+  re-check, or the third refused ID-check selfie, becomes a review case
+  (`route_repeated_mismatch`) instead of allowing another try; the member
+  sees "a person is taking a look", never why. A reviewer's "clear" passes
+  it; anything else (including "Request re-verification") lets them retry.
+- **Virtual NIN is hidden** until Smile ID enables it for our account (it
+  refused it in the sandbox: "ID type not enabled for this partner"). Turn
+  it on with `SMILE_ID_VNIN_ENABLED=true` in Vercel, then redeploy — no code
+  change.
+- **Consent wording updated** (screens 1, 3 and the new screen 4, Quick
+  re-check): versions bumped, so every member sees and agrees to the new
+  wording at their next check.
 - **0029 resets everyone Verified Real only through the hosted flow** (no
   passed onboarding selfie) back to "phone confirmed", and clears their
   liveness date. They take the onboarding selfie on their next visit — the

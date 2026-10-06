@@ -1411,6 +1411,40 @@ check("a selfie check records consent first and never stores the selfie", (s, f)
   return false;
 });
 
+// A re-check never says why the member was asked (decided 6 October 2026):
+// the reason category is shown only when an account is restricted.
+check("a re-check never gives a reason", (s, f) => {
+  const n = norm(f);
+  if (/components\/app\/member-notices\.tsx$/.test(n)) {
+    return /from\("reverification_requests"\)\.select\([^)]*reason/.test(s) ? "the re-check notice reads the reason" : false;
+  }
+  if (/lib\/email\.ts$/.test(n)) {
+    const start = s.indexOf("export function sendReverificationNotice");
+    if (start < 0) return false;
+    const next = s.slice(start + 1).search(/\nexport /);
+    const body = next < 0 ? s.slice(start) : s.slice(start, start + 1 + next);
+    return /reason/i.test(body) ? "the re-check email gives a reason" : false;
+  }
+  if (/app\/\(staff\)\/staff\/actions\.ts$/.test(n)) {
+    return /sendReverificationNotice\([^)]*reason/i.test(s) ? "a reason is passed to the re-check email" : false;
+  }
+  return false;
+});
+
+// Every Smile ID retention sentence carries the SMILE-RETENTION note (decided
+// 6 October 2026): if Smile ID confirms it uses images to improve its
+// technology and we can't opt out, each gets the extra sentence. Read raw —
+// the note is itself a comment.
+check("every Smile ID retention sentence carries its SMILE-RETENTION note", (s, f) => {
+  if (!/lib\/consent\.ts$|lib\/privacy-content\.ts$/.test(norm(f))) return false;
+  const lines = fs.readFileSync(f, "utf8").split(/\r?\n/);
+  const bare = lines
+    .map((l, i) => ({ l, i }))
+    .filter(({ l }) => /\bkeeps the (selfie and photo )?images\b/.test(l) && !/^\s*(\/\/|\*)/.test(l))
+    .filter(({ i }) => !/SMILE-RETENTION/.test(lines[i - 1] ?? ""));
+  return bare.length ? `line ${bare.map((b) => b.i + 1).join(", ")} has no SMILE-RETENTION note above it` : false;
+});
+
 check("the consent's bracketed retention line stays visible until Smile ID confirms it", (s, f) => {
   if (!/lib\/consent\.ts$/.test(norm(f))) return false;
   return /\[Purpose of retention, and any way to request earlier deletion — to be confirmed with Smile ID\.\]/.test(s) ? false : "the bracketed line is gone";
