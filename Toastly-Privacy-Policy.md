@@ -36,7 +36,7 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 **Verification.**
 - *Liveness check (everyone):* a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your **main profile photo** to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8). Smile ID also registers your face against your Toastly account, so that a later selfie — when you change your main photo, or if our team asks you to check again — can be compared with it.
 - *What Smile ID receives:* the selfie, your first name, your email address and your **surname**. You type your surname in only for this check: **we pass it to Smile ID and don't keep it.** It's never shown on your profile, and never goes to our analytics, our AI systems or AriyaPlanner.
-- *ID check (optional):* your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. You give the names on your ID for the check; like your surname, we pass them to Smile ID and don't keep them. **We keep only the outcome** — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.
+- *ID check (optional):* your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie — which is also checked against the face registered when you verified, so the ID is yours. You give the names on your ID for the check; like your surname, we pass them to Smile ID and don't keep them. **We keep only the outcome** — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.
 
 **Gist sessions.** We record that a session took place, when, how long it lasted, which questions from the structured question set were covered, and whether you both chose to continue. **We do not record the audio or video, and no transcript is ever created or kept.**
 
@@ -83,20 +83,20 @@ Where we rely on consent, you can withdraw it at any time in your settings, with
 
 **Service providers** who process data on our behalf, under contract, only for the purposes we set:
 
-| Provider | What for |
-|---|---|
-| Supabase | Database, storage, and sign-in and confirmation emails |
-| Vercel | Hosting the app and website |
-| Smile ID | Liveness checks and NIN/BVN verification |
-| Paystack | Payments in Naira |
-| Stripe | Payments in US dollars |
-| LiveKit | Delivering Gist voice and video sessions (not recorded) |
-| Resend | Receipts and account notices |
-| Termii | Text messages to Nigerian numbers (emergency contacts and alerts) |
-| Twilio | Text messages to numbers outside Nigeria (emergency contacts and alerts) |
-| Google (Places) | Suggesting public venues for dates |
-| PostHog | Product analytics (never receives your genotype) |
-| Anthropic | AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers, surname or genotype |
+| Provider | What for | Where |
+|---|---|---|
+| Supabase | Database, storage, and sign-in and confirmation emails | Ireland (EU) |
+| Vercel | Hosting the app and website | United States |
+| Smile ID | Liveness checks, the face check on your main photo, and NIN/BVN verification | United States, and its affiliates or subcontractors in other countries |
+| Paystack | Payments in Naira | Ireland (EU), and Paystack group companies outside Nigeria |
+| Stripe | Payments in US dollars | United States, and also the EU and India |
+| LiveKit | Delivering Gist voice and video sessions (not recorded) | Calls pass through LiveKit's nearest servers worldwide and are never stored; call records are kept in the United States |
+| Resend | Receipts and account notices | United States |
+| Termii | Text messages to Nigerian numbers (emergency contacts and alerts) | A Nigerian provider; may process data outside Nigeria |
+| Twilio | Text messages to numbers outside Nigeria (emergency contacts and alerts) | United States |
+| Google (Places) | Suggesting public venues for dates | United States |
+| PostHog | Product analytics (never receives your genotype) | Germany (EU); its staff or subcontractors may access it from outside the EU |
+| Anthropic | AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers, surname or genotype | Stored in the United States; processing may take place in the US or other countries |
 
 **AriyaPlanner.** AriyaPlanner is a wedding and event-planning service also run by Ariya Planner Ltd. If you and your partner choose to move from Toastly into planning your wedding with AriyaPlanner, we'll pass across only what you agree to share at that moment. **Your genotype is never included.**
 
@@ -115,7 +115,7 @@ Your genotype is health information, so it has its own rules:
 - We **never** use it to choose or rank your matches, never tell anyone whether a pair is "compatible", never mark it as verified, and never pass it to our analytics, to any AI system, to our safety screening, or to AriyaPlanner.
 - It's **what you tell us** — we don't check it.
 - It's **stored encrypted**, and only you and the people you've chosen can read it.
-- **Deleting it** removes it from Toastly straight away, together with your permission. Encrypted backup copies are overwritten within **[7]** days.
+- **Deleting it** removes it from Toastly straight away, together with your permission. Encrypted backup copies are overwritten within **7** days.
 
 ---
 
@@ -147,19 +147,19 @@ To spot scams and fake accounts, we look at **patterns of activity** — for exa
 
 ## 8. How long we keep it
 
-- **Your account and profile:** while your account is open. When you delete your account, we delete your data within [30] days, and backup copies are overwritten within [7] days after that.
+- **Your account and profile:** while your account is open. When you delete your account, it's deleted from our live systems straight away, and from backups within 7 days — except the records below that we have to keep.
 - **Genotype:** until you delete it or your account, as in section 5.
 - **Verification results:** for as long as your account is open.
 - **Images held by Smile ID:** Smile ID keeps the selfie and photo images from verification checks for up to five years, under its own terms. Toastly never holds them.
-- **Safety records** (reports, restrictions and removals): up to [2] years after your account closes, so removed members can't simply sign up again. For a removed member, this includes a one-way fingerprint of their phone number and ID number. If an account is under review when it's deleted, these records are kept until the review is settled.
+- **Safety records** (reports, restrictions and removals): up to 2 years after your account closes, so removed members can't simply sign up again. For a removed member, this includes a one-way fingerprint of their phone number and ID number. If an account is under review when it's deleted, these records are kept until the review is settled.
 - **Coins:** unspent coins are lost when you delete your account. We'll show you your balance and offer you the chance to use them before you confirm.
-- **Payment and financial records:** [6] years, as tax law requires.
+- **Payment and financial records:** 6 years, as tax law requires.
 
 ---
 
 ## 9. Where your data is processed
 
-We're based in Nigeria and serve members abroad. Our providers may process your data in other countries, including [the United States and the European Union]. Where data leaves Nigeria or the UK, we rely on appropriate safeguards required by law, such as contractual protections with our providers.
+We're based in Nigeria and serve members abroad. Our database is hosted in Ireland, in the European Union, and our app runs in the United States. Each of our providers, and where it processes your data, is listed in section 4. Where data leaves Nigeria or the UK, we rely on appropriate safeguards required by law, such as contractual protections with our providers.
 
 ---
 
@@ -195,7 +195,7 @@ Toastly is only for people aged 18 and over. If we learn an account belongs to s
 
 ## 13. Cookies
 
-Our website uses only the cookies needed to keep you signed in and keep the service working, plus one that remembers when you last looked at your Gists. We don't use advertising or analytics cookies: the few product steps we record (section 2) are recorded on our servers, not with cookies.
+Our website uses only the cookies needed to keep you signed in and keep the service working, plus one that remembers when you last looked at your Gists. Your browser also remembers when you've closed one of our notices, so it isn't shown again. We don't use advertising or analytics cookies, and our analytics store nothing in your browser: the few product steps we record (section 2) are recorded on our servers.
 
 ---
 
