@@ -357,7 +357,9 @@ grant execute on function public.keep_as_other_photo(uuid) to authenticated;
 
 alter table public.verification_sessions
   add column if not exists photo_id uuid references public.profile_photos (id) on delete set null,
-  add column if not exists step text check (step in ('onboard', 'authenticate', 'compare')),
+  -- reverify: a re-check a reviewer asked for — Authentication only, against
+  -- the face the onboarding selfie enrolled (decided 6 October 2026).
+  add column if not exists step text check (step in ('onboard', 'authenticate', 'compare', 'reverify')),
   add column if not exists check_id uuid;
 alter table public.verification_sessions drop constraint if exists verification_sessions_product_check;
 alter table public.verification_sessions add constraint verification_sessions_product_check
@@ -402,8 +404,11 @@ begin
   select * into s from verification_sessions where id = p_session;
   if not found or s.step is distinct from 'onboard' or s.photo_id is null then raise exception 'Not an onboarding selfie.'; end if;
   if p_live = 'passed' then
+    -- A member reset from the hosted selfie (section 5b) gets the ID ring back:
+    -- their ID check, and its one-ID-one-account fingerprint, were kept.
     update profiles
-       set stage = case when stage = 'phone_verified' then 'verified_real' else stage end,
+       set stage = case when stage <> 'phone_verified' then stage
+                        when id_confirmed_at is not null then 'id_confirmed' else 'verified_real' end,
            liveness_verified_at = now()
      where id = s.profile_id and phone_verified_at is not null;
   end if;
@@ -460,9 +465,16 @@ begin
 
   if new.kind = 'selfie_review' and new.source_table = 'verification_sessions' and new.decision = 'clear' then
     select * into s from verification_sessions where id = new.source_id;
+    -- A re-verification selfie a person cleared: passing it clears the
+    -- request (0026's reverification_passed) and moves the liveness date on.
+    if found and s.step = 'reverify' then
+      update verification_sessions set passed = true, status = 'clear' where id = s.id;
+      update profiles set liveness_verified_at = now() where id = s.profile_id;
+    end if;
     if found and s.step = 'onboard' then
       update verification_sessions set passed = true, status = 'clear' where id = s.id;
-      update profiles set stage = case when stage = 'phone_verified' then 'verified_real' else stage end,
+      update profiles set stage = case when stage <> 'phone_verified' then stage
+                                       when id_confirmed_at is not null then 'id_confirmed' else 'verified_real' end,
                           liveness_verified_at = now()
        where id = s.profile_id and phone_verified_at is not null;
       if s.photo_id is not null then
@@ -496,11 +508,41 @@ alter table public.storage_deletions enable row level security;
 revoke all on public.storage_deletions from anon, authenticated;
 
 -- ---------------------------------------------------------------------------
+-- 5b. Verified Real comes only from the in-page selfie (decided 6 October 2026)
+-- ---------------------------------------------------------------------------
+--
+-- The hosted selfie enrolled no face under the member's id, so a later
+-- step-up re-check (Authentication) would have nothing to compare against.
+-- The hosted flow is retired for Verified Real (it stays for the ID check),
+-- and anyone whose Verified Real came only from it goes back one step and
+-- takes the onboarding selfie: liveness, the main-photo match, and the face
+-- registered under their member id.
+--
+-- Their ID check is kept — id_confirmed_at and the one-ID-one-account
+-- fingerprint stay — and the ring returns when the new selfie passes
+-- (record_onboarding_check above). No Sentinel "verification drift" event:
+-- this is Toastly's change, not the member's.
+
+-- A hosted selfie still in flight can't grant anything any more.
+update public.verification_sessions
+   set status = 'error', result_code = 'hosted_selfie_retired', passed = false, completed_at = now()
+ where product = 'smartselfie' and step is null and status in ('started', 'submitted');
+
+alter table public.profiles disable trigger trust_verification_change;
+update public.profiles p
+   set stage = (case when p.phone_verified_at is not null then 'phone_verified' else 'unverified' end)::verification_stage,
+       liveness_verified_at = null
+ where p.stage in ('verified_real', 'id_confirmed')
+   and not exists (select 1 from public.verification_sessions s
+                    where s.profile_id = p.id and s.step = 'onboard' and s.passed is true);
+alter table public.profiles enable trigger trust_verification_change;
+
+-- ---------------------------------------------------------------------------
 -- 6. Consent records, with the version agreed to
 -- ---------------------------------------------------------------------------
 
 do $$ begin
-  create type consent_kind as enum ('verification_selfie', 'replace_main_photo', 'id_check');
+  create type consent_kind as enum ('verification_selfie', 'replace_main_photo', 'id_check', 'reverify_selfie');
 exception when duplicate_object then null; end $$;
 
 create table if not exists public.consents (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAuditHarness } from "@/lib/audit-harness";
 import { VerifyFlow } from "@/components/verify/verify-flow";
+import { SelfieCheckStep } from "@/app/(app)/verify/selfie-check-step";
 import type { VerifyView } from "@/lib/verification-view";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +16,10 @@ export const metadata: Metadata = {
  * The `attention` states exist only here — Smile ID's sandbox has no
  * scenario that returns one.
  */
-const STATES: Record<string, { view: VerifyView; screen?: "overview" | "before_selfie" | "id_form" }> = {
+const STATES: Record<string, { view: VerifyView; screen?: "overview" | "id_form"; reverify?: boolean }> = {
   start: { view: { kind: "start" } },
-  "before-selfie": { view: { kind: "start" }, screen: "before_selfie" },
+  // A re-check a reviewer asked for — the in-page selfie with its own consent.
+  reverify: { view: { kind: "start" }, reverify: true },
   checking: { view: { kind: "selfie_checking" } },
   review: { view: { kind: "selfie_review" } },
   "retry-spoof": { view: { kind: "selfie_retry", status: "block", code: "spoof_detected" } },
@@ -38,5 +40,14 @@ export default function AuditVerify({ params }: { params: { state: string } }) {
   requireAuditHarness();
   const s = STATES[params.state];
   if (!s) notFound();
-  return <VerifyFlow view={s.view} initialScreen={s.screen} />;
+  const selfie = s.view.kind === "start" || s.view.kind === "selfie_retry";
+  return (
+    <VerifyFlow
+      view={s.view}
+      initialScreen={s.screen}
+      selfieStep={
+        selfie ? <SelfieCheckStep connected devStandIn={false} photosReady mode={s.reverify ? "reverify" : "onboard"} /> : undefined
+      }
+    />
+  );
 }

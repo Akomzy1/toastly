@@ -260,6 +260,14 @@ ported from live-profile-and-prompt-14)** — no longer invented UI:
   hosted "Get verified" button, with the wording document's consent. Added,
   flagged: a "Next · Your photos" card when photos aren't ready, and a surname
   field (main's own wording) because Smile ID's REST API requires it.
+- **The re-check selfie** (a reviewer's "Request re-verification") is the
+  same in-page step with its own consent, `reverify_selfie` in
+  lib/consent.ts — NOT IN THE WORDING DOCUMENT, flagged for approval. It is
+  main's retired hosted-selfie consent plus one clause saying what
+  Authentication compares: "…and the same person who verified this
+  account" / "I agree to Smile ID checking my selfie against the one I
+  verified with." The hosted "Before your selfie" screen is gone (decided
+  6 October 2026); `/audit/verify/reverify` replaces `/audit/verify/before-selfie`.
 
 **Built against the diaspora-review prototypes (4 October 2026)** — no
 longer invented UI:

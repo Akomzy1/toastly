@@ -39,7 +39,7 @@ export default async function VerifyPage() {
     supabase.from("profiles").select("stage, photo_reveal, phone_verified_at, country_confirmed_at").eq("id", user.id).single(),
     supabase
       .from("verification_sessions")
-      .select("product, status, result_code, created_at")
+      .select("product, status, result_code, created_at, step")
       .eq("profile_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -58,8 +58,10 @@ export default async function VerifyPage() {
     );
   }
 
+  // A selfie counts only from the in-page check (step set): a retired hosted
+  // selfie's result decides nothing (decided 6 October 2026).
   const latest = (product: string): SessionSummary | null =>
-    (sessions ?? []).find((s) => s.product === product) ?? null;
+    (sessions ?? []).find((s) => s.product === product && (product !== "smartselfie" || s.step !== null)) ?? null;
 
   const stage: VerificationStage = profile?.stage ?? "unverified";
   const view = deriveVerifyView(stage, latest("smartselfie"), latest("biometric_kyc"), Date.now(), reverify?.requested_at ?? null);
@@ -76,6 +78,9 @@ export default async function VerifyPage() {
     live.main !== undefined && live.main !== "none" &&
     (live.photo_count ?? 0) + (live.main === "matched" ? 0 : 1) >= (live.photos_min ?? 4);
   const onboarding = stage === "phone_verified";
+  // A reviewer asked for a fresh selfie (0025): Authentication against the
+  // face the onboarding selfie enrolled.
+  const reverifying = Boolean(reverify) && (stage === "verified_real" || stage === "id_confirmed");
 
   return (
     <>
@@ -83,9 +88,10 @@ export default async function VerifyPage() {
       view={view}
       sandbox={sandbox}
       live={Boolean(live.live)}
-      onboardingSelfie={
-        onboarding ? (
+      selfieStep={
+        onboarding || reverifying ? (
           <SelfieCheckStep
+            mode={reverifying ? "reverify" : "onboard"}
             connected={smileConfig() !== null}
             devStandIn={process.env.NODE_ENV !== "production"}
             photosReady={photosReady}

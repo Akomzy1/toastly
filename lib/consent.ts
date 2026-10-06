@@ -12,7 +12,7 @@
  * fails the build if it goes missing while the wording is unconfirmed.
  */
 
-export type ConsentKind = "verification_selfie" | "replace_main_photo" | "id_check";
+export type ConsentKind = "verification_selfie" | "replace_main_photo" | "id_check" | "reverify_selfie";
 
 export type ConsentText = {
   kind: ConsentKind;
@@ -50,6 +50,22 @@ export const CONSENT: Record<ConsentKind, ConsentText> = {
     checkbox: "I agree to Smile ID comparing a new selfie with my new main photo.",
     primary: "Start",
     secondary: "Keep my current photo",
+  },
+  // A re-check a reviewer asked for. NOT in the wording document: built from
+  // main's hosted-selfie consent (lib/verification-copy.ts, now retired), plus
+  // what Authentication actually compares — flagged in SKILL.md for approval.
+  reverify_selfie: {
+    kind: "reverify_selfie",
+    version: "2026-10-06",
+    title: "Before your selfie",
+    body: [
+      "You'll take a quick selfie so we know you're a real person, here now — and the same person who verified this account.",
+      "It's checked by Smile ID, our verification provider. **Toastly keeps only the result** — that you passed, and when — never your images.",
+      "Smile ID keeps the images from this check for up to five years, under its own terms.",
+    ],
+    checkbox: "I agree to Smile ID checking my selfie against the one I verified with.",
+    primary: "Start",
+    secondary: "Not now",
   },
   id_check: {
     kind: "id_check",

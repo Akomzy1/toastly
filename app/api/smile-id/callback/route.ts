@@ -69,7 +69,7 @@ type Admin = NonNullable<ReturnType<typeof createAdminClient>>;
 type FaceSession = {
   id: string;
   profile_id: string;
-  step: "onboard" | "authenticate" | "compare";
+  step: "onboard" | "authenticate" | "compare" | "reverify";
   photo_id: string | null;
   check_id: string | null;
 };
@@ -90,6 +90,9 @@ async function deleteReplaced(admin: Admin, path: unknown) {
  *   onboard       one Compare: settles Verified Real and the main photo
  *   authenticate  } a replacement main photo: both must report, then the
  *   compare       } combined outcome is recorded once
+ *   reverify      one Authentication a reviewer asked for: a pass clears the
+ *                 request (0026's trigger, on the update below); attention
+ *                 goes to a person as a selfie review
  */
 async function handleFaceMatch(admin: Admin, s: FaceSession, r: StepResult, jobId: string | null) {
   const now = new Date().toISOString();
@@ -124,6 +127,14 @@ async function handleFaceMatch(admin: Admin, s: FaceSession, r: StepResult, jobI
       p_subject_id: null,
       p_kind: "liveness_result",
       p_meta: { status: r.status, reason: r.reason, step: "onboard" },
+    });
+  } else if (s.step === "reverify") {
+    if (passed) await admin.from("profiles").update({ liveness_verified_at: now }).eq("id", s.profile_id);
+    await admin.rpc("emit_trust_event", {
+      p_profile_id: s.profile_id,
+      p_subject_id: null,
+      p_kind: "liveness_result",
+      p_meta: { status: r.status, reason: r.reason, step: "reverify" },
     });
   } else if (s.check_id) {
     // Both halves of a replacement check. Whichever reports second records
@@ -215,6 +226,19 @@ export async function POST(req: Request) {
   }
 
   const product = session.product as SmileProduct;
+
+  // Verified Real comes only from the in-page selfie (0029; decided 6 October
+  // 2026): a hosted selfie result grants nothing. The session is closed so
+  // it stops showing as "being checked".
+  if (product !== "biometric_kyc") {
+    await admin
+      .from("verification_sessions")
+      .update({ status: "error", result_code: "hosted_selfie_retired", passed: false, job_id: jobId, completed_at: new Date().toISOString() })
+      .eq("id", session.id)
+      .in("status", ["started", "submitted"]);
+    return NextResponse.json({ ok: true, ignored: "hosted selfie retired" });
+  }
+
   if (payload.product !== WEBHOOK_PRODUCT[product] || session.environment !== cfg.env) {
     return NextResponse.json({ ok: true, ignored: "product mismatch" });
   }
@@ -295,19 +319,7 @@ export async function POST(req: Request) {
       .eq("id", session.profile_id)
       .single();
 
-    if (product === "smartselfie" && profile?.stage === "phone_verified") {
-      await admin
-        .from("profiles")
-        .update({ stage: "verified_real", liveness_verified_at: now })
-        .eq("id", session.profile_id);
-      await capture("verification_complete", session.profile_id, { stage: "verified_real" });
-    }
-    // A re-verification selfie (0025): the stage stays, the liveness date
-    // moves on, and the request is cleared by the database trigger.
-    if (product === "smartselfie" && (profile?.stage === "verified_real" || profile?.stage === "id_confirmed")) {
-      await admin.from("profiles").update({ liveness_verified_at: now }).eq("id", session.profile_id);
-    }
-    if (product === "biometric_kyc" && profile?.stage === "verified_real") {
+    if (profile?.stage === "verified_real") {
       await admin
         .from("profiles")
         .update({ stage: "id_confirmed", id_confirmed_at: now })
@@ -319,7 +331,7 @@ export async function POST(req: Request) {
   await admin.rpc("emit_trust_event", {
     p_profile_id: session.profile_id,
     p_subject_id: null,
-    p_kind: product === "smartselfie" ? "liveness_result" : "id_check_result",
+    p_kind: "id_check_result",
     p_meta: { status: outcome.status, reason: outcome.code, environment: session.environment },
   });
 

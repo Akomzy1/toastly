@@ -1,9 +1,10 @@
 /**
  * Verification copy — shared by the flow and the audit harness.
  *
- * The hosted flow's consent copy (re-verification and the ID check). The
- * onboarding and replace-main-photo consents, and the versions recorded with
- * every agreement, are in lib/consent.ts (Toastly-Verification-Consent-Wording.md).
+ * The hosted flow's copy — used only for the ID check now; the hosted selfie
+ * is retired (decided 6 October 2026). Every selfie consent, and the
+ * versions recorded with every agreement, are in lib/consent.ts
+ * (Toastly-Verification-Consent-Wording.md).
  */
 
 /**
@@ -17,18 +18,6 @@ export const SMILE_TERMS_CONFIRMED = false;
 
 export const SMILE_PROCESSING_SENTENCE =
   "Smile ID processes your images to run this check and protect against fraud, under contract with us.";
-
-export const SELFIE_CONSENT = {
-  title: "Before your selfie",
-  intro:
-    "You'll take a quick selfie so we know you're a real person, here now. It's checked by Smile ID, our verification provider, who confirm it's a live person and not a photo or a screen.",
-  keeps: "Toastly keeps only the result — that you passed, and when.",
-  checkbox: "I agree to Smile ID checking my selfie to confirm I'm a real person.",
-  start: "Start",
-  decline: "Not now",
-  camera:
-    "Your browser will ask to use your camera. Allow it, hold your phone at eye level, and find some light.",
-} as const;
 
 export const ID_CONSENT = {
   title: "Check your ID",

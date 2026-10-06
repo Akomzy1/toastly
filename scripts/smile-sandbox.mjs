@@ -15,7 +15,8 @@
  *   2. the onboarding Compare (selfie + liveness vs main photo, ENROLLING a
  *      throwaway sandbox user) is accepted and reaches a result;
  *   3. Authentication against that enrolled user is accepted and reaches a
- *      result;
+ *      result (after a pause for the enrolment), with a never-enrolled id as
+ *      a control;
  *   4. both results map through our outcome rules (lib/face-match.ts);
  *   5. the callback's signature check accepts Smile ID's scheme and refuses
  *      a tampered one.
@@ -128,16 +129,38 @@ if (compareJob) {
   reportResult("   …and reaches a result", r, (x) => rules.onboardingOutcome({ status: x.status, reason: x.reason ?? null }));
 }
 
-// Authentication is submitted whatever the Compare returned: this checks the
-// request is accepted. Its verdict depends on the enrolment above finishing.
+// Authentication against the face the Compare ENROLLED — what a re-check a
+// reviewer asks for, and a replacement main photo, run (decided 6 October
+// 2026). Enrolment finishes asynchronously, so give it time first.
+const ENROL_WAIT_MS = Number(process.env.SMILE_ENROL_WAIT_MS ?? 20_000);
+if (compareJob) {
+  console.log(`  ....  waiting ${ENROL_WAIT_MS / 1000}s for the enrolment to finish`);
+  await new Promise((r) => setTimeout(r, ENROL_WAIT_MS));
+}
 try {
   const authJob = await smile.submitAuthentication(cfg, { sessionId: randomUUID(), profileId, capture, consent, userDetails });
-  record("3. Authentication is accepted", Boolean(authJob), authJob);
+  record("3. Authentication against the enrolled face is accepted", Boolean(authJob), authJob);
   const r = await poll(authJob);
   reportResult("   …and reaches a result", r, (x) => rules.authenticationOutcome({ status: x.status, reason: x.reason ?? null }));
 } catch (e) {
-  record("3. Authentication is accepted", false, e.message);
+  record("3. Authentication against the enrolled face is accepted", false, e.message);
 }
+
+// Control: Authentication for a member id Smile ID never enrolled. If Smile
+// ID refuses it outright, that shows Authentication depends on the onboarding
+// enrolment. If it accepts, the difference shows only in the verdict on the
+// callback — checked end to end on the staging preview (GO-LIVE §0g).
+try {
+  const never = `toastly-sandbox-never-${randomUUID()}`;
+  const job = await smile.submitAuthentication(cfg, { sessionId: randomUUID(), profileId: never, capture, consent, userDetails });
+  console.log(`  ....  ${"   control: never-enrolled id was accepted".padEnd(58)} verdict arrives on the callback (${job})`);
+} catch (e) {
+  console.log(`  ....  ${"   control: never-enrolled id was refused".padEnd(58)} ${e.message}`);
+}
+
+// What a refusal logs: Smile ID's text with anything we sent scrubbed.
+const echoed = smile.scrub(`bad last_name ${userDetails.last_name} for ${profileId} <${userDetails.email}>`, [profileId, userDetails.given_names, userDetails.last_name, userDetails.email]);
+record("   a refusal's log line carries nothing we sent", !echoed.includes(userDetails.last_name) && !echoed.includes(profileId) && !echoed.includes(userDetails.email), echoed);
 
 // 4. The outcome rules on Smile ID's documented sandbox verdicts.
 record("4. a clear onboarding Compare is live and matched",

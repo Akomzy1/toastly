@@ -1325,6 +1325,23 @@ check("only the onboarding selfie enrols a face", (s, f) => {
   return /if \(mode === "onboard"\) \{\s*const job = await submitCompare\(cfg, \{[^}]*enrol: true/.test(s) ? false : "enrol: true is not confined to the onboarding branch";
 });
 
+// Verified Real comes only from the in-page selfie, which enrols the face a
+// later re-check authenticates against (decided 6 October 2026). The hosted
+// flow stays for the ID check alone.
+check("the hosted flow never grants Verified Real", (s, f) => {
+  const n = norm(f);
+  if (/app\/api\/smile-id\/session\/route\.ts$/.test(n)) {
+    return /body\.product === ["']smartselfie["']/.test(s) ? "the hosted session still starts a selfie" : false;
+  }
+  if (/app\/api\/smile-id\/callback\/route\.ts$/.test(n)) {
+    return /\.update\(\{[^}]*stage:\s*["']verified_real["']/.test(s) ? "the callback grants Verified Real outside the in-page selfie" : false;
+  }
+  if (/components\/verify\/verify-flow\.tsx$/.test(n)) {
+    return /launch\(["']smartselfie["']\)/.test(s) ? "the hosted selfie can still be launched" : false;
+  }
+  return false;
+});
+
 // Consent first, with its version; the selfie passes through and is never kept.
 check("a selfie check records consent first and never stores the selfie", (s, f) => {
   if (!/app\/\(app\)\/verify\/selfie-actions\.ts$/.test(norm(f))) return false;

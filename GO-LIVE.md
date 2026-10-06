@@ -117,11 +117,54 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
+## 0g. Staging, then the release — 0027, 0028, 0029
+
+Decided 6 October 2026: **staging gates every merge.** A branch is merged
+only after its migrations have run cleanly on the staging Supabase project
+(`toastly-staging`), the app has run against it on a Vercel preview, and
+the migrations have been applied to production. Production only gets
+migrations that ran cleanly on staging. **Nothing touches production
+without the owner's go-ahead.**
+
+**Staging** (values in `.env.staging.local`, git-ignored; the `[P]` names
+also go in Vercel → Environment Variables → **Preview**):
+
+1. In the staging dashboard, enable the `pg_cron` extension. Vault needs
+   nothing — 0014 and 0016 create their keys on first run.
+2. Apply `supabase/migrations/0001` … `0029` in order to staging.
+3. Deploy the branch as a Vercel preview pointed at staging, with Smile ID
+   **sandbox** keys and `SMILE_ID_CALLBACK_URL` = the preview's
+   `/api/smile-id/callback`. If previews are behind Vercel login, the
+   callback can't arrive: turn protection off for Preview or use a bypass
+   secret.
+4. `SMILE_ENV_FILE=.env.staging.local npm run smile:sandbox -- selfie.jpg`.
+5. On the preview, as a sandbox tester: sign up → phone → where you live →
+   four photos → onboarding selfie (identity "clear") → the callback makes
+   the profile live. Then, as staff, "Request re-verification" on that
+   member → the member's re-check selfie → the callback clears the request.
+   **This is the proof that the onboarding selfie registered the face**
+   (Authentication can only pass against an enrolment). Then the optional
+   ID check through the hosted flow ("clear" identity) → the second ring.
+   Then replace the main photo → Authentication + Compare → matched.
+
+**Production, in this order — each step only on the owner's go-ahead:**
+
+1. Apply 0027, then 0028 (they don't depend on the photo screens).
+2. Merge `country-age-two-way` and `port-live-profile` into `main`; Vercel
+   deploys the photo screens.
+3. **Straight after that deploy is live**, apply 0029. Never before.
+4. Retire the old `live-profile-and-prompt-14` branch.
+
+---
+
 ## 0f. Photos, the face match, no live profile no access (migration 0029) — NOT APPLIED
 
 Run after 0028, **on staging first**, and only with a working Smile ID face
-match end to end (the user's rule for these screens). Apply it **before**
-deploying the code.
+match end to end (the user's rule for these screens). **Never apply 0029 to
+production before the code with the photo screens is live** (decided
+6 October 2026): it ships in the same release, straight after the deploy —
+see §0g for the order. In the minutes between, the new code fails closed:
+guarded pages show "finish your profile" and nothing is exposed.
 
 **What it does to everyone already on Toastly — plan for this.** From the
 moment 0029 is applied, a profile is visible and can use the feed, Gists,
@@ -139,16 +182,31 @@ open. Consider telling members before it ships.
   with a selfie captured in the page by Smile ID's own camera component
   (`@smileid/web-sdk`, pinned 12.1.0). Results come back on the SAME callback
   URL as the hosted flow. Sandbox test: `npm run smile:sandbox -- selfie.jpg`
-  (8/8 on 6 October 2026: token, Compare accepted and clear, Authentication
-  accepted, signature check). Without keys: production refuses, development
-  records a stand-in pass.
-- The hosted selfie now serves re-verification only; the ID check is unchanged.
-- **Members already Verified Real through the hosted flow** confirm their
-  first main photo with a fresh selfie that ENROLS them under their profile
-  id (main's hosted flow didn't enrol under it, so Authentication against the
-  old enrolment isn't possible). That proves a live person who matches the
-  photo, not that it's the same person who passed the hosted check — a person
-  reviews anything borderline, and later changes use Authentication.
+  (7/7 on 6 October 2026, after the hosted selfie was retired: token, Compare
+  accepted and enrolling, Authentication against the enrolled face accepted
+  after a 20 s pause, a refusal's log line scrubbed, signature check). The
+  sandbox also *accepts* Authentication for an id it never enrolled, so
+  whether enrolment works shows only in the verdict on the callback — §0g,
+  step 5. Without keys: production refuses, development records a stand-in
+  pass.
+- **The hosted selfie is retired** (decided 6 October 2026). Verified Real
+  comes only from the in-page onboarding selfie, which ENROLS the face under
+  the member id; a re-check a reviewer asks for is an in-page Authentication
+  against that face. The hosted flow stays for the optional ID check only.
+  A late hosted selfie result is closed and grants nothing.
+- **0029 resets everyone Verified Real only through the hosted flow** (no
+  passed onboarding selfie) back to "phone confirmed", and clears their
+  liveness date. They take the onboarding selfie on their next visit — the
+  same step as the four photos every existing member needs anyway. Their ID
+  check is kept (`id_confirmed_at` and the one-ID-one-account fingerprint);
+  the second ring returns when the new selfie passes. No Sentinel "drift"
+  event is raised for the reset. **Consider telling these members first.**
+  Count them on production before the release (read-only):
+
+  ```sql
+  select stage, count(*) from profiles
+   where stage in ('verified_real', 'id_confirmed') group by stage;
+  ```
 - Server actions accept up to 4 MB (`next.config.mjs`): the selfie and its
   liveness frames pass through one, on to Smile ID, unstored.
 - Files a reviewer's decision replaces are queued in `storage_deletions` and

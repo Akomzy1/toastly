@@ -12,15 +12,19 @@ export type SelfieState = { error?: string; ok?: string } | null;
 /** Attempts per member per 24 hours. Each one is a billed job (two for a replacement). */
 const DAILY_ATTEMPTS = 5;
 
+type Mode = "onboard" | "replace" | "reverify";
+
 /**
- * The selfie checks (0029; decided 5 October 2026). Ported from
- * live-profile-and-prompt-14.
+ * The selfie checks (0029; decided 5 and 6 October 2026). Every selfie runs
+ * here, in the page — the hosted selfie is retired; it stays for the ID check.
  *
- *   onboard  — photos first, then ONE selfie: SmartSelfie Compare against the
- *              main photo, enrolling the member. Settles Verified Real and the
- *              main photo together.
- *   replace  — a fresh selfie for a new main photo: Authentication (is it the
- *              enrolled member?) + Compare (is the photo them?). Never enrols.
+ *   onboard   — photos first, then ONE selfie: SmartSelfie Compare against the
+ *               main photo, ENROLLING the member's face under their member id.
+ *               Settles Verified Real and the main photo together.
+ *   replace   — a fresh selfie for a new main photo: Authentication (is it the
+ *               enrolled member?) + Compare (is the photo them?). Never enrols.
+ *   reverify  — a re-check a reviewer asked for: Authentication only, against
+ *               the enrolled face. Never enrols.
  *
  * Consent is recorded first, with the version of the wording shown. The
  * selfie and liveness frames go straight to Smile ID in the request and are
@@ -34,7 +38,15 @@ export async function startOnboardingSelfie(_prev: SelfieState, formData: FormDa
   return startSelfieCheck("onboard", formData);
 }
 
-export async function startSelfieCheck(mode: "onboard" | "replace", formData: FormData): Promise<SelfieState> {
+/** A re-verification selfie, in useFormState's shape. */
+export async function startReverifySelfie(_prev: SelfieState, formData: FormData): Promise<SelfieState> {
+  return startSelfieCheck("reverify", formData);
+}
+
+const CONSENT_KIND = { onboard: "verification_selfie", replace: "replace_main_photo", reverify: "reverify_selfie" } as const;
+const STEPS = { onboard: ["onboard"], replace: ["authenticate", "compare"], reverify: ["reverify"] } as const;
+
+export async function startSelfieCheck(mode: Mode, formData: FormData): Promise<SelfieState> {
   const supabase = createClient();
   const {
     data: { user },
@@ -50,20 +62,30 @@ export async function startSelfieCheck(mode: "onboard" | "replace", formData: Fo
     .eq("id", user.id)
     .single();
   if (!me?.phone_verified_at) return { error: "Confirm your phone first." };
-  const photoId = me.pending_main_photo_id as string | null;
-  if (!photoId) return { error: mode === "onboard" ? "Choose your main photo first." : "Choose your new main photo first." };
 
-  if (mode === "onboard") {
-    const { data: status } = await supabase.rpc("live_profile_status");
-    const s = status as { photo_count?: number; photos_min?: number } | null;
-    // The candidate isn't counted until it matches, so four others or three
-    // plus the main photo both qualify.
-    if ((s?.photo_count ?? 0) + 1 < (s?.photos_min ?? 4)) return { error: "Add four photos first, including your main photo." };
-  } else if (!me.main_photo_id) {
-    return { error: "Your first main photo is checked during verification." };
+  let photoId: string | null = null;
+  if (mode === "reverify") {
+    // Only when a reviewer asked (0025), and only for a face that's enrolled —
+    // which, since 0029's reset, is every Verified Real member.
+    const { data: asked } = await supabase.from("reverification_requests").select("profile_id").maybeSingle();
+    if (!asked || (me.stage !== "verified_real" && me.stage !== "id_confirmed")) {
+      return { error: "There's nothing to re-check on your account." };
+    }
+  } else {
+    photoId = me.pending_main_photo_id as string | null;
+    if (!photoId) return { error: mode === "onboard" ? "Choose your main photo first." : "Choose your new main photo first." };
+    if (mode === "onboard") {
+      const { data: status } = await supabase.rpc("live_profile_status");
+      const s = status as { photo_count?: number; photos_min?: number } | null;
+      // The candidate isn't counted until it matches, so four others or three
+      // plus the main photo both qualify.
+      if ((s?.photo_count ?? 0) + 1 < (s?.photos_min ?? 4)) return { error: "Add four photos first, including your main photo." };
+    } else if (!me.main_photo_id) {
+      return { error: "Your first main photo is checked during verification." };
+    }
   }
 
-  const consent = await recordConsent(supabase, user.id, mode === "onboard" ? "verification_selfie" : "replace_main_photo");
+  const consent = await recordConsent(supabase, user.id, CONSENT_KIND[mode]);
   if (!consent.ok) return { error: "That didn't save. Try again." };
 
   const cfg = smileConfig();
@@ -75,11 +97,13 @@ export async function startSelfieCheck(mode: "onboard" | "replace", formData: Fo
     .from("verification_sessions")
     .select("id", { count: "exact", head: true })
     .eq("profile_id", user.id)
-    .not("photo_id", "is", null)
+    .not("step", "is", null)
     .gte("created_at", since);
-  if ((count ?? 0) >= DAILY_ATTEMPTS * (mode === "onboard" ? 1 : 2)) {
+  if ((count ?? 0) >= DAILY_ATTEMPTS * STEPS[mode].length) {
     return { error: "You've tried a few times today. Please try again tomorrow." };
   }
+
+  const product = mode === "replace" ? "photo_match" : "smartselfie";
 
   // No Smile ID keys: production refuses; development records a stand-in pass
   // the way the callback would (a member's own session can't).
@@ -89,21 +113,29 @@ export async function startSelfieCheck(mode: "onboard" | "replace", formData: Fo
       .from("verification_sessions")
       .insert({
         profile_id: user.id,
-        product: mode === "onboard" ? "smartselfie" : "photo_match",
+        product,
         environment: "sandbox",
         photo_id: photoId,
-        step: mode === "onboard" ? "onboard" : "compare",
-        status: "clear",
-        passed: true,
-        result_code: "dev_stand_in",
-        completed_at: new Date().toISOString(),
+        step: mode === "replace" ? "compare" : mode,
+        // A re-check is settled by an update below, as the callback settles it.
+        ...(mode === "reverify"
+          ? { status: "submitted" }
+          : { status: "clear", passed: true, result_code: "dev_stand_in", completed_at: new Date().toISOString() }),
       })
       .select("id")
       .single();
     if (mode === "onboard" && s) {
       await admin.rpc("record_onboarding_check", { p_session: s.id, p_live: "passed", p_match: "matched", p_reason: null });
-    } else {
+    } else if (mode === "replace") {
       await admin.rpc("record_main_photo_match", { p_photo_id: photoId, p_outcome: "matched", p_reason: null });
+    } else if (s) {
+      // Passing is an update, as from the callback: that's what clears the
+      // reviewer's request (0026's reverification_passed fires on update).
+      await admin
+        .from("verification_sessions")
+        .update({ status: "clear", passed: true, result_code: "dev_stand_in", completed_at: new Date().toISOString() })
+        .eq("id", s.id);
+      await admin.from("profiles").update({ liveness_verified_at: new Date().toISOString() }).eq("id", user.id);
     }
     revalidatePath("/verify");
     revalidatePath("/profile/photos");
@@ -114,10 +146,10 @@ export async function startSelfieCheck(mode: "onboard" | "replace", formData: Fo
   const frames = formData.getAll("liveness").filter((f): f is File => f instanceof File);
   if (!(selfie instanceof File) || frames.length < 6) return { error: "The selfie didn't come through. Try again." };
 
-  // Who the check is for, as Smile ID requires (as main's hosted flow sends):
-  // the display name, the surname from this form, the account email — or, in
-  // the sandbox for allowed testers, one of Smile ID's test identities, which
-  // decide the sandbox outcome. Sent to Smile ID only; nothing here stores them.
+  // Who the check is for, as Smile ID requires: the display name, the surname
+  // from this form, the account email — or, in the sandbox for allowed
+  // testers, one of Smile ID's test identities, which decide the sandbox
+  // outcome. Sent to Smile ID only; nothing here stores them.
   const sandboxKey = String(formData.get("sandbox_identity") ?? "");
   const sandbox = sandboxPickerAllowed(cfg, user.email)
     ? SANDBOX_IDENTITIES.find((s) => s.key === sandboxKey && s.products.includes("smartselfie"))
@@ -129,21 +161,24 @@ export async function startSelfieCheck(mode: "onboard" | "replace", formData: Fo
     ? { given_names: sandbox.given_names, last_name: sandbox.last_name, email: sandbox.email }
     : { given_names: String(me.display_name ?? "").trim().slice(0, 80) || "Member", last_name: surname, email: user.email! };
 
-  const { data: photo } = await admin.from("profile_photos").select("storage_path").eq("id", photoId).single();
-  const { data: file } = photo ? await admin.storage.from("profile-photos").download(photo.storage_path) : { data: null };
-  if (!file) return { error: "Your main photo couldn't be read. Try again." };
+  let mainPhoto: Blob | null = null;
+  if (photoId) {
+    const { data: photo } = await admin.from("profile_photos").select("storage_path").eq("id", photoId).single();
+    const { data: file } = photo ? await admin.storage.from("profile-photos").download(photo.storage_path) : { data: null };
+    if (!file) return { error: "Your main photo couldn't be read. Try again." };
+    mainPhoto = file;
+  }
 
   const capture = { selfie, livenessFrames: frames };
   const agreed = { grantedAt: consent.agreedAt, language: "en" };
   const checkId = randomUUID();
-  const steps = mode === "onboard" ? (["onboard"] as const) : (["authenticate", "compare"] as const);
 
   const { data: sessions, error: insertError } = await admin
     .from("verification_sessions")
     .insert(
-      steps.map((step) => ({
+      STEPS[mode].map((step) => ({
         profile_id: user.id,
-        product: mode === "onboard" ? "smartselfie" : "photo_match",
+        product,
         environment: cfg.env,
         photo_id: photoId,
         step,
@@ -153,19 +188,23 @@ export async function startSelfieCheck(mode: "onboard" | "replace", formData: Fo
     .select("id, step");
   if (insertError || !sessions) return { error: "Selfie checks aren't available right now. Please try again later." };
   const idFor = (step: string) => sessions.find((s) => s.step === step)!.id as string;
+  const submitted = (step: string, job: string) =>
+    admin.from("verification_sessions").update({ status: "submitted", job_id: job, submitted_at: new Date().toISOString() }).eq("id", idFor(step));
 
   try {
     if (mode === "onboard") {
-      const job = await submitCompare(cfg, { sessionId: idFor("onboard"), profileId: user.id, capture, mainPhoto: file, consent: agreed, userDetails, enrol: true });
-      await admin.from("verification_sessions").update({ status: "submitted", job_id: job, submitted_at: new Date().toISOString() }).eq("id", idFor("onboard"));
+      const job = await submitCompare(cfg, { sessionId: idFor("onboard"), profileId: user.id, capture, mainPhoto: mainPhoto!, consent: agreed, userDetails, enrol: true });
+      await submitted("onboard", job);
+    } else if (mode === "reverify") {
+      const job = await submitAuthentication(cfg, { sessionId: idFor("reverify"), profileId: user.id, capture, consent: agreed, userDetails });
+      await submitted("reverify", job);
     } else {
       const [a, c] = await Promise.all([
         submitAuthentication(cfg, { sessionId: idFor("authenticate"), profileId: user.id, capture, consent: agreed, userDetails }),
-        submitCompare(cfg, { sessionId: idFor("compare"), profileId: user.id, capture, mainPhoto: file, consent: agreed, userDetails, enrol: false }),
+        submitCompare(cfg, { sessionId: idFor("compare"), profileId: user.id, capture, mainPhoto: mainPhoto!, consent: agreed, userDetails, enrol: false }),
       ]);
-      const at = new Date().toISOString();
-      await admin.from("verification_sessions").update({ status: "submitted", job_id: a, submitted_at: at }).eq("id", idFor("authenticate"));
-      await admin.from("verification_sessions").update({ status: "submitted", job_id: c, submitted_at: at }).eq("id", idFor("compare"));
+      await submitted("authenticate", a);
+      await submitted("compare", c);
     }
   } catch (e) {
     // A provider failure is never held against the member: the sessions are

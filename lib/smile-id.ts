@@ -9,14 +9,16 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * the browser's onResult confirms submission, nothing more.
  *
  * Products:
- *   smartselfie   -> Verified Real. Since 0029 the onboarding selfie runs
- *                    through the REST API below (SmartSelfie Compare against
- *                    the main photo), because the hosted flow can't compare a
- *                    photo; the hosted flow remains for re-verification.
+ *   smartselfie   -> Verified Real, only through the REST API below: the
+ *                    onboarding selfie is SmartSelfie Compare against the
+ *                    main photo, ENROLLING the face under the member id; a
+ *                    re-check a reviewer asks for is Authentication against
+ *                    that enrolment. The hosted selfie is retired (decided
+ *                    6 October 2026) — it enrolled nothing a re-check could use.
  *   photo_match   -> replacing a matched main photo: Authentication + Compare
  *                    with a fresh selfie (REST, below).
  *   biometric_kyc -> ID check (NIN, Virtual NIN or BVN, country NG; optional),
- *                    hosted.
+ *                    hosted — the hosted flow's only remaining use.
  * Never Enhanced KYC or Basic KYC: neither matches a selfie to the record.
  */
 
@@ -226,7 +228,9 @@ async function submitJob(
   cfg: SmileConfig,
   path: "/v3/authentication" | "/v3/compare",
   form: FormData,
-  userId?: string,
+  userId: string | undefined,
+  /** What we sent that must never reach a log, should Smile ID echo it back. */
+  sent: string[],
 ): Promise<string> {
   const token = await mintSmileToken(cfg);
   if (!token) throw new Error("Smile ID token unavailable.");
@@ -243,8 +247,10 @@ async function submitJob(
     signal: AbortSignal.timeout(30_000),
   });
   if (res.status !== 202 && !res.ok) {
-    // Smile ID's own error text (field names, codes) — never anything we sent.
-    const why = (await res.text().catch(() => "")).slice(0, 300);
+    // Smile ID's own error text (field names, codes) — with anything we sent
+    // (member id, names, email) scrubbed, should it echo a value back: the
+    // caller logs this message.
+    const why = scrub(await res.text().catch(() => ""), sent).slice(0, 300);
     throw new Error(`Smile ID ${path} was refused (${res.status})${why ? `: ${why}` : ""}.`);
   }
   const body = (await res.json()) as { job_id?: string };
@@ -252,7 +258,21 @@ async function submitJob(
   return body.job_id;
 }
 
-/** Is this fresh selfie the member Smile ID enrolled? (replacing a main photo) */
+/** Replace every value we sent with [redacted]. Exported for its test. */
+export function scrub(text: string, sent: string[]): string {
+  let out = text;
+  for (const v of sent) {
+    if (v && v.length >= 2) out = out.split(v).join("[redacted]");
+  }
+  return out.replace(/[^\s"'<>]+@[^\s"'<>]+\.[A-Za-z]{2,}/g, "[redacted]");
+}
+
+const sentBy = (profileId: string, d: SmileUserDetails) => [profileId, d.given_names, d.last_name, d.email];
+
+/**
+ * Is this fresh selfie the member Smile ID enrolled? A replacement main
+ * photo, and a re-check a reviewer asked for.
+ */
 export async function submitAuthentication(
   cfg: SmileConfig,
   args: { sessionId: string; profileId: string; capture: SelfieCapture; consent: CaptureConsent; userDetails: SmileUserDetails },
@@ -264,7 +284,7 @@ export async function submitAuthentication(
   form.append("consent", consentField(args.consent));
   form.append("callback_url", cfg.callbackUrl);
   form.append("partner_params", JSON.stringify({ toastly_session: args.sessionId }));
-  return submitJob(cfg, "/v3/authentication", form);
+  return submitJob(cfg, "/v3/authentication", form, undefined, sentBy(args.profileId, args.userDetails));
 }
 
 /**
@@ -295,5 +315,5 @@ export async function submitCompare(
   form.append("consent", consentField(args.consent));
   form.append("callback_url", cfg.callbackUrl);
   form.append("partner_params", JSON.stringify({ toastly_session: args.sessionId }));
-  return submitJob(cfg, "/v3/compare", form, args.enrol ? args.profileId : undefined);
+  return submitJob(cfg, "/v3/compare", form, args.enrol ? args.profileId : undefined, sentBy(args.profileId, args.userDetails));
 }

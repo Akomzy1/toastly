@@ -19,7 +19,7 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * Start a Smile ID verification session.
+ * Start a Smile ID ID-check session (the hosted flow's only remaining use).
  *
  * Mints a v3 token on the server — the API key never leaves it — and returns
  * the hosted-flow config for the browser. Nothing here decides an outcome:
@@ -63,8 +63,11 @@ export async function POST(req: Request) {
     return refuse(400, "Something went wrong. Please try again.");
   }
 
-  const product: SmileProduct | null =
-    body.product === "smartselfie" || body.product === "biometric_kyc" ? body.product : null;
+  // The ID check only. Every selfie — onboarding, a new main photo, a re-check
+  // a reviewer asked for — runs in the page (app/(app)/verify/selfie-actions
+  // .ts): the hosted selfie is retired for Verified Real (decided 6 October
+  // 2026) because it enrols no face a later re-check could use.
+  const product: SmileProduct | null = body.product === "biometric_kyc" ? body.product : null;
   if (!product) return refuse(400, "Something went wrong. Please try again.");
 
   // Our own consent screen ran first; Smile ID's is skipped only because of it.
@@ -78,28 +81,19 @@ export async function POST(req: Request) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("stage, display_name")
+    .select("stage")
     .eq("id", user.id)
     .single();
   if (!profile) return refuse(401, "Please sign in again.");
 
-  // The ladder: phone, then Verified Real, then (optionally) the ID ring —
-  // or the selfie again when staff asked for re-verification (0025).
-  const { data: reverify } = await supabase.from("reverification_requests").select("profile_id").maybeSingle();
-  const reverifying = Boolean(reverify) && (profile.stage === "verified_real" || profile.stage === "id_confirmed");
-  // Since 0029 the onboarding selfie is the in-page check against the main
-  // photo (app/(app)/verify/selfie-actions.ts); the hosted selfie is only
-  // for re-verification a reviewer asked for.
-  if (product === "smartselfie" && !reverifying) {
-    return refuse(409, "This step isn't available for your account right now.");
-  }
-  if (product === "biometric_kyc" && profile.stage !== "verified_real") {
+  // The ladder: phone, then Verified Real, then (optionally) the ID ring.
+  if (profile.stage !== "verified_real") {
     return refuse(409, "The ID check opens once you're Verified Real.");
   }
 
   // The agreement is recorded with the version of the wording shown (0029),
   // before anything is sent to Smile ID.
-  const consented = await recordConsent(supabase, user.id, product === "biometric_kyc" ? "id_check" : "verification_selfie");
+  const consented = await recordConsent(supabase, user.id, "id_check");
   if (!consented.ok) return refuse(503, "Verification isn't available right now. Please try again later.");
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -113,8 +107,8 @@ export async function POST(req: Request) {
     return refuse(429, "You've tried a few times today. Please try again tomorrow.");
   }
 
-  // Names. Smile ID requires given names, a surname and a contact for both
-  // products. They go to Smile ID only — nothing here stores them.
+  // Names. Smile ID requires given names, a surname and a contact. They go to
+  // Smile ID only — nothing here stores them.
   const sandbox =
     sandboxPickerAllowed(cfg, user.email) && typeof body.sandbox_identity === "string"
       ? SANDBOX_IDENTITIES.find((s) => s.key === body.sandbox_identity && s.products.includes(product))
@@ -124,12 +118,8 @@ export async function POST(req: Request) {
   if (!sandbox && (lastName.length < 1 || lastName.length > 60)) {
     return refuse(400, "Enter your surname.");
   }
-  // The ID check asks for first names as on the ID; the selfie check uses the
-  // display name, so it asks for nothing but the surname Smile ID requires.
-  const givenNames =
-    product === "biometric_kyc" && typeof body.given_names === "string"
-      ? body.given_names.trim()
-      : profile.display_name;
+  // First names as on the ID.
+  const givenNames = typeof body.given_names === "string" ? body.given_names.trim() : "";
   if (!sandbox && (givenNames.length < 1 || givenNames.length > 80)) {
     return refuse(400, "Enter your first name as it appears on your ID.");
   }

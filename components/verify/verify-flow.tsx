@@ -13,9 +13,6 @@ import {
   ID_CONSENT,
   ID_TYPE_OPTIONS,
   REASON_COPY,
-  SELFIE_CONSENT,
-  SMILE_PROCESSING_SENTENCE,
-  SMILE_TERMS_CONFIRMED,
 } from "@/lib/verification-copy";
 import { isVerifiedReal, type VerifyView } from "@/lib/verification-view";
 
@@ -29,14 +26,16 @@ import { isVerifiedReal, type VerifyView } from "@/lib/verification-view";
  * DESIGN-APPROVED — flagged in SKILL.md; replace with the exports when they
  * land.
  *
- * Smile ID's hosted overlay does the capture. This component only starts a
- * session, opens the overlay and reports submission; the result is decided
- * by the signed callback, and the page re-reads it from the database.
+ * Every selfie is the in-page check passed in as `selfieStep`. Smile ID's
+ * hosted overlay is used only for the optional ID check: this component
+ * starts that session, opens the overlay and reports submission; the result
+ * is decided by the signed callback, and the page re-reads it from the
+ * database.
  *
  * Free on every plan: nothing here reads or mentions a tier.
  */
 
-type Screen = "overview" | "before_selfie" | "id_form";
+type Screen = "overview" | "id_form";
 type Product = "smartselfie" | "biometric_kyc";
 type IdType = (typeof ID_TYPE_OPTIONS)[number]["value"];
 
@@ -190,19 +189,19 @@ export function VerifyFlow({
   afterVerified,
   sandbox = [],
   initialScreen = "overview",
-  onboardingSelfie,
+  selfieStep,
   live = true,
 }: {
   view: VerifyView;
   /** The phone step, rendered while the member is unverified. */
   phoneStep?: React.ReactNode;
   /**
-   * The onboarding selfie (0029): photos first, then one in-page selfie that
-   * checks liveness and the main photo. When given, it replaces the hosted
-   * "Get verified" / "Try again" buttons; the hosted selfie stays for
-   * re-verification.
+   * The in-page selfie (0029): at onboarding, photos first and then one
+   * selfie that checks liveness and the main photo; when a reviewer asked
+   * for a re-check, one selfie against the enrolled face. Every selfie runs
+   * here — the hosted selfie is retired (decided 6 October 2026).
    */
-  onboardingSelfie?: React.ReactNode;
+  selfieStep?: React.ReactNode;
   /** Whether the profile is live — Verified Real alone doesn't show it to anyone. */
   live?: boolean;
   /** Shown beneath the passed states (the photo-visibility choice). */
@@ -294,55 +293,6 @@ export function VerifyFlow({
       setError("We couldn't open the camera step. Check your connection and try again.");
       setBusy(false);
     }
-  }
-
-  // --- Screen 2: before your selfie ---------------------------------------
-  if (screen === "before_selfie") {
-    const ready = agreed && (useSandbox || surname.trim().length > 0) && !busy;
-    return (
-      <Shell view={view}>
-        <div className="grid gap-[18px]">
-          <div className="grid gap-2">
-            <h2 className={H2}>{SELFIE_CONSENT.title}</h2>
-            <p className={LEAD}>{SELFIE_CONSENT.intro}</p>
-            <p className={LEAD}>
-              {SELFIE_CONSENT.keeps}
-              {SMILE_TERMS_CONFIRMED ? ` ${SMILE_PROCESSING_SENTENCE}` : null}
-            </p>
-          </div>
-          <div className={CARD}>
-            <p className={`${CARD_LABEL} text-green-500`}>Your camera</p>
-            <p className={CARD_BODY}>{SELFIE_CONSENT.camera}</p>
-          </div>
-          {useSandbox ? (
-            <SandboxPicker options={sandbox} product="smartselfie" value={testIdentity} onChange={setTestIdentity} />
-          ) : (
-            <Label htmlFor="surname">
-              Your surname — used only to verify you, never shown to other members
-              <Input
-                id="surname"
-                autoComplete="family-name"
-                value={surname}
-                maxLength={60}
-                onChange={(e) => setSurname(e.target.value)}
-              />
-            </Label>
-          )}
-          <Consent checked={agreed} onChange={setAgreed}>
-            {SELFIE_CONSENT.checkbox}
-          </Consent>
-          {error ? <Notice tone="error">{error}</Notice> : null}
-          <div className="grid gap-2.5">
-            <button type="button" disabled={!ready} onClick={() => launch("smartselfie")} className={TEAL}>
-              {busy ? "Opening…" : SELFIE_CONSENT.start}
-            </button>
-            <button type="button" onClick={() => open("overview")} className={OUTLINE}>
-              {SELFIE_CONSENT.decline}
-            </button>
-          </div>
-        </div>
-      </Shell>
-    );
   }
 
   // --- Screen 5: the ID check ---------------------------------------------
@@ -446,19 +396,7 @@ export function VerifyFlow({
             title="Verify your profile"
             lead="Your phone number is confirmed. One more step and your profile can be seen by other members."
           />
-          {onboardingSelfie ?? (
-            <div className={CARD}>
-              <div className="grid gap-1.5">
-                <h3 className={`${CARD_LABEL} text-green-500`}>Next · Verified Real</h3>
-                <p className={CARD_BODY}>
-                  A quick selfie, checked by Smile ID, our verification provider. Toastly keeps only the result.
-                </p>
-              </div>
-              <button type="button" onClick={() => open("before_selfie")} className={TEAL}>
-                Get verified
-              </button>
-            </div>
-          )}
+          {selfieStep}
           <OptionalIdNote />
         </div>
       ) : null}
@@ -493,17 +431,7 @@ export function VerifyFlow({
             title={view.status === "error" ? "Something went wrong on our side" : "We couldn't confirm it this time"}
             lead={reasonFor(view.status, view.code)}
           />
-          {onboardingSelfie ?? (
-            <div className={CARD}>
-              <div className="grid gap-1.5">
-                <h3 className={`${CARD_LABEL} text-green-500`}>Verified Real</h3>
-                <p className={CARD_BODY}>A quick selfie, checked by Smile ID. Toastly keeps only the result.</p>
-              </div>
-              <button type="button" onClick={() => open("before_selfie")} className={TEAL}>
-                Try again
-              </button>
-            </div>
-          )}
+          {selfieStep}
           <OptionalIdNote />
         </div>
       ) : null}

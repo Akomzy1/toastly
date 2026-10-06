@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
-import { startOnboardingSelfie } from "./selfie-actions";
+import { startOnboardingSelfie, startReverifySelfie } from "./selfie-actions";
 import { Notice } from "@/components/ui/notice";
 import { ConsentPanel } from "@/components/app/consent-panel";
 import { SelfieCapture } from "@/components/app/selfie-capture";
@@ -21,13 +21,15 @@ import { SelfieDetailsFields, type SandboxIdentity } from "@/components/app/self
  * first. In development without Smile ID, Start records a stand-in pass.
  *
  * Shown inside main's verify-overview flow in place of its hosted "Get
- * verified" button; the hosted selfie stays for re-verification only.
+ * verified" button. With mode "reverify" it is the re-check a reviewer asked
+ * for: the same capture, Authentication only against the enrolled face, with
+ * its own consent. The hosted selfie is retired (decided 6 October 2026).
  */
 
 const TEAL =
   "grid min-h-12 w-full place-items-center rounded-lg bg-green-500 px-5 py-3.5 text-button text-white no-underline transition-colors hover:bg-green-600";
 
-function Panel({ devStandIn, sandbox }: { devStandIn: boolean; sandbox: SandboxIdentity[] }) {
+function Panel({ devStandIn, sandbox, mode }: { devStandIn: boolean; sandbox: SandboxIdentity[]; mode: "onboard" | "reverify" }) {
   const { pending } = useFormStatus();
   return (
     <>
@@ -36,7 +38,11 @@ function Panel({ devStandIn, sandbox }: { devStandIn: boolean; sandbox: SandboxI
           Smile ID isn&rsquo;t connected here, so Start records a pass without a camera.
         </Notice>
       ) : null}
-      <ConsentPanel kind="verification_selfie" busy={pending} secondaryHref="/profile/photos">
+      <ConsentPanel
+        kind={mode === "reverify" ? "reverify_selfie" : "verification_selfie"}
+        busy={pending}
+        secondaryHref={mode === "reverify" ? "/profile" : "/profile/photos"}
+      >
         {devStandIn ? null : <SelfieDetailsFields sandbox={sandbox} />}
       </ConsentPanel>
     </>
@@ -48,21 +54,23 @@ export function SelfieCheckStep({
   devStandIn,
   photosReady,
   sandbox = [],
+  mode = "onboard",
 }: {
   connected: boolean;
   devStandIn: boolean;
-  /** Four photos, including a chosen main photo. */
+  /** Four photos, including a chosen main photo. Not needed to re-check. */
   photosReady: boolean;
   /** Smile ID sandbox identities, only where the server allows them. */
   sandbox?: SandboxIdentity[];
+  mode?: "onboard" | "reverify";
 }) {
-  const [state, action] = useFormState(startOnboardingSelfie, null);
+  const [state, action] = useFormState(mode === "reverify" ? startReverifySelfie : startOnboardingSelfie, null);
   const [pending, startTransition] = React.useTransition();
   const [consented, setConsented] = React.useState<FormData | null>(null);
 
   // Photos come first. NOT IN A PROTOTYPE as its own card — flagged: the
   // where-you-live stepper and verify-overview name the step; this links to it.
-  if (!photosReady) {
+  if (mode === "onboard" && !photosReady) {
     return (
       <div className="grid gap-3 rounded-xl border border-ink-900/[.12] bg-white px-[15px] py-4">
         <div className="grid gap-1.5">
@@ -123,7 +131,7 @@ export function SelfieCheckStep({
       }}
       className="grid gap-4"
     >
-      <Panel devStandIn={!connected && devStandIn} sandbox={sandbox} />
+      <Panel devStandIn={!connected && devStandIn} sandbox={sandbox} mode={mode} />
       {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
     </form>
   );

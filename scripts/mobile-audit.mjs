@@ -171,7 +171,7 @@ const ROUTES = [
   { route: "/audit/dates/cancelled-reschedule", label: "Date · cancelled-reschedule" },
   // Verification — every state of the Smile ID flow
   { route: "/audit/verify/start", label: "Verify · start" },
-  { route: "/audit/verify/before-selfie", label: "Verify · before-selfie" },
+  { route: "/audit/verify/reverify", label: "Verify · reverify" },
   { route: "/audit/verify/checking", label: "Verify · checking" },
   { route: "/audit/verify/review", label: "Verify · review" },
   { route: "/audit/verify/retry-spoof", label: "Verify · retry-spoof" },
