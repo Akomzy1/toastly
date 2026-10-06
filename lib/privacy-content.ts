@@ -42,25 +42,43 @@
  * and their 30-day retention, hosting logs, the pricing-fairness country
  * check, the removed member's blocked sign-in and the record of decisions.
  *
- * Statements in this version that the build does NOT yet do — settle each
- * before the brackets are filled and the page publishes:
- *   - Main-photo face match (sections 2 and 3): in progress (0029).
- *   - "AI ... safety-review summaries" and the "Safety review" bullet
- *     (sections 4 and 6a): the Sentinel summaries are Phase 2.
- *   - "If you report a message, our safety team can see that message"
- *     (section 4): reviewers never see message bodies (CLAUDE.md).
- *   - Resend sends "verification emails" (section 4): sign-in and
- *     confirmation emails are sent by Supabase; Resend sends receipts and
- *     notices.
- *   - Venues found with "approximate location" (section 2): lib/places.ts
- *     searches by city name.
- *   - "Device type, app version" (section 2): analytics records only the
- *     eight events in lib/analytics.ts.
- *   - "Voice answers to profile prompts" (section 2): voice notes are out.
- *   - Unspent coins shown before deletion (section 8): the delete flow does
- *     not show the balance.
- *   - "Analytics cookies" (section 13): PostHog runs server-side only; the
- *     site sets no analytics cookies.
+ * 6 OCTOBER 2026, LATER — made to say exactly what the code does, against
+ * port-live-profile (0027–0029, which this text assumes has shipped):
+ *   - Section 4: reviewers see the report reason, the reporter's own note
+ *     and a COUNT of messages (staff_item, components/staff/case-view.tsx) —
+ *     never message text. Was "our safety team can see that message".
+ *   - Surname (section 2, and the Anthropic row): sent to Smile ID only, never
+ *     kept (scripts/selfie-privacy.test.mjs, privacy-claims.test.mjs, and the
+ *     constraint check "the surname goes to Smile ID only").
+ *   - Smile ID registers the face under the member's account (the onboarding
+ *     Compare enrols it) for later re-checks (sections 2 and 7).
+ *   - Photos are stripped of embedded data before storage (lib/strip-image.ts).
+ *   - Country of residence vs phone code, paying country and card country
+ *     (0027's review signals; section 7). Age range (section 2).
+ *   - Removed, not yet true: "safety-review summaries" and the "Safety review"
+ *     bullet (Phase 2); "approximate location" for venues (city search);
+ *     "device type, app version" (analytics records only lib/analytics.ts's
+ *     eight events); "voice answers" (voice notes are out); Resend sending
+ *     "verification emails" (Supabase sends sign-in and confirmation mail);
+ *     analytics cookies (PostHog runs server-side only; the one non-sign-in
+ *     cookie, gists_seen, remembers when the Gists tab was last opened).
+ *   - Unspent coins shown before deletion (section 8): true on
+ *     port-live-profile (components/account/delete-flow.tsx).
+ *
+ * PROPOSED values for the brackets — the owner decides; nothing filled in:
+ *   [DATE] (twice)   the day this version is published.
+ *   [7] backups      7 — Supabase Pro keeps daily backups 7 days, PITR off
+ *                    (GO-LIVE §6; GENOTYPE_BACKUP_RETENTION_DAYS).
+ *   [30] deletion    "straight away": lib/account-actions.ts deletes the
+ *                    account in the same request; only the section 8
+ *                    safety and payment records are kept.
+ *   [2] safety       2 — retain_until = now() + 2 years (0015/0016/0025).
+ *   [6] payments     6 — retain_until = now() + 6 years (0015/0016/0025).
+ *   [countries]      "Our database is hosted in Ireland, in the European
+ *                    Union, and our app runs in the United States" —
+ *                    measured 2 October; PostHog's default host is EU.
+ *   [UK REPRESENTATIVE]  the owner's to decide.
+ *   Cookie choice    removed: there are no analytics cookies to choose.
  *
  * Section 9's countries were MEASURED, not assumed (2 October 2026): the
  * Supabase database host resolves to AWS eu-west-1 (Ireland), and the
@@ -133,7 +151,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Your profile.",
-        text: "Photos, written and voice answers to profile prompts, the kind of relationship you're looking for, and your city or, if you live abroad, your diaspora city and which matching pool you prefer.",
+        text: "Photos, written answers to profile prompts, the kind of relationship you're looking for, the age range you'd like to meet, and where you live: your country and city, and, if you live abroad, which matching pool you prefer. Before we store a photo, we remove the hidden information it carries — such as where and when it was taken, and the device it was taken on.",
       },
       {
         kind: "p",
@@ -149,8 +167,9 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "Liveness check (everyone): a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your main profile photo to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8). To run it, our verification provider receives the selfie, your name and your email address.",
-          "ID check (optional): your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. We keep only the outcome — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.",
+          "Liveness check (everyone): a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your main profile photo to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8). Smile ID also registers your face against your Toastly account, so that a later selfie — when you change your main photo, or if our team asks you to check again — can be compared with it.",
+          "What Smile ID receives: the selfie, your first name, your email address and your surname. You type your surname in only for this check: we pass it to Smile ID and don't keep it. It's never shown on your profile, and never goes to our analytics, our AI systems or AriyaPlanner.",
+          "ID check (optional): your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. You give the names on your ID for the check; like your surname, we pass them to Smile ID and don't keep them. We keep only the outcome — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.",
         ],
       },
       {
@@ -171,7 +190,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Location.",
-        text: "Your city and time zone. When we suggest a public venue for a date, we use approximate location to find places nearby. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location continuously. If you use the panic button, your phone adds your exact location to the message it sends your chosen contact — that message goes from your own phone, and Toastly never receives your location.",
+        text: "Your city and time zone. When we suggest a public venue for a date, we search near your city — we don't use your location for this. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location continuously. If you use the panic button, your phone adds your exact location to the message it sends your chosen contact — that message goes from your own phone, and Toastly never receives your location.",
       },
       {
         kind: "p",
@@ -195,8 +214,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        lead: "Device and usage information.",
-        text: "Device type, app version, and how you use Toastly, so we can fix problems and improve the product. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.",
+        lead: "Usage information.",
+        text: "Which key steps you've reached — such as signing up, getting verified, a first Gist, a first date deposit or upgrading — and when you use our AI help or profile feedback (never what you asked or wrote), so we can fix problems and improve the product. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.",
       },
     ],
   },
@@ -238,7 +257,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Our team",
-        text: "sees account and safety information only when needed to support you, investigate a report or keep Toastly safe. If you report a message, our safety team can see that message.",
+        text: "sees account and safety information only when needed to support you, investigate a report or keep Toastly safe. Our team never sees the text of your messages. If you report someone, the person reviewing it sees the reason you chose, any note you add, and how many messages they sent you — not what the messages said. If you want us to see something they wrote, you can quote it in your note.",
       },
       {
         kind: "p",
@@ -249,18 +268,18 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         kind: "table",
         head: ["Provider", "What for"],
         rows: [
-          ["Supabase", "Database and storage"],
+          ["Supabase", "Database, storage, and sign-in and confirmation emails"],
           ["Vercel", "Hosting the app and website"],
           ["Smile ID", "Liveness checks and NIN/BVN verification"],
           ["Paystack", "Payments in Naira"],
           ["Stripe", "Payments in US dollars"],
           ["LiveKit", "Delivering Gist voice and video sessions (not recorded)"],
-          ["Resend", "Account and verification emails"],
+          ["Resend", "Receipts and account notices"],
           ["Termii", "Text messages to Nigerian numbers (emergency contacts and alerts)"],
           ["Twilio", "Text messages to numbers outside Nigeria (emergency contacts and alerts)"],
           ["Google (Places)", "Suggesting public venues for dates"],
           ["PostHog", "Product analytics (never receives your genotype)"],
-          ["Anthropic", "AI for our help assistant, profile-answer feedback and safety-review summaries — never your messages, Gist audio, photos, ID numbers or genotype"],
+          ["Anthropic", "AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers, surname or genotype"],
         ],
       },
       {
@@ -317,7 +336,6 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         items: [
           "Toastly Help, our AI assistant, answers questions about verification, payments and how Toastly works. It sees only things like whether a check passed — never your selfies, ID number, messages or Gist sessions. A person handles refunds, disputes and appeals.",
           "Profile feedback, if you ask for it, tells you whether a prompt answer could be more specific. It never writes or rewrites anything for you. Toastly AI will never write a word for you.",
-          "Safety review, where AI may help our team summarise an account that's been flagged. A person makes every decision.",
         ],
       },
       {
@@ -337,7 +355,9 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "We don't read your messages to do this, and we don't use Gist audio, your genotype, religion, tribe, language, relationship history, profession or where you live. To keep pricing fair, we do check whether the country of your payment method, phone number and connection match.",
+          "We don't read your messages to do this, and we don't use Gist audio, your genotype, religion, tribe, language, relationship history, profession or where you live.",
+          "To keep pricing fair, we check whether the country you tell us you live in matches your phone number's country code, the country you pay from and the country your card was issued in. A mismatch is looked at by a person; it never blocks you on its own.",
+          "If our team asks you to check again, you take a fresh selfie, which Smile ID compares with the face registered when you verified.",
           "A person makes every decision. Automated tools may flag an account for review, but no account is restricted or removed by a machine alone. If we restrict your account, we'll tell you why, and you can ask us to look again.",
         ],
       },
@@ -425,7 +445,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     blocks: [
       {
         kind: "p",
-        text: "Our website uses cookies that are necessary to keep you signed in and keep the service working, and analytics cookies to understand how it's used. [You can choose whether to allow analytics cookies.]",
+        text: "Our website uses only the cookies needed to keep you signed in and keep the service working, plus one that remembers when you last looked at your Gists. We don't use advertising or analytics cookies: the few product steps we record (section 2) are recorded on our servers, not with cookies.",
       },
     ],
   },

@@ -27,15 +27,16 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 
 **Account details.** Name, email address, phone number, date of birth, and the password or sign-in method you use.
 
-**Your profile.** Photos, written and voice answers to profile prompts, the kind of relationship you're looking for, and your city or, if you live abroad, your diaspora city and which matching pool you prefer.
+**Your profile.** Photos, written answers to profile prompts, the kind of relationship you're looking for, the age range you'd like to meet, and where you live: your country and city, and, if you live abroad, which matching pool you prefer. **Before we store a photo, we remove the hidden information it carries** — such as where and when it was taken, and the device it was taken on.
 
 **Optional profile details.** Religion, tribe or ethnicity, languages, relationship history (single, divorced, widowed, single parent, whether you have children), profession and education. You decide whether to add these and who can see them.
 
 **Your genotype (optional — health information).** If you choose to add it, after giving separate permission. See section 5.
 
 **Verification.**
-- *Liveness check (everyone):* a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your **main profile photo** to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8).
-- *ID check (optional):* your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. **We keep only the outcome** — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.
+- *Liveness check (everyone):* a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your **main profile photo** to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8). Smile ID also registers your face against your Toastly account, so that a later selfie — when you change your main photo, or if our team asks you to check again — can be compared with it.
+- *What Smile ID receives:* the selfie, your first name, your email address and your **surname**. You type your surname in only for this check: **we pass it to Smile ID and don't keep it.** It's never shown on your profile, and never goes to our analytics, our AI systems or AriyaPlanner.
+- *ID check (optional):* your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. You give the names on your ID for the check; like your surname, we pass them to Smile ID and don't keep them. **We keep only the outcome** — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.
 
 **Gist sessions.** We record that a session took place, when, how long it lasted, which questions from the structured question set were covered, and whether you both chose to continue. **We do not record the audio or video, and no transcript is ever created or kept.**
 
@@ -43,7 +44,7 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 
 **Dates and coins.** Dates you arrange, venues you accept, check-ins, your coin balance and its history, coin deposits, and whether a date went ahead.
 
-**Location.** Your city and time zone. When we suggest a public venue for a date, we use approximate location to find places nearby. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location continuously.
+**Location.** Your city and time zone. When we suggest a public venue for a date, we search near your city — we don't use your location for this. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location continuously.
 
 **Your emergency contact.** If you add one, we hold their name and phone number (see section 6).
 
@@ -51,7 +52,7 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 
 **Safety information.** Reports you make or receive, blocks, and patterns of activity we use to spot scams and fake accounts (see section 7).
 
-**Device and usage information.** Device type, app version, and how you use Toastly, so we can fix problems and improve the product.
+**Usage information.** Which key steps you've reached — such as signing up, getting verified, a first Gist, a first date deposit or upgrading — and when you use our AI help or profile feedback (never what you asked or wrote), so we can fix problems and improve the product. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.
 
 ---
 
@@ -78,24 +79,24 @@ Where we rely on consent, you can withdraw it at any time in your settings, with
 
 **Other members** see what's on your profile, according to the visibility settings you choose. Relationship history is hidden until you match unless you choose otherwise. Genotype is hidden from everyone unless you choose to share it.
 
-**Our team** sees account and safety information only when needed to support you, investigate a report or keep Toastly safe. If you report a message, our safety team can see that message.
+**Our team** sees account and safety information only when needed to support you, investigate a report or keep Toastly safe. **Our team never sees the text of your messages.** If you report someone, the person reviewing it sees the reason you chose, any note you add, and how many messages they sent you — not what the messages said. If you want us to see something they wrote, you can quote it in your note.
 
 **Service providers** who process data on our behalf, under contract, only for the purposes we set:
 
 | Provider | What for |
 |---|---|
-| Supabase | Database and storage |
+| Supabase | Database, storage, and sign-in and confirmation emails |
 | Vercel | Hosting the app and website |
 | Smile ID | Liveness checks and NIN/BVN verification |
 | Paystack | Payments in Naira |
 | Stripe | Payments in US dollars |
 | LiveKit | Delivering Gist voice and video sessions (not recorded) |
-| Resend | Account and verification emails |
+| Resend | Receipts and account notices |
 | Termii | Text messages to Nigerian numbers (emergency contacts and alerts) |
 | Twilio | Text messages to numbers outside Nigeria (emergency contacts and alerts) |
 | Google (Places) | Suggesting public venues for dates |
 | PostHog | Product analytics (never receives your genotype) |
-| Anthropic | AI for our help assistant, profile-answer feedback and safety-review summaries — never your messages, Gist audio, photos, ID numbers or genotype |
+| Anthropic | AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers, surname or genotype |
 
 **AriyaPlanner.** AriyaPlanner is a wedding and event-planning service also run by Ariya Planner Ltd. If you and your partner choose to move from Toastly into planning your wedding with AriyaPlanner, we'll pass across only what you agree to share at that moment. **Your genotype is never included.**
 
@@ -130,7 +131,6 @@ We use AI in a few limited places, and we'll always tell you when you're dealing
 
 - **Toastly Help**, our AI assistant, answers questions about verification, payments and how Toastly works. It sees only things like whether a check passed — never your selfies, ID number, messages or Gist sessions. A person handles refunds, disputes and appeals.
 - **Profile feedback**, if you ask for it, tells you whether a prompt answer could be more specific. It never writes or rewrites anything for you. **Toastly AI will never write a word for you.**
-- **Safety review**, where AI may help our team summarise an account that's been flagged. A person makes every decision.
 
 Our AI never reads your private messages, never listens to Gist sessions, and never uses your genotype, religion, tribe, language, relationship history, profession or where you live. We don't use your data to train AI models.
 
@@ -139,6 +139,8 @@ Our AI never reads your private messages, never listens to Gist sessions, and ne
 To spot scams and fake accounts, we look at **patterns of activity** — for example, repeatedly declining Gist sessions, unusually fast requests to move a conversation forward, multiple independent reports, or verification that no longer matches.
 
 - **We don't read your messages to do this**, and we don't use Gist audio, your genotype, religion, tribe, language, relationship history, profession or where you live.
+- **To keep pricing fair**, we check whether the country you tell us you live in matches your phone number's country code, the country you pay from and the country your card was issued in. A mismatch is looked at by a person; it never blocks you on its own.
+- **If our team asks you to check again**, you take a fresh selfie, which Smile ID compares with the face registered when you verified.
 - **A person makes every decision.** Automated tools may flag an account for review, but no account is restricted or removed by a machine alone. If we restrict your account, we'll tell you why, and you can ask us to look again.
 
 ---
@@ -193,7 +195,7 @@ Toastly is only for people aged 18 and over. If we learn an account belongs to s
 
 ## 13. Cookies
 
-Our website uses cookies that are necessary to keep you signed in and keep the service working, and analytics cookies to understand how it's used. [You can choose whether to allow analytics cookies.]
+Our website uses only the cookies needed to keep you signed in and keep the service working, plus one that remembers when you last looked at your Gists. We don't use advertising or analytics cookies: the few product steps we record (section 2) are recorded on our servers, not with cookies.
 
 ---
 
