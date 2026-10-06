@@ -173,8 +173,11 @@ export function VerifyFlow({
   selfieStep,
   live = true,
   reverify = false,
+  idConfirmed = false,
   idTypes = ["NIN_V2", "BVN"],
 }: {
+  /** The member holds the ID ring — shown as it stands during a re-check. */
+  idConfirmed?: boolean;
   /** The ID types offered, from the server (enabledIdTypes()). */
   idTypes?: readonly string[];
   /** A re-check a reviewer asked for: "Verified Real · Re-check". */
@@ -263,7 +266,7 @@ export function VerifyFlow({
   // --- Screen 5: the ID check ---------------------------------------------
   if (screen === "id_form" && capturing) {
     return (
-      <Shell view={view} reverify={reverify}>
+      <Shell view={view} reverify={reverify} idDone={idConfirmed}>
         <SelfieCapture
           onCaptured={({ selfie, liveness }) => submitIdCheck(selfie, liveness)}
           onCancel={() => setCapturing(false)}
@@ -279,7 +282,7 @@ export function VerifyFlow({
     const hint = ID_TYPE_OPTIONS.find((o) => o.value === idType)?.hint;
     const offered = ID_TYPE_OPTIONS.filter((o) => idTypes.includes(o.value));
     return (
-      <Shell view={view} reverify={reverify}>
+      <Shell view={view} reverify={reverify} idDone={idConfirmed}>
         <div className="grid gap-[18px]">
           <Heading title={ID_COPY.title} lead={ID_COPY.body[0]} />
           <fieldset className="m-0 grid gap-2 border-0 p-0">
@@ -367,7 +370,7 @@ export function VerifyFlow({
 
   // --- Screen 1 (overview) and the outcome states (screens 3, 4 and 6) ----
   return (
-    <Shell view={view} reverify={reverify}>
+    <Shell view={view} reverify={reverify} idDone={idConfirmed}>
       {view.kind === "phone" ? phoneStep : null}
 
       {view.kind === "start" ? (
@@ -513,14 +516,14 @@ export function VerifyFlow({
   );
 }
 
-function Shell({ view, reverify, children }: { view: VerifyView; reverify: boolean; children: React.ReactNode }) {
+function Shell({ view, reverify, idDone, children }: { view: VerifyView; reverify: boolean; idDone: boolean; children: React.ReactNode }) {
   const live = isVerifiedReal(view);
   const sub = reverify ? "Verified Real · Re-check" : live ? "Your profile is visible" : "Your profile goes live once you're Verified Real";
   return (
     <div className="mx-auto grid w-full max-w-[680px]">
       <ScreenBand title="Verification" sub={sub} />
       <div className="grid content-start gap-[18px] px-4 pb-6 pt-5">
-        <RingStepper view={view} reverify={reverify} />
+        <RingStepper view={view} reverify={reverify} idDone={idDone} />
         {children}
       </div>
     </div>

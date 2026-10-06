@@ -1,4 +1,5 @@
 import type { VerifyView } from "@/lib/verification-view";
+import { ringSteps, type Ring } from "@/lib/ring-steps";
 
 /**
  * The ring stepper — verify-overview.slim.html.
@@ -13,8 +14,6 @@ import type { VerifyView } from "@/lib/verification-view";
  * on the third ring, rule at 83.3%).
  */
 
-type Ring = "done" | "checking" | "todo" | "optional" | "optional_checking";
-type Step = { label: string; ring: Ring; status: string };
 
 const STATUS_TONE: Record<Ring, string> = {
   done: "text-green-500",
@@ -24,48 +23,6 @@ const STATUS_TONE: Record<Ring, string> = {
   optional: "text-grey-600",
 };
 
-function steps(view: VerifyView, reverify: boolean): { steps: Step[]; fill: string } {
-  const phone: Step = { label: "Phone", ring: "done", status: "Confirmed" };
-  const real = (ring: Ring, status: string): Step => ({ label: "Verified Real", ring, status });
-  const id = (ring: Ring, status: string): Step => ({ label: "ID check", ring, status });
-  const optional = id("optional", "Optional");
-
-  // A re-check a reviewer asked for (decided 6 October 2026): "Verified Real ·
-  // Re-check" — never "Next", and never why the member was asked.
-  if (reverify) {
-    switch (view.kind) {
-      case "selfie_checking":
-        return { steps: [phone, real("checking", "Being checked"), optional], fill: "50%" };
-      case "selfie_review":
-        return { steps: [phone, real("checking", "Being reviewed"), optional], fill: "50%" };
-      case "start":
-      case "selfie_retry":
-        return { steps: [phone, real("todo", "Re-check"), optional], fill: "33.3%" };
-    }
-  }
-
-  switch (view.kind) {
-    case "phone":
-      return { steps: [{ label: "Phone", ring: "todo", status: "Next" }, real("todo", "After phone"), optional], fill: "0%" };
-    case "start":
-      return { steps: [phone, real("todo", "Next"), optional], fill: "33.3%" };
-    case "selfie_retry":
-      return { steps: [phone, real("todo", "Try again"), optional], fill: "33.3%" };
-    case "selfie_checking":
-      return { steps: [phone, real("checking", "Being checked"), optional], fill: "50%" };
-    case "selfie_review":
-      return { steps: [phone, real("checking", "Being reviewed"), optional], fill: "50%" };
-    case "passed":
-    case "id_retry":
-      return { steps: [phone, real("done", "Done"), optional], fill: "66.6%" };
-    case "id_checking":
-      return { steps: [phone, real("done", "Done"), id("optional_checking", "Being checked")], fill: "83.3%" };
-    case "id_review":
-      return { steps: [phone, real("done", "Done"), id("optional_checking", "Being reviewed")], fill: "83.3%" };
-    case "both":
-      return { steps: [phone, real("done", "Done"), id("done", "Done")], fill: "100%" };
-  }
-}
 
 function RingSvg({ ring }: { ring: Ring }) {
   const track =
@@ -94,8 +51,8 @@ function RingSvg({ ring }: { ring: Ring }) {
   );
 }
 
-export function RingStepper({ view, reverify = false }: { view: VerifyView; reverify?: boolean }) {
-  const { steps: list, fill } = steps(view, reverify);
+export function RingStepper({ view, reverify = false, idDone = false }: { view: VerifyView; reverify?: boolean; idDone?: boolean }) {
+  const { steps: list, fill } = ringSteps(view, reverify, idDone);
   return (
     <div className="grid gap-2 rounded-xl border border-ink-900/[.12] bg-white px-2.5 pb-4 pt-[18px]">
       <div className="grid grid-cols-3" aria-hidden="true">

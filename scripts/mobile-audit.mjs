@@ -173,6 +173,7 @@ const ROUTES = [
   { route: "/audit/verify/start", label: "Verify · start" },
   { route: "/audit/verify/reverify", label: "Verify · reverify" },
   { route: "/audit/verify/reverify-checking", label: "Verify · reverify-checking" },
+  { route: "/audit/verify/reverify-with-id", label: "Verify · reverify-with-id" },
   { route: "/audit/verify/reverify-retry", label: "Verify · reverify-retry" },
   { route: "/audit/verify/checking", label: "Verify · checking" },
   { route: "/audit/verify/review", label: "Verify · review" },

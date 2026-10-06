@@ -90,6 +90,7 @@ export default async function VerifyPage() {
       sandbox={sandbox}
       live={Boolean(live.live)}
       reverify={reverifying}
+      idConfirmed={stage === "id_confirmed"}
       idTypes={enabledIdTypes()}
       selfieStep={
         onboarding || reverifying ? (

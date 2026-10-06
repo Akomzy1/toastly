@@ -4,6 +4,8 @@ Replaces the placeholder consent text. Onboarding order is now **photos first, t
 
 Items in `[brackets]` wait on Smile ID's answers or counsel's review (legal brief, question 5). Everything else is final.
 
+**Pending Smile ID's reply on its data role:** if Smile ID uses our members' images to improve its own technology and we can't opt out, every screen's retention sentence gets: "Smile ID may also use them to improve its own technology." If we can opt out, nothing changes.
+
 ---
 
 ## 1. Before your selfie (onboarding)
@@ -12,7 +14,9 @@ Items in `[brackets]` wait on Smile ID's answers or counsel's review (legal brie
 >
 > You'll take a short selfie video. It does two things: it confirms you're a real person, here now — and it checks that your main photo is really you.
 >
-> The check is run by Smile ID, our verification provider. **Toastly keeps only the result** — that you passed, and when — never your images. Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you.
+> The check is run by Smile ID, our verification provider. **Toastly keeps only the result** — that you passed, and when — never your images.
+>
+> Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you.
 >
 > Smile ID keeps the images from this check for up to five years, under its own terms. [Purpose of retention, and any way to request earlier deletion — to be confirmed with Smile ID.]
 >
@@ -54,23 +58,21 @@ Items in `[brackets]` wait on Smile ID's answers or counsel's review (legal brie
 
 ---
 
-## 4. Quick re-check
+## 4. Re-check (asked by Toastly)
+
+Shown when a reviewer or a step-up check asks a member to confirm it's still them. It never says why the member was asked.
 
 > **Quick re-check**
 >
 > We sometimes ask members to confirm it's still them. One selfie, about a minute.
 >
-> Smile ID compares it with the face registered when you verified. Toastly keeps only the result. Smile ID keeps the images for up to five years, under its own terms.
+> Smile ID compares it with the face registered when you verified. **Toastly keeps only the result.** Smile ID keeps the images for up to five years, under its own terms.
 >
 > ☐ I agree to Smile ID checking that I'm a real person, here now, and the same person who verified this account.
 >
 > **[Start]** · Not now
 
-Never say why the member was asked.
-
----
-
-**Updated 6 October 2026** — screens 1 and 3 changed and screen 4 added, so their consent versions were bumped and members are asked again. Every "Smile ID keeps the images…" sentence: if Smile ID confirms it uses images to improve its technology and we can't opt out, append "Smile ID may also use them to improve its own technology." (owner to confirm).
+Stepper on this screen: Phone **Confirmed** · Verified Real **Re-check** · ID check (unchanged). Never "Next" or "One more step".
 
 ---
 

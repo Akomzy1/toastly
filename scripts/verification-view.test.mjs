@@ -81,7 +81,8 @@ test("Virtual NIN is hidden until the flag is set — no code change to turn it 
 test("the consent screens carry the owner's wording, with new versions so members are asked again", () => {
   const s1 = CONSENT.verification_selfie;
   assert.notEqual(s1.version, "2026-10-05");
-  assert.match(s1.body[1], /never your images\. Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you\.$/);
+  assert.match(s1.body[1], /never your images\.$/);
+  assert.equal(s1.body[2], "Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you.", "its own paragraph, as in the wording document");
   assert.equal(s1.checkbox, "I agree to Smile ID checking my selfie, comparing it with my main photo and registering my face for later re-checks, as described above.");
 
   const s3 = CONSENT.id_check;
@@ -92,10 +93,32 @@ test("the consent screens carry the owner's wording, with new versions so member
   assert.equal(s4.title, "Quick re-check");
   assert.deepEqual(s4.body, [
     "We sometimes ask members to confirm it's still them. One selfie, about a minute.",
-    "Smile ID compares it with the face registered when you verified. Toastly keeps only the result. Smile ID keeps the images for up to five years, under its own terms.",
+    "Smile ID compares it with the face registered when you verified. **Toastly keeps only the result.** Smile ID keeps the images for up to five years, under its own terms.",
   ]);
   assert.equal(s4.checkbox, "I agree to Smile ID checking that I'm a real person, here now, and the same person who verified this account.");
   assert.deepEqual([s4.primary, s4.secondary], ["Start", "Not now"]);
   assert.notEqual(s4.version, "2026-10-06", "the interim wording's version is retired");
   assert.equal(CONSENT.replace_main_photo.version, "2026-10-05", "screen 2 didn't change");
+});
+
+// --- The ID ring during a re-check ("ID check (unchanged)") -----------------
+
+import { ringSteps } from "../lib/ring-steps.ts";
+
+test("during a re-check the ID ring shows as it stands: done for a member who has it, optional for one who doesn't", () => {
+  for (const kind of ["start", "selfie_retry", "selfie_checking", "selfie_review"]) {
+    const view = kind === "selfie_retry" ? { kind, status: "block", code: null } : { kind };
+    const withId = ringSteps(view, true, true).steps;
+    const without = ringSteps(view, true, false).steps;
+    assert.deepEqual(withId[2], { label: "ID check", ring: "done", status: "Done" }, `${kind}: the ring isn't taken away`);
+    assert.deepEqual(without[2], { label: "ID check", ring: "optional", status: "Optional" }, `${kind}: never "missing"`);
+    assert.equal(withId[1].label, "Verified Real");
+    assert.notEqual(withId[1].status, "Next", "never 'Next' on a re-check");
+  }
+  assert.equal(ringSteps({ kind: "start" }, true, true).steps[1].status, "Re-check");
+});
+
+test("outside a re-check the stepper is unchanged", () => {
+  assert.equal(ringSteps({ kind: "start" }).steps[1].status, "Next");
+  assert.deepEqual(ringSteps({ kind: "both" }).steps[2], { label: "ID check", ring: "done", status: "Done" });
 });

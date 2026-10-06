@@ -40,7 +40,8 @@ export const CONSENT: Record<ConsentKind, ConsentText> = {
     title: "Before your selfie",
     body: [
       "You'll take a short selfie video. It does two things: it confirms you're a real person, here now — and it checks that your main photo is really you.",
-      "The check is run by Smile ID, our verification provider. **Toastly keeps only the result** — that you passed, and when — never your images. Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you.",
+      "The check is run by Smile ID, our verification provider. **Toastly keeps only the result** — that you passed, and when — never your images.",
+      "Smile ID also registers your face against your Toastly account, so that if we ever ask you to re-check, it can confirm it's still you.",
       // SMILE-RETENTION: if Smile ID confirms it uses images to improve its technology and we can't opt out, append "Smile ID may also use them to improve its own technology."
       "Smile ID keeps the images from this check for up to five years, under its own terms. [Purpose of retention, and any way to request earlier deletion — to be confirmed with Smile ID.]",
     ],
@@ -70,7 +71,7 @@ export const CONSENT: Record<ConsentKind, ConsentText> = {
     body: [
       "We sometimes ask members to confirm it's still them. One selfie, about a minute.",
       // SMILE-RETENTION: if Smile ID confirms it uses images to improve its technology and we can't opt out, append "Smile ID may also use them to improve its own technology."
-      "Smile ID compares it with the face registered when you verified. Toastly keeps only the result. Smile ID keeps the images for up to five years, under its own terms.",
+      "Smile ID compares it with the face registered when you verified. **Toastly keeps only the result.** Smile ID keeps the images for up to five years, under its own terms.",
     ],
     checkbox: "I agree to Smile ID checking that I'm a real person, here now, and the same person who verified this account.",
     primary: "Start",

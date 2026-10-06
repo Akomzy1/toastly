@@ -16,7 +16,7 @@ export const metadata: Metadata = {
  * The `attention` states exist only here — Smile ID's sandbox has no
  * scenario that returns one.
  */
-const STATES: Record<string, { view: VerifyView; screen?: "overview" | "id_form"; reverify?: boolean }> = {
+const STATES: Record<string, { view: VerifyView; screen?: "overview" | "id_form"; reverify?: boolean; idConfirmed?: boolean }> = {
   start: { view: { kind: "start" } },
   // A re-check a reviewer asked for — the in-page selfie with its own consent.
   reverify: { view: { kind: "start" }, reverify: true },
@@ -26,6 +26,8 @@ const STATES: Record<string, { view: VerifyView; screen?: "overview" | "id_form"
   "retry-image": { view: { kind: "selfie_retry", status: "error", code: "image_unavailable_or_invalid" } },
   "retry-error": { view: { kind: "selfie_retry", status: "error", code: "internal_error" } },
   "reverify-checking": { view: { kind: "selfie_checking" }, reverify: true },
+  // A member with the ID ring: it stays shown as done through a re-check.
+  "reverify-with-id": { view: { kind: "start" }, reverify: true, idConfirmed: true },
   "reverify-retry": { view: { kind: "selfie_retry", status: "block", code: "spoof_detected" }, reverify: true },
   passed: { view: { kind: "passed" } },
   "id-form": { view: { kind: "passed" }, screen: "id_form" },
@@ -49,6 +51,7 @@ export default function AuditVerify({ params }: { params: { state: string } }) {
       view={s.view}
       initialScreen={s.screen}
       reverify={s.reverify}
+      idConfirmed={s.idConfirmed}
       selfieStep={
         selfie ? <SelfieCheckStep connected devStandIn={false} photosReady mode={s.reverify ? "reverify" : "onboard"} /> : undefined
       }
