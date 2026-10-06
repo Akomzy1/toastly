@@ -117,6 +117,21 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
+## 0d. Where you live, two-way "open to abroad", age range (migration 0027) — NOT APPLIED
+
+1. Run `supabase/migrations/0027_country_age_two_way.sql` in the SQL editor
+   **before** deploying the code that reads it — the app layout and `/verify`
+   read `country_confirmed_at`, so the new code against an old database fails.
+2. Every existing member is unconfirmed afterwards and is asked once, on
+   their next visit (a sheet; not over the safety kit or Your data).
+3. Country can then only change through `confirm_country` / `change_country`
+   (members' direct writes are refused). A move between Nigeria and abroad
+   stops a renewing plan at its period end through the provider; if the
+   provider can't be reached, the subscription keeps `track_changed_at` set —
+   check `select * from subscriptions where track_changed_at is not null and status = 'active'`.
+4. The default age range lives in `match_config` (4 below, 5 above, 9 wide,
+   18 to 70+); change it there, not in code.
+
 ## 0c. Diaspora rules, USD coins, console cases (migration 0026)
 
 1. ~~Run `supabase/migrations/0026_diaspora_rules_console.sql`.~~ **Applied

@@ -34,7 +34,7 @@ export default async function PoolPage() {
 
   return (
     <>
-      <ScreenBand title="Your match pool" sub={`${city?.label ?? "City not set"} · ${TIER_LABELS[tier]} plan`} back="/profile" />
+      <ScreenBand title="Your match pool" sub={`${city?.label ?? "City not set"} · ${TIER_LABELS[tier]} plan`} back="/profile/preferences" />
       <PoolChoice
         city={cityLabel}
         hasCity={Boolean(city)}

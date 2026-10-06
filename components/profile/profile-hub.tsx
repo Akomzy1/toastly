@@ -51,12 +51,16 @@ export function ProfileHub({
   /** Lives outside Nigeria: chooses a pool, rather than "open to abroad" (PRD §5.6). */
   abroad?: boolean;
 }) {
-  // Who you match with: one row, by where the member lives (pool-choice /
-  // open-to-abroad prototypes).
+  // Settings (where-you-live-settings.slim.html): phone number, where you
+  // live, and match preferences — the age range, and "open to abroad" or the
+  // pool by where the member lives. Deviation, flagged: nav-profile-hub had
+  // the match row here directly; the settings prototype puts it one level in.
   const rows = [
-    abroad
-      ? { label: "Your match pool", sub: "Back home, your diaspora community, or both", href: "/profile/pool" }
-      : { label: "Match preferences", sub: "Who shows up in your six", href: "/profile/preferences" },
+    {
+      label: "Settings",
+      sub: abroad ? "Where you live, age range, your match pool" : "Where you live, age range, people abroad",
+      href: "/profile/settings",
+    },
     ...HUB,
   ];
   const [help, setHelp] = React.useState(false);

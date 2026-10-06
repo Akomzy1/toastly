@@ -868,3 +868,83 @@ read` and retrying never helps. **The repo now lives at `C:\dev\toastly`**,
 outside OneDrive; the build there produces a clean `BUILD_ID` and `next start`
 is ready in two seconds. The OneDrive copy is stale from `800d235` onward and
 should not be edited. README documents this.
+
+## Where you live, "open to abroad" both ways, age range (0027) — 5 October 2026
+
+Built against `where-you-live`, `where-you-live-confirm`,
+`where-you-live-settings` and `match-preferences`; the Edit profile country
+select (invented UI) is gone.
+
+- **Sign-up:** where you live is the step after the phone code, pre-selected
+  from the phone's country code and confirmed by the member; members abroad
+  then pick their city. **Existing members** get a one-time sheet until they
+  confirm (never over the safety kit, Your data, or the sign-up step).
+- **Changes:** in Settings, once every 30 days, every confirmation and change
+  logged (`country_changes`, append-only). Members can't write their country
+  directly any more (`guard_country`). A move between Nigeria and abroad
+  leaves a renewing plan running to its period end and stops it renewing at
+  Paystack/Stripe; the member then picks from the new country's plans.
+- **Signals, never blocks:** stated country vs the phone's country code (new,
+  `phone_country_mismatch`), and — new for dollar payments — card country and
+  connection country at payment. Naira payments already had both.
+- **"Open to people living abroad" works both ways:** off, members abroad are
+  left out of the member's six, and the member is left out of theirs. PRD
+  §5.6 and CLAUDE.md say so; main's test of the old one-way rule now tests
+  this.
+- **Age range:** every member, free, filters their own six only; defaults to
+  4 below / 5 above their age, at least 9 wide, 18 to 70+ (`match_config`). A
+  candidate with no age on record is never filtered out.
+
+**Choices made here, please confirm:**
+- The one-time sheet can't be dismissed without confirming (the prototype
+  has no close control).
+- The first confirmation doesn't start the 30-day clock, so a sign-up slip
+  can be fixed straight away; only settings changes do.
+- A country with no cities on the list (Ghana, say) skips the city step.
+- The country list is the prototypes' 48 (four shown first, 44 under
+  "Somewhere else"); a phone code outside it guesses Nigeria.
+- The prototype stepper's "Photos" step sits after the selfie in today's
+  flow, until the photo-upload port from `live-profile-and-prompt-14` lands.
+
+**Not applied to hosted Supabase.** GO-LIVE §0d: run 0027 before deploying.
+
+## Home and Pricing against home-diaspora-offer and pricing-offer — 5 October 2026
+
+The copy changes (women abroad get Diaspora Plus, plan-aware pool line)
+were already live; the structure had drifted. Home now follows the
+prototype's 16 sections, including "AI, on your side"; Pricing has the
+prototype's header, the ₦ track on white and the $ track on forest, its
+three card styles, the women's-offer band, coins, Why-pay and closing CTA.
+
+**Prototype copy not shipped (PRD wins), please review the wording:**
+- No-show coins "go to a charity the other person picks" → "go to the
+  person who showed up. Toastly keeps nothing — and if you cancel because
+  you feel unsafe, yours always come back." (The safety clause is new
+  wording, from PRD §5.5's override rule.) "Not a single kobo" → "coin".
+- "Refundable to your original payment method on request" → "Coins are
+  never refunded or paid out as cash."
+- "Bank transfer" / "card, transfer or USSD" → "card, bank or USSD".
+- "They say so — everything comes back" → "…in good time" (only cancelling
+  before the cut-off is free).
+- "boosts your position" → "raises your position".
+- AI pledge "It handles the admin and the safety checks" → "It helps with
+  the admin — verification and payment questions, feedback on your own
+  answers." No Toastly AI runs safety checks (Sentinel's agent is Phase 2).
+- Kept from earlier rulings: Couple Mode / AriyaPlanner never sold as paid,
+  incognito on Premium Plus, priority support only on each track's top
+  tier, a chat row and incognito row in the table, "Nobody buys your place
+  in the six".
+- **Open:** Premium Plus "Unlimited voice notes" is in the prototype but
+  not in PRD §7.1 — left as drawn; confirm or remove.
+
+**Deviations:** headings use the nearest type token; "How Toastly uses AI"
+links to the privacy policy's AI section (the prototype points at a
+Features section no prototype draws); plan and CTA buttons go to /signup;
+blog cards aren't links (no articles exist); the women's-offer anchor stays
+`#women`; Testimonials' extra "Read their stories" button and Pricing's
+separate safety card were removed; the $ track chip is amber as drawn.
+
+**Site-wide fix found here:** `cn()` dropped the design system's text sizes
+whenever a colour class was present, so every Button rendered at 16px, not
+15px; badges, accordion triggers and the pricing tabs lost their sizes too.
+Fixed in lib/utils.ts; the pricing tabs now carry min-h-11.

@@ -10,7 +10,7 @@ import { Input, Label, Select, Textarea } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import { CityPicker, type PickerCity } from "@/components/app/city-picker";
 import { TimeZoneField } from "@/components/app/time-zone-field";
-import { LIVE_COUNTRIES } from "@/lib/countries";
+import { COUNTRY_NAME } from "@/lib/countries";
 import {
   HISTORY_LABELS,
   INTENT_LABELS,
@@ -75,7 +75,7 @@ export function ProfileForm({
   cities: PickerCity[];
 }) {
   const [state, action] = useFormState(saveProfile, null);
-  const [country, setCountry] = React.useState(profile.country_code || "NG");
+  const country = profile.country_code || "NG";
 
   return (
     <form action={action} className="grid gap-6">
@@ -116,30 +116,19 @@ export function ProfileForm({
           />
         </Label>
 
-        {/* NOT IN A PROTOTYPE — flagged (decided 4 October 2026). Nothing
-            else let a member say they live abroad, so every diaspora rule
-            (PRD §5.6) was out of reach. Self-declared; the pricing signals
-            watch for mismatches. Who you match with now lives on its own
-            screens (pool-choice / open-to-abroad prototypes). */}
-        <Label htmlFor="country_code">
-          Where do you live?
-          <Select id="country_code" name="country_code" value={country} onChange={(e) => setCountry(e.target.value)}>
-            {LIVE_COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
-        </Label>
-
-        {/* Only members abroad choose a diaspora city; it is what the
-            per-city opening keys off. Nigeria-based members never see it,
-            and the database refuses to store one for them. */}
+        {/* Where you live is set at sign-up and changed in Settings, at most
+            once every 30 days (where-you-live prototypes, 0027) — not here.
+            Only members abroad choose a diaspora city; it is what the
+            per-city opening keys off, so the picker offers the cities of the
+            country they live in. Nigeria-based members never see it. */}
         {/* Both built against their own prototypes — city-picker.slim.html
             and time-zone.slim.html. */}
         {country !== "NG" ? (
           <div className="grid gap-2">
-            <CityPicker cities={cities} defaultValue={profile.diaspora_city} />
+            <CityPicker
+              cities={cities.filter((c) => c.country === (COUNTRY_NAME[country] ?? country))}
+              defaultValue={profile.diaspora_city}
+            />
             <span className="text-caption text-grey-600">
               Matching within a diaspora city opens one city at a time, as
               each has enough verified members to be worth opening. Until

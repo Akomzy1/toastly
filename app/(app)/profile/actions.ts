@@ -55,13 +55,24 @@ export async function saveProfile(
     .map((s) => s.trim())
     .filter(Boolean);
 
-  // Where the member lives (self-declared, from a fixed list). A
-  // Nigeria-based member has no diaspora city — the column is for the
-  // diaspora-to-diaspora pool, and 0010 enforces the same rule as a CHECK.
-  const countryRaw = String(formData.get("country_code") ?? "").toUpperCase();
-  const { data: me } = await supabase.from("profiles").select("country_code").eq("id", user.id).single();
-  const country = isLiveCountry(countryRaw) ? countryRaw : me?.country_code ?? "NG";
-  const diasporaCity = country !== "NG" ? optional(formData, "diaspora_city") : null;
+  // Where the member lives is set at sign-up and changed in Settings
+  // (confirm_country / change_country, 0027) — never here. A member abroad
+  // may change their diaspora city here, but only to a city in the country
+  // they live in; a Nigeria-based member has none (0010's CHECK agrees).
+  const { data: me } = await supabase.from("profiles").select("country_code, diaspora_city").eq("id", user.id).single();
+  const country = me?.country_code ?? "NG";
+  let diasporaCity: string | null = null;
+  const cityRaw = country !== "NG" ? optional(formData, "diaspora_city") : null;
+  if (cityRaw) {
+    const { data: city } = await supabase
+      .from("diaspora_cities")
+      .select("slug")
+      .eq("slug", cityRaw)
+      .eq("country_code", country)
+      .maybeSingle();
+    if (!city) return { error: "Choose a city in the country you live in." };
+    diasporaCity = city.slug;
+  }
 
   const { error } = await supabase
     .from("profiles")
@@ -69,11 +80,7 @@ export async function saveProfile(
       display_name: displayName,
       city: optional(formData, "city"),
       bio: optional(formData, "bio"),
-      country_code: country,
       diaspora_city: diasporaCity,
-      // Moving to Nigeria returns the member to the Nigeria pool; the pool
-      // itself is chosen on /profile/pool (set_match_pool).
-      ...(country === "NG" ? { pool: "back_home" } : {}),
       time_zone: optional(formData, "time_zone"),
 
       // Never a gate: stored when offered, null when not.

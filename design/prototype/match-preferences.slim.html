@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/6bd719cb-5eb1-4496-b74d-0b3bf8010485.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/d07ec94f-2f6a-43a9-a607-24171cc4d6a4.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/e063b1bf-2075-441b-b069-8152f3d45b65.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/60694b4f-4fa8-4b13-a5d9-1b30318006a6.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/c8d0e13e-d37d-46ee-83fa-99ddb6c27291.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Match preferences</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Match preferences — age range and people abroad</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">Age range is now set in place with a two-handle slider, free on every plan, with no lock or badge. It runs from 18 to 70+ and starts four years below and five above the member's own age. Handles are 44px targets and move one year per arrow key. The abroad switch keeps its approved design; only its explanation changes, to say it works both ways.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ ages }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Match preferences" style="width:{{ frameW }};max-width:100%;min-height:560px;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Match preferences</p>
+      </div>
+
+      <div style="padding:18px 14px 24px;display:grid;gap:10px;align-content:start">
+        <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Who you see</p>
+
+        <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid">
+
+          <div role="group" aria-labelledby="age-label" style="padding:14px 15px 14px;display:grid;gap:6px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+              <span id="age-label" style="font-size:15px;font-weight:500;color:#050309">Age range</span>
+              <span aria-live="polite" style="font-family:Aleo,Georgia,serif;font-size:22px;font-weight:700;line-height:1.2;color:#050309;font-variant-numeric:tabular-nums">{{ rangeText }}</span>
+            </div>
+            <div ref="{{ trackRef }}" sc-camel-on-pointer-down="{{ down }}" sc-camel-on-pointer-move="{{ move }}" sc-camel-on-pointer-up="{{ up }}" sc-camel-on-pointer-cancel="{{ up }}" style="position:relative;height:44px;margin:0 13px;touch-action:none;cursor:pointer">
+              <span style="position:absolute;left:-13px;right:-13px;top:19px;height:6px;border-radius:999px;background:#D9D9DA"></span>
+              <span style="position:absolute;top:19px;height:6px;border-radius:999px;background:#00695C;left:{{ loPct }};width:{{ spanPct }}"></span>
+              <button type="button" role="slider" aria-label="Youngest age" aria-valuemin="18" aria-valuemax="{{ hiMinus }}" aria-valuenow="{{ lo }}" sc-camel-on-key-down="{{ loKey }}" style="position:absolute;top:0;left:{{ loPct }};width:44px;height:44px;margin-left:-22px;padding:0;border:0;background:transparent;display:grid;place-items:center;cursor:grab;touch-action:none;border-radius:999px" style-focus="outline:none;box-shadow:0 0 0 3px rgba(0,105,92,0.22)">
+                <span style="width:26px;height:26px;border-radius:999px;background:#FFFFFF;border:2px solid #00695C;box-shadow:0 1px 4px rgba(5,3,9,0.25)"></span>
+              </button>
+              <button type="button" role="slider" aria-label="Oldest age" aria-valuemin="{{ loPlus }}" aria-valuemax="70" aria-valuenow="{{ hi }}" aria-valuetext="{{ hiText }}" sc-camel-on-key-down="{{ hiKey }}" style="position:absolute;top:0;left:{{ hiPct }};width:44px;height:44px;margin-left:-22px;padding:0;border:0;background:transparent;display:grid;place-items:center;cursor:grab;touch-action:none;border-radius:999px" style-focus="outline:none;box-shadow:0 0 0 3px rgba(0,105,92,0.22)">
+                <span style="width:26px;height:26px;border-radius:999px;background:#FFFFFF;border:2px solid #00695C;box-shadow:0 1px 4px rgba(5,3,9,0.25)"></span>
+              </button>
+            </div>
+            <div aria-hidden="true" style="display:flex;justify-content:space-between;font-size:12px;color:#828184;margin-top:-4px">
+              <span>18</span>
+              <span>70+</span>
+            </div>
+            <p style="margin:4px 0 0;font-size:13.5px;line-height:1.5;color:#504E52;text-wrap:pretty">Your six will be people in this age range.</p>
+          </div>
+
+          <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+            <span style="font-size:15px;font-weight:500;color:#050309">City</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0">Yaba, Lagos <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+          </div>
+
+          <button type="button" role="switch" aria-checked="{{ on }}" sc-camel-on-click="{{ toggle }}" style="width:100%;min-height:64px;padding:14px 15px;display:flex;align-items:center;gap:14px;text-align:left;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;font-family:Inter,sans-serif;cursor:pointer;border-radius:0 0 16px 16px">
+            <span style="flex:1;min-width:0;display:grid;gap:3px">
+              <span style="font-size:15px;font-weight:500;color:#050309">Open to people living abroad</span>
+              <span style="font-size:13.5px;line-height:1.5;color:#504E52;text-wrap:pretty">When this is off, you won't see Nigerians living abroad — and they won't see you.</span>
+            </span>
+            <span aria-hidden="true" style="flex-shrink:0;position:relative;width:48px;height:28px;border-radius:999px;background:{{ trackBg }};transition:background .18s ease">
+              <span style="position:absolute;top:3px;left:{{ knobLeft }};width:22px;height:22px;border-radius:999px;background:#FFFFFF;box-shadow:0 1px 3px rgba(5,3,9,0.3);transition:left .18s ease"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:900}}">
+const MIN = 18, MAX = 70;
+const defaults = age => { const lo = Math.max(MIN, age - 4); return { lo, hi: Math.min(MAX, Math.max(age + 5, lo + 9)) }; };
+class Component extends DCLogic {
+  state = { w: "360px", on: true, age: 29, ...defaults(29) };
+  trackRef = React.createRef();
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  valAt(x) {
+    const r = this.trackRef.current.getBoundingClientRect();
+    return Math.round(MIN + Math.min(1, Math.max(0, (x - r.left) / r.width)) * (MAX - MIN));
+  }
+  setLo(v) { this.setState(s => ({ lo: Math.max(MIN, Math.min(s.hi - 1, v)) })); }
+  setHi(v) { this.setState(s => ({ hi: Math.min(MAX, Math.max(s.lo + 1, v)) })); }
+  apply(v) { this.drag === "lo" ? this.setLo(v) : this.setHi(v); }
+  key(which) {
+    return e => {
+      const cur = this.state[which];
+      const map = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -5, PageUp: 5 };
+      let v = null;
+      if (e.key in map) v = cur + map[e.key];
+      else if (e.key === "Home") v = MIN;
+      else if (e.key === "End") v = MAX;
+      if (v === null) return;
+      e.preventDefault();
+      which === "lo" ? this.setLo(v) : this.setHi(v);
+    };
+  }
+  renderVals() {
+    const { w, on, age, lo, hi } = this.state;
+    const pct = v => ((v - MIN) / (MAX - MIN) * 100).toFixed(3) + "%";
+    const hiText = hi === MAX ? MAX + "+" : String(hi);
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["680px", "Desktop"]].map(([v, l]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      states: [this.chip("Abroad switch on", on, () => this.setState({ on: true })), this.chip("Off", !on, () => this.setState({ on: false }))],
+      ages: [22, 29, 41].map(a => this.chip("Member aged " + a, age === a, () => this.setState({ age: a, ...defaults(a) }))),
+      trackRef: this.trackRef,
+      rangeText: lo + " – " + hiText,
+      lo, hi, hiText, hiMinus: hi - 1, loPlus: lo + 1,
+      loPct: pct(lo), hiPct: pct(hi), spanPct: ((hi - lo) / (MAX - MIN) * 100).toFixed(3) + "%",
+      down: e => {
+        const v = this.valAt(e.clientX);
+        this.drag = v <= lo ? "lo" : v >= hi ? "hi" : (v - lo <= hi - v ? "lo" : "hi");
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+        this.apply(v);
+      },
+      move: e => { if (this.drag) this.apply(this.valAt(e.clientX)); },
+      up: () => { this.drag = null; },
+      loKey: this.key("lo"),
+      hiKey: this.key("hi"),
+      on,
+      toggle: () => this.setState(s => ({ on: !s.on })),
+      trackBg: on ? "#00695C" : "#828184",
+      knobLeft: on ? "23px" : "3px"
+    };
+  }
+}
+</script>
+
+
+</body></html>

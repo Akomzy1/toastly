@@ -113,6 +113,9 @@ const ROUTES = [
   { route: "/audit/pool/no-city", label: "Pool choice · no-city" },
   { route: "/audit/preferences/on", label: "Match preferences · on" },
   { route: "/audit/preferences/off", label: "Match preferences · off" },
+  { route: "/audit/preferences/abroad", label: "Match preferences · abroad" },
+  // Where you live (where-you-live, -confirm, -settings prototypes)
+  { route: "/audit/where-you-live/signup", label: "Where you live · signup" },   { route: "/audit/where-you-live/signup-ghana", label: "Where you live · signup-ghana" },   { route: "/audit/where-you-live/confirm", label: "Where you live · confirm" },   { route: "/audit/where-you-live/settings-list", label: "Where you live · settings-list" },   { route: "/audit/where-you-live/settings", label: "Where you live · settings" },   { route: "/audit/where-you-live/settings-locked", label: "Where you live · settings-locked" },
   { route: "/audit/coins-get/usd", label: "Get coins · usd" },
   { route: "/audit/coins-get/ngn", label: "Get coins · ngn" },
   { route: "/audit/coins-get/usd-done", label: "Get coins · usd-done" },

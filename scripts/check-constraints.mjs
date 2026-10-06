@@ -1114,6 +1114,64 @@ check("the staff screens are gated on is_staff", (s, f) => {
   return /rpc\("is_staff"\)/.test(s) && /if \(staff !== true\) notFound\(\)/.test(s) ? false : "layout doesn't check staff";
 });
 
+// --- Where a member lives, both-ways "open to abroad", age range (0027) ------
+
+// Country is set by confirm_country / change_country only: they enforce the
+// 30-day rule, log every change and raise the phone-code review signal. A
+// direct write from app code would skip all three (the database refuses it
+// too — guard_country).
+check("app code never writes a member's country directly", (s, f) => {
+  if (!/\.(tsx?)$/.test(f)) return false;
+  return /\.update\(\s*\{[^}]*\bcountry_(code|confirmed_at|changed_at)\s*:/.test(s) ? "writes country_code with .update()" : false;
+});
+
+// The two country lists — lib/countries.ts and residence_countries — stay
+// the same list with the same calling codes.
+check("the country list matches the database's", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false;
+  const mig = fs.readdirSync("supabase/migrations").filter((m) => /\.sql$/.test(m)).sort()
+    .map((m) => fs.readFileSync(`supabase/migrations/${m}`, "utf8"))
+    .filter((m) => /insert into public\.residence_countries/.test(m)).pop();
+  if (!mig) return "no residence_countries seed";
+  const db = new Map([...mig.matchAll(/\('([A-Z]{2})', '(?:[^']|'')+', '(\d+)'\)/g)].map((m) => [m[1], m[2]]));
+  const ts = new Map([...s.matchAll(/code: "([A-Z]{2})", name: "[^"]+", callingCode: "(\d+)"/g)].map((m) => [m[1], m[2]]));
+  const diff = [...new Set([...db.keys(), ...ts.keys()])].filter((k) => db.get(k) !== ts.get(k));
+  return diff.length ? `differs for ${diff.join(", ")}` : false;
+});
+
+// Decided 5 October 2026: off works both ways. The latest feed must leave
+// a member in Nigeria who switched it off out of the six of members abroad.
+const LATEST_FEED = fs.readdirSync("supabase/migrations").filter((m) => /\.sql$/.test(m)).sort()
+  .filter((m) => /create or replace function public\.build_daily_feed/.test(fs.readFileSync(`supabase/migrations/${m}`, "utf8"))).pop();
+check("'Open to people living abroad' works both ways in the feed", (s, f) => {
+  if (!LATEST_FEED || !norm(f).endsWith(LATEST_FEED)) return false;
+  const body = s.slice(s.indexOf("create or replace function public.build_daily_feed"));
+  if (!/p\.country_code = 'NG' and \(v_country = 'NG' or p\.open_to_abroad\)/.test(body)) return "members abroad still see members who switched it off";
+  if (!/v_country = 'NG' and v_open\b/.test(body)) return "the member's own switch no longer filters their six";
+  return false;
+});
+
+check("the switch says it works both ways", (s, f) => {
+  if (!/components\/profile\/match-preferences\.tsx$/.test(norm(f))) return false;
+  return /they won(&apos;|')t see you/.test(s) ? false : "the explanation no longer says members abroad won't see them";
+});
+
+// Free on every plan: nothing that sets or applies the age range may read a
+// tier or an entitlement.
+check("the age range is free on every plan", (s, f) => {
+  const n = norm(f);
+  let body = "";
+  if (n.endsWith(".sql")) {
+    for (const name of ["_age_range", "my_age_range"]) {
+      const i = s.indexOf(`create or replace function public.${name}(`);
+      if (i >= 0) body += s.slice(i, s.indexOf("$$;", i));
+    }
+  } else if (/components\/profile\/match-preferences\.tsx$|app\/\(app\)\/profile\/preferences\//.test(n)) {
+    body = s;
+  }
+  return body && /current_tier|entitlement|\btier\b|premium/i.test(body) ? "reads a plan" : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

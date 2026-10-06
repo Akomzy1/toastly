@@ -4,6 +4,12 @@ import { Notice } from "@/components/ui/notice";
 import { PresenceHeartbeat } from "@/components/app/presence-heartbeat";
 import { AppHeader, AppTabBar } from "@/components/app/nav";
 import { MemberNotices } from "@/components/app/member-notices";
+import { headers } from "next/headers";
+import { CountryCheckSheet } from "@/components/where-you-live/flows";
+import { guessCountryFromPhone } from "@/lib/countries";
+import { loadCities } from "@/lib/where-you-live";
+
+const SHEET_EXEMPT = ["/verify", "/profile/settings/country", "/safety-kit", "/profile/data"];
 
 /**
  * In-app shell.
@@ -44,6 +50,19 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Members who confirmed their phone before the where-you-live step existed
+  // are asked once, on their next visit (where-you-live-confirm.slim.html):
+  // a sheet over whatever they open, until they confirm. Never over the
+  // sign-up step itself, its settings screen, the safety kit or their data.
+  const path = headers().get("x-pathname") ?? "";
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("phone_verified_at, country_confirmed_at, country_code, diaspora_city")
+    .eq("id", user.id)
+    .maybeSingle();
+  const askWhereYouLive =
+    Boolean(me?.phone_verified_at) && !me?.country_confirmed_at && !SHEET_EXEMPT.some((p) => path.startsWith(p));
+
   return (
     <div className="min-h-screen bg-paper">
       <AppHeader />
@@ -53,6 +72,14 @@ export default async function AppLayout({
       </main>
       <AppTabBar />
       <PresenceHeartbeat />
+      {askWhereYouLive && me ? (
+        <CountryCheckSheet
+          guess={user.phone ? guessCountryFromPhone(user.phone) : me.country_code}
+          onFile={me.country_code}
+          cityOnFile={me.diaspora_city}
+          cities={await loadCities(supabase)}
+        />
+      ) : null}
     </div>
   );
 }

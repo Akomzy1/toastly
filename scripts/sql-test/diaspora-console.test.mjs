@@ -47,13 +47,13 @@ test("one Nigeria pool: members abroad who chose back home appear to members in 
   assert.ok((await feed(homeAbroad)).includes(lagos), "and the member abroad sees Nigeria");
 });
 
-test("'Open to people living abroad' off filters only that member's own six", async () => {
+test("'Open to people living abroad' off works both ways (decided 5 October 2026)", async () => {
   await reset();
   const closed = await member("Local Only");
   await as(db, closed, (tx) => tx.query("update profiles set open_to_abroad = false where id = $1", [closed]));
   const abroad = await member("Abroad Looking Home", { country: "US", pool: "back_home" });
   assert.ok(!(await feed(closed)).includes(abroad), "not in their six");
-  assert.ok((await feed(abroad)).includes(closed), "their own setting doesn't hide them from anyone (a filter on their own feed only)");
+  assert.ok(!(await feed(abroad)).includes(closed), "and members abroad don't see them");
 });
 
 test("diaspora-to-diaspora needs a Diaspora plan on both sides and the choice on both sides", async () => {

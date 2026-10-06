@@ -74,7 +74,9 @@ export function TrackTabs({
             tabIndex={selected ? 0 : -1}
             onClick={() => onValueChange(i)}
             className={cn(
-              "rounded-nested border-0 px-5 py-[11px] font-sans text-nav font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-green-500/[.16]",
+              // min-h-11: at its real 14px size (see lib/utils.ts) the tab
+              // came to 42px; the touch-target floor is 44.
+              "min-h-11 rounded-nested border-0 px-5 py-[11px] font-sans text-nav font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-green-500/[.16]",
               selected
                 ? "bg-green-800 text-white"
                 : "bg-transparent text-grey-600 hover:text-ink-900",

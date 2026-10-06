@@ -125,6 +125,11 @@ const config: Config = {
         "section-y-lg": "clamp(56px,8vw,112px)",
         "section-x": "clamp(20px,5vw,48px)",
       },
+      letterSpacing: {
+        // Section eyebrows: 13px, 600, uppercase, 0.14em in every prototype
+        // (design-system.slim.html §01–§04, home-diaspora-offer, pricing-offer).
+        eyebrow: "0.14em",
+      },
       maxWidth: {
         container: "1280px",
         prose: "1180px",

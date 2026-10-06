@@ -68,14 +68,15 @@ test("the women's launch offer is Diaspora Plus abroad and Premium Plus at home,
   const w = await member("Offer Woman", { gender: "woman" });
   assert.equal(await tierOf(w), "premium_plus");
   const end1 = (await db.query("select max(ends_at) as e from entitlements where profile_id = $1 and source = 'womens_launch_offer'", [w])).rows[0].e;
-  await as(db, w, (tx) => tx.query("update profiles set country_code = 'GB' where id = $1", [w]));
+  // Country is set through confirm_country / change_country since 0027.
+  await as(db, w, (tx) => tx.query("select confirm_country('GB')"));
   assert.equal(await tierOf(w), "diaspora_plus");
-  await as(db, w, (tx) => tx.query("update profiles set country_code = 'NG' where id = $1", [w]));
+  await as(db, w, (tx) => tx.query("select change_country('NG')"));
   assert.equal(await tierOf(w), "premium_plus");
   const end2 = (await db.query("select max(ends_at) as e from entitlements where profile_id = $1 and source = 'womens_launch_offer'", [w])).rows[0].e;
   assert.equal(end2.getTime(), end1.getTime(), "no days added or taken");
   const man = await member("Not Offered");
-  await as(db, man, (tx) => tx.query("update profiles set country_code = 'GB' where id = $1", [man]));
+  await as(db, man, (tx) => tx.query("select confirm_country('GB')"));
   assert.equal(await tierOf(man), "starter");
 });
 

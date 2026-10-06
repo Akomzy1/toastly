@@ -10,6 +10,10 @@ import { NextResponse, type NextRequest } from "next/server";
  * var takes down pages that never needed auth in the first place.
  */
 export async function updateSession(request: NextRequest) {
+  // The app layout needs the path to know where the one-time "where do you
+  // live?" check must not cover (the sign-up step, its settings screen, the
+  // safety kit, your data).
+  request.headers.set("x-pathname", request.nextUrl.pathname);
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

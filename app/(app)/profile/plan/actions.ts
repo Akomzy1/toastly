@@ -5,8 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { startCheckout, type Method, type Mode } from "@/lib/payments/checkout";
-import { paystackDisable } from "@/lib/payments/paystack";
-import { stripeCancelAtPeriodEnd } from "@/lib/payments/stripe";
+import { stopRenewal as stopAtProvider } from "@/lib/payments/stop-renewal";
 
 export type PlanState = { ok?: string; error?: string } | null;
 
@@ -44,33 +43,8 @@ export async function stopRenewal(_prev: PlanState, formData: FormData): Promise
 
   const admin = createAdminClient();
   if (!admin) return { error: "Plans can't be changed right now. Try again soon." };
-  const { data: sub } = await admin
-    .from("subscriptions")
-    .select("provider_subscription_id, provider_token")
-    .eq("id", id)
-    .maybeSingle();
-  if (!sub) return { error: "That plan isn't on your account." };
-
-  try {
-    if (mine.provider === "stripe") await stripeCancelAtPeriodEnd(sub.provider_subscription_id);
-    else {
-      if (!sub.provider_token) return { error: "We couldn't reach Paystack for this plan yet. Try again in a minute." };
-      await paystackDisable(sub.provider_subscription_id, sub.provider_token);
-    }
-  } catch (e) {
-    return { error: `That didn't go through. ${(e as Error).message}` };
-  }
-
-  await admin.rpc("subscription_sync", {
-    p_provider: mine.provider,
-    p_subscription: sub.provider_subscription_id,
-    p_customer: null,
-    p_tier: mine.tier,
-    p_status: "non_renewing",
-    p_period_end: null,
-    p_token: null,
-    p_profile: user.id,
-  });
+  const stopped = await stopAtProvider(admin, { id, provider: mine.provider, tier: mine.tier, profileId: user.id });
+  if (stopped.error) return { error: stopped.error };
   revalidatePath("/profile/plan");
   return { ok: "Done. It won't renew, and you keep it until the end of what you've paid for." };
 }

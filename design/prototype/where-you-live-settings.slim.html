@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/e0ca1781-5832-4bd3-961e-2faa0b0ef1bb.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/214b2887-3ebe-4ef9-8da4-1c16e2c898c9.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/c9b01cf7-1d7d-4398-9420-7448ce99114f.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/cf16116e-2a9d-4344-bd4a-3be8e93bba78.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/a1298fc3-f043-4161-b7b3-fe1a950d26ec.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Settings</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Changing where you live</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">A settings row shows the country, and the city when the member lives abroad. The change screen uses the same five options. On a paid plan, one plain line says what happens to it. Changes are allowed once every 30 days; inside that window the screen states the next date in a neutral note and the options are read-only. No red, no error styling.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ screens }}" as="s" hint-placeholder-count="3">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ homes }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ plans }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+      <span style="width:1px;background:rgba(5,3,9,0.14);margin:4px 6px"></span>
+      <sc-for list="{{ windows }}" as="s" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ isCity }}">
+    <div style="width:100%;max-width:700px;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:#E5F0EE">
+      <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:3px"><path d="M5 12h13m-5-5 5 5-5 5" stroke="#00695C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <p style="margin:0;font-size:14px;line-height:1.6;color:#00332C;text-wrap:pretty">Hand-off: a country outside Nigeria continues into the existing city picker (city-picker.html) in its settings mode, unchanged. Tap a city here to see the saved state.</p>
+    </div>
+  </sc-if>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="{{ screenLabel }}" style="position:relative;width:{{ frameW }};max-width:100%;min-height:720px;display:flex;flex-direction:column;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Settings</p>
+        </div>
+        <div style="padding:18px 14px 24px;display:grid;gap:10px;align-content:start">
+          <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Your account</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+            <div style="min-height:60px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <span style="display:grid;gap:2px;min-width:0">
+                <span style="font-size:15px;font-weight:500;color:#050309">Phone number</span>
+                <span style="font-size:13.5px;line-height:1.45;color:#504E52">{{ phoneText }}</span>
+              </span>
+              <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+            </div>
+            <button type="button" sc-camel-on-click="{{ openChange }}" style="width:100%;min-height:60px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:transparent;border:0;border-top:1px solid rgba(5,3,9,0.1);text-align:left;cursor:pointer;font-family:Inter,sans-serif" style-hover="background:#F6F2EA">
+              <span style="display:grid;gap:2px;min-width:0">
+                <span style="font-size:15px;font-weight:500;color:#050309">Where you live</span>
+                <span style="font-size:13.5px;line-height:1.45;color:#504E52;text-wrap:pretty">{{ homeText }}</span>
+              </span>
+              <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+            </button>
+            <div style="min-height:60px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+              <span style="display:grid;gap:2px;min-width:0">
+                <span style="font-size:15px;font-weight:500;color:#050309">Match preferences</span>
+                <span style="font-size:13.5px;line-height:1.45;color:#504E52">Age range, city, people living abroad</span>
+              </span>
+              <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isChange }}">
+        <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+          <button type="button" sc-camel-on-click="{{ toList }}" aria-label="Back to settings" style="margin:-12px 0 -12px -12px;width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:#EBD9AE;font-size:20px;line-height:1;cursor:pointer">‹</button>
+          <div style="display:grid;gap:2px">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Where you live</p>
+            <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">Settings</p>
+          </div>
+        </div>
+
+        <div style="padding:18px 14px 24px;display:grid;gap:18px;align-content:start">
+          <p id="wys-h" style="margin:0;padding:0 2px;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">This sets your plans, prices and who you can meet.</p>
+
+          <sc-if value="{{ locked }}">
+            <div role="status" style="padding:12px 13px;border-radius:12px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);display:flex;gap:10px;align-items:flex-start">
+              <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="8.6" stroke="#00695C" stroke-width="1.5"></circle><path d="M12 7.5V12l3 2" stroke="#00695C" stroke-width="1.5" stroke-linecap="round"></path></svg>
+              <span style="font-size:14.5px;line-height:1.55;color:#050309;text-wrap:pretty">You can change this again on 3 April.</span>
+            </div>
+          </sc-if>
+
+          <div role="radiogroup" aria-labelledby="wys-h" style="display:grid;gap:8px">
+            <sc-for list="{{ options }}" as="o" hint-placeholder-count="5">
+              <div style="display:block">
+                <sc-if value="{{ o.open }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" role="radio" aria-checked="{{ o.on }}" sc-camel-on-click="{{ o.pick }}" style="width:100%;min-height:60px;padding:12px 14px;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid {{ o.border }};border-radius:14px;background:{{ o.bg }};font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#00695C">
+                    <span style="flex:1;min-width:0;display:grid;gap:4px">
+                      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                        <span style="font-size:16px;font-weight:600;color:#050309">{{ o.label }}</span>
+                        <sc-if value="{{ o.current }}"><span style="padding:3px 8px;border-radius:999px;background:#F6F2EA;border:1px solid rgba(5,3,9,0.12);font-size:11.5px;font-weight:600;color:#504E52">Current</span></sc-if>
+                      </span>
+                      <sc-if value="{{ o.hasSub }}"><span style="font-size:13px;line-height:1.5;color:#504E52">{{ o.sub }}</span></sc-if>
+                    </span>
+                    <sc-if value="{{ o.dot }}" hint-placeholder-val="{{ true }}">
+                      <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;border-radius:999px;border:1px solid {{ o.dotBorder }};background:{{ o.dotBg }};display:grid;place-items:center">
+                        <sc-if value="{{ o.on }}"><svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                      </span>
+                    </sc-if>
+                    <sc-if value="{{ o.chev }}"><span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:18px">›</span></sc-if>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ o.fixed }}">
+                  <div role="radio" aria-checked="{{ o.on }}" aria-disabled="true" style="min-height:60px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid {{ o.border }};border-radius:14px;background:{{ o.bg }}">
+                    <span style="flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                      <span style="font-size:16px;font-weight:600;color:{{ o.fg }}">{{ o.label }}</span>
+                      <sc-if value="{{ o.current }}"><span style="padding:3px 8px;border-radius:999px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);font-size:11.5px;font-weight:600;color:#504E52">Current</span></sc-if>
+                    </span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ showPlanLine }}">
+            <p style="margin:0;padding:12px 13px;border-radius:12px;background:#E5F0EE;font-size:14px;line-height:1.6;color:#00332C;text-wrap:pretty">{{ planLine }}</p>
+          </sc-if>
+
+          <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:10px">
+              <sc-if value="{{ needsCity }}">
+                <p style="margin:0;padding:0 2px;font-size:13.5px;line-height:1.55;color:#504E52">Next, you'll pick your city.</p>
+              </sc-if>
+              <button type="button" sc-camel-on-click="{{ save }}" disabled="{{ saveDisabled }}" style="min-height:48px;padding:14px 20px;border:0;border-radius:12px;background:{{ saveBg }};color:{{ saveFg }};font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:{{ saveCursor }}">{{ saveLabel }}</button>
+              <p style="margin:0;padding:0 2px;font-size:13px;line-height:1.55;color:#504E52;text-align:center">You can change where you live once every 30 days.</p>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCity }}">
+        <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+          <button type="button" sc-camel-on-click="{{ toChange }}" aria-label="Back to where you live" style="margin:-12px 0 -12px -12px;width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:#EBD9AE;font-size:20px;line-height:1;cursor:pointer">‹</button>
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Your city</p>
+        </div>
+        <div style="padding:16px 14px 22px;display:grid;gap:14px;align-content:start">
+          <label style="display:grid;gap:7px;font-size:14px;font-weight:500;color:#050309">City
+            <span style="position:relative;display:block">
+              <span aria-hidden="true" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:grid;place-items:center">
+                <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.4" stroke="#828184" stroke-width="1.6"></circle><path d="m16 16 4 4" stroke="#828184" stroke-width="1.6" stroke-linecap="round"></path></svg>
+              </span>
+              <input type="text" readonly="readonly" placeholder="Search metro areas" style="width:100%;min-height:48px;padding:13px 42px 13px 40px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;font-family:Inter,sans-serif;font-size:15px;color:#050309;background:#FFFFFF">
+            </span>
+          </label>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:#504E52">Pick the metro area you live in. It sets which matching pool you see.</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:14px;background:#FFFFFF;overflow:hidden">
+            <sc-for list="{{ cityGroups }}" as="g" hint-placeholder-count="2">
+              <p style="margin:0;padding:12px 14px 8px;background:#F6F2EA;font-size:11.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52;border-bottom:1px solid rgba(5,3,9,0.07)">{{ g.country }}</p>
+              <sc-for list="{{ g.cities }}" as="c" hint-placeholder-count="3">
+                <button type="button" sc-camel-on-click="{{ c.pick }}" style="width:100%;min-height:52px;display:flex;align-items:center;gap:10px;padding:12px 14px;background:transparent;border:0;border-bottom:1px solid rgba(5,3,9,0.07);text-align:left;cursor:pointer;font-family:Inter,sans-serif" style-hover="background:#F6F2EA">
+                  <span style="flex:1;min-width:0;display:grid;gap:2px">
+                    <span style="font-size:15px;font-weight:600;color:#050309">{{ c.name }}</span>
+                    <span style="font-size:12.5px;color:#828184">{{ c.region }}</span>
+                  </span>
+                  <sc-if value="{{ c.waiting }}">
+                    <span style="flex-shrink:0;padding:5px 9px;border-radius:6px;background:#FFF7E5;border:1px solid rgba(204,143,0,0.3);font-size:11px;font-weight:600;color:#4C3500">Pool not open</span>
+                  </sc-if>
+                </button>
+              </sc-for>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ sheetOpen }}">
+        <div style="position:absolute;inset:0;background:rgba(0,31,27,0.55);display:flex;align-items:flex-end">
+          <div role="dialog" aria-modal="true" aria-labelledby="wys-sheet" style="width:100%;max-height:88%;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-radius:20px 20px 0 0;padding:10px 16px 16px">
+            <span aria-hidden="true" style="flex-shrink:0;align-self:center;width:36px;height:4px;border-radius:999px;background:#D9D9DA"></span>
+            <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <h2 id="wys-sheet" style="margin:0;font-family:Aleo,Georgia,serif;font-size:21px;font-weight:700;line-height:1.25;color:#050309">Choose your country</h2>
+              <button type="button" sc-camel-on-click="{{ closeSheet }}" style="flex-shrink:0;min-height:44px;padding:0 4px;border:0;background:transparent;color:#00695C;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer">Cancel</button>
+            </div>
+            <span style="flex-shrink:0;position:relative;display:block">
+              <span aria-hidden="true" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:grid;place-items:center">
+                <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.4" stroke="#828184" stroke-width="1.6"></circle><path d="m16 16 4 4" stroke="#828184" stroke-width="1.6" stroke-linecap="round"></path></svg>
+              </span>
+              <input type="text" aria-label="Search countries" value="{{ q }}" sc-camel-on-change="{{ onType }}" placeholder="Search countries" style="width:100%;min-height:48px;padding:13px 14px 13px 40px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;font-family:Inter,sans-serif;font-size:15px;color:#050309;background:#FFFFFF" style-focus="outline:none;border-color:#00695C;box-shadow:0 0 0 3px rgba(0,105,92,0.16)">
+            </span>
+            <div style="flex:1;min-height:0;overflow-y:auto;border:1px solid rgba(5,3,9,0.12);border-radius:14px">
+              <sc-for list="{{ countries }}" as="c" hint-placeholder-count="6">
+                <button type="button" sc-camel-on-click="{{ c.pick }}" style="width:100%;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:{{ c.bg }};border:0;border-bottom:1px solid rgba(5,3,9,0.07);text-align:left;cursor:pointer;font-family:Inter,sans-serif;font-size:15px;font-weight:500;color:#050309" style-hover="background:#F6F2EA">
+                  <span>{{ c.name }}</span>
+                  <sc-if value="{{ c.on }}"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" aria-label="selected"><path d="M5 13l4 4 10-11" stroke="#00695C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                </button>
+              </sc-for>
+              <sc-if value="{{ noResults }}">
+                <p style="margin:0;padding:18px 14px;font-size:14px;line-height:1.6;color:#504E52">No country matches that. Check the spelling, or try its English name.</p>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ toast }}">
+        <div role="status" style="position:absolute;left:14px;right:14px;bottom:18px;padding:14px 16px;border-radius:12px;background:#001F1B;color:#FFFFFF;font-size:14px;font-weight:500;text-wrap:pretty">Saved. Where you live is now {{ homeText }}.</div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1100}}">
+const OPTS = [["NG", "Nigeria"], ["GB", "United Kingdom"], ["US", "United States"], ["CA", "Canada"], ["OTHER", "Somewhere else"]];
+const HOMES = {
+  NG: { country: "Nigeria", city: null, phone: "+234 803 *** 4417" },
+  GB: { country: "United Kingdom", city: "London", phone: "+44 7700 *** 412" }
+};
+const COUNTRIES = ["Australia", "Austria", "Belgium", "Benin", "Botswana", "Brazil", "Cameroon", "China", "Côte d'Ivoire", "Denmark", "Finland", "France", "Gambia", "Germany", "Ghana", "India", "Ireland", "Italy", "Jamaica", "Japan", "Kenya", "Liberia", "Malaysia", "Netherlands", "New Zealand", "Norway", "Poland", "Portugal", "Qatar", "Rwanda", "Saudi Arabia", "Senegal", "Sierra Leone", "Singapore", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Togo", "Trinidad and Tobago", "Türkiye", "Uganda", "United Arab Emirates"];
+const CITY = [
+  { country: "United States", cities: [["New York", "NY · metro area"], ["Houston", "TX · metro area"], ["Atlanta", "GA · metro area"], ["Chicago", "IL · metro area"], ["Washington", "DC · metro area", true]] },
+  { country: "United Kingdom", cities: [["London", "Greater London", true], ["Manchester", "Greater Manchester"], ["Birmingham", "West Midlands"]] },
+  { country: "Canada", cities: [["Toronto", "ON · Greater Toronto"], ["Calgary", "AB · metro area"]] }
+];
+const THE = ["United Kingdom", "United States", "United Arab Emirates", "Netherlands"];
+const codeOf = c => (OPTS.find(o => o[1] === c) || ["OTHER"])[0];
+class Component extends DCLogic {
+  state = { w: "360px", homeKey: "NG", home: HOMES.NG, plan: "premium", locked: false, screen: "change", sel: "GB", other: null, sheet: false, q: "", toast: false };
+  componentWillUnmount() { clearTimeout(this.t); }
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  selFor(home) { const c = codeOf(home.country); return { sel: c, other: c === "OTHER" ? home.country : null }; }
+  saved(home) {
+    clearTimeout(this.t);
+    this.setState({ home, locked: true, screen: "list", sheet: false, toast: true });
+    this.t = setTimeout(() => this.setState({ toast: false }), 3000);
+  }
+  renderVals() {
+    const { w, homeKey, home, plan, locked, screen, sel, other, sheet, q, toast } = this.state;
+    const name = k => k === "OTHER" ? (other || "Somewhere else") : OPTS.find(o => o[0] === k)[1];
+    const chosen = name(sel);
+    const changed = !(sel === "OTHER" && !other) && chosen !== home.country;
+    const abroad = sel !== "NG";
+    const query = q.trim().toLowerCase();
+    const list = COUNTRIES.filter(c => !query || c.toLowerCase().includes(query));
+    const reset = extra => { clearTimeout(this.t); this.setState({ toast: false, sheet: false, q: "", ...extra }); };
+    return {
+      frameW: w,
+      widths: [["360px", "360px"], ["320px", "320px"], ["680px", "Desktop"]].map(([v, l]) => this.chip(l, w === v, () => this.setState({ w: v }))),
+      screens: [
+        this.chip("Settings row", screen === "list" && !toast, () => reset({ screen: "list" })),
+        this.chip("Change screen", screen === "change", () => reset({ screen: "change", ...this.selFor(home) })),
+        this.chip("Saved", screen === "list" && toast, () => this.saved(home))
+      ],
+      homes: [["NG", "Lives in Nigeria"], ["GB", "Lives in London"]].map(([k, l]) => this.chip(l, homeKey === k, () => reset({ homeKey: k, home: HOMES[k], ...this.selFor(HOMES[k]) }))),
+      plans: [["free", "Free plan"], ["premium", "Premium plan"]].map(([k, l]) => this.chip(l, plan === k, () => this.setState({ plan: k }))),
+      windows: [[false, "Can change"], [true, "Changed in last 30 days"]].map(([k, l]) => this.chip(l, locked === k, () => reset({ locked: k, ...(k ? this.selFor(home) : {}) }))),
+      screenLabel: screen === "list" ? "Settings" : screen === "city" ? "Your city" : "Where you live",
+      isList: screen === "list", isChange: screen === "change", isCity: screen === "city",
+      phoneText: home.phone || HOMES[homeKey].phone,
+      homeText: home.city ? home.city + ", " + home.country : home.country,
+      openChange: () => reset({ screen: "change", ...this.selFor(home) }),
+      toList: () => this.setState({ screen: "list" }),
+      toChange: () => this.setState({ screen: "change" }),
+      locked, canEdit: !locked,
+      options: OPTS.map(([k, label]) => {
+        const on = sel === k, isOther = k === "OTHER";
+        const lbl = isOther && on && other ? other : label;
+        const current = (isOther ? (on && other === home.country) || (!on && codeOf(home.country) === "OTHER" && false) : label === home.country);
+        return {
+          on, current, label: lbl, open: !locked, fixed: locked,
+          hasSub: isOther, sub: isOther && on && other ? "Somewhere else · tap to change" : "Search all countries",
+          dot: !isOther || on, chev: isOther && !on,
+          bg: on ? "#E5F0EE" : "#FFFFFF",
+          border: on ? "#00695C" : "rgba(5,3,9,0.14)",
+          fg: on ? "#050309" : "#504E52",
+          dotBg: on ? "#00695C" : "transparent",
+          dotBorder: on ? "#00695C" : "rgba(5,3,9,0.22)",
+          pick: isOther ? () => this.setState({ sheet: true, q: "" }) : () => this.setState({ sel: k, other: null })
+        };
+      }),
+      showPlanLine: !locked && plan === "premium" && changed,
+      planLine: "Your Premium plan continues until 12 March. After that, you'll see plans for " + (THE.includes(chosen) ? "the " : "") + chosen + ".",
+      needsCity: changed && abroad,
+      saveDisabled: !changed,
+      saveLabel: changed && abroad ? "Continue" : "Save",
+      saveBg: changed ? "#FFB300" : "#D9D9DA",
+      saveFg: changed ? "#001F1B" : "#504E52",
+      saveCursor: changed ? "pointer" : "default",
+      save: () => {
+        if (!changed) return;
+        if (abroad) return this.setState({ screen: "city" });
+        this.saved({ ...home, country: chosen, city: null });
+      },
+      cityGroups: CITY.map(g => ({ country: g.country, cities: g.cities.map(([n, r, closed]) => ({ name: n, region: r, waiting: !!closed, pick: () => this.saved({ ...home, country: g.country, city: n }) })) })),
+      sheetOpen: sheet,
+      closeSheet: () => this.setState({ sheet: false }),
+      q,
+      onType: e => this.setState({ q: e.target.value }),
+      countries: list.map(c => ({
+        name: c, on: sel === "OTHER" && other === c, bg: sel === "OTHER" && other === c ? "#E5F0EE" : "transparent",
+        pick: () => this.setState({ sel: "OTHER", other: c, sheet: false, q: "" })
+      })),
+      noResults: list.length === 0,
+      toast
+    };
+  }
+}
+</script>
+
+
+</body></html>

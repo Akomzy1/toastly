@@ -1,7 +1,8 @@
 /**
  * Pricing content.
  *
- * Layout and copy come from design/prototype/pricing.slim.html; tier
+ * Layout and copy come from design/prototype/pricing-offer.slim.html (which
+ * replaced pricing.slim.html; the only change is the women's offer); tier
  * CONTENTS come from PRD.md §7.1, which is authoritative and supersedes the
  * generated design output where they disagree. Every place they disagreed is
  * marked CORRECTED below and reported to the user, never silently resolved.
@@ -169,6 +170,36 @@ export const compareRows: [string, string[]][][] = [
   ],
 ];
 
+/**
+ * CORRECTED. The prototype ends "Somebody's plans change and they say so —
+ * everything comes back". Only a cancellation before the cut-off (default 12
+ * hours) is free (PRD §5.5), so "in good time" stays.
+ */
+export const coinIntro =
+  "Coins are not a subscription and they are not a fee. When a date is confirmed, you each stake a few. You both turn up, you both get them straight back. Somebody's plans change and they say so in good time — everything comes back, no questions.";
+
+/**
+ * CORRECTED. The prototype reads: "On a genuine no-show, the coins that were
+ * staked go to a charity the other person chooses. Toastly does not keep a
+ * single kobo of it." The charity mechanic is rejected (PRD §5.5): the absent
+ * member's stake moves to the member who showed up, Toastly keeps none. "Kobo"
+ * became "coin" — coins are closed-loop, never money. The safety override
+ * (a safety cancellation always returns the stake) is added so the line can
+ * never read as pressure to meet.
+ */
+export const coinNoShow = {
+  lead: "On a genuine no-show, the coins that were staked go to ",
+  emphasis: "the person who showed up",
+  rest: ". Toastly does not keep a single coin of it, and if you cancel because you feel unsafe, yours always come back. This is a mutual promise about each other's time, not a penalty system.",
+};
+
+/**
+ * CORRECTED. The prototype reads "Refundable to your original payment method
+ * on request." Coins are never refunded or paid out as cash (PRD §5.5).
+ */
+export const coinTerms =
+  "Unused coins never expire. Coins are never refunded or paid out as cash.";
+
 export const coinPacks = [
   { name: "10 coins", note: "Two date commitments, roughly", price: "₦1,000" },
   { name: "30 coins", note: "Most-used pack", price: "₦2,700" },
@@ -193,3 +224,15 @@ export const whyPay = [
     body: "The feed is six people a day on every tier. Paying can improve how well those six are matched to you — it never buys you more of them.",
   },
 ];
+
+/**
+ * The line under the Why-pay cards. The prototype's reads: "No tier buys you
+ * visibility, boosts your position in anybody's feed, or unlocks a person.
+ * Every member is verified on every tier — that part is never for sale."
+ * "Boosts" became "raises": Boosts are cut from the product (PRD §7.2) and the
+ * word stays out of copy. The safety sentence is the one the page carried
+ * before (CLAUDE.md: safety is never paywalled), now inside the prototype's
+ * paragraph instead of a separate card the prototype doesn't draw.
+ */
+export const whyPayNote =
+  "No tier buys you visibility, raises your position in anybody's feed, or unlocks a person. Every member is verified on every tier — that part is never for sale, and neither is anything about safety: reporting, blocking, photo-reveal control or sharing your date plans.";

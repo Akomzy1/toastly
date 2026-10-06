@@ -1,8 +1,10 @@
 /**
- * Home page content, transcribed from design/prototype/home.slim.html.
+ * Home page content, transcribed from
+ * design/prototype/home-diaspora-offer.slim.html (which replaced
+ * home.slim.html).
  *
- * Copy is the prototype's, not paraphrased. One deliberate omission is
- * marked at the coin section.
+ * Copy is the prototype's, not paraphrased. Where it contradicts PRD.md or
+ * CLAUDE.md the PRD wording ships instead; each case is marked CORRECTED.
  */
 
 export const heroStats = [
@@ -29,6 +31,12 @@ export const verifySteps = [
   },
 ];
 
+/** The two tiles under the Verified Real photo. */
+export const verifyStats = [
+  { value: "100%", label: "of live profiles verified" },
+  { value: "0", label: "imported or bought accounts" },
+];
+
 export const gistPrompts = [
   { n: "01", text: "What's a thing your family does that you'll definitely carry into your own home?" },
   { n: "02", text: "Lagos or somewhere quieter — where do you see yourself in five years?" },
@@ -52,6 +60,40 @@ export const coinCards = [
     body: "Cancel with notice and you get everything back. Life happens in Lagos traffic.",
   },
 ];
+
+/**
+ * The callout under the coin cards.
+ *
+ * CORRECTED. The prototype reads: "If someone genuinely no-shows, their coins
+ * go to a charity the other person picks. Toastly keeps nothing." The charity
+ * mechanic was never ratified and is rejected (PRD §5.5, CLAUDE.md). The
+ * decided rule: the absent member's stake moves to the coin balance of the
+ * member who showed up, and Toastly keeps none of it (live since 0023). The
+ * last sentence is PRD §5.5's override — a safety cancellation always returns
+ * the stake — so the line can never read as pressure to meet.
+ */
+export const coinNote = {
+  lead: "If someone genuinely no-shows, their coins go to ",
+  emphasis: "the person who showed up",
+  rest: ". Toastly keeps nothing — and if you cancel because you feel unsafe, yours always come back.",
+};
+
+/**
+ * "AI, on your side" — new in home-diaspora-offer.
+ *
+ * Title is PRD §5.9's public pledge, verbatim. CORRECTED body: the prototype
+ * reads "It handles the admin and the safety checks." No Toastly AI runs a
+ * safety check today — the Trust Sentinel agent is Phase 2 and even then
+ * scores for a person to decide (PRD §5.1.1, §5.9 rule 5) — the same reason
+ * the privacy policy holds its "AI safety-review summaries" line. The two
+ * agents that do ship are named instead: Toastly Help (verification and
+ * payment questions) and Answer Mirror (feedback on your own answers).
+ */
+export const aiPledge = {
+  eyebrow: "AI, on your side",
+  title: "Toastly AI will never write a word for you.",
+  body: "It helps with the admin — verification and payment questions, feedback on your own answers. The talking is always yours.",
+};
 
 export const steps = [
   {
@@ -193,9 +235,9 @@ export const posts = [
   {
     cat: "Product",
     read: "8 min",
-    title: "Why we built a marriage track, not another swipe deck",
+    title: "Why we built a marriage-track dating app",
     img: "/img/home/blog-marriage-track.webp",
-    alt: "Two people talking across a small table in warm evening light",
-    dek: "Scarcity, intent and the case against the infinite feed.",
+    alt: "Overhead view of two coffees and two people's hands across a wooden table",
+    dek: "Nigerian Gen Z are not short of matches. They are short of intent.",
   },
 ];

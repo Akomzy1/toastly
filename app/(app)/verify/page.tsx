@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { VerifyFlow } from "@/components/verify/verify-flow";
 import { HelpButton } from "@/components/help/help-button";
 import { PhoneStep } from "./phone-step";
+import { ScreenBand } from "@/components/app/screen-band";
+import { WhereYouLiveSignup } from "@/components/where-you-live/flows";
+import { guessCountryFromPhone } from "@/lib/countries";
+import { loadCities } from "@/lib/where-you-live";
 import { PhotosStep } from "./photos-step";
 import { SANDBOX_IDENTITIES, sandboxPickerAllowed, smileConfig } from "@/lib/smile-id";
 import { deriveVerifyView, isVerifiedReal, type SessionSummary } from "@/lib/verification-view";
@@ -31,7 +35,7 @@ export default async function VerifyPage() {
   if (!user) redirect("/login");
 
   const [{ data: profile }, { data: sessions }, { data: reverify }] = await Promise.all([
-    supabase.from("profiles").select("stage, photo_reveal").eq("id", user.id).single(),
+    supabase.from("profiles").select("stage, photo_reveal, phone_verified_at, country_confirmed_at").eq("id", user.id).single(),
     supabase
       .from("verification_sessions")
       .select("product, status, result_code, created_at")
@@ -40,6 +44,18 @@ export default async function VerifyPage() {
       .limit(20),
     supabase.from("reverification_requests").select("requested_at").maybeSingle(),
   ]);
+
+  // Where you live comes straight after the phone code (where-you-live.slim
+  // .html; decided 5 October 2026), pre-selected from the phone's country
+  // code and confirmed by the member before anything else.
+  if (profile?.phone_verified_at && !profile.country_confirmed_at) {
+    return (
+      <>
+        <ScreenBand title="Where you live" sub="Profile setup" />
+        <WhereYouLiveSignup guess={guessCountryFromPhone(user.phone)} cities={await loadCities(supabase)} />
+      </>
+    );
+  }
 
   const latest = (product: string): SessionSummary | null =>
     (sessions ?? []).find((s) => s.product === product) ?? null;

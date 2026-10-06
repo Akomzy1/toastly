@@ -211,11 +211,25 @@ from back home" notice (components/app/pool-plan-notice.tsx) for a member
 whose stored pool needs a Diaspora plan they no longer have — separate from
 the approved feed-fallback notice. Send them through the design pipeline.
 
-**"Where do you live?" — NOT IN A PROTOTYPE (decided 4 October 2026).** A
-country select in Edit profile (lib/countries.ts). Nothing else let a member
-say they live abroad, so every diaspora rule was out of reach. Choosing a
-country outside Nigeria shows the approved city picker. It replaces the old
-"Match me with" dropdown, which moved to its own screens (below).
+**Built against the where-you-live prototypes (5 October 2026)** — no longer
+invented UI; the Edit profile country select they replace is gone:
+- **Where you live, at sign-up** — `where-you-live` (`/verify`, straight
+  after the phone code; components/where-you-live/). Deviations, flagged: the
+  stepper's "Photos" step comes after the selfie in today's flow until the
+  photo-upload port lands; the city step is the existing city picker filtered
+  to the chosen country, with a Save/Continue button under it (the picker
+  shows its own chosen card first); a country with no cities on the list
+  skips the city step; no "Saved. Next, your photos." toast — the page moves
+  straight on.
+- **Quick check, once** — `where-you-live-confirm` (a sheet over any in-app
+  screen until confirmed). Not shown over the sign-up step, its settings
+  screen, the safety kit or Your data (decided here — the safety kit must
+  never be covered).
+- **Settings and changing where you live** — `where-you-live-settings`
+  (`/profile/settings`, `/profile/settings/country`). Deviation: the Phone
+  number row has no chevron (there is no change-number flow). The profile
+  hub's match row became "Settings", which holds Where you live and Match
+  preferences — nav-profile-hub had Match preferences directly.
 
 **Built against the diaspora-review prototypes (4 October 2026)** — no
 longer invented UI:
@@ -231,9 +245,10 @@ longer invented UI:
   — isn't shown.
 - **Your match pool** — `pool-choice` (`/profile/pool`). Addition: a member
   abroad with no city chosen is told where to choose it.
-- **Match preferences** — `open-to-abroad` (`/profile/preferences`).
-  Deviation: the prototype's "Age range" row is omitted — Toastly has no
-  age-range setting.
+- **Match preferences** — rebuilt against `match-preferences` (5 October
+  2026): the age-range slider for every member, and the switch's two-way
+  explanation. Addition, flagged: members abroad see age range, City and a
+  "Your match pool" row (the prototype draws the Nigeria version only).
 - **Get coins** — `coins-get-usd` (`/coins/get`). Adapted: members in Nigeria
   get the same screen with the naira packs and "Card" / "Bank or USSD". The
   coins page's in-page pack grid became a "Get coins" link.
