@@ -6,8 +6,9 @@
  * is false: /privacy returns 404 and the genotype consent step shows no link.
  * Filling in the last one publishes the page with no other change.
  *
- * Every other claim has been checked against the build (October 2026). If
- * the product changes what it collects or keeps, change this text with it.
+ * The 4 October claims were checked against the build; the 6 October
+ * version adds some that are not yet true (listed below). If the product
+ * changes what it collects or keeps, change this text with it.
  *
  * FACT-CHECK — claims added on 3 October 2026, each checked against the build:
  *   - "We don't use your data to train AI models." TRUE today. Toastly trains
@@ -29,14 +30,37 @@
  *     history, profession or where you live: no agent reads those fields
  *     (constraint check "agents never read protected attributes").
  *
- * HELD from the 3 October drop, because they are not yet true:
- *   - "We also compare it with your main profile photo" (and the matching
- *     section 3 wording). Prompt 14 is blocked: Smile ID cannot compare an
- *     uploaded photo against the enrolled face. Add when a match ships.
- *   - "AI ... safety-review summaries" and the "Safety review" bullet. The
- *     Sentinel reviewer summaries are Phase 2. Add when they ship.
- *   - The drop labelled the ID check "Verified Real (optional)". Verified
- *     Real is the liveness selfie (PRD §5.1 correction); kept as ID check.
+ * 6 OCTOBER 2026 — transcribed from the member-facing Toastly-Privacy-Policy.md
+ * (with Toastly-Verification-Consent-Wording.md). That version wins where it
+ * differs from the 4 October text. Its bracketed values ([7], [30], [2], [6],
+ * the section 9 countries, the UK representative, the cookie choice) are open
+ * questions, so this version is withheld until they are settled.
+ *
+ * Kept from the 4 October text because each is true and the new version does
+ * not contradict it: what Smile ID receives (name, email), the panic-button
+ * location sentence, card and paying country, Toastly Help conversations
+ * and their 30-day retention, hosting logs, the pricing-fairness country
+ * check, the removed member's blocked sign-in and the record of decisions.
+ *
+ * Statements in this version that the build does NOT yet do — settle each
+ * before the brackets are filled and the page publishes:
+ *   - Main-photo face match (sections 2 and 3): in progress (0029).
+ *   - "AI ... safety-review summaries" and the "Safety review" bullet
+ *     (sections 4 and 6a): the Sentinel summaries are Phase 2.
+ *   - "If you report a message, our safety team can see that message"
+ *     (section 4): reviewers never see message bodies (CLAUDE.md).
+ *   - Resend sends "verification emails" (section 4): sign-in and
+ *     confirmation emails are sent by Supabase; Resend sends receipts and
+ *     notices.
+ *   - Venues found with "approximate location" (section 2): lib/places.ts
+ *     searches by city name.
+ *   - "Device type, app version" (section 2): analytics records only the
+ *     eight events in lib/analytics.ts.
+ *   - "Voice answers to profile prompts" (section 2): voice notes are out.
+ *   - Unspent coins shown before deletion (section 8): the delete flow does
+ *     not show the balance.
+ *   - "Analytics cookies" (section 13): PostHog runs server-side only; the
+ *     site sets no analytics cookies.
  *
  * Section 9's countries were MEASURED, not assumed (2 October 2026): the
  * Supabase database host resolves to AWS eu-west-1 (Ireland), and the
@@ -90,7 +114,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Optional details stay optional. Religion, tribe, language, relationship history, profession, education and genotype never decide who you're matched with unless you choose a filter for your own search — and genotype can't be filtered on at all.",
           "Your genotype is health information. It's private by default, shared only with people you choose, and never used by our analytics, AI systems or safety screening.",
           "We don't record your Gist calls, and we never keep transcripts.",
-          "We don't store your NIN or BVN, or the official record behind it. When you verify, we keep only the result — plus, for the ID check, a scrambled code so the same ID can't verify two accounts.",
+          "We don't store your NIN or BVN record. When you verify, we keep only the result.",
           "We don't sell your personal data.",
           "You can see, correct, download or delete your data at any time.",
         ],
@@ -109,7 +133,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Your profile.",
-        text: "Photos, written answers to profile prompts, the kind of relationship you're looking for, and your city or, if you live abroad, your diaspora city and which matching pool you prefer.",
+        text: "Photos, written and voice answers to profile prompts, the kind of relationship you're looking for, and your city or, if you live abroad, your diaspora city and which matching pool you prefer.",
       },
       {
         kind: "p",
@@ -125,14 +149,14 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "Verified Real (everyone): a check of your phone number, and a selfie liveness capture showing you're a real person present at your phone. To run it, our verification provider receives the selfie, your name and your email address. We keep only the result — whether it passed, and the date.",
-          "ID check (optional): your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. We keep only the outcome — whether it passed, and the date. We do not store your number, or the name, date of birth, photo, phone number or address held on the official record. We do keep a scrambled code made from your number — a one-way code that can't be turned back into it — so the same ID can't verify two accounts.",
+          "Liveness check (everyone): a selfie and short liveness capture showing you're a real person present at your phone. This earns your Verified Real seal. We also compare it with your main profile photo to confirm your photos are really you. We keep only the result of each check — never your face data. Smile ID, which runs these checks, keeps the images for up to five years under its own terms (see section 8). To run it, our verification provider receives the selfie, your name and your email address.",
+          "ID check (optional): your NIN, Virtual NIN or BVN, checked by our verification provider against the official record and matched to a new selfie. We keep only the outcome — whether it passed, a reference number and the date — plus a one-way fingerprint of your ID number, so the same ID can't be used on more than one account and removed members can't return. We can't turn the fingerprint back into your number. We do not store the name, date of birth, photo, phone number or address held on the official record.",
         ],
       },
       {
         kind: "p",
         lead: "Gist sessions.",
-        text: "We record that a session took place, when it started and ended, and each person's private answer to whether they'd like to continue. We do not record the audio or video, and no transcript is ever created or kept.",
+        text: "We record that a session took place, when, how long it lasted, which questions from the structured question set were covered, and whether you both chose to continue. We do not record the audio or video, and no transcript is ever created or kept.",
       },
       {
         kind: "p",
@@ -147,7 +171,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Location.",
-        text: "Your city and time zone. When we suggest a public venue for a date, we search near your city. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location. If you use the panic button, your phone adds your exact location to the message it sends your chosen contact — that message goes from your own phone, and Toastly never receives your location.",
+        text: "Your city and time zone. When we suggest a public venue for a date, we use approximate location to find places nearby. When you check in at a date, we confirm you're near the venue at that moment and keep only the result, not your location. We don't track your location continuously. If you use the panic button, your phone adds your exact location to the message it sends your chosen contact — that message goes from your own phone, and Toastly never receives your location.",
       },
       {
         kind: "p",
@@ -171,8 +195,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        lead: "Usage events.",
-        text: "A small set of product events — that you signed up, completed verification, had your first Gist, made your first payment or upgraded — so we can understand how Toastly is used. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.",
+        lead: "Device and usage information.",
+        text: "Device type, app version, and how you use Toastly, so we can fix problems and improve the product. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.",
       },
     ],
   },
@@ -185,14 +209,14 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         head: ["What we do", "Why", "Legal basis"],
         rows: [
           ["Create and run your account; match you; deliver messages and Gist sessions", "To provide the service you signed up for", "Contract"],
-          ["Verify you're a real person, and optionally your NIN/BVN", "To keep fake and scam accounts off Toastly", "Your explicit consent (this involves biometric data)"],
+          ["Verify you're a real person, that your main photo is you, and optionally your NIN/BVN", "To keep fake and scam accounts off Toastly", "Your explicit consent (this involves biometric data)"],
           ["Answer your questions through our AI help assistant, and give optional feedback on your profile answers", "To help you use Toastly", "Contract; legitimate interest"],
           ["Store and share your genotype", "Only to show it to the people you choose", "Your explicit consent"],
           ["Show optional profile details", "Because you chose to add them", "Your consent"],
           ["Detect scams, fake accounts and abuse; act on reports", "To keep members safe", "Legitimate interest; legal obligation where applicable"],
           ["Process payments and keep financial records", "To run subscriptions and coins, and meet tax law", "Contract; legal obligation"],
           ["Send emergency alerts and confirm emergency contacts", "To support your safety", "Your consent; vital interests in an emergency"],
-          ["Send account emails, such as receipts and security notices", "To run your account", "Contract"],
+          ["Send account and verification emails", "To run your account", "Contract"],
           ["Understand how Toastly is used and fix problems", "To improve the service", "Legitimate interest"],
         ],
       },
@@ -214,7 +238,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "p",
         lead: "Our team",
-        text: "sees account and safety information only when needed to support you, investigate a report or keep Toastly safe. A report includes the category you choose and anything you write in it. Our safety team does not read your messages.",
+        text: "sees account and safety information only when needed to support you, investigate a report or keep Toastly safe. If you report a message, our safety team can see that message.",
       },
       {
         kind: "p",
@@ -225,18 +249,18 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         kind: "table",
         head: ["Provider", "What for"],
         rows: [
-          ["Supabase", "Database, storage, and sign-in and confirmation emails"],
+          ["Supabase", "Database and storage"],
           ["Vercel", "Hosting the app and website"],
           ["Smile ID", "Liveness checks and NIN/BVN verification"],
           ["Paystack", "Payments in Naira"],
           ["Stripe", "Payments in US dollars"],
           ["LiveKit", "Delivering Gist voice and video sessions (not recorded)"],
-          ["Resend", "Account emails, such as receipts and security notices"],
+          ["Resend", "Account and verification emails"],
           ["Termii", "Text messages to Nigerian numbers (emergency contacts and alerts)"],
           ["Twilio", "Text messages to numbers outside Nigeria (emergency contacts and alerts)"],
           ["Google (Places)", "Suggesting public venues for dates"],
           ["PostHog", "Product analytics (never receives your genotype)"],
-          ["Anthropic", "AI for our help assistant and profile-answer feedback — never your messages, Gist audio, photos, ID numbers or genotype"],
+          ["Anthropic", "AI for our help assistant, profile-answer feedback and safety-review summaries — never your messages, Gist audio, photos, ID numbers or genotype"],
         ],
       },
       {
@@ -268,7 +292,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "We never use it to choose or rank your matches, never tell anyone whether a pair is \"compatible\", never mark it as verified, and never pass it to our analytics, to any AI system, to our safety screening, or to AriyaPlanner.",
           "It's what you tell us — we don't check it.",
           "It's stored encrypted, and only you and the people you've chosen can read it.",
-          "Deleting it removes it from Toastly straight away, together with your permission. Encrypted backup copies are overwritten within 7 days.",
+          "Deleting it removes it from Toastly straight away, together with your permission. Encrypted backup copies are overwritten within [7] days.",
         ],
       },
     ],
@@ -293,6 +317,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
         items: [
           "Toastly Help, our AI assistant, answers questions about verification, payments and how Toastly works. It sees only things like whether a check passed — never your selfies, ID number, messages or Gist sessions. A person handles refunds, disputes and appeals.",
           "Profile feedback, if you ask for it, tells you whether a prompt answer could be more specific. It never writes or rewrites anything for you. Toastly AI will never write a word for you.",
+          "Safety review, where AI may help our team summarise an account that's been flagged. A person makes every decision.",
         ],
       },
       {
@@ -312,8 +337,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "We don't read your messages to do this, and we don't use Gist audio, your genotype, religion, tribe, language, relationship history, profession or diaspora status. To keep pricing fair, we do check whether the country of your payment method, phone number and connection match.",
-          "A person reviews every case. Automated tools may flag an account for review; the strongest automatic step is asking you to verify again, and we always tell you why. No account is removed by a machine. You can ask us to look again.",
+          "We don't read your messages to do this, and we don't use Gist audio, your genotype, religion, tribe, language, relationship history, profession or where you live. To keep pricing fair, we do check whether the country of your payment method, phone number and connection match.",
+          "A person makes every decision. Automated tools may flag an account for review, but no account is restricted or removed by a machine alone. If we restrict your account, we'll tell you why, and you can ask us to look again.",
         ],
       },
     ],
@@ -325,12 +350,14 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         kind: "ul",
         items: [
-          "Your account and profile: while your account is open. When you delete your account in your settings, your data is deleted straight away, except what this section says we keep, and backup copies are overwritten within 7 days.",
+          "Your account and profile: while your account is open. When you delete your account, we delete your data within [30] days, and backup copies are overwritten within [7] days after that.",
           "Genotype: until you delete it or your account, as in section 5.",
-          "Verification results, and the scrambled code made from a verified ID number: for as long as your account is open.",
-          "Safety records (reports about an account, and their outcome): up to 2 years after the account closes. If an account was removed for breaking our rules, we also keep a scrambled form of its phone number, and of its ID number if it completed the ID check, for that time, so it can't simply sign up again. Its sign-in (email or phone) is kept, blocked, for the same 2 years, then deleted. Every decision by our team about an account is recorded, with the reason category, so it can be checked later.",
+          "Verification results: for as long as your account is open.",
+          "Images held by Smile ID: Smile ID keeps the selfie and photo images from verification checks for up to five years, under its own terms. Toastly never holds them.",
+          "Safety records (reports, restrictions and removals): up to [2] years after your account closes, so removed members can't simply sign up again. For a removed member, this includes a one-way fingerprint of their phone number and ID number. If an account is under review when it's deleted, these records are kept until the review is settled. A removed member's sign-in (email or phone) is kept, blocked, for the same period, then deleted. Every decision by our team about an account is recorded, with the reason category, so it can be checked later.",
+          "Coins: unspent coins are lost when you delete your account. We'll show you your balance and offer you the chance to use them before you confirm.",
           "Toastly Help conversations: 30 days after the last message, then deleted. If you pass something to our team, your words are deleted at the same time; we keep only its reference number and whether it was resolved.",
-          "Payment and financial records: 6 years, as tax law requires.",
+          "Payment and financial records: [6] years, as tax law requires.",
         ],
       },
     ],
@@ -341,7 +368,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     blocks: [
       {
         kind: "p",
-        text: "We're based in Nigeria and serve members abroad. Our database is hosted in Ireland, in the European Union, and our app runs in the United States; other providers may process your data in further countries. Where data leaves Nigeria or the UK, we rely on appropriate safeguards required by law, such as contractual protections with our providers.",
+        text: "We're based in Nigeria and serve members abroad. Our providers may process your data in other countries, including [the United States and the European Union]. Where data leaves Nigeria or the UK, we rely on appropriate safeguards required by law, such as contractual protections with our providers.",
       },
     ],
   },
@@ -364,11 +391,11 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        text: `Many of these you can do directly in your settings. Otherwise, email ${PRIVACY_CONTACT} and we'll respond within one month. We may need to confirm your identity first.`,
+        text: `Many of these you can do directly in your settings. Otherwise, email ${PRIVACY_CONTACT} and we'll respond within one month. We may need to confirm your identity first. Where the law allows, we may withhold some safety records — for example, where sharing them would help someone get around our protections against fraud.`,
       },
       {
         kind: "p",
-        text: `If you're unhappy with how we've handled your data, you can complain to the Nigeria Data Protection Commission (NDPC). If you live in the UK, you can contact our UK representative through ${PRIVACY_CONTACT} or complain to the Information Commissioner's Office (ICO). We'd appreciate the chance to put things right first.`,
+        text: `If you're unhappy with how we've handled your data, you can complain to the Nigeria Data Protection Commission (NDPC). If you live in the UK, you can contact our UK representative, [UK REPRESENTATIVE NAME AND CONTACT DETAILS], or complain to the Information Commissioner's Office (ICO). We'd appreciate the chance to put things right first.`,
       },
     ],
   },
@@ -388,7 +415,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     blocks: [
       {
         kind: "p",
-        text: "Toastly is only for people aged 18 and over, and we ask for your date of birth when you sign up. If we learn an account belongs to someone under 18, we'll close it and delete their data.",
+        text: "Toastly is only for people aged 18 and over. If we learn an account belongs to someone under 18, we'll close it and delete their data.",
       },
     ],
   },
@@ -398,7 +425,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     blocks: [
       {
         kind: "p",
-        text: "Our website uses only the cookies needed to keep you signed in and keep the service working. We don't use advertising or analytics cookies.",
+        text: "Our website uses cookies that are necessary to keep you signed in and keep the service working, and analytics cookies to understand how it's used. [You can choose whether to allow analytics cookies.]",
       },
     ],
   },
