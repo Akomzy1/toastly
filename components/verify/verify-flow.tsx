@@ -15,6 +15,9 @@ import {
   REASON_COPY,
 } from "@/lib/verification-copy";
 import { isVerifiedReal, type VerifyView } from "@/lib/verification-view";
+import { boldRuns, CONSENT } from "@/lib/consent";
+import { SelfieCapture } from "@/components/app/selfie-capture";
+import { startIdCheck } from "@/app/(app)/verify/id-check-actions";
 
 /**
  * The verify page — built against verify-overview.slim.html (screen 1 of 6).
@@ -26,11 +29,10 @@ import { isVerifiedReal, type VerifyView } from "@/lib/verification-view";
  * DESIGN-APPROVED — flagged in SKILL.md; replace with the exports when they
  * land.
  *
- * Every selfie is the in-page check passed in as `selfieStep`. Smile ID's
- * hosted overlay is used only for the optional ID check: this component
- * starts that session, opens the overlay and reports submission; the result
- * is decided by the signed callback, and the page re-reads it from the
- * database.
+ * Every selfie is the in-page check passed in as `selfieStep`; the optional
+ * ID check also runs in the page, with Smile ID's own camera (the hosted
+ * overlay is retired, decided 6 October 2026). The result is decided by the
+ * signed callback, and the page re-reads it from the database.
  *
  * Free on every plan: nothing here reads or mentions a tier.
  */
@@ -40,8 +42,6 @@ type Product = "smartselfie" | "biometric_kyc";
 type IdType = (typeof ID_TYPE_OPTIONS)[number]["value"];
 
 export type SandboxOption = { key: string; label: string; products: Product[] };
-
-const SMILE_SCRIPT_URL = "https://cdn.usesmileid.com/inline/v12/js/script.min.js";
 
 const ID_PATTERN: Record<IdType, RegExp> = {
   NIN_V2: /^\d{11}$/,
@@ -63,26 +63,8 @@ const OUTLINE =
 const ON_DARK_OUTLINE =
   "flex min-h-12 w-full items-center justify-center rounded-lg border border-champagne/[.42] bg-transparent px-5 py-3.5 text-button text-champagne no-underline transition-colors duration-200 hover:bg-champagne/[.12]";
 
-declare global {
-  interface Window {
-    SmileIdentity?: (config: Record<string, unknown>) => void;
-  }
-}
-
-function loadSmile(): Promise<void> {
-  if (window.SmileIdentity) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SMILE_SCRIPT_URL}"]`);
-    const script = existing ?? document.createElement("script");
-    script.addEventListener("load", () => resolve(), { once: true });
-    script.addEventListener("error", () => reject(new Error("smile script")), { once: true });
-    if (!existing) {
-      script.src = SMILE_SCRIPT_URL;
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  });
-}
+/** The ID check's consent: the wording recorded with the agreement (lib/consent.ts). */
+const ID_COPY = CONSENT.id_check;
 
 function Seal({ second }: { second: boolean }) {
   return (
@@ -191,7 +173,10 @@ export function VerifyFlow({
   initialScreen = "overview",
   selfieStep,
   live = true,
+  reverify = false,
 }: {
+  /** A re-check a reviewer asked for: "Verified Real · Re-check". */
+  reverify?: boolean;
   view: VerifyView;
   /** The phone step, rendered while the member is unverified. */
   phoneStep?: React.ReactNode;
@@ -220,6 +205,7 @@ export function VerifyFlow({
   const [idNumber, setIdNumber] = React.useState("");
   const [testIdentity, setTestIdentity] = React.useState("clear");
   const [busy, setBusy] = React.useState(false);
+  const [capturing, setCapturing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const verified = isVerifiedReal(view);
@@ -244,67 +230,55 @@ export function VerifyFlow({
     setScreen(next);
   }
 
-  async function launch(product: Product) {
+  // The ID check runs in the page (decided 6 October 2026): Smile ID's own
+  // camera takes ONE capture, which goes to startIdCheck() — Biometric KYC
+  // against the record, and Authentication against the face registered at
+  // onboarding. Nothing is stored; the result arrives on the signed callback.
+  function submitIdCheck(selfie: Blob, liveness: Blob[]) {
+    const form = new FormData();
+    form.append("agreed", agreed ? "on" : "");
+    form.append("id_type", idType ?? "");
+    form.append("id_number", idNumber);
+    form.append("given_names", givenNames);
+    form.append("surname", surname);
+    if (useSandbox) form.append("sandbox_identity", testIdentity);
+    form.append("selfie", selfie, "selfie.jpg");
+    liveness.forEach((f, i) => form.append("liveness", f, `liveness-${i}.jpg`));
+    setCapturing(false);
     setBusy(true);
     setError(null);
-    try {
-      const res = await fetch("/api/smile-id/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product,
-          consent: agreed,
-          last_name: surname,
-          given_names: givenNames,
-          id_type: product === "biometric_kyc" ? idType : undefined,
-          id_number: product === "biometric_kyc" ? idNumber : undefined,
-          sandbox_identity: useSandbox ? testIdentity : undefined,
-        }),
-      });
-      const json = (await res.json()) as { error?: string; session_id?: string; config?: Record<string, unknown> };
-      if (!res.ok || !json.config || !json.session_id) {
-        setError(json.error ?? GENERIC_ERROR);
-        setBusy(false);
-        return;
-      }
-
-      await loadSmile();
-      const sessionId = json.session_id;
-      window.SmileIdentity?.({
-        ...json.config,
-        hide_attribution: false,
-        onResult: async (result: { status?: string }) => {
-          if (result?.status === "success") {
-            await fetch("/api/smile-id/submitted", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ session_id: sessionId }),
-            }).catch(() => undefined);
-            setScreen("overview");
-            setIdNumber("");
-            router.refresh();
-          } else if (result?.status === "failure") {
-            setError(GENERIC_ERROR);
-          }
-          setBusy(false);
-        },
-      });
-    } catch {
-      setError("We couldn't open the camera step. Check your connection and try again.");
-      setBusy(false);
-    }
+    startIdCheck(null, form)
+      .then((r) => {
+        if (r?.error) return setError(r.error);
+        setIdNumber("");
+        setScreen("overview");
+        router.refresh();
+      })
+      .catch(() => setError(GENERIC_ERROR))
+      .finally(() => setBusy(false));
   }
 
   // --- Screen 5: the ID check ---------------------------------------------
+  if (screen === "id_form" && capturing) {
+    return (
+      <Shell view={view} reverify={reverify}>
+        <SelfieCapture
+          onCaptured={({ selfie, liveness }) => submitIdCheck(selfie, liveness)}
+          onCancel={() => setCapturing(false)}
+        />
+      </Shell>
+    );
+  }
+
   if (screen === "id_form") {
     const numberOk = idType ? ID_PATTERN[idType].test(idNumber.replace(/\s+/g, "")) : false;
     const namesOk = useSandbox || (givenNames.trim().length > 0 && surname.trim().length > 0);
     const ready = agreed && numberOk && namesOk && !busy;
     const hint = ID_TYPE_OPTIONS.find((o) => o.value === idType)?.hint;
     return (
-      <Shell view={view}>
+      <Shell view={view} reverify={reverify}>
         <div className="grid gap-[18px]">
-          <Heading title={ID_CONSENT.title} lead={ID_CONSENT.intro} />
+          <Heading title={ID_COPY.title} lead={ID_COPY.body[0]} />
           <fieldset className="m-0 grid gap-2 border-0 p-0">
             <legend className="mb-2 text-nav font-medium text-grey-600">Which ID?</legend>
             <div className="grid grid-cols-3 gap-2">
@@ -367,17 +341,21 @@ export function VerifyFlow({
             </>
           )}
           <p className="m-0 text-nav leading-[1.55] text-grey-600">{ID_CONSENT.secondSelfie}</p>
-          <p className={CARD_BODY}>{ID_CONSENT.keeps}</p>
+          {ID_COPY.body.slice(1).map((p, i) => (
+            <p key={i} className={CARD_BODY}>
+              {boldRuns(p).map((r, j) => (r.bold ? <strong key={j}>{r.text}</strong> : <React.Fragment key={j}>{r.text}</React.Fragment>))}
+            </p>
+          ))}
           <Consent checked={agreed} onChange={setAgreed}>
-            {ID_CONSENT.checkbox}
+            {ID_COPY.checkbox}
           </Consent>
           {error ? <Notice tone="error">{error}</Notice> : null}
           <div className="grid gap-2.5">
-            <button type="button" disabled={!ready} onClick={() => launch("biometric_kyc")} className={TEAL}>
-              {busy ? "Opening…" : ID_CONSENT.start}
+            <button type="button" disabled={!ready} onClick={() => setCapturing(true)} className={TEAL}>
+              {busy ? "Sending…" : ID_COPY.primary}
             </button>
             <button type="button" onClick={() => open("overview")} className={OUTLINE}>
-              {ID_CONSENT.decline}
+              {ID_COPY.secondary}
             </button>
           </div>
         </div>
@@ -387,17 +365,21 @@ export function VerifyFlow({
 
   // --- Screen 1 (overview) and the outcome states (screens 3, 4 and 6) ----
   return (
-    <Shell view={view}>
+    <Shell view={view} reverify={reverify}>
       {view.kind === "phone" ? phoneStep : null}
 
       {view.kind === "start" ? (
         <div className="grid gap-[18px]">
-          <Heading
-            title="Verify your profile"
-            lead="Your phone number is confirmed. One more step and your profile can be seen by other members."
-          />
+          {/* A re-check opens straight on its own consent (screen 4): no
+              "one more step", and never why the member was asked. */}
+          {reverify ? null : (
+            <Heading
+              title="Verify your profile"
+              lead="Your phone number is confirmed. One more step and your profile can be seen by other members."
+            />
+          )}
           {selfieStep}
-          <OptionalIdNote />
+          {reverify ? null : <OptionalIdNote />}
         </div>
       ) : null}
 
@@ -411,7 +393,7 @@ export function VerifyFlow({
             <h3 className={`${CARD_LABEL} text-green-500`}>Verified Real · Being checked</h3>
             <p className={CARD_BODY}>Smile ID is confirming it&rsquo;s a live person. Toastly will keep only the result.</p>
           </div>
-          <OptionalIdNote />
+          {reverify ? null : <OptionalIdNote />}
         </div>
       ) : null}
 
@@ -421,7 +403,7 @@ export function VerifyFlow({
             title="A person on our team is taking a look"
             lead="Your check finished but needs a human look. You don't need to do anything — we'll show the result here."
           />
-          <OptionalIdNote />
+          {reverify ? null : <OptionalIdNote />}
         </div>
       ) : null}
 
@@ -432,7 +414,7 @@ export function VerifyFlow({
             lead={reasonFor(view.status, view.code)}
           />
           {selfieStep}
-          <OptionalIdNote />
+          {reverify ? null : <OptionalIdNote />}
         </div>
       ) : null}
 
@@ -529,13 +511,14 @@ export function VerifyFlow({
   );
 }
 
-function Shell({ view, children }: { view: VerifyView; children: React.ReactNode }) {
+function Shell({ view, reverify, children }: { view: VerifyView; reverify: boolean; children: React.ReactNode }) {
   const live = isVerifiedReal(view);
+  const sub = reverify ? "Verified Real · Re-check" : live ? "Your profile is visible" : "Your profile goes live once you're Verified Real";
   return (
     <div className="mx-auto grid w-full max-w-[680px]">
-      <ScreenBand title="Verification" sub={live ? "Your profile is visible" : "Your profile goes live once you're Verified Real"} />
+      <ScreenBand title="Verification" sub={sub} />
       <div className="grid content-start gap-[18px] px-4 pb-6 pt-5">
-        <RingStepper view={view} />
+        <RingStepper view={view} reverify={reverify} />
         {children}
       </div>
     </div>

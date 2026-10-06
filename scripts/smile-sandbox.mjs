@@ -15,8 +15,11 @@
  *   2. the onboarding Compare (selfie + liveness vs main photo, ENROLLING a
  *      throwaway sandbox user) is accepted and reaches a result;
  *   3. Authentication against that enrolled user is accepted and reaches a
- *      result (after a pause for the enrolment), with a never-enrolled id as
- *      a control;
+ *      result (after a pause for the enrolment). A never-enrolled id is run
+ *      as a control and printed for information only: the sandbox clears it
+ *      too, so it cannot prove enrolment works;
+ *   6. the in-page ID check — Biometric KYC + Authentication of one capture —
+ *      is accepted for NIN and BVN;
  *   4. both results map through our outcome rules (lib/face-match.ts);
  *   5. the callback's signature check accepts Smile ID's scheme and refuses
  *      a tampered one.
@@ -146,14 +149,18 @@ try {
   record("3. Authentication against the enrolled face is accepted", false, e.message);
 }
 
-// Control: Authentication for a member id Smile ID never enrolled. If Smile
-// ID refuses it outright, that shows Authentication depends on the onboarding
-// enrolment. If it accepts, the difference shows only in the verdict on the
-// callback — checked end to end on the staging preview (GO-LIVE §0g).
+// Control, for information: the same capture authenticated against a member
+// id Smile ID never enrolled. Measured 6 October 2026: the sandbox returns
+// CLEAR for it too — sandbox verdicts follow the test identity's name, not
+// the face. So the sandbox (and a staging preview on sandbox keys) CANNOT
+// show that Authentication depends on the onboarding enrolment; that needs a
+// production check or Smile ID's written confirmation (GO-LIVE §0g).
 try {
   const never = `toastly-sandbox-never-${randomUUID()}`;
   const job = await smile.submitAuthentication(cfg, { sessionId: randomUUID(), profileId: never, capture, consent, userDetails });
-  console.log(`  ....  ${"   control: never-enrolled id was accepted".padEnd(58)} verdict arrives on the callback (${job})`);
+  const r = await poll(job);
+  const verdict = STATUSES.includes(r.status) ? `${r.status}${r.reason ? " / " + r.reason : ""}` : "arrives on the callback";
+  console.log(`  ....  ${"   control: never-enrolled id (sandbox can't judge faces)".padEnd(58)} ${verdict}`);
 } catch (e) {
   console.log(`  ....  ${"   control: never-enrolled id was refused".padEnd(58)} ${e.message}`);
 }
@@ -161,6 +168,22 @@ try {
 // What a refusal logs: Smile ID's text with anything we sent scrubbed.
 const echoed = smile.scrub(`bad last_name ${userDetails.last_name} for ${profileId} <${userDetails.email}>`, [profileId, userDetails.given_names, userDetails.last_name, userDetails.email]);
 record("   a refusal's log line carries nothing we sent", !echoed.includes(userDetails.last_name) && !echoed.includes(profileId) && !echoed.includes(userDetails.email), echoed);
+
+// The ID check, in the page (decided 6 October 2026): ONE capture to
+// Biometric KYC (the record) and to Authentication (the registered face).
+// The sandbox decides by the identity's names; NIN_V2 and BVN are enabled
+// on this account, V_NIN isn't (an account setting at Smile ID).
+for (const [idType, idNumber] of [["NIN_V2", "12345678901"], ["BVN", "12345678901"]]) {
+  try {
+    const [k, a] = await Promise.all([
+      smile.submitBiometricKyc(cfg, { sessionId: randomUUID(), profileId, capture, consent, userDetails, idType, idNumber }),
+      smile.submitAuthentication(cfg, { sessionId: randomUUID(), profileId, capture, consent, userDetails }),
+    ]);
+    record(`6. ID check (${idType}): Biometric KYC + Authentication accepted`, Boolean(k && a), `${k} / ${a}`);
+  } catch (e) {
+    record(`6. ID check (${idType}): Biometric KYC + Authentication accepted`, false, e.message);
+  }
+}
 
 // 4. The outcome rules on Smile ID's documented sandbox verdicts.
 record("4. a clear onboarding Compare is live and matched",

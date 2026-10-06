@@ -1325,19 +1325,34 @@ check("only the onboarding selfie enrols a face", (s, f) => {
   return /if \(mode === "onboard"\) \{\s*const job = await submitCompare\(cfg, \{[^}]*enrol: true/.test(s) ? false : "enrol: true is not confined to the onboarding branch";
 });
 
-// Verified Real comes only from the in-page selfie, which enrols the face a
-// later re-check authenticates against (decided 6 October 2026). The hosted
-// flow stays for the ID check alone.
-check("the hosted flow never grants Verified Real", (s, f) => {
+// The hosted flow is retired (decided 6 October 2026): it can't name the
+// member's id, so it can't register a face or check one. Every check runs in
+// the page over REST, and only the database's record_* functions change a
+// stage — the callback never writes one itself.
+check("the hosted flow is retired; only the database grants a seal", (s, f) => {
   const n = norm(f);
-  if (/app\/api\/smile-id\/session\/route\.ts$/.test(n)) {
-    return /body\.product === ["']smartselfie["']/.test(s) ? "the hosted session still starts a selfie" : false;
-  }
+  if (/cdn\.usesmileid\.com\/inline|\bSmileIdentity\s*\(|api\/smile-id\/(session|submitted)/.test(s)) return "uses Smile ID's hosted flow";
   if (/app\/api\/smile-id\/callback\/route\.ts$/.test(n)) {
-    return /\.update\(\{[^}]*stage:\s*["']verified_real["']/.test(s) ? "the callback grants Verified Real outside the in-page selfie" : false;
+    if (/\.update\(\{[^}]*\bstage:/.test(s)) return "the callback writes a stage itself";
+    if (!/rpc\("record_id_check"/.test(s)) return "the ID check isn't settled by record_id_check";
   }
-  if (/components\/verify\/verify-flow\.tsx$/.test(n)) {
-    return /launch\(["']smartselfie["']\)/.test(s) ? "the hosted selfie can still be launched" : false;
+  return false;
+});
+
+// The second ring needs the ID-check selfie to be the face registered at
+// onboarding (decided 6 October 2026): ONE capture goes to Biometric KYC and
+// to Authentication, and the database grants the ring only with both clear.
+check("the ID ring needs the record AND the face registered at onboarding", (s, f) => {
+  const n = norm(f);
+  if (/app\/\(app\)\/verify\/id-check-actions\.ts$/.test(n)) {
+    // `capture,` — the same variable in both calls, not another one.
+    if (!/submitBiometricKyc\(cfg, \{[^}]*\bcapture\s*,/.test(s)) return "no Biometric KYC of the capture";
+    if (!/submitAuthentication\(cfg, \{[^}]*\bcapture\s*,/.test(s)) return "no Authentication of the same capture";
+    return false;
+  }
+  if (n.endsWith(".sql") && /create or replace function public\.record_id_check/.test(s)) {
+    const body = s.slice(s.lastIndexOf("create or replace function public.record_id_check"));
+    return /k\.status <> 'clear' or a\.status <> 'clear'/.test(body) ? false : "record_id_check doesn't require both halves clear";
   }
   return false;
 });
@@ -1349,7 +1364,7 @@ check("the hosted flow never grants Verified Real", (s, f) => {
 const SURNAME_FILES = [
   /lib\/smile-id\.ts$/,
   /app\/\(app\)\/verify\/selfie-actions\.ts$/,
-  /app\/api\/smile-id\/session\/route\.ts$/,
+  /app\/\(app\)\/verify\/id-check-actions\.ts$/,
   /components\/app\/selfie-details-fields\.tsx$/,
   /components\/verify\/verify-flow\.tsx$/,
   /lib\/privacy-content\.ts$/,
@@ -1379,8 +1394,8 @@ check("every image is stripped before it is stored", (s, f) => {
 
 // The selfie and its frames pass through to Smile ID: never stored, never logged.
 check("the selfie never reaches storage or a log", (s, f) => {
-  if (!/app\/\(app\)\/verify\/selfie-actions\.ts$|app\/api\/smile-id\/callback\/route\.ts$/.test(norm(f))) return false;
-  if (/console\.\w+\([^;]*\b(selfie|frames|formData|capture|userDetails|liveness)\b/.test(stripStrings(s))) return "logs the selfie or the form";
+  if (!/app\/\(app\)\/verify\/(selfie|id-check)-actions\.ts$|app\/api\/smile-id\/callback\/route\.ts$/.test(norm(f))) return false;
+  if (/console\.\w+\([^;]*\b(selfie|frames|formData|capture|userDetails|liveness|idNumber|raw)\b/.test(stripStrings(s))) return "logs the selfie, the form or the ID number";
   const storage = [...s.matchAll(/\.storage\s*\.from\([^)]*\)\s*\.(\w+)\(/g)].map((m) => m[1]);
   const bad = storage.filter((op) => op !== "download" && op !== "remove");
   return bad.length ? `storage.${bad.join(", ")} on the selfie path` : false;
@@ -1388,9 +1403,9 @@ check("the selfie never reaches storage or a log", (s, f) => {
 
 // Consent first, with its version; the selfie passes through and is never kept.
 check("a selfie check records consent first and never stores the selfie", (s, f) => {
-  if (!/app\/\(app\)\/verify\/selfie-actions\.ts$/.test(norm(f))) return false;
+  if (!/app\/\(app\)\/verify\/(selfie|id-check)-actions\.ts$/.test(norm(f))) return false;
   const consent = s.indexOf("await recordConsent(");
-  const submit = s.search(/await submit(Compare|Authentication)\(/);
+  const submit = s.search(/(await )?submit(Compare|Authentication|BiometricKyc)\(/);
   if (consent < 0 || submit < 0 || consent > submit) return "consent isn't recorded before the check is sent";
   if (/\.upload\(|from\(\s*["']storage/.test(s)) return "writes the selfie somewhere";
   return false;

@@ -3,22 +3,24 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 /**
  * Smile ID — server side only. Never import this into a client component.
  *
- * Integration: the hosted v12 Web SDK (docs.usesmileid.com, read October
- * 2026). The server mints a short-lived v3 token per session; the browser
- * never sees the API key. The verdict arrives only on the callback webhook —
- * the browser's onResult confirms submission, nothing more.
+ * Integration: the v3 REST API (docs.usesmileid.com, read October 2026),
+ * with the selfie captured in the page by Smile ID's own camera component.
+ * The server mints a short-lived v3 token per request; the browser never sees
+ * the API key. The verdict arrives only on the callback webhook. The hosted
+ * web flow is retired (decided 6 October 2026): it can't name the member's
+ * id, so it can neither register a face a later check could use nor check a
+ * selfie against one.
  *
  * Products:
- *   smartselfie   -> Verified Real, only through the REST API below: the
- *                    onboarding selfie is SmartSelfie Compare against the
- *                    main photo, ENROLLING the face under the member id; a
- *                    re-check a reviewer asks for is Authentication against
- *                    that enrolment. The hosted selfie is retired (decided
- *                    6 October 2026) — it enrolled nothing a re-check could use.
+ *   smartselfie   -> Verified Real: the onboarding selfie is SmartSelfie
+ *                    Compare against the main photo, ENROLLING the face under
+ *                    the member id; a re-check a reviewer asks for is
+ *                    Authentication against that enrolment.
  *   photo_match   -> replacing a matched main photo: Authentication + Compare
- *                    with a fresh selfie (REST, below).
- *   biometric_kyc -> ID check (NIN, Virtual NIN or BVN, country NG; optional),
- *                    hosted — the hosted flow's only remaining use.
+ *                    with a fresh selfie.
+ *   biometric_kyc -> the optional ID check (NIN or BVN, country NG): Biometric
+ *                    KYC + Authentication of the same capture; the ring needs
+ *                    both.
  * Never Enhanced KYC or Basic KYC: neither matches a selfie to the record.
  */
 
@@ -27,6 +29,12 @@ export type SmileEnv = "sandbox" | "production";
 export type SmileIdType = "NIN_V2" | "V_NIN" | "BVN";
 export type SmileStatus = "clear" | "attention" | "block" | "error";
 
+/**
+ * The ID types offered. /v3/biometric_kyc takes these names as they are:
+ * NIN_V2 and BVN were accepted in the sandbox on 6 October 2026. V_NIN was
+ * refused there — "ID type not enabled for this partner" — an account setting
+ * at Smile ID, flagged in GO-LIVE.
+ */
 export const SMILE_ID_TYPES: SmileIdType[] = ["NIN_V2", "V_NIN", "BVN"];
 
 /** Format rules from Smile ID's Nigeria coverage page. */
@@ -35,17 +43,6 @@ export const ID_NUMBER_PATTERN: Record<SmileIdType, RegExp> = {
   BVN: /^\d{11}$/,
   V_NIN: /^[A-Za-z0-9]{16}$/,
 };
-
-/** The webhook's `product` value for each web-integration product. */
-export const WEBHOOK_PRODUCT: Record<SmileProduct, string> = {
-  smartselfie: "smart_selfie_registration",
-  biometric_kyc: "biometric_kyc",
-};
-
-export const SMILE_SCRIPT_URL = "https://cdn.usesmileid.com/inline/v12/js/script.min.js";
-
-/** The overlay accent. Teal, not amber: it sits behind white button text. */
-export const SMILE_THEME_COLOR = "#00695C";
 
 export type SmileConfig = {
   partnerId: string;
@@ -226,7 +223,7 @@ function captureFields(form: FormData, capture: SelfieCapture) {
  */
 async function submitJob(
   cfg: SmileConfig,
-  path: "/v3/authentication" | "/v3/compare",
+  path: "/v3/authentication" | "/v3/compare" | "/v3/biometric_kyc",
   form: FormData,
   userId: string | undefined,
   /** What we sent that must never reach a log, should Smile ID echo it back. */
@@ -316,4 +313,36 @@ export async function submitCompare(
   form.append("callback_url", cfg.callbackUrl);
   form.append("partner_params", JSON.stringify({ toastly_session: args.sessionId }));
   return submitJob(cfg, "/v3/compare", form, args.enrol ? args.profileId : undefined, sentBy(args.profileId, args.userDetails));
+}
+
+/**
+ * The optional ID check, in the page (decided 6 October 2026): the number is
+ * checked against the official record and the selfie matched to the photo on
+ * it. Submitted together with an Authentication of the SAME capture against
+ * the member's registered face — the second ring needs both. No user id is
+ * sent: Smile ID would try to enrol a face under it, and the member's face is
+ * already registered by the onboarding selfie.
+ */
+export async function submitBiometricKyc(
+  cfg: SmileConfig,
+  args: {
+    sessionId: string;
+    profileId: string;
+    capture: SelfieCapture;
+    consent: CaptureConsent;
+    userDetails: SmileUserDetails;
+    idType: SmileIdType;
+    idNumber: string;
+  },
+): Promise<string> {
+  const form = new FormData();
+  form.append("country", "NG");
+  form.append("id_type", args.idType);
+  form.append("id_number", args.idNumber);
+  form.append("user_details", JSON.stringify(args.userDetails));
+  captureFields(form, args.capture);
+  form.append("consent", consentField(args.consent));
+  form.append("callback_url", cfg.callbackUrl);
+  form.append("partner_params", JSON.stringify({ toastly_session: args.sessionId }));
+  return submitJob(cfg, "/v3/biometric_kyc", form, undefined, [...sentBy(args.profileId, args.userDetails), args.idNumber]);
 }

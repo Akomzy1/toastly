@@ -15,7 +15,7 @@
 import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { submitAuthentication, submitCompare } from "../lib/smile-id.ts";
+import { submitAuthentication, submitBiometricKyc, submitCompare } from "../lib/smile-id.ts";
 
 const cfg = { partnerId: "1234", apiKey: "test-key", env: "sandbox", callbackUrl: "https://preview.example/api/smile-id/callback" };
 const SELFIE_MARK = "SELFIE-BYTES-7f3a";
@@ -109,4 +109,28 @@ test("when Smile ID refuses and echoes what we sent, the error carries no surnam
   for (const secret of [SURNAME, userDetails.email, profileId]) assert.equal(err.message.includes(secret), false, `error carries ${secret}`);
   assert.ok(err.message.length < 400, "capped");
   assert.deepEqual(logged, [], "the client itself logs nothing");
+});
+
+// --- The ID check, in the page (decided 6 October 2026) ----------------------
+
+const ID_NUMBER = "12345678901";
+
+test("the ID check sends the number and the selfie to Smile ID's Biometric KYC only, with no user id", async () => {
+  await submitBiometricKyc(cfg, { sessionId: randomUUID(), profileId, capture, consent, userDetails, idType: "NIN_V2", idNumber: ID_NUMBER });
+  const r = carrying(ID_NUMBER);
+  assert.equal(r.length, 1);
+  assert.equal(r[0].url, "https://testapi.smileidentity.com/v3/biometric_kyc");
+  assert.match(r[0].body, /country=NG/);
+  assert.match(r[0].body, /id_type=NIN_V2/);
+  assert.equal(r[0].headers["User-ID"], undefined, "never enrols: the face is registered at onboarding");
+  assert.equal(r[0].body.includes(profileId), false, "the member id isn't sent to the KYC job");
+  assert.equal(carrying(SELFIE_MARK).length, 1);
+  assert.deepEqual(logged, []);
+});
+
+test("a refused ID check's error carries no ID number, surname or email", async () => {
+  reply = () => new Response(`{"error":"id_number ${ID_NUMBER} for ${SURNAME} <${userDetails.email}> not found"}`, { status: 400 });
+  const err = await submitBiometricKyc(cfg, { sessionId: randomUUID(), profileId, capture, consent, userDetails, idType: "NIN_V2", idNumber: ID_NUMBER }).catch((e) => e);
+  assert.ok(err instanceof Error);
+  for (const secret of [ID_NUMBER, SURNAME, userDetails.email]) assert.equal(err.message.includes(secret), false, `error carries ${secret}`);
 });

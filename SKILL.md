@@ -268,6 +268,18 @@ ported from live-profile-and-prompt-14)** — no longer invented UI:
   account" / "I agree to Smile ID checking my selfie against the one I
   verified with." The hosted "Before your selfie" screen is gone (decided
   6 October 2026); `/audit/verify/reverify` replaces `/audit/verify/before-selfie`.
+  WAITING on the updated Toastly-Verification-Consent-Wording.md (screen 4
+  is the re-check): its wording replaces this, with a version bump. The
+  stepper already reads "Verified Real · Re-check", and the onboarding
+  heading ("Verify your profile… One more step") and the optional-ID note
+  are gone from the re-check.
+- **The ID check, in the page** (decided 6 October 2026): the ID form is
+  unchanged, and "Continue to selfie" opens Smile ID's own camera in the page
+  instead of the hosted overlay. The form now shows `CONSENT.id_check` from
+  lib/consent.ts — the wording recorded with the agreement — instead of
+  main's `ID_CONSENT` copy. Added, NOT IN THE WORDING DOCUMENT: the retry
+  reason `not_same_person` — "The selfie didn't match the one you verified
+  with. Try again yourself, in good light." (`/audit/verify/id-not-same-person`).
 
 **Built against the diaspora-review prototypes (4 October 2026)** — no
 longer invented UI:

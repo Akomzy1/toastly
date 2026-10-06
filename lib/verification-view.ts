@@ -83,6 +83,33 @@ export function deriveVerifyView(
   return { kind: "passed" };
 }
 
+export type IdCheckRow = SessionSummary & { step: string | null; check_id: string | null };
+
+/**
+ * The in-page ID check is two sessions on one capture (decided 6 October
+ * 2026): id_kyc (the record) and id_auth (the face registered at onboarding).
+ * Read as one check, from the latest pair: any half still running → being
+ * checked; any half refused → retry, the record's reason first; any error →
+ * retry; any half borderline → a person; both clear → clear. A hosted ID
+ * check (no step) is retired and decides nothing.
+ */
+export function latestIdCheck(rows: IdCheckRow[]): SessionSummary | null {
+  const halves = rows.filter((r) => r.step === "id_kyc" || r.step === "id_auth");
+  const latest = halves.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0];
+  if (!latest?.check_id) return null;
+  const pair = halves.filter((r) => r.check_id === latest.check_id);
+  const kyc = pair.find((r) => r.step === "id_kyc");
+  const auth = pair.find((r) => r.step === "id_auth");
+  const created_at = pair.reduce((t, r) => (Date.parse(r.created_at) < Date.parse(t) ? r.created_at : t), latest.created_at);
+  const any = (s: SessionSummary["status"]) => pair.some((r) => r.status === s);
+  if (any("started") || any("submitted")) return { status: "submitted", result_code: null, created_at };
+  if (kyc?.status === "block") return { status: "block", result_code: kyc.result_code, created_at };
+  if (auth?.status === "block") return { status: "block", result_code: "not_same_person", created_at };
+  if (any("error")) return { status: "error", result_code: (kyc?.status === "error" ? kyc : auth)?.result_code ?? null, created_at };
+  if (any("attention")) return { status: "attention", result_code: null, created_at };
+  return { status: "clear", result_code: null, created_at };
+}
+
 export function isVerifiedReal(view: VerifyView): boolean {
   return !["phone", "start", "selfie_checking", "selfie_review", "selfie_retry"].includes(view.kind);
 }

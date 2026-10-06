@@ -25,6 +25,8 @@ const STATES: Record<string, { view: VerifyView; screen?: "overview" | "id_form"
   "retry-spoof": { view: { kind: "selfie_retry", status: "block", code: "spoof_detected" } },
   "retry-image": { view: { kind: "selfie_retry", status: "error", code: "image_unavailable_or_invalid" } },
   "retry-error": { view: { kind: "selfie_retry", status: "error", code: "internal_error" } },
+  "reverify-checking": { view: { kind: "selfie_checking" }, reverify: true },
+  "reverify-retry": { view: { kind: "selfie_retry", status: "block", code: "spoof_detected" }, reverify: true },
   passed: { view: { kind: "passed" } },
   "id-form": { view: { kind: "passed" }, screen: "id_form" },
   "id-checking": { view: { kind: "id_checking" } },
@@ -32,6 +34,7 @@ const STATES: Record<string, { view: VerifyView; screen?: "overview" | "id_form"
   "id-not-found": { view: { kind: "id_retry", status: "block", code: "identifier_not_found" } },
   "id-face": { view: { kind: "id_retry", status: "block", code: "face_verification_failed" } },
   "id-used": { view: { kind: "id_retry", status: "block", code: "id_already_used" } },
+  "id-not-same-person": { view: { kind: "id_retry", status: "block", code: "not_same_person" } },
   "id-error": { view: { kind: "id_retry", status: "error", code: "service_unavailable" } },
   both: { view: { kind: "both" } },
 };
@@ -45,6 +48,7 @@ export default function AuditVerify({ params }: { params: { state: string } }) {
     <VerifyFlow
       view={s.view}
       initialScreen={s.screen}
+      reverify={s.reverify}
       selfieStep={
         selfie ? <SelfieCheckStep connected devStandIn={false} photosReady mode={s.reverify ? "reverify" : "onboard"} /> : undefined
       }

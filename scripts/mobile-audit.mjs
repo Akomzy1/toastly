@@ -172,6 +172,8 @@ const ROUTES = [
   // Verification — every state of the Smile ID flow
   { route: "/audit/verify/start", label: "Verify · start" },
   { route: "/audit/verify/reverify", label: "Verify · reverify" },
+  { route: "/audit/verify/reverify-checking", label: "Verify · reverify-checking" },
+  { route: "/audit/verify/reverify-retry", label: "Verify · reverify-retry" },
   { route: "/audit/verify/checking", label: "Verify · checking" },
   { route: "/audit/verify/review", label: "Verify · review" },
   { route: "/audit/verify/retry-spoof", label: "Verify · retry-spoof" },
@@ -184,6 +186,7 @@ const ROUTES = [
   { route: "/audit/verify/id-not-found", label: "Verify · id-not-found" },
   { route: "/audit/verify/id-face", label: "Verify · id-face" },
   { route: "/audit/verify/id-used", label: "Verify · id-used" },
+  { route: "/audit/verify/id-not-same-person", label: "Verify · id-not-same-person" },
   { route: "/audit/verify/id-error", label: "Verify · id-error" },
   { route: "/audit/verify/both", label: "Verify · both" },
 ];

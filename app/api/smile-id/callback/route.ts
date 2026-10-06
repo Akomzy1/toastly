@@ -5,13 +5,11 @@ import { capture } from "@/lib/analytics";
 import { combineOutcomes, onboardingOutcome, type StepResult } from "@/lib/face-match";
 import {
   ID_NUMBER_PATTERN,
-  WEBHOOK_PRODUCT,
   hashIdNumber,
   isSmileStatus,
   smileConfig,
   verifySmileSignature,
   type SmileIdType,
-  type SmileProduct,
   type SmileStatus,
 } from "@/lib/smile-id";
 
@@ -21,8 +19,11 @@ export const runtime = "nodejs";
 /**
  * Smile ID result webhook — THE ONLY SOURCE OF TRUTH for verification.
  *
- * WHAT IS READ from the payload: status, reason, product, the job id and our
- * own session nonce. For the ID check, id_fields.id_number is read once, in
+ * Every check is submitted over REST from the page (0029; the hosted flow is
+ * retired, decided 6 October 2026) and matched here on our own nonce.
+ *
+ * WHAT IS READ from the payload: status, reason, the job id and our own
+ * session nonce. For the ID check, id_fields.id_number is read once, in
  * memory, to recompute its HMAC — never stored, never logged.
  *
  * WHAT IS NEVER READ: every other id_fields value (name, date of birth,
@@ -37,8 +38,6 @@ export const runtime = "nodejs";
 
 /** Smile ID's documented ceiling for webhook bodies. */
 const MAX_BODY_BYTES = 1.5 * 1024 * 1024;
-
-type Outcome = { status: SmileStatus; code: string | null; passed: boolean };
 
 async function readCapped(req: Request): Promise<string | null> {
   const declared = Number(req.headers.get("content-length") ?? "0");
@@ -216,124 +215,108 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, ignored: "already decided" });
   }
 
-  // The main-photo selfie checks (0029) — submitted over REST, matched on the
-  // same nonce, so they're handled here rather than by a second webhook.
-  if (session.step) {
-    if (session.environment !== cfg.env) return NextResponse.json({ ok: true, ignored: "environment mismatch" });
-    const st = payload.status;
-    if (!isSmileStatus(st)) return NextResponse.json({ error: "bad request" }, { status: 400 });
-    return handleFaceMatch(admin, session, { status: st, reason: str(payload.reason, 64) }, jobId);
-  }
-
-  const product = session.product as SmileProduct;
-
-  // Verified Real comes only from the in-page selfie (0029; decided 6 October
-  // 2026): a hosted selfie result grants nothing. The session is closed so
-  // it stops showing as "being checked".
-  if (product !== "biometric_kyc") {
+  // The hosted flow is retired — for Verified Real and for the ID check
+  // (0029; decided 6 October 2026). A hosted result grants nothing: the
+  // session is closed so it stops showing as "being checked".
+  if (!session.step) {
     await admin
       .from("verification_sessions")
-      .update({ status: "error", result_code: "hosted_selfie_retired", passed: false, job_id: jobId, completed_at: new Date().toISOString() })
+      .update({ status: "error", result_code: "hosted_flow_retired", passed: false, job_id: jobId, completed_at: new Date().toISOString() })
       .eq("id", session.id)
       .in("status", ["started", "submitted"]);
-    return NextResponse.json({ ok: true, ignored: "hosted selfie retired" });
+    return NextResponse.json({ ok: true, ignored: "hosted flow retired" });
   }
 
-  if (payload.product !== WEBHOOK_PRODUCT[product] || session.environment !== cfg.env) {
-    return NextResponse.json({ ok: true, ignored: "product mismatch" });
+  // Every check is submitted over REST from the page and matched on the
+  // same nonce, so all of them are handled here.
+  if (session.environment !== cfg.env) return NextResponse.json({ ok: true, ignored: "environment mismatch" });
+  const st = payload.status;
+  if (!isSmileStatus(st)) return NextResponse.json({ error: "bad request" }, { status: 400 });
+  const result = { status: st, reason: str(payload.reason, 64) };
+  if (session.step === "id_kyc" || session.step === "id_auth") {
+    return handleIdCheck(admin, session as IdSession, payload, result, jobId);
   }
+  return handleFaceMatch(admin, session as FaceSession, result, jobId);
+}
 
-  const status = payload.status;
-  if (!isSmileStatus(status)) {
-    return NextResponse.json({ error: "bad request" }, { status: 400 });
-  }
+type IdSession = {
+  id: string;
+  profile_id: string;
+  step: "id_kyc" | "id_auth";
+  check_id: string | null;
+  id_type: string | null;
+  id_hash: string | null;
+  environment: string;
+};
 
-  let outcome: Outcome = {
-    status,
-    code: str(payload.reason, 64) ?? (status === "clear" ? "clear" : null),
-    passed: status === "clear",
-  };
+/**
+ * One half of the in-page ID check (decided 6 October 2026):
+ *   id_kyc   Biometric KYC — the number on the official record, the selfie
+ *            against its photo
+ *   id_auth  Authentication — the same selfie against the face registered at
+ *            onboarding
+ * Whichever reports second asks the database for the ring, which it grants
+ * only when both are clear (record_id_check). A borderline half reaches a
+ * person as an ID review.
+ */
+async function handleIdCheck(admin: Admin, s: IdSession, payload: Record<string, unknown>, r: StepResult, jobId: string | null) {
+  let status: SmileStatus = r.status;
+  let code: string | null = r.reason ?? (status === "clear" ? "clear" : null);
+  let keepHash = false;
 
-  // The ID check: the number Smile ID checked must be the number the member
-  // entered — the signature doesn't cover the body, so this binds the result
-  // to the session. The number lives only in this block.
-  if (product === "biometric_kyc" && outcome.passed) {
+  // The number Smile ID checked must be the number the member entered — the
+  // signature doesn't cover the body, so this binds the result to the
+  // session. The number lives only in this block; only its keyed hash, made
+  // when the member submitted, is ever kept.
+  if (s.step === "id_kyc" && (status === "clear" || status === "attention")) {
     const idFields = (payload.id_fields ?? {}) as Record<string, unknown>;
-    const idType = session.id_type as SmileIdType | null;
+    const idType = s.id_type as SmileIdType | null;
     const checked = typeof idFields.id_number === "string" ? idFields.id_number.replace(/\s+/g, "") : "";
     const { data: key } = await admin.rpc("id_number_hmac_key");
-
-    if (!idType || !session.id_hash || typeof key !== "string" || !ID_NUMBER_PATTERN[idType].test(checked)) {
-      outcome = { status: "error", code: "id_unreadable", passed: false };
-    } else if (hashIdNumber(key, idType, checked) !== session.id_hash) {
-      outcome = { status: "block", code: "id_mismatch", passed: false };
+    const readable = Boolean(idType && s.id_hash && typeof key === "string" && ID_NUMBER_PATTERN[idType].test(checked));
+    if (readable && hashIdNumber(key as string, idType!, checked) !== s.id_hash) {
+      status = "block";
+      code = "id_mismatch";
+    } else if (!readable && status === "clear") {
+      status = "error";
+      code = "id_unreadable";
+    } else {
+      // Clear, or borderline for a person to decide: the fingerprint waits
+      // with the session until the ring is granted.
+      keepHash = true;
     }
   }
 
-  const now = new Date().toISOString();
-
-  // One ID, one account. The primary key decides any race.
-  if (product === "biometric_kyc" && outcome.passed) {
-    const { error } = await admin.from("verified_id_hashes").insert({
-      id_hash: session.id_hash,
-      profile_id: session.profile_id,
-      id_type: session.id_type,
-      verified_at: now,
-    });
-    if (error) {
-      const { data: existing } = await admin
-        .from("verified_id_hashes")
-        .select("profile_id")
-        .eq("id_hash", session.id_hash)
-        .maybeSingle();
-      if (existing?.profile_id !== session.profile_id) {
-        outcome = { status: "block", code: "id_already_used", passed: false };
-      }
-    }
-  }
-
-  // Claim the session — only if still undecided, so a concurrent retry can't
-  // apply the same result twice.
   const { data: claimed } = await admin
     .from("verification_sessions")
     .update({
-      status: outcome.status,
-      result_code: outcome.code,
-      passed: outcome.passed,
-      // Only a verified ID's hash is kept (privacy policy §8).
-      id_hash: outcome.passed ? session.id_hash : null,
+      status,
+      result_code: code,
+      passed: status === "clear",
+      id_hash: keepHash ? s.id_hash : null,
       job_id: jobId,
-      completed_at: now,
+      completed_at: new Date().toISOString(),
     })
-    .eq("id", session.id)
+    .eq("id", s.id)
     .in("status", ["started", "submitted"])
     .select("id");
-  if (!claimed || claimed.length === 0) {
-    return NextResponse.json({ ok: true, ignored: "already decided" });
-  }
+  if (!claimed || claimed.length === 0) return NextResponse.json({ ok: true, ignored: "already decided" });
 
-  if (outcome.passed) {
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("stage")
-      .eq("id", session.profile_id)
-      .single();
-
-    if (profile?.stage === "verified_real") {
-      await admin
-        .from("profiles")
-        .update({ stage: "id_confirmed", id_confirmed_at: now })
-        .eq("id", session.profile_id);
-    }
-  }
-
-  // Trust Sentinel: one event per result, outcome only.
   await admin.rpc("emit_trust_event", {
-    p_profile_id: session.profile_id,
+    p_profile_id: s.profile_id,
     p_subject_id: null,
     p_kind: "id_check_result",
-    p_meta: { status: outcome.status, reason: outcome.code, environment: session.environment },
+    p_meta: { status, reason: code, step: s.step, environment: s.environment },
   });
+
+  if (s.check_id) {
+    const { data: pair } = await admin.from("verification_sessions").select("step, status").eq("check_id", s.check_id);
+    const done = (step: string) => pair?.some((p) => p.step === step && p.status !== "started" && p.status !== "submitted");
+    if (done("id_kyc") && done("id_auth")) {
+      const { error } = await admin.rpc("record_id_check", { p_check: s.check_id });
+      if (error) return NextResponse.json({ error: "could not record" }, { status: 500 });
+    }
+  }
 
   revalidatePath("/verify");
   return NextResponse.json({ ok: true });

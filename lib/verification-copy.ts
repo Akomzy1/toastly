@@ -56,6 +56,9 @@ export const REASON_COPY: Record<string, string> = {
   id_mismatch:
     "The number that was checked wasn't the one you entered. Please start again.",
   high_risk: "We couldn't confirm it this time.",
+  // The ID check's selfie must also be the face you verified with (decided
+  // 6 October 2026). NOT IN THE WORDING DOCUMENT — flagged in SKILL.md.
+  not_same_person: "The selfie didn't match the one you verified with. Try again yourself, in good light.",
 };
 
 export const GENERIC_BLOCK = "We couldn't confirm it this time.";

@@ -24,11 +24,25 @@ const STATUS_TONE: Record<Ring, string> = {
   optional: "text-grey-600",
 };
 
-function steps(view: VerifyView): { steps: Step[]; fill: string } {
+function steps(view: VerifyView, reverify: boolean): { steps: Step[]; fill: string } {
   const phone: Step = { label: "Phone", ring: "done", status: "Confirmed" };
   const real = (ring: Ring, status: string): Step => ({ label: "Verified Real", ring, status });
   const id = (ring: Ring, status: string): Step => ({ label: "ID check", ring, status });
   const optional = id("optional", "Optional");
+
+  // A re-check a reviewer asked for (decided 6 October 2026): "Verified Real ·
+  // Re-check" — never "Next", and never why the member was asked.
+  if (reverify) {
+    switch (view.kind) {
+      case "selfie_checking":
+        return { steps: [phone, real("checking", "Being checked"), optional], fill: "50%" };
+      case "selfie_review":
+        return { steps: [phone, real("checking", "Being reviewed"), optional], fill: "50%" };
+      case "start":
+      case "selfie_retry":
+        return { steps: [phone, real("todo", "Re-check"), optional], fill: "33.3%" };
+    }
+  }
 
   switch (view.kind) {
     case "phone":
@@ -80,8 +94,8 @@ function RingSvg({ ring }: { ring: Ring }) {
   );
 }
 
-export function RingStepper({ view }: { view: VerifyView }) {
-  const { steps: list, fill } = steps(view);
+export function RingStepper({ view, reverify = false }: { view: VerifyView; reverify?: boolean }) {
+  const { steps: list, fill } = steps(view, reverify);
   return (
     <div className="grid gap-2 rounded-xl border border-ink-900/[.12] bg-white px-2.5 pb-4 pt-[18px]">
       <div className="grid grid-cols-3" aria-hidden="true">

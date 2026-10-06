@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-06 09:30 UTC against `http://localhost:3217`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
+Run 2026-10-06 10:43 UTC against `http://localhost:3217`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -21,7 +21,7 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/diaspora` | 320 | pass | pass | pass | pass | `mobile\diaspora-320.png` |
 | `/diaspora` | 360 | pass | pass | pass | pass | `mobile\diaspora-360.png` |
 | `/stories` | 320 | pass | pass | pass | pass | `mobile\stories-320.png` |
-| `/stories` | 360 | pass | pass | pass | pass | `mobile\stories-360.png` |
+| `/stories` | 360 | pass | pass | pass | **FAIL** (a request hung) | `mobile\stories-360.png` |
 | `/privacy` | 320 | pass | pass | pass | pass | `mobile\privacy-320.png` |
 | `/privacy` | 360 | pass | pass | pass | pass | `mobile\privacy-360.png` |
 | `/signup` | 320 | pass | pass | pass | pass | `mobile\signup-320.png` |
@@ -272,6 +272,10 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/verify/start` | 360 | pass | pass | pass | pass | `mobile\audit-verify-start-360.png` |
 | `/audit/verify/reverify` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-320.png` |
 | `/audit/verify/reverify` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-360.png` |
+| `/audit/verify/reverify-checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-checking-320.png` |
+| `/audit/verify/reverify-checking` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-checking-360.png` |
+| `/audit/verify/reverify-retry` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-retry-320.png` |
+| `/audit/verify/reverify-retry` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-retry-360.png` |
 | `/audit/verify/checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-checking-320.png` |
 | `/audit/verify/checking` | 360 | pass | pass | pass | pass | `mobile\audit-verify-checking-360.png` |
 | `/audit/verify/review` | 320 | pass | pass | pass | pass | `mobile\audit-verify-review-320.png` |
@@ -296,6 +300,8 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/verify/id-face` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-face-360.png` |
 | `/audit/verify/id-used` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-used-320.png` |
 | `/audit/verify/id-used` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-used-360.png` |
+| `/audit/verify/id-not-same-person` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-not-same-person-320.png` |
+| `/audit/verify/id-not-same-person` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-not-same-person-360.png` |
 | `/audit/verify/id-error` | 320 | pass | pass | pass | pass | `mobile\audit-verify-id-error-320.png` |
 | `/audit/verify/id-error` | 360 | pass | pass | pass | pass | `mobile\audit-verify-id-error-360.png` |
 | `/audit/verify/both` | 320 | pass | pass | pass | pass | `mobile\audit-verify-both-320.png` |
@@ -303,4 +309,5 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 
 ## Failures
 
-None.
+### `/stories` at 360px
+- **Network never idle:** a request stayed pending past 20s — measured after `load` + 2s instead. Usually a prefetch of a route that doesn't exist; check the page's links.

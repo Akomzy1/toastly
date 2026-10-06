@@ -142,10 +142,19 @@ also go in Vercel → Environment Variables → **Preview**):
    four photos → onboarding selfie (identity "clear") → the callback makes
    the profile live. Then, as staff, "Request re-verification" on that
    member → the member's re-check selfie → the callback clears the request.
-   **This is the proof that the onboarding selfie registered the face**
-   (Authentication can only pass against an enrolment). Then the optional
-   ID check through the hosted flow ("clear" identity) → the second ring.
-   Then replace the main photo → Authentication + Compare → matched.
+   Then the optional ID check in the page (NIN or BVN, "clear" identity) →
+   both halves clear → the second ring. Then replace the main photo →
+   Authentication + Compare → matched. Callback URL carries the bypass
+   secret (`?x-vercel-protection-bypass=…`).
+
+   **What staging can't prove.** Sandbox verdicts follow the test identity's
+   name, not the face: measured 6 October 2026, Authentication against an
+   id that was **never enrolled also comes back clear**. So no sandbox run —
+   script or preview — shows that the onboarding selfie registered the face.
+   That needs one of: Smile ID confirming in writing that production
+   Authentication fails for an unenrolled `user_id`; or, on production after
+   release, the owner's own account — onboard, then a re-check (expect
+   clear), and an Authentication against a random id (expect a refusal).
 
 **Production, in this order — each step only on the owner's go-ahead:**
 
@@ -180,27 +189,36 @@ open. Consider telling members before it ships.
   `SMILE_ID_CALLBACK_URL`): the onboarding selfie and the replace-main-photo
   check now use Smile ID's REST API (SmartSelfie Compare and Authentication)
   with a selfie captured in the page by Smile ID's own camera component
-  (`@smileid/web-sdk`, pinned 12.1.0). Results come back on the SAME callback
-  URL as the hosted flow. Sandbox test: `npm run smile:sandbox -- selfie.jpg`
-  (7/7 on 6 October 2026, after the hosted selfie was retired: token, Compare
-  accepted and enrolling, Authentication against the enrolled face accepted
-  after a 20 s pause, a refusal's log line scrubbed, signature check). The
-  sandbox also *accepts* Authentication for an id it never enrolled, so
-  whether enrolment works shows only in the verdict on the callback — §0g,
-  step 5. Without keys: production refuses, development records a stand-in
-  pass.
-- **The hosted selfie is retired** (decided 6 October 2026). Verified Real
-  comes only from the in-page onboarding selfie, which ENROLS the face under
-  the member id; a re-check a reviewer asks for is an in-page Authentication
-  against that face. The hosted flow stays for the optional ID check only.
-  A late hosted selfie result is closed and grants nothing.
+  (`@smileid/web-sdk`, pinned 12.1.0). Results come back on the one signed
+  callback. Sandbox test: `npm run smile:sandbox -- selfie.jpg` (13/13 on
+  6 October 2026: token; Compare accepted, enrolling, clear; Authentication
+  against the enrolled face clear; a refusal's log line scrubbed; the ID
+  check — Biometric KYC + Authentication of one capture — accepted for NIN
+  and BVN; signature check). The sandbox clears a never-enrolled id too, so
+  it can't prove enrolment works — §0g. Without keys: production refuses,
+  development records a stand-in pass.
+- **The hosted flow is retired entirely** (decided 6 October 2026): its v12
+  web integration can't name the member's id, so it can neither register a
+  face nor check against one. Verified Real comes only from the in-page
+  onboarding selfie, which ENROLS the face under the member id; a re-check a
+  reviewer asks for is an in-page Authentication against that face.
+- **The ID check is in the page too.** One capture goes to Biometric KYC
+  (`/v3/biometric_kyc`: the number on the official record, the selfie
+  against its photo) AND to Authentication (the same selfie against the face
+  registered at onboarding). `record_id_check` grants the second ring only
+  when both are clear; a borderline half goes to a person as an ID review.
+  **Virtual NIN is refused by Smile ID on this account ("ID type not enabled
+  for this partner")** — enable it in the Smile ID portal, or say so and
+  it comes out of the ID-type picker.
 - **0029 resets everyone Verified Real only through the hosted flow** (no
   passed onboarding selfie) back to "phone confirmed", and clears their
   liveness date. They take the onboarding selfie on their next visit — the
-  same step as the four photos every existing member needs anyway. Their ID
-  check is kept (`id_confirmed_at` and the one-ID-one-account fingerprint);
-  the second ring returns when the new selfie passes. No Sentinel "drift"
-  event is raised for the reset. **Consider telling these members first.**
+  same step as the four photos every existing member needs anyway. **Their
+  hosted ID check is cleared too**: they redo it in the page after the new
+  selfie. Their ID's fingerprint stays bound to them meanwhile, so no other
+  account can use that ID. A late hosted result is closed and grants
+  nothing. No Sentinel "drift" event is raised for the reset. **Consider
+  telling these members first.**
   Count them on production before the release (read-only):
 
   ```sql

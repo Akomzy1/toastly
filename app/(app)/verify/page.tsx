@@ -11,7 +11,7 @@ import { guessCountryFromPhone } from "@/lib/countries";
 import { loadCities } from "@/lib/where-you-live";
 import { PhotosStep } from "./photos-step";
 import { SANDBOX_IDENTITIES, sandboxPickerAllowed, smileConfig } from "@/lib/smile-id";
-import { deriveVerifyView, isVerifiedReal, type SessionSummary } from "@/lib/verification-view";
+import { deriveVerifyView, isVerifiedReal, latestIdCheck, type SessionSummary } from "@/lib/verification-view";
 import type { PhotoReveal } from "@/lib/safety";
 import type { VerificationStage } from "@/lib/types/profile";
 
@@ -39,7 +39,7 @@ export default async function VerifyPage() {
     supabase.from("profiles").select("stage, photo_reveal, phone_verified_at, country_confirmed_at").eq("id", user.id).single(),
     supabase
       .from("verification_sessions")
-      .select("product, status, result_code, created_at, step")
+      .select("product, status, result_code, created_at, step, check_id")
       .eq("profile_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -64,7 +64,8 @@ export default async function VerifyPage() {
     (sessions ?? []).find((s) => s.product === product && (product !== "smartselfie" || s.step !== null)) ?? null;
 
   const stage: VerificationStage = profile?.stage ?? "unverified";
-  const view = deriveVerifyView(stage, latest("smartselfie"), latest("biometric_kyc"), Date.now(), reverify?.requested_at ?? null);
+  const idCheck = latestIdCheck((sessions ?? []).filter((s) => s.product === "biometric_kyc"));
+  const view = deriveVerifyView(stage, latest("smartselfie"), idCheck, Date.now(), reverify?.requested_at ?? null);
 
   const sandbox = sandboxPickerAllowed(smileConfig(), user.email)
     ? SANDBOX_IDENTITIES.map(({ key, label, products }) => ({ key, label, products }))
@@ -88,6 +89,7 @@ export default async function VerifyPage() {
       view={view}
       sandbox={sandbox}
       live={Boolean(live.live)}
+      reverify={reverifying}
       selfieStep={
         onboarding || reverifying ? (
           <SelfieCheckStep
