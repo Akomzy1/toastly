@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canSendText } from "@/lib/feed";
 import type { Tier } from "@/lib/types/profile";
+import { notLiveError, requireLiveProfile } from "@/lib/live-profile";
 
 export type ReplyState = { error?: string; ok?: string } | null;
 
@@ -28,6 +29,8 @@ export async function replyToAnswer(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const recipientId = String(formData.get("recipient_id") ?? "");
   const promptAnswerId = String(formData.get("prompt_answer_id") ?? "");

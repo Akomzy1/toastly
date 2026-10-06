@@ -83,7 +83,7 @@ export function ProfileHub({
           href="/profile/edit"
           className="flex min-h-11 items-center justify-center rounded-md border border-ink-900/20 bg-transparent px-3 py-2.5 text-nav font-semibold text-ink-900 no-underline hover:border-green-500 hover:bg-green-50"
         >
-          Edit profile
+          Edit profile and photos
         </Link>
       </div>
 

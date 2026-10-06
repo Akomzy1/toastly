@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireAuditHarness } from "@/lib/audit-harness";
-import { YourData } from "@/components/account/your-data";
+import { DeleteFlow } from "@/components/account/delete-flow";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Mobile-audit harness: the delete-account sheet, open. */
+/** Mobile-audit harness: account-delete.slim.html step 1, with coins and an open review. */
 export default function AuditAccountDelete() {
   requireAuditHarness();
   return (
-    <div className="mx-auto grid max-w-[720px] gap-6 px-5 py-section-y">
-      <YourData initialSheetOpen />
+    <div className="min-h-screen bg-paper">
+      <DeleteFlow coins={12} reviewOpen />
     </div>
   );
 }

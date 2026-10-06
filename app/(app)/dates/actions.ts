@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { notLiveError, requireLiveProfile } from "@/lib/live-profile";
 
 /**
  * Date actions (PRD §5.5; 0023). Every rule — who may stake, the cut-off,
@@ -24,6 +25,8 @@ async function member() {
 export async function proposeDate(_prev: DateState, formData: FormData): Promise<DateState> {
   const { supabase, user } = await member();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const spotId = String(formData.get("spot_id") ?? "");
   const at = new Date(String(formData.get("at_iso") ?? ""));
@@ -50,6 +53,10 @@ async function run(id: string, fn: string, args: Record<string, unknown>, ok: st
 const idOf = (f: FormData) => String(f.get("date_id") ?? "");
 
 export async function stakeDate(_p: DateState, f: FormData) {
+  // Staking needs a live profile; attendance and safety below never do.
+  const { supabase } = await member();
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
   return run(idOf(f), "date_stake", {}, "You're both in. See you there.");
 }
 

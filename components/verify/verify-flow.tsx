@@ -190,10 +190,21 @@ export function VerifyFlow({
   afterVerified,
   sandbox = [],
   initialScreen = "overview",
+  onboardingSelfie,
+  live = true,
 }: {
   view: VerifyView;
   /** The phone step, rendered while the member is unverified. */
   phoneStep?: React.ReactNode;
+  /**
+   * The onboarding selfie (0029): photos first, then one in-page selfie that
+   * checks liveness and the main photo. When given, it replaces the hosted
+   * "Get verified" / "Try again" buttons; the hosted selfie stays for
+   * re-verification.
+   */
+  onboardingSelfie?: React.ReactNode;
+  /** Whether the profile is live — Verified Real alone doesn't show it to anyone. */
+  live?: boolean;
   /** Shown beneath the passed states (the photo-visibility choice). */
   afterVerified?: React.ReactNode;
   /** Sandbox test identities — passed only when the server allows them. */
@@ -435,17 +446,19 @@ export function VerifyFlow({
             title="Verify your profile"
             lead="Your phone number is confirmed. One more step and your profile can be seen by other members."
           />
-          <div className={CARD}>
-            <div className="grid gap-1.5">
-              <h3 className={`${CARD_LABEL} text-green-500`}>Next · Verified Real</h3>
-              <p className={CARD_BODY}>
-                A quick selfie, checked by Smile ID, our verification provider. Toastly keeps only the result.
-              </p>
+          {onboardingSelfie ?? (
+            <div className={CARD}>
+              <div className="grid gap-1.5">
+                <h3 className={`${CARD_LABEL} text-green-500`}>Next · Verified Real</h3>
+                <p className={CARD_BODY}>
+                  A quick selfie, checked by Smile ID, our verification provider. Toastly keeps only the result.
+                </p>
+              </div>
+              <button type="button" onClick={() => open("before_selfie")} className={TEAL}>
+                Get verified
+              </button>
             </div>
-            <button type="button" onClick={() => open("before_selfie")} className={TEAL}>
-              Get verified
-            </button>
-          </div>
+          )}
           <OptionalIdNote />
         </div>
       ) : null}
@@ -480,15 +493,17 @@ export function VerifyFlow({
             title={view.status === "error" ? "Something went wrong on our side" : "We couldn't confirm it this time"}
             lead={reasonFor(view.status, view.code)}
           />
-          <div className={CARD}>
-            <div className="grid gap-1.5">
-              <h3 className={`${CARD_LABEL} text-green-500`}>Verified Real</h3>
-              <p className={CARD_BODY}>A quick selfie, checked by Smile ID. Toastly keeps only the result.</p>
+          {onboardingSelfie ?? (
+            <div className={CARD}>
+              <div className="grid gap-1.5">
+                <h3 className={`${CARD_LABEL} text-green-500`}>Verified Real</h3>
+                <p className={CARD_BODY}>A quick selfie, checked by Smile ID. Toastly keeps only the result.</p>
+              </div>
+              <button type="button" onClick={() => open("before_selfie")} className={TEAL}>
+                Try again
+              </button>
             </div>
-            <button type="button" onClick={() => open("before_selfie")} className={TEAL}>
-              Try again
-            </button>
-          </div>
+          )}
           <OptionalIdNote />
         </div>
       ) : null}
@@ -499,10 +514,14 @@ export function VerifyFlow({
             <Seal second={false} />
             <div className="grid gap-1.5">
               <h2 className="m-0 font-serif text-[24px] font-bold leading-[1.2] text-white">You&rsquo;re Verified Real</h2>
-              <p className="m-0 text-ui leading-[1.6] text-white/80">Your profile can now be seen by other members.</p>
+              <p className="m-0 text-ui leading-[1.6] text-white/80">
+                {live
+                  ? "Your profile can now be seen by other members."
+                  : "Your profile goes live once you have four photos and your main photo is confirmed as you."}
+              </p>
             </div>
-            <Link href="/profile/edit" className={AMBER}>
-              Set up your profile
+            <Link href={live ? "/profile/edit" : "/profile/photos"} className={AMBER}>
+              {live ? "Set up your profile" : "Your photos"}
             </Link>
           </div>
 

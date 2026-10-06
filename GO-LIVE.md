@@ -117,6 +117,45 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
+## 0f. Photos, the face match, no live profile no access (migration 0029) — NOT APPLIED
+
+Run after 0028, **on staging first**, and only with a working Smile ID face
+match end to end (the user's rule for these screens). Apply it **before**
+deploying the code.
+
+**What it does to everyone already on Toastly — plan for this.** From the
+moment 0029 is applied, a profile is visible and can use the feed, Gists,
+messages and dates only when it is LIVE: phone confirmed, Verified Real, not
+restricted, at least four photos, and a main photo that matched a live
+selfie. No member has photos yet (there was no upload screen), so **every
+existing member becomes "not live"** and sees "Almost there — finish your
+profile" until they add four photos and take one selfie. Couple Mode, coins,
+the safety kit, Your data, settings and attendance on an arranged date stay
+open. Consider telling members before it ships.
+
+- **Smile ID** (`SMILE_ID_PARTNER_ID`, `SMILE_ID_API_KEY`, `SMILE_ID_ENV`,
+  `SMILE_ID_CALLBACK_URL`): the onboarding selfie and the replace-main-photo
+  check now use Smile ID's REST API (SmartSelfie Compare and Authentication)
+  with a selfie captured in the page by Smile ID's own camera component
+  (`@smileid/web-sdk`, pinned 12.1.0). Results come back on the SAME callback
+  URL as the hosted flow. Sandbox test: `npm run smile:sandbox -- selfie.jpg`
+  (8/8 on 6 October 2026: token, Compare accepted and clear, Authentication
+  accepted, signature check). Without keys: production refuses, development
+  records a stand-in pass.
+- The hosted selfie now serves re-verification only; the ID check is unchanged.
+- **Members already Verified Real through the hosted flow** confirm their
+  first main photo with a fresh selfie that ENROLS them under their profile
+  id (main's hosted flow didn't enrol under it, so Authentication against the
+  old enrolment isn't possible). That proves a live person who matches the
+  photo, not that it's the same person who passed the hosted check — a person
+  reviews anything borderline, and later changes use Authentication.
+- Server actions accept up to 4 MB (`next.config.mjs`): the selfie and its
+  liveness frames pass through one, on to Smile ID, unstored.
+- Files a reviewer's decision replaces are queued in `storage_deletions` and
+  removed on the next Smile ID callback.
+- Deleting an account now ends Couple Mode (the partner is un-paused — before,
+  they stayed hidden) and returns every stake on a date not yet settled.
+
 ## 0e. Ported fixes and the AriyaPlanner brief rule (migration 0028) — NOT APPLIED
 
 Run after 0027, on staging first. Apply it **before** deploying the code:

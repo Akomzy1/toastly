@@ -16,6 +16,8 @@ import {
   type Profile,
   type Tier,
 } from "@/lib/types/profile";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
 
 export const metadata: Metadata = {
   title: "Today's matches",
@@ -42,6 +44,11 @@ export default async function FeedPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No live profile, no access (PRD §5.1.2): checked before anything about
+  // anyone else is read. The database refuses regardless (0029); this says why.
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: me } = await supabase
     .from("profiles")

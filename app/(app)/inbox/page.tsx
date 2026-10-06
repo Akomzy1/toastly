@@ -14,6 +14,8 @@ import {
   type Inbox,
 } from "@/lib/inbox";
 import type { Tier } from "@/lib/types/profile";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
 
 export const metadata: Metadata = {
   title: "Inbox",
@@ -35,6 +37,11 @@ export default async function InboxPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No live profile, no access (PRD §5.1.2): checked before anything about
+  // anyone else is read. The database refuses regardless (0029); this says why.
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: tierRow } = await supabase.rpc("current_tier", {
     p_profile_id: user.id,

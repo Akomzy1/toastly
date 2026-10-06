@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { capture } from "@/lib/analytics";
+import { combineOutcomes, onboardingOutcome, type StepResult } from "@/lib/face-match";
 import {
   ID_NUMBER_PATTERN,
   WEBHOOK_PRODUCT,
@@ -64,6 +65,98 @@ function str(v: unknown, max = 128): string | null {
   return typeof v === "string" && v.length > 0 && v.length <= max ? v : null;
 }
 
+type Admin = NonNullable<ReturnType<typeof createAdminClient>>;
+type FaceSession = {
+  id: string;
+  profile_id: string;
+  step: "onboard" | "authenticate" | "compare";
+  photo_id: string | null;
+  check_id: string | null;
+};
+
+/** Files the database decided to replace: it can't reach storage itself. */
+async function deleteReplaced(admin: Admin, path: unknown) {
+  const paths = typeof path === "string" && path ? [path] : [];
+  const { data: queued } = await admin.from("storage_deletions").select("id, name").eq("bucket_id", "profile-photos").limit(50);
+  for (const q of queued ?? []) paths.push(q.name);
+  if (paths.length) await admin.storage.from("profile-photos").remove(paths);
+  if (queued?.length) await admin.from("storage_deletions").delete().in("id", queued.map((q) => q.id));
+}
+
+/**
+ * A selfie-check result (0029). Only the category and reason code are kept —
+ * never an image, a score or a face template.
+ *
+ *   onboard       one Compare: settles Verified Real and the main photo
+ *   authenticate  } a replacement main photo: both must report, then the
+ *   compare       } combined outcome is recorded once
+ */
+async function handleFaceMatch(admin: Admin, s: FaceSession, r: StepResult, jobId: string | null) {
+  const now = new Date().toISOString();
+  const onboard = s.step === "onboard" ? onboardingOutcome(r) : null;
+  const passed = onboard ? onboard.live === "passed" : r.status === "clear";
+
+  const { data: claimed } = await admin
+    .from("verification_sessions")
+    .update({ status: r.status, result_code: r.reason ?? (r.status === "clear" ? "clear" : null), passed, job_id: jobId, completed_at: now })
+    .eq("id", s.id)
+    .in("status", ["started", "submitted"])
+    .select("id");
+  if (!claimed || claimed.length === 0) return NextResponse.json({ ok: true, ignored: "already decided" });
+
+  if (onboard) {
+    const { data: before } = await admin.from("profiles").select("stage").eq("id", s.profile_id).single();
+    const { data: replaced, error } = await admin.rpc("record_onboarding_check", {
+      p_session: s.id,
+      p_live: onboard.live,
+      p_match: onboard.match.outcome,
+      p_reason: onboard.match.outcome === "mismatch" ? onboard.match.reason : null,
+    });
+    if (error && !/not the pending main photo/.test(error.message)) {
+      return NextResponse.json({ error: "could not record" }, { status: 500 });
+    }
+    await deleteReplaced(admin, replaced);
+    if (onboard.live === "passed" && before?.stage === "phone_verified") {
+      await capture("verification_complete", s.profile_id, { stage: "verified_real" });
+    }
+    await admin.rpc("emit_trust_event", {
+      p_profile_id: s.profile_id,
+      p_subject_id: null,
+      p_kind: "liveness_result",
+      p_meta: { status: r.status, reason: r.reason, step: "onboard" },
+    });
+  } else if (s.check_id) {
+    // Both halves of a replacement check. Whichever reports second records
+    // the outcome; a repeat after that finds no pending photo and is ignored.
+    const { data: pair } = await admin
+      .from("verification_sessions")
+      .select("step, status, result_code, photo_id")
+      .eq("check_id", s.check_id);
+    const auth = pair?.find((p) => p.step === "authenticate");
+    const comp = pair?.find((p) => p.step === "compare");
+    const done = (p?: { status: string }) => p && p.status !== "started" && p.status !== "submitted";
+    if (auth && comp && done(auth) && done(comp) && isSmileStatus(auth.status) && isSmileStatus(comp.status)) {
+      const result = combineOutcomes(
+        { status: auth.status, reason: auth.result_code },
+        { status: comp.status, reason: comp.result_code },
+      );
+      const { data: replaced, error } = await admin.rpc("record_main_photo_match", {
+        p_photo_id: comp.photo_id ?? s.photo_id,
+        p_outcome: result.outcome,
+        p_reason: result.outcome === "mismatch" ? result.reason : null,
+      });
+      if (error && !/not the pending main photo/.test(error.message)) {
+        return NextResponse.json({ error: "could not record" }, { status: 500 });
+      }
+      await deleteReplaced(admin, replaced);
+    }
+  }
+
+  revalidatePath("/verify");
+  revalidatePath("/profile/photos");
+  return NextResponse.json({ ok: true });
+}
+
 export async function POST(req: Request) {
   const cfg = smileConfig();
   const admin = createAdminClient();
@@ -102,7 +195,7 @@ export async function POST(req: Request) {
 
   const { data: session } = await admin
     .from("verification_sessions")
-    .select("id, profile_id, product, environment, id_type, id_hash, status")
+    .select("id, profile_id, product, environment, id_type, id_hash, status, step, photo_id, check_id")
     .eq("id", sessionId)
     .maybeSingle();
   if (!session) return NextResponse.json({ ok: true, ignored: "unknown session" });
@@ -110,6 +203,15 @@ export async function POST(req: Request) {
   // First result wins.
   if (session.status !== "started" && session.status !== "submitted") {
     return NextResponse.json({ ok: true, ignored: "already decided" });
+  }
+
+  // The main-photo selfie checks (0029) — submitted over REST, matched on the
+  // same nonce, so they're handled here rather than by a second webhook.
+  if (session.step) {
+    if (session.environment !== cfg.env) return NextResponse.json({ ok: true, ignored: "environment mismatch" });
+    const st = payload.status;
+    if (!isSmileStatus(st)) return NextResponse.json({ error: "bad request" }, { status: 400 });
+    return handleFaceMatch(admin, session, { status: st, reason: str(payload.reason, 64) }, jobId);
   }
 
   const product = session.product as SmileProduct;

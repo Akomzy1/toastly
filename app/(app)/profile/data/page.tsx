@@ -1,17 +1,32 @@
 import type { Metadata } from "next";
-import { ScreenBand } from "@/components/app/screen-band";
-import { YourData } from "@/components/account/your-data";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { AppBand } from "@/components/app/app-band";
+import { YourDataList } from "@/components/account/your-data-list";
 
 export const metadata: Metadata = { title: "Your data", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
-/** Download and delete — privacy policy section 10. Reached from Profile. */
-export default function YourDataPage() {
+/**
+ * Download and delete — privacy policy section 10 (your-data.slim.html).
+ * ALWAYS OPEN: no plan, no live-profile guard (PRD §5.1.2).
+ */
+export default async function YourDataPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: me } = await supabase.from("profiles").select("photo_reveal, country_code, open_to_abroad").eq("id", user.id).maybeSingle();
+
   return (
     <>
-      <ScreenBand title="Your data" sub="See, download or delete what we hold" back="/profile" />
-      <div className="mx-auto grid max-w-[720px] gap-6 px-5 pb-section-y pt-5 lg:pt-4">
-        <YourData />
-      </div>
+      <AppBand title="Your data" sub="Settings" backHref="/profile" />
+      <YourDataList
+        photoReveal={me?.photo_reveal ?? "verified_members"}
+        inNigeria={(me?.country_code ?? "NG") === "NG"}
+        openToAbroad={me?.open_to_abroad ?? true}
+      />
     </>
   );
 }

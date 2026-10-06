@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "../profile-form";
@@ -72,6 +73,20 @@ export default async function EditProfilePage() {
           Your prompt answers are what people read first. Everything below the
           basics is optional.
         </p>
+        {/* The hub's "Edit profile and photos" (nav-profile-hub) lands here;
+            photos have their own screen (photos-upload). */}
+        <Link
+          href="/profile/photos"
+          className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-ink-900/[.12] bg-white px-[15px] py-[11px] no-underline transition-colors hover:bg-paper"
+        >
+          <span className="grid min-w-0 gap-0.5">
+            <span className="text-ui font-medium text-ink-900">Your photos</span>
+            <span className="text-[13px] leading-[1.45] text-grey-600">Four to go live, up to six</span>
+          </span>
+          <span aria-hidden="true" className="flex-shrink-0 text-[16px] text-grey-400">
+            ›
+          </span>
+        </Link>
         <ProfileForm profile={profile} history={history} cities={cityOptions} />
         {/* Separate from the form on purpose: genotype has its own consent
             step and its own save, and never travels with other fields. */}

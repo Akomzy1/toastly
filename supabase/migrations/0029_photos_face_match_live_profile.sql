@@ -635,8 +635,38 @@ grant execute on function public.unread_count() to authenticated;
 -- 8. Blocklist entries held while a review is open
 -- ---------------------------------------------------------------------------
 
+-- A date called off because one of the pair deleted their account.
+alter table public.date_commitments drop constraint if exists date_commitments_cancel_reason_check;
+alter table public.date_commitments add constraint date_commitments_cancel_reason_check
+  check (cancel_reason in ('notice', 'declined', 'reschedule', 'safety', 'neither_attended', 'account_deleted'));
+
 alter table public.blocked_phone_hashes add column if not exists held_for_review uuid;
 alter table public.blocked_id_hashes add column if not exists held_for_review uuid;
+
+-- The console's words for a report (0026's, plus the new category).
+create or replace function public._report_label(p report_reason)
+returns text language sql immutable as $$
+  select case p::text
+    when 'user_is_married' then 'Married'
+    when 'scam_or_fraud' then 'Scam or fraud'
+    when 'asked_for_money' then 'Asking for money'
+    when 'fake_profile' then 'Fake profile'
+    when 'photos_not_them' then 'Photos aren''t them'
+    when 'harassment' then 'Harassment'
+    when 'threats_or_coercion' then 'Threats or coercion'
+    when 'underage' then 'Under 18'
+    else 'Other' end;
+$$;
+
+-- For the delete screen's "kept until an open review is settled" line
+-- (account-delete prototype): a yes/no about the caller only — never what
+-- the review is, or who raised it.
+create or replace function public.has_open_review()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from review_items where subject_id = auth.uid() and stage <> 'decided');
+$$;
+revoke all on function public.has_open_review() from public, anon;
+grant execute on function public.has_open_review() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 9. The functions that need the guard (main's own definitions, plus one line)
@@ -1064,6 +1094,7 @@ declare
   v_hash text;
   v_id_hash text;
   v_case uuid;
+  c date_commitments;
 begin
   if v_me is null then
     raise exception 'Not signed in.';
@@ -1090,6 +1121,20 @@ begin
       on conflict (id_hash) do update set retain_until = excluded.retain_until;
     end if;
   end if;
+
+  -- The partner first (ported from live-profile-and-prompt-14). A couple row
+  -- deleted with the account never fires the un-pause (that runs on update to
+  -- 'ended'), so the partner stayed paused — hidden — for good. End it.
+  update couples set status = 'ended'
+   where (member_a = v_me or member_b = v_me) and status in ('proposed', 'active');
+  -- Dates not yet settled are called off with every stake returned: the
+  -- partner's coins never go with someone else's account.
+  for c in select * from date_commitments
+            where (member_a = v_me or member_b = v_me) and settled_at is null for update loop
+    perform _date_payout(c, 'return_both');
+    update date_commitments set status = 'cancelled', cancel_reason = 'account_deleted', cancelled_by = v_me, settled_at = now()
+     where id = c.id;
+  end loop;
 
   -- Deleting while a review is open (decided 5 October 2026): the number and
   -- the ID stay blocked until the review is settled. Cleared, they're freed;

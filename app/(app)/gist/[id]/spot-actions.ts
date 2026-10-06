@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { findPublicVenues, placesConfigured } from "@/lib/places";
+import { notLiveError, requireLiveProfile } from "@/lib/live-profile";
 
 export type SpotState = { error?: string; ok?: string } | null;
 
@@ -34,6 +35,8 @@ export async function suggestSpots(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const sessionId = String(formData.get("session_id") ?? "");
   if (!sessionId) return { error: "Which session is this for?" };
@@ -124,6 +127,8 @@ export async function setSpotStatus(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const spotId = String(formData.get("spot_id") ?? "");
   const sessionId = String(formData.get("session_id") ?? "");

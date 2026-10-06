@@ -52,6 +52,8 @@ export const REPORT_REASONS = [
   { value: "threats_or_coercion", label: "Threats or pressure" },
   { value: "harassment", label: "Harassment" },
   { value: "fake_profile", label: "Not who they say they are" },
+  // A first-class category (CLAUDE.md, PRD §5.1.2; 0029).
+  { value: "photos_not_them", label: "These photos aren't them" },
   { value: "user_is_married", label: "They're married" },
   { value: "underage", label: "They seem underage" },
   { value: "other", label: "Something else" },

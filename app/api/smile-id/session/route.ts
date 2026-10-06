@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL } from "@/lib/schema";
+import { recordConsent } from "@/lib/consent-record";
 import {
   ID_NUMBER_PATTERN,
   SANDBOX_IDENTITIES,
@@ -86,12 +87,20 @@ export async function POST(req: Request) {
   // or the selfie again when staff asked for re-verification (0025).
   const { data: reverify } = await supabase.from("reverification_requests").select("profile_id").maybeSingle();
   const reverifying = Boolean(reverify) && (profile.stage === "verified_real" || profile.stage === "id_confirmed");
-  if (product === "smartselfie" && profile.stage !== "phone_verified" && !reverifying) {
+  // Since 0029 the onboarding selfie is the in-page check against the main
+  // photo (app/(app)/verify/selfie-actions.ts); the hosted selfie is only
+  // for re-verification a reviewer asked for.
+  if (product === "smartselfie" && !reverifying) {
     return refuse(409, "This step isn't available for your account right now.");
   }
   if (product === "biometric_kyc" && profile.stage !== "verified_real") {
     return refuse(409, "The ID check opens once you're Verified Real.");
   }
+
+  // The agreement is recorded with the version of the wording shown (0029),
+  // before anything is sent to Smile ID.
+  const consented = await recordConsent(supabase, user.id, product === "biometric_kyc" ? "id_check" : "verification_selfie");
+  if (!consented.ok) return refuse(503, "Verification isn't available right now. Please try again later.");
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { count } = await admin

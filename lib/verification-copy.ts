@@ -1,8 +1,9 @@
 /**
  * Verification copy — shared by the flow and the audit harness.
  *
- * The consent texts follow design/prompts/verification-screens-prompt.md,
- * with one sentence HELD (see SMILE_TERMS_CONFIRMED).
+ * The hosted flow's consent copy (re-verification and the ID check). The
+ * onboarding and replace-main-photo consents, and the versions recorded with
+ * every agreement, are in lib/consent.ts (Toastly-Verification-Consent-Wording.md).
  */
 
 /**
@@ -33,10 +34,9 @@ export const ID_CONSENT = {
   title: "Check your ID",
   intro:
     "We'll ask Smile ID to check your number against the official record and match it to a new selfie.",
-  // Updated for the keyed HMAC (0016): "not your number" stays true, and the
-  // fingerprint is said out loud rather than hidden.
+  // §3 of the wording document.
   keeps:
-    "Toastly keeps only whether it passed, and when — not your number, and not the name, photo, date of birth, phone number or address on the record. We keep a scrambled code made from your number, so the same ID can't verify two accounts.",
+    "Toastly keeps only whether it passed, and when — plus a one-way fingerprint of your number, so the same ID can't be used on more than one account. We can't turn the fingerprint back into your number. We don't keep the number itself, or the name, photo, date of birth, phone number or address on the record. Smile ID keeps the images and the check record for up to five years, under its own terms.",
   checkbox: "I agree to Smile ID checking my ID against the official record.",
   start: "Continue to selfie",
   decline: "Not now",

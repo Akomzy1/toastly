@@ -1233,6 +1233,113 @@ check("the AriyaPlanner brief is never filled from profiles", (s, f) => {
   return /from\(\s*["']profiles["']\s*\)/.test(s) ? "handles the brief and queries profiles" : false;
 });
 
+// --- No live profile, no access; photos and the face match (0029) ----------
+//
+// Ported from live-profile-and-prompt-14. PRD §5.1.2 / CLAUDE.md: enforce on
+// the server, in every route and query — and fail the build if a feed,
+// profile-view, invite, message or date route lacks the guard.
+
+// Route segments that ARE feed, profile-view, invite, message or date routes.
+// A new one is guarded the moment it exists, by name.
+const GUARDED_ROUTE = /^app\/\(app\)\/(feed|gist|inbox|messages?|chat|threads?|matches|members?|people)\//;
+// Open whatever the member's status (PRD §5.1.2; decided 5 October 2026).
+const ALWAYS_OPEN_ROUTE = /^app\/\(app\)\/(verify|profile|safety-kit|couple|coins|help)\//;
+
+check("every feed, profile-view, invite and message route is live-guarded", (s, f) => {
+  const n = norm(f);
+  if (!GUARDED_ROUTE.test(n) || !/\.(tsx?)$/.test(n)) return false;
+  // Pages, layouts, route handlers and server-action modules; components rendered by a guarded page are covered by it.
+  const entry = /\/(page|route)\.tsx?$/.test(n) || /^\s*["']use server["']/m.test(s);
+  if (!entry) return false;
+  if (!/\brequireLiveProfile\s*\(/.test(s)) return "no requireLiveProfile()";
+  if (/\/page\.tsx$/.test(n) && !/if \(!live\.live\) return <ProfileNotLive/.test(s)) return "calls the guard but ignores the result";
+  return false;
+});
+
+check("joining a Gist call is live-guarded", (s, f) => {
+  if (!/app\/api\/gist\/\[id\]\/join\/route\.ts$/.test(norm(f))) return false;
+  return /requireLiveProfile\s*\(/.test(s) && /if \(!live\.live\) return json\(/.test(s) ? false : "join route has no live guard";
+});
+
+// Dates: proposing and staking need a live profile; attendance and safety on
+// a date already arranged never do (decided 5 October 2026).
+check("dates: only proposing and staking need a live profile", (s, f) => {
+  if (!/app\/\(app\)\/dates\/actions\.ts$/.test(norm(f))) return false;
+  const body = (name) => {
+    const i = s.indexOf(`export async function ${name}(`);
+    if (i < 0) return "";
+    const j = s.indexOf("export async function", i + 10);
+    return s.slice(i, j < 0 ? undefined : j);
+  };
+  for (const g of ["proposeDate", "stakeDate"]) if (!/requireLiveProfile\s*\(/.test(body(g))) return `${g} isn't guarded`;
+  for (const o of ["declineDate", "cancelDate", "requestReschedule", "checkIn", "contestDate"]) {
+    if (/requireLiveProfile\s*\(/.test(body(o))) return `${o} is guarded — attendance and safety must stay open`;
+  }
+  return false;
+});
+
+check("verification, photos, settings, data, safety, Couple Mode and coins never require a live profile", (s, f) => {
+  const n = norm(f);
+  if (!ALWAYS_OPEN_ROUTE.test(n) || !/\.(tsx?)$/.test(n)) return false;
+  return /\brequireLiveProfile\s*\(/.test(s) ? "calls requireLiveProfile() on an always-open screen" : false;
+});
+
+checkLive();
+function checkLive() {
+  // The latest surviving policy on each guarded table must require a live caller.
+  const pol = new Map();
+  for (const { m, sql } of MIGS) {
+    const clean = sql.replace(/--[^\n]*/g, "");
+    for (const x of clean.matchAll(/drop policy (?:if exists )?"([^"]+)" on ([\w.]+)/g)) pol.delete(`${x[2]}::${x[1]}`);
+    for (const x of clean.matchAll(/create policy "([^"]+)"\s+on ([\w.]+)([\s\S]*?);/g)) pol.set(`${x[2]}::${x[1]}`, { m, text: x[3] });
+  }
+  const TABLES = ["daily_feed", "replies", "gist_sessions", "gist_outcomes", "threads", "messages", "date_spots"];
+  const hits = [];
+  for (const [k, p] of pol) {
+    const t = k.split("::")[0].replace(/^public\./, "");
+    if (TABLES.includes(t) && !/profile_is_live\(\s*auth\.uid\(\)\s*\)/.test(p.text)) hits.push(`${p.m} — ${k} doesn't require a live caller`);
+  }
+  for (const fn of ["build_daily_feed", "gist_invite", "gist_respond", "gist_propose_time", "gist_confirm_time", "gist_join", "date_propose", "date_stake", "unread_count"]) {
+    const b = latestFn(fn);
+    if (!b || !/assert_live\(/.test(b)) hits.push(`${fn}() doesn't assert a live caller`);
+  }
+  if (hits.length) failures.push({ name: "every feed, invite, message and date policy and function requires a live caller", hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  every feed, invite, message and date policy and function requires a live caller`);
+}
+
+// The face match keeps outcomes only (PRD §5.1.2): no score, no image, no
+// template — anywhere a face-match column is defined.
+check("the face match keeps outcomes only — no score, image or template", (s, f) => {
+  if (!f.endsWith(".sql") || !/face_match/.test(s)) return false;
+  const cols = [...s.matchAll(/add column if not exists (\w+)/g)].map((x) => x[1]).filter((c) => /face|match|selfie|liveness/.test(c));
+  const bad = cols.filter((c) => /score|confidence|template|image|embedding|vector/.test(c));
+  return bad.length ? `stores ${bad.join(", ")}` : false;
+});
+
+// A replacement main photo must never enrol a face: if its Authentication
+// half failed, an impostor's selfie would replace the member's enrolled face.
+check("only the onboarding selfie enrols a face", (s, f) => {
+  if (!/app\/\(app\)\/verify\/selfie-actions\.ts$/.test(norm(f))) return false;
+  const enrols = [...s.matchAll(/submitCompare\(cfg, \{[\s\S]*?enrol:\s*(true|false)/g)].map((x) => x[1]);
+  if (enrols.length !== 2 || enrols[0] !== "true" || enrols[1] !== "false") return "submitCompare must enrol for onboarding only";
+  return /if \(mode === "onboard"\) \{\s*const job = await submitCompare\(cfg, \{[^}]*enrol: true/.test(s) ? false : "enrol: true is not confined to the onboarding branch";
+});
+
+// Consent first, with its version; the selfie passes through and is never kept.
+check("a selfie check records consent first and never stores the selfie", (s, f) => {
+  if (!/app\/\(app\)\/verify\/selfie-actions\.ts$/.test(norm(f))) return false;
+  const consent = s.indexOf("await recordConsent(");
+  const submit = s.search(/await submit(Compare|Authentication)\(/);
+  if (consent < 0 || submit < 0 || consent > submit) return "consent isn't recorded before the check is sent";
+  if (/\.upload\(|from\(\s*["']storage/.test(s)) return "writes the selfie somewhere";
+  return false;
+});
+
+check("the consent's bracketed retention line stays visible until Smile ID confirms it", (s, f) => {
+  if (!/lib\/consent\.ts$/.test(norm(f))) return false;
+  return /\[Purpose of retention, and any way to request earlier deletion — to be confirmed with Smile ID\.\]/.test(s) ? false : "the bracketed line is gone";
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

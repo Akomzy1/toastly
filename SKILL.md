@@ -239,6 +239,28 @@ invented UI; the Edit profile country select they replace is gone:
   hub's row is labelled "Match preferences" (decided 6 October 2026) and
   opens Settings, which holds Where you live and Match preferences.
 
+**Built against the going-live, photo and Your data prototypes (6 October 2026,
+ported from live-profile-and-prompt-14)** — no longer invented UI:
+- **Photos** — `photos-upload`, `photos-main-check`, `photo-replace-main`
+  (`/profile/photos`). The hub's button reads "Edit profile and photos" again,
+  as `nav-profile-hub` has it (main had shortened it); Edit profile links to
+  the photo screen.
+- **Not live yet / access paused** — `profile-not-live`,
+  `profile-access-paused` (`components/app/profile-not-live.tsx`), shown in
+  place of the feed, Gists and inbox. Deviations: Toastly Help is main's panel
+  button under the list, not a row; a restricted account sees a short
+  "hidden for now" screen with main's member notice giving the reason.
+- **Your data** and **Delete your account** — `your-data`, `account-delete`
+  (`/profile/data`, `/profile/data/delete`), replacing main's invented card
+  and sheet: unspent coins are shown with "Use my coins first" before the
+  typed DELETE. Deviation: the "Genotype visibility" row says where to set it
+  rather than showing the setting — the page is outside the genotype display
+  path.
+- **The onboarding selfie** sits in `verify-overview`'s flow in place of the
+  hosted "Get verified" button, with the wording document's consent. Added,
+  flagged: a "Next · Your photos" card when photos aren't ready, and a surname
+  field (main's own wording) because Smile ID's REST API requires it.
+
 **Built against the diaspora-review prototypes (4 October 2026)** — no
 longer invented UI:
 - **Review console** — `review-queue`, `review-case`, `review-history`

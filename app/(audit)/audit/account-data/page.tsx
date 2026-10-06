@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireAuditHarness } from "@/lib/audit-harness";
-import { YourData } from "@/components/account/your-data";
+import { AppBand } from "@/components/app/app-band";
+import { YourDataList } from "@/components/account/your-data-list";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -8,12 +9,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Mobile-audit harness: the "Your data" card on the profile page. */
+/** Mobile-audit harness: Your data (your-data.slim.html), a member in Nigeria. */
 export default function AuditAccountData() {
   requireAuditHarness();
   return (
-    <div className="mx-auto grid max-w-[720px] gap-6 px-5 py-section-y">
-      <YourData />
+    <div className="min-h-screen bg-paper">
+      <AppBand title="Your data" sub="Settings" backHref="/profile" />
+      <YourDataList photoReveal="verified_members" inNigeria openToAbroad />
     </div>
   );
 }

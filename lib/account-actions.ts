@@ -34,8 +34,9 @@ export async function deleteAccount(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
 
-  if (formData.get("confirm") !== "on") {
-    return { error: "Tick the box to confirm." };
+  // Typed, a deliberate act rather than a mis-tap (account-delete.slim.html).
+  if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== "DELETE") {
+    return { error: "Type DELETE to confirm." };
   }
 
   const admin = createAdminClient();

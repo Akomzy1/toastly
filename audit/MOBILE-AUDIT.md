@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-06 00:50 UTC against `http://localhost:3123`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
+Run 2026-10-06 08:20 UTC against `http://localhost:3123`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -152,6 +152,32 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/preferences/off` | 360 | pass | pass | pass | pass | `mobile\audit-preferences-off-360.png` |
 | `/audit/preferences/abroad` | 320 | pass | pass | pass | pass | `mobile\audit-preferences-abroad-320.png` |
 | `/audit/preferences/abroad` | 360 | pass | pass | pass | pass | `mobile\audit-preferences-abroad-360.png` |
+| `/audit/photos/onboard-empty` | 320 | pass | pass | pass | pass | `mobile\audit-photos-onboard-empty-320.png` |
+| `/audit/photos/onboard-empty` | 360 | pass | pass | pass | pass | `mobile\audit-photos-onboard-empty-360.png` |
+| `/audit/photos/onboard-ready` | 320 | pass | pass | pass | pass | `mobile\audit-photos-onboard-ready-320.png` |
+| `/audit/photos/onboard-ready` | 360 | pass | pass | pass | pass | `mobile\audit-photos-onboard-ready-360.png` |
+| `/audit/photos/check-face` | 320 | pass | pass | pass | pass | `mobile\audit-photos-check-face-320.png` |
+| `/audit/photos/check-face` | 360 | pass | pass | pass | pass | `mobile\audit-photos-check-face-360.png` |
+| `/audit/photos/check-selfie` | 320 | pass | pass | pass | pass | `mobile\audit-photos-check-selfie-320.png` |
+| `/audit/photos/check-selfie` | 360 | pass | pass | pass | pass | `mobile\audit-photos-check-selfie-360.png` |
+| `/audit/photos/check-review` | 320 | pass | pass | pass | pass | `mobile\audit-photos-check-review-320.png` |
+| `/audit/photos/check-review` | 360 | pass | pass | pass | pass | `mobile\audit-photos-check-review-360.png` |
+| `/audit/photos/edit` | 320 | pass | pass | pass | pass | `mobile\audit-photos-edit-320.png` |
+| `/audit/photos/edit` | 360 | pass | pass | pass | pass | `mobile\audit-photos-edit-360.png` |
+| `/audit/photos/replace` | 320 | pass | pass | pass | pass | `mobile\audit-photos-replace-320.png` |
+| `/audit/photos/replace` | 360 | pass | pass | pass | pass | `mobile\audit-photos-replace-360.png` |
+| `/audit/photos/replace-checking` | 320 | pass | pass | pass | pass | `mobile\audit-photos-replace-checking-320.png` |
+| `/audit/photos/replace-checking` | 360 | pass | pass | pass | pass | `mobile\audit-photos-replace-checking-360.png` |
+| `/audit/photos/replace-failed` | 320 | pass | pass | pass | pass | `mobile\audit-photos-replace-failed-320.png` |
+| `/audit/photos/replace-failed` | 360 | pass | pass | pass | pass | `mobile\audit-photos-replace-failed-360.png` |
+| `/audit/going-live/not-live` | 320 | pass | pass | pass | pass | `mobile\audit-going-live-not-live-320.png` |
+| `/audit/going-live/not-live` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-not-live-360.png` |
+| `/audit/going-live/restricted` | 320 | pass | pass | pass | pass | `mobile\audit-going-live-restricted-320.png` |
+| `/audit/going-live/restricted` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-restricted-360.png` |
+| `/audit/going-live/selfie` | 320 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-320.png` |
+| `/audit/going-live/selfie` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-360.png` |
+| `/audit/going-live/selfie-photos` | 320 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-photos-320.png` |
+| `/audit/going-live/selfie-photos` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-photos-360.png` |
 | `/audit/where-you-live/signup` | 320 | pass | pass | pass | pass | `mobile\audit-where-you-live-signup-320.png` |
 | `/audit/where-you-live/signup` | 360 | pass | pass | pass | pass | `mobile\audit-where-you-live-signup-360.png` |
 | `/audit/where-you-live/signup-ghana` | 320 | pass | pass | pass | pass | `mobile\audit-where-you-live-signup-ghana-320.png` |

@@ -8,9 +8,15 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * never sees the API key. The verdict arrives only on the callback webhook —
  * the browser's onResult confirms submission, nothing more.
  *
- * Two products:
- *   smartselfie   -> Verified Real (liveness only; required)
- *   biometric_kyc -> ID check (NIN, Virtual NIN or BVN, country NG; optional)
+ * Products:
+ *   smartselfie   -> Verified Real. Since 0029 the onboarding selfie runs
+ *                    through the REST API below (SmartSelfie Compare against
+ *                    the main photo), because the hosted flow can't compare a
+ *                    photo; the hosted flow remains for re-verification.
+ *   photo_match   -> replacing a matched main photo: Authentication + Compare
+ *                    with a fresh selfie (REST, below).
+ *   biometric_kyc -> ID check (NIN, Virtual NIN or BVN, country NG; optional),
+ *                    hosted.
  * Never Enhanced KYC or Basic KYC: neither matches a selfie to the record.
  */
 
@@ -178,4 +184,116 @@ export function sandboxPickerAllowed(cfg: SmileConfig | null, email: string | un
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
   return Boolean(email && testers.includes(email.toLowerCase()));
+}
+
+// ---------------------------------------------------------------------------
+// The main-photo face match — REST, with a selfie captured in the page
+// (0029; decided 5 October 2026). Ported from live-profile-and-prompt-14.
+// ---------------------------------------------------------------------------
+
+/** The selfie and 6–8 liveness frames from `<smart-camera-web>`. Passed through to Smile ID; never stored. */
+export type SelfieCapture = { selfie: Blob; livenessFrames: Blob[] };
+
+/** Consent as Smile ID's v3 API asks for it — the member agreed on our screen first. */
+export type CaptureConsent = { grantedAt: string; language: string };
+
+/**
+ * Who the check is for, as Smile ID requires it (the same fields the hosted
+ * flow sends). Sent to Smile ID only — Toastly stores none of it.
+ */
+export type SmileUserDetails = { given_names: string; last_name: string; email: string };
+
+function consentField(c: CaptureConsent) {
+  return JSON.stringify({
+    granted: true,
+    granted_at: c.grantedAt,
+    notice_language: c.language,
+    notice_privacy_policy_url: "https://trytoastly.com/privacy",
+  });
+}
+
+function captureFields(form: FormData, capture: SelfieCapture) {
+  form.append("selfie_image", capture.selfie, "selfie.jpg");
+  capture.livenessFrames.slice(0, 8).forEach((f, i) => form.append("liveness_images", f, `liveness-${i}.jpg`));
+}
+
+/**
+ * Submit one job. Its verification_sessions id travels in partner_params as
+ * `toastly_session`, the nonce the callback matches on — the same as the
+ * hosted flow, so one signed callback handles every result.
+ */
+async function submitJob(
+  cfg: SmileConfig,
+  path: "/v3/authentication" | "/v3/compare",
+  form: FormData,
+  userId?: string,
+): Promise<string> {
+  const token = await mintSmileToken(cfg);
+  if (!token) throw new Error("Smile ID token unavailable.");
+  const res = await fetch(`${apiBase(cfg.env)}${path}`, {
+    method: "POST",
+    headers: {
+      "SmileID-Token": token,
+      "SmileID-Partner-ID": cfg.partnerId,
+      Accept: "application/json",
+      ...(userId ? { "User-ID": userId } : {}),
+    },
+    body: form,
+    cache: "no-store",
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (res.status !== 202 && !res.ok) {
+    // Smile ID's own error text (field names, codes) — never anything we sent.
+    const why = (await res.text().catch(() => "")).slice(0, 300);
+    throw new Error(`Smile ID ${path} was refused (${res.status})${why ? `: ${why}` : ""}.`);
+  }
+  const body = (await res.json()) as { job_id?: string };
+  if (!body.job_id) throw new Error(`Smile ID ${path} returned no job id.`);
+  return body.job_id;
+}
+
+/** Is this fresh selfie the member Smile ID enrolled? (replacing a main photo) */
+export async function submitAuthentication(
+  cfg: SmileConfig,
+  args: { sessionId: string; profileId: string; capture: SelfieCapture; consent: CaptureConsent; userDetails: SmileUserDetails },
+): Promise<string> {
+  const form = new FormData();
+  form.append("user_id", args.profileId);
+  form.append("user_details", JSON.stringify(args.userDetails));
+  captureFields(form, args.capture);
+  form.append("consent", consentField(args.consent));
+  form.append("callback_url", cfg.callbackUrl);
+  form.append("partner_params", JSON.stringify({ toastly_session: args.sessionId }));
+  return submitJob(cfg, "/v3/authentication", form);
+}
+
+/**
+ * Does the fresh selfie match the main photo (sent as a PORTRAIT image)?
+ *
+ * Compare also ENROLS the face it's given under the User-ID. So `enrol` is
+ * set only for the onboarding selfie — the one that earns Verified Real. A
+ * replacement must never enrol: if its Authentication half failed, an
+ * impostor's selfie would overwrite the member's enrolled face.
+ */
+export async function submitCompare(
+  cfg: SmileConfig,
+  args: {
+    sessionId: string;
+    profileId: string;
+    capture: SelfieCapture;
+    mainPhoto: Blob;
+    consent: CaptureConsent;
+    userDetails: SmileUserDetails;
+    enrol: boolean;
+  },
+): Promise<string> {
+  const form = new FormData();
+  form.append("user_details", JSON.stringify(args.userDetails));
+  captureFields(form, args.capture);
+  form.append("comparison_image", args.mainPhoto, "main-photo.jpg");
+  form.append("comparison_image_type", "PORTRAIT");
+  form.append("consent", consentField(args.consent));
+  form.append("callback_url", cfg.callbackUrl);
+  form.append("partner_params", JSON.stringify({ toastly_session: args.sessionId }));
+  return submitJob(cfg, "/v3/compare", form, args.enrol ? args.profileId : undefined);
 }

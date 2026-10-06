@@ -1,5 +1,6 @@
 import { createGistToken, gistRoomName, isLiveKitConfigured, livekitUrl } from "@/lib/livekit";
 import { json, memberSession, readClock } from "@/lib/gist-clock";
+import { notLiveError, requireLiveProfile } from "@/lib/live-profile";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,6 +20,10 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   const { supabase, user } = await memberSession();
   if (!supabase) return json({ error: "Calling isn't available right now." }, 503);
   if (!user) return json({ error: "Please sign in again." }, 401);
+
+  // No live profile, no access (PRD §5.1.2); gist_join refuses too (0029).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return json({ error: notLiveError(live) }, 403);
 
   const { data: endsAt, error } = await supabase.rpc("gist_join", { p_session_id: params.id });
   if (error || typeof endsAt !== "string") {

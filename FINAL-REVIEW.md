@@ -948,3 +948,46 @@ separate safety card were removed; the $ track chip is amber as drawn.
 whenever a colour class was present, so every Button rendered at 16px, not
 15px; badges, accordion triggers and the pricing tabs lost their sizes too.
 Fixed in lib/utils.ts; the pricing tabs now carry min-h-11.
+
+## Porting live-profile-and-prompt-14 onto main — 6 October 2026
+
+Two lines had diverged from 800d235. main (live: 0013–0026 applied) is the
+base; the old branch's unique work is ported as 0028–0029 on
+`port-live-profile`, with main's own definitions kept wherever both existed.
+
+**Overlaps — main's version kept, nothing ported:** coin balance and dates
+(main 0023, live), live payments, the review console (main 0025/0026), data
+export and account deletion (main 0015, extended below), "Open to people
+living abroad" and pools (main 0026 + 0027), the women's offer abroad (main
+0025/0026), Smile ID's hosted flow and ID check (main 0016), the ID
+fingerprint (main's verified_id_hashes HMAC), blocked phones and IDs after
+removal (main 0015/0025).
+
+**Ported, because main didn't have it:**
+- 0028: the feed builder refused nobody (anyone could read anyone's six);
+  "did both say continue?" was always false for members; phone numbers were
+  never bound (the member's write was refused silently, so one number one
+  account and the removal blocklist didn't work); text replies were refused
+  (no insert policy); the AriyaPlanner brief rule.
+- 0029: photos (4–6, from config), the main-photo face match through Smile ID
+  REST with an in-page selfie (onboarding: one selfie for Verified Real and
+  the photo; replacing: fresh selfie, never enrols), "no live profile, no
+  access" across every table and function, the going-live and Your data
+  screens against their prototypes, consent records with the wording version,
+  "these photos aren't them", holding the blocklist while a review is open,
+  showing unspent coins before deletion.
+- Found on main while porting, fixed in 0029: deleting an account left a
+  Couple Mode partner paused for good, and a pending date's stakes weren't
+  settled; clearing a selfie review never granted Verified Real (fixed for
+  the new onboarding selfie; main's hosted selfie reviews still don't — open).
+
+**Held, not on this branch:** the updated privacy policy (Toastly-Privacy-
+Policy.md) is on `privacy-policy-update` — it brings back eight bracketed
+values, and the site withholds a policy with open values, so merging it now
+would 404 /privacy. It also says "if you report a message, our safety team
+can see that message", which contradicts CLAUDE.md (reviewers never see
+message bodies). Needs the values and that sentence decided.
+
+**Open:** the seal still reads "Passed a live selfie check" until the photo
+match is proven on staging; the access-paused screen is audited signed in
+only.

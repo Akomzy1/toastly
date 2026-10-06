@@ -252,6 +252,26 @@ test("deleting while a review is open holds the number until it's settled; clear
   assert.equal((await db.query("select count(*)::int as n from blocked_phone_hashes where phone_hash = $1", [hash])).rows[0].n, 0, "cleared: the number is free");
 });
 
+test("deleting an account un-pauses the partner and returns their staked coins", async () => {
+  const leaver = await member("Leaving Partner", { live: true });
+  const partner = await member("Staying Partner", { live: true });
+  const [a, b] = [leaver, partner].sort();
+  await db.query("insert into couples (member_a, member_b, proposed_by, status, started_at) values ($1, $2, $1, 'active', now())", [a, b]);
+  await db.query("update profiles set paused = true where id in ($1, $2)", [a, b]);
+  const { rows: [d] } = await db.query(
+    "insert into date_commitments (member_a, member_b, stake_coins, scheduled_for, b_staked_at) values ($1, $2, 3, now() + interval '3 days', now()) returning id",
+    [leaver, partner]);
+  await db.query("insert into coin_ledger (profile_id, delta, kind, bucket, txn_id) values ($1, 5, 'purchase', 'purchased', gen_random_uuid())", [partner]);
+  await db.query("insert into coin_ledger (profile_id, delta, kind, bucket, commitment_id, txn_id) values ($1, -3, 'stake_hold', 'purchased', $2, gen_random_uuid())", [partner, d.id]);
+  const before = (await db.query("select purchased_balance($1) as b", [partner])).rows[0].b;
+
+  await me(leaver, "select prepare_account_deletion()");
+  assert.equal((await db.query("select paused from profiles where id = $1", [partner])).rows[0].paused, false, "the partner is visible again");
+  const after = (await db.query("select purchased_balance($1) as b", [partner])).rows[0].b;
+  assert.equal(Number(after), Number(before) + 3, "their stake came back");
+  assert.equal((await db.query("select cancel_reason from date_commitments where id = $1", [d.id])).rows[0].cancel_reason, "account_deleted");
+});
+
 test("consents are append-only and private", async () => {
   const m = await member("Consenter");
   await me(m, "insert into consents (profile_id, kind, version) values ($1, 'replace_main_photo', '2026-10-05')", [m]);

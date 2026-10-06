@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { VerifyFlow } from "@/components/verify/verify-flow";
 import { HelpButton } from "@/components/help/help-button";
 import { PhoneStep } from "./phone-step";
+import { SelfieCheckStep } from "./selfie-check-step";
 import { ScreenBand } from "@/components/app/screen-band";
 import { WhereYouLiveSignup } from "@/components/where-you-live/flows";
 import { guessCountryFromPhone } from "@/lib/countries";
@@ -67,11 +68,31 @@ export default async function VerifyPage() {
     ? SANDBOX_IDENTITIES.map(({ key, label, products }) => ({ key, label, products }))
     : [];
 
+  // Photos first, then one in-page selfie (0029). The candidate main photo
+  // isn't counted until it matches, so it's added back here.
+  const { data: liveRow } = await supabase.rpc("live_profile_status");
+  const live = (liveRow ?? {}) as { live?: boolean; photo_count?: number; photos_min?: number; main?: string };
+  const photosReady =
+    live.main !== undefined && live.main !== "none" &&
+    (live.photo_count ?? 0) + (live.main === "matched" ? 0 : 1) >= (live.photos_min ?? 4);
+  const onboarding = stage === "phone_verified";
+
   return (
     <>
     <VerifyFlow
       view={view}
       sandbox={sandbox}
+      live={Boolean(live.live)}
+      onboardingSelfie={
+        onboarding ? (
+          <SelfieCheckStep
+            connected={smileConfig() !== null}
+            devStandIn={process.env.NODE_ENV !== "production"}
+            photosReady={photosReady}
+            sandbox={sandbox.filter((s) => s.products.includes("smartselfie")).map(({ key, label }) => ({ key, label }))}
+          />
+        ) : undefined
+      }
       phoneStep={<PhoneStep />}
       afterVerified={
         // Decision (c): every member is offered the photo choice once

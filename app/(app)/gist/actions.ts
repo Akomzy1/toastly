@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { capture } from "@/lib/analytics";
+import { notLiveError, requireLiveProfile } from "@/lib/live-profile";
 
 export type GistState = { error?: string; ok?: string } | null;
 
@@ -31,6 +32,8 @@ function capMessage(message: string): string | null {
 export async function inviteToGist(promptAnswerId: string): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const { data: sessionId, error } = await supabase.rpc("gist_invite", {
     p_prompt_answer_id: promptAnswerId,
@@ -58,6 +61,8 @@ export async function inviteToGistForm(_prev: GistState, formData: FormData): Pr
 export async function respondToInvite(sessionId: string, accept: boolean): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
   const { error } = await supabase.rpc("gist_respond", { p_session_id: sessionId, p_accept: accept });
   if (error) return { error: capMessage(error.message) ?? error.message };
   revalidatePath("/gist");
@@ -69,6 +74,8 @@ export async function respondToInvite(sessionId: string, accept: boolean): Promi
 export async function startNow(sessionId: string): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
   const { data: session } = await supabase
     .from("gist_sessions")
     .select("proposer_id, status")
@@ -88,6 +95,8 @@ export async function startNow(sessionId: string): Promise<GistState> {
 export async function proposeTime(sessionId: string, at: string): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
   const { error } = await supabase.rpc("gist_propose_time", { p_session_id: sessionId, p_at: at });
   if (error) return { error: error.message };
   revalidatePath(`/gist/${sessionId}`);
@@ -98,6 +107,8 @@ export async function proposeTime(sessionId: string, at: string): Promise<GistSt
 export async function confirmTime(sessionId: string): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
   const { error } = await supabase.rpc("gist_confirm_time", { p_session_id: sessionId });
   if (error) return { error: error.message };
   revalidatePath(`/gist/${sessionId}`);
@@ -133,6 +144,8 @@ export async function submitOutcome(
 ): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const id = String(formData.get("session_id") ?? "");
   const wants = String(formData.get("continue") ?? "") === "yes";

@@ -6,6 +6,8 @@ import { localDay, localTime12 } from "@/lib/scheduling";
 import { GistListView, type GistGroup, type GistRow } from "@/components/gist/gists-list-view";
 import { GistsSeen } from "@/components/app/nav";
 import type { GistStatus } from "@/lib/gist";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
 
 export const metadata: Metadata = {
   title: "Gists",
@@ -46,6 +48,11 @@ export default async function GistPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No live profile, no access (PRD §5.1.2): checked before anything about
+  // anyone else is read. The database refuses regardless (0029); this says why.
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const { data: sessions } = await supabase
     .from("gist_sessions")
