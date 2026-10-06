@@ -31,7 +31,9 @@ Toastly is a dating-to-marriage platform for Nigerians at home and abroad. This 
 
 **Optional profile details.** Religion and denomination, tribe or ethnicity, languages, relationship history (single, divorced, widowed, single parent, whether you have children), profession and education. You decide whether to add these and who can see them.
 
-**Your religion and denomination (optional — sensitive data).** We add them only with your explicit consent, which we record, with the date and the wording you agreed to, the first time you add either. One setting shows or hides both; hiding religion hides denomination. They appear only on your full profile — never on the cards in anyone's daily six — and never decide who sees you. Removing them deletes them.
+**Your religion and denomination (optional — sensitive data).** We add them only with your explicit consent, which we record, with the date and the wording you agreed to, the first time you add either. One setting shows or hides both; hiding religion hides denomination. They appear only on your full profile — never on the cards in anyone's daily six — and never decide who sees you. Removing them deletes them; we keep the record of your consent, marked withdrawn with the date, as evidence of what you agreed to and when — and ask again if you add them later.
+
+**Your filters (paid plans).** If you set filters for your own six — religion and tribe — we store them to choose your six. Nobody else can see them, they never change who sees you, and they're deleted with your account. Our analytics hear only that you changed your filters, never which ones.
 
 **Your genotype (optional — health information).** If you choose to add it, after giving separate permission. See section 5.
 
