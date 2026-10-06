@@ -918,9 +918,9 @@ three card styles, the women's-offer band, coins, Why-pay and closing CTA.
 
 **Prototype copy not shipped (PRD wins), please review the wording:**
 - No-show coins "go to a charity the other person picks" → "go to the
-  person who showed up. Toastly keeps nothing — and if you cancel because
-  you feel unsafe, yours always come back." (The safety clause is new
-  wording, from PRD §5.5's override rule.) "Not a single kobo" → "coin".
+  person who showed up. Toastly keeps nothing. If you cancel because you
+  feel unsafe, your coins always come back to you." (Safety wording decided
+  6 October 2026.) "Not a single kobo" → "coin".
 - "Refundable to your original payment method on request" → "Coins are
   never refunded or paid out as cash."
 - "Bank transfer" / "card, transfer or USSD" → "card, bank or USSD".
@@ -934,8 +934,8 @@ three card styles, the women's-offer band, coins, Why-pay and closing CTA.
   incognito on Premium Plus, priority support only on each track's top
   tier, a chat row and incognito row in the table, "Nobody buys your place
   in the six".
-- **Open:** Premium Plus "Unlimited voice notes" is in the prototype but
-  not in PRD §7.1 — left as drawn; confirm or remove.
+- Premium Plus "Unlimited voice notes" (prototype, not in PRD §7.1) —
+  removed, decided 6 October 2026: the feature doesn't exist.
 
 **Deviations:** headings use the nearest type token; "How Toastly uses AI"
 links to the privacy policy's AI section (the prototype points at a

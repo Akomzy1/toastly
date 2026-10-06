@@ -63,7 +63,8 @@ export const ngTiers: Tier[] = [
       // PRD §7.1 lists as a Premium Plus feature — and it is half the reason
       // the women's 30-day offer is Premium Plus rather than base Premium.
       "Incognito mode",
-      "Unlimited voice notes",
+      // REMOVED (decided 6 October 2026): "Unlimited voice notes" — the
+      // prototype lists it, but the feature doesn't exist.
       "Priority support from Lagos",
     ],
     cta: "Choose Premium Plus",
@@ -190,7 +191,7 @@ export const coinIntro =
 export const coinNoShow = {
   lead: "On a genuine no-show, the coins that were staked go to ",
   emphasis: "the person who showed up",
-  rest: ". Toastly does not keep a single coin of it, and if you cancel because you feel unsafe, yours always come back. This is a mutual promise about each other's time, not a penalty system.",
+  rest: ". Toastly does not keep a single coin of it. If you cancel because you feel unsafe, your coins always come back to you. This is a mutual promise about each other's time, not a penalty system.",
 };
 
 /**

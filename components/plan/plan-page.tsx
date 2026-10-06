@@ -124,6 +124,8 @@ const PAID: Record<string, { tone: "success" | "info"; text: string }> = {
 export function PlanPage(p: {
   tierLabel: string;
   track: "ngn" | "usd";
+  /** Set when the member's country has no open diaspora city yet. */
+  community?: { country: string } | null;
   grants: Grant[];
   subs: Sub[];
   coins: number;
@@ -190,7 +192,14 @@ export function PlanPage(p: {
                 <span className="text-grey-600">{t.per}</span>
               </p>
             </div>
-            <p className={SMALL}>{t.for}</p>
+            <p className={SMALL}>
+              {/* Decided 6 October 2026: no promise of diaspora-community
+                  matching where no city is open — say what the plan gives.
+                  Not in a prototype (this page isn't). */}
+              {p.community && sku === "diaspora"
+                ? `Back-home matching with members in Nigeria, unlimited Gists, priced in dollars. Matching with Nigerians in ${p.community.country} isn't open yet — it opens city by city.`
+                : t.for}
+            </p>
             {p.track === "ngn" ? (
               <>
                 {!p.paystackOn ? (

@@ -91,6 +91,13 @@ A pre-build audit found these. **`PRD.md` wins on content; the prototype wins on
 2. **How It Works** said "5 free sessions a month on Starter." **Wrong** — it is **2**.
 3. **Pricing** describes forfeited no-show coins going to a charity chosen by the other person. **Now resolved — the charity mechanic is rejected.** The ratified rule (`PRD.md` §5.5) is that a forfeited stake becomes a **non-withdrawable stake credit for the user who showed up**, usable only as the deposit on a future date. **Omit the charity copy as well as the mechanic** — shipping the words without the pipeline is a public promise about where users' money goes. Build the deposit/stake copy, say nothing about the destination unless implementing the credit.
 
+4. **No-show coins to charity, again.** `home-diaspora-offer` and `pricing-offer` still say a no-show's coins "go to a charity the other person picks" (Pricing adds "not keep a single kobo"). **Wrong** — they go to the member who showed up and Toastly keeps nothing (`PRD.md` §5.5, CLAUDE.md coin rule). Shipped: "…go to the person who showed up. Toastly keeps nothing. If you cancel because you feel unsafe, your coins always come back to you." Coins are never "kobo".
+5. **"Refundable" coins.** `pricing-offer` says coins are "Refundable to your original payment method on request." **Wrong** — coins are never refunded or paid out as cash (closed loop). Shipped: "Coins are never refunded or paid out as cash."
+6. **"Transfer".** The prototypes say "Bank transfer" and "card, transfer or USSD". "Transfer" is banned in coin and payment copy (CLAUDE.md). Shipped: "card, bank or USSD".
+7. **"Boosts".** Pricing's Why-pay line says paying "boosts your position". Boosts are cut from the product (PRD §7.2). Shipped: "raises your position" — within the member's own six only.
+8. **AI "handling the safety checks".** Home's "AI, on your side" says Toastly AI "handles the admin and the safety checks". **Wrong** — no AI runs safety checks (the Sentinel scoring agent is Phase 2, and a person decides every outcome). Shipped: "It helps with the admin — verification and payment questions, feedback on your own answers."
+9. **"Unlimited voice notes"** on Premium Plus (`pricing-offer`). The feature doesn't exist — removed (decided 6 October 2026).
+
 ## Gaps: decided here, not transcribed
 
 These are not in any prototype. They are recorded so they read as decisions
@@ -228,8 +235,8 @@ invented UI; the Edit profile country select they replace is gone:
 - **Settings and changing where you live** — `where-you-live-settings`
   (`/profile/settings`, `/profile/settings/country`). Deviation: the Phone
   number row has no chevron (there is no change-number flow). The profile
-  hub's match row became "Settings", which holds Where you live and Match
-  preferences — nav-profile-hub had Match preferences directly.
+  hub's row is labelled "Match preferences" (decided 6 October 2026) and
+  opens Settings, which holds Where you live and Match preferences.
 
 **Built against the diaspora-review prototypes (4 October 2026)** — no
 longer invented UI:

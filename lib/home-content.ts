@@ -75,7 +75,7 @@ export const coinCards = [
 export const coinNote = {
   lead: "If someone genuinely no-shows, their coins go to ",
   emphasis: "the person who showed up",
-  rest: ". Toastly keeps nothing — and if you cancel because you feel unsafe, yours always come back.",
+  rest: ". Toastly keeps nothing. If you cancel because you feel unsafe, your coins always come back to you.",
 };
 
 /**

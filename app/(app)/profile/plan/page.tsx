@@ -6,6 +6,7 @@ import { HelpButton } from "@/components/help/help-button";
 import { PlanPage, type Grant, type Sub } from "@/components/plan/plan-page";
 import { paymentsConfigured } from "@/lib/payments/config";
 import { TIER_LABELS } from "@/lib/entitlements";
+import { countryInSentence } from "@/lib/countries";
 import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = { title: "Your plan", robots: { index: false, follow: false } };
@@ -37,7 +38,15 @@ export default async function YourPlan({ searchParams }: { searchParams: { paid?
   ]);
 
   const tier = (tierRow as Tier | null) ?? "starter";
-  const naira = (profile?.country_code ?? "NG") === "NG";
+  const country = profile?.country_code ?? "NG";
+  const naira = country === "NG";
+
+  // Decided 6 October 2026: don't promise diaspora-community matching to a
+  // member whose country has no open city — say what the plan gives them.
+  const { count: openCities } = naira
+    ? { count: 0 }
+    : await supabase.from("diaspora_cities").select("slug", { count: "exact", head: true }).eq("country_code", country).eq("active", true);
+  const communityOpen = !naira && (openCities ?? 0) > 0;
 
   return (
     <>
@@ -45,6 +54,7 @@ export default async function YourPlan({ searchParams }: { searchParams: { paid?
       <PlanPage
         tierLabel={TIER_LABELS[tier]}
         track={naira ? "ngn" : "usd"}
+        community={naira || communityOpen ? null : { country: countryInSentence(country) }}
         grants={(grants ?? []) as Grant[]}
         subs={(subs ?? []) as Sub[]}
         coins={Math.max(0, (total as number | null) ?? 0)}

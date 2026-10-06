@@ -51,13 +51,13 @@ export function ProfileHub({
   /** Lives outside Nigeria: chooses a pool, rather than "open to abroad" (PRD §5.6). */
   abroad?: boolean;
 }) {
-  // Settings (where-you-live-settings.slim.html): phone number, where you
-  // live, and match preferences — the age range, and "open to abroad" or the
-  // pool by where the member lives. Deviation, flagged: nav-profile-hub had
-  // the match row here directly; the settings prototype puts it one level in.
+  // "Match preferences" (decided 6 October 2026), opening Settings
+  // (where-you-live-settings.slim.html): phone number, where you live, and
+  // match preferences — the age range, and "open to abroad" or the pool by
+  // where the member lives. nav-profile-hub has no row for any of these.
   const rows = [
     {
-      label: "Settings",
+      label: "Match preferences",
       sub: abroad ? "Where you live, age range, your match pool" : "Where you live, age range, people abroad",
       href: "/profile/settings",
     },
