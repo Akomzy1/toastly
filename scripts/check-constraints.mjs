@@ -1464,6 +1464,70 @@ check("religion and denomination are never on the feed card", (s, f) => {
   return /\b(religion|denomination)\b/.test(s) ? "the feed reads religion or denomination" : false;
 });
 
+// --- Self-applied filters (PRD §5.2.4; decided 6 October 2026) -------------
+const latestSqlFn = (name) => {
+  const files = fs.readdirSync("supabase/migrations").filter((m) => /\.sql$/.test(m)).sort()
+    .filter((m) => new RegExp(`create or replace function public\\.${name}\\b`).test(fs.readFileSync(`supabase/migrations/${m}`, "utf8")));
+  const last = files.pop();
+  if (!last) return null;
+  const sql = stripComments(fs.readFileSync(`supabase/migrations/${last}`, "utf8"), "x.sql");
+  const from = sql.indexOf(`create or replace function public.${name}`);
+  const open = sql.indexOf("$$", from);
+  return { file: last, body: sql.slice(open, sql.indexOf("$$", open + 2)) };
+};
+
+check("a filter reads only its owner's filters and only shown values", (s, f) => {
+  const fn = latestSqlFn("passes_own_filters");
+  if (!fn || !norm(f).endsWith(fn.file)) return false;
+  const b = fn.body;
+  if (!/when not has_advanced_filters\(p_viewer\) then true/.test(b)) return "filters apply without a plan that has them";
+  if (!/where f\.profile_id = p_viewer/.test(b)) return "reads filters other than the viewer's own";
+  // Each value is compared only inside the branch that has checked it is shown.
+  if (!/when c\.religion_visibility = 'public'[^]*?then c\.religion = any/.test(b)) return "religion is matched without checking it is shown";
+  if (!/when c\.tribe_visibility = 'public'[^]*?then lower\(btrim\(c\.tribe\)\)/.test(b)) return "tribe is matched without checking it is shown";
+  if (/\b(denomination|genotype|history|has_children|languages|profession|education)\b/.test(b)) return "filters on something outside the §7.1 list";
+  return false;
+});
+
+check("the feed applies only the member's own filters, to their own six", (s, f) => {
+  const fn = latestSqlFn("build_daily_feed");
+  if (!fn || !norm(f).endsWith(fn.file)) return false;
+  const calls = [...fn.body.matchAll(/passes_own_filters\(([^)]*)\)/g)].map((m) => m[1].replace(/\s+/g, ""));
+  if (calls.length !== 1) return "the feed doesn't apply the member's own filters exactly once";
+  return calls[0] === "p_profile_id,p.id" ? false : `passes_own_filters(${calls[0]}) — a filter would change who sees its owner`;
+});
+
+check("member filters are read only by their owner's screens and the rule", (s, f) => {
+  const n = norm(f);
+  if (n.endsWith(".sql")) {
+    const bad = [];
+    for (const m of s.matchAll(/create or replace function public\.(\w+)[\s\S]*?\$\$([\s\S]*?)\$\$/g)) {
+      if (/\bmember_filters\b/.test(m[2]) && !/^(passes_own_filters|my_filters_active)$/.test(m[1])) bad.push(m[1]);
+    }
+    return bad.length ? `reads member_filters in ${bad.join(", ")}` : false;
+  }
+  if (!/from\(\s*["']member_filters["']/.test(s)) return false;
+  return /app\/\(app\)\/profile\/filters\/(page|actions)\.tsx?$|app\/api\/account\/export\/route\.ts$/.test(n)
+    ? false
+    : "reads member_filters outside the filters screen and the data download";
+});
+
+check("PostHog hears only that filters changed, never which", (s) => {
+  const calls = [...s.matchAll(/capture\(\s*["']filters_changed["']([^;]*)\)/g)].map((m) => m[1]);
+  // ", <id>" only — a third argument would be properties.
+  return calls.some((args) => args.split(",").length > 2) ? "filters_changed carries properties" : false;
+});
+
+check("pricing promises only filters that are built", (s, f) => {
+  if (!/lib\/pricing-content\.ts$/.test(norm(f))) return false;
+  // Every filter line, and every comparison-table row that follows an
+  // "Advanced filters" label (its cells don't say "filter").
+  const near = [...s.matchAll(/"Advanced filters",\s*\[([^\]]*)\]/g)].map((m) => m[1]);
+  const lines = [...stringsIn(s).filter((t) => /filter/i.test(t)), ...near];
+  const bad = lines.filter((t) => /\b(city|state|language|intent|intention|diaspora|profession|education|denomination|genotype)/i.test(t));
+  return bad.length ? `promises: ${bad.map((b) => b.replace(/\s+/g, " ").slice(0, 80)).join(" | ")}` : false;
+});
+
 // A re-check never says why the member was asked (decided 6 October 2026):
 // the reason category is shown only when an account is restricted.
 check("a re-check never gives a reason", (s, f) => {

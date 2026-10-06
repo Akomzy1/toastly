@@ -42,6 +42,7 @@ async function hasConsent(supabase: ReturnType<typeof createClient>, userId: str
     .eq("profile_id", userId)
     .eq("kind", "faith_display")
     .eq("version", FAITH_CONSENT.version)
+    .is("withdrawn_at", null)
     .limit(1);
   return Boolean(data?.length);
 }
@@ -107,7 +108,10 @@ export async function setFaithShown(shown: boolean): Promise<FaithResult> {
   return null;
 }
 
-/** "Remove faith from my profile": both fields and the permission are deleted. */
+/**
+ * "Remove faith from my profile": both values are deleted and the permission
+ * is withdrawn — kept on record with when it was withdrawn, never deleted.
+ */
 export async function removeFaith(): Promise<FaithResult> {
   const { supabase, user } = await signedIn();
   if (!user) return { error: "Please sign in again." };

@@ -233,10 +233,24 @@ with .slim.html copies):
   (lib/faith.ts `faithLine`, e.g. "Christian · White-garment (Celestial,
   C&S, CAC)"; nothing at all when hidden). The prototype's details block also
   shows Work and "Children: Wants children", a field that doesn't exist.
-- **Premium filters** (`premium-filters`): NOT BUILT — no filters screen and
-  no filter logic exist. Its religion filter is multi-select (no "Prefer not
-  to say"), with "Filters only change your own search. They never change who
-  sees you." beneath it, and a Tribe row. No denomination filter, ever.
+- **Filters** (`premium-filters`; 0031; PRD §5.2.4): /profile/filters,
+  components/profile/filters-screen.tsx. "Your search": Religion
+  (multi-select, "Any" when none) with the note directly under it, then
+  Tribe; saves on each change. Audit: `/audit/filters/*`. Flagged:
+  - the prototype's band shows a "Premium" pill where every in-app band
+    carries the Safety pill (nav prototypes), so "Premium" is the subline;
+  - Tribe opens a multi-select like Religion's (the prototype draws it
+    closed, "Any ›");
+  - each filter has "Include people who don't say" (decided, not drawn), in
+    the match-preferences switch pattern;
+  - the tribe list is PROVISIONAL (lib/filters.ts) — profiles hold tribe as
+    free text, so a shown tribe matches only if it equals a listed value;
+  - Starter's locked state, and the way in — a "Filters" row under Match
+    preferences — are not in any prototype;
+  - the feed's "Only {n} people match your filters today…" reads "Only 1
+    person matches…" for one and "Nobody matches…" for none.
+- **Full profile**: waits for its own Claude Design pass (decided 6 October
+  2026); rules in PRD §5.2.4.
 
 **Member notices — NOT IN A PROTOTYPE (0025).** All built from the in-app
 Notice: the restricted, re-verify and switch-plan notices under the app

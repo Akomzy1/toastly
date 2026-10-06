@@ -60,6 +60,13 @@ do $$ begin
   alter type consent_kind add value if not exists 'faith_display';
 exception when undefined_object then null; end $$;
 
+-- A consent can be withdrawn, never deleted (decided 6 October 2026): the
+-- record stays as evidence of what was agreed and when, stamped with when it
+-- was withdrawn. A withdrawn consent no longer counts — adding faith again
+-- asks again. Members still can't update or delete consents themselves
+-- (0029); remove_faith() below stamps it.
+alter table public.consents add column if not exists withdrawn_at timestamptz;
+
 create or replace function public.faith_rules()
 returns trigger language plpgsql set search_path = public as $$
 declare
@@ -107,7 +114,8 @@ begin
   -- tick the line). Removing a value never needs it.
   if ((v_religion_changed and new.religion is not null)
       or (v_denomination_changed and new.denomination is not null))
-     and not exists (select 1 from consents c where c.profile_id = new.id and c.kind = 'faith_display') then
+     and not exists (select 1 from consents c
+                      where c.profile_id = new.id and c.kind = 'faith_display' and c.withdrawn_at is null) then
     raise exception 'Agree to show your faith on your profile first.' using errcode = '42501';
   end if;
 
@@ -119,10 +127,11 @@ drop trigger if exists faith_rules on public.profiles;
 create trigger faith_rules before insert or update of religion, religion_other, denomination, denomination_other
   on public.profiles for each row execute function public.faith_rules();
 
--- "Remove faith from my profile" (faith-editor.slim.html): deletes religion,
--- denomination and the permission, so adding faith again asks again — as
--- deleting a genotype deletes its permission (0014). Consents are otherwise
--- append-only (0029), hence a function, for the caller's own row only.
+-- "Remove faith from my profile" (faith-editor.slim.html): deletes religion
+-- and denomination, and WITHDRAWS the permission — the consent record is
+-- kept, stamped withdrawn_at, as evidence of what was agreed and when
+-- (decided 6 October 2026). Adding faith again asks again. For the caller's
+-- own row only.
 create or replace function public.remove_faith()
 returns void language plpgsql security definer set search_path = public as $$
 begin
@@ -130,7 +139,8 @@ begin
   update profiles
      set religion = null, religion_other = null, denomination = null, denomination_other = null
    where id = auth.uid();
-  delete from consents where profile_id = auth.uid() and kind = 'faith_display';
+  update consents set withdrawn_at = now()
+   where profile_id = auth.uid() and kind = 'faith_display' and withdrawn_at is null;
 end;
 $$;
 revoke all on function public.remove_faith() from public, anon;

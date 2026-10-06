@@ -123,15 +123,23 @@ test("visibility: one setting for both, 'shown' by default", async () => {
   assert.equal((await faith(m)).religion_visibility, "public");
 });
 
-test("'Remove faith from my profile' deletes both fields and the permission — adding again asks again", async () => {
+test("'Remove faith from my profile' deletes both values and withdraws the permission — kept as evidence, never deleted", async () => {
   const m = await member("Removes Faith");
   await me(m, "update profiles set religion = 'Christian', denomination = 'methodist' where id = $1", [m]);
   await me(m, "select remove_faith()");
   const f = await faith(m);
-  assert.deepEqual([f.religion, f.denomination], [null, null]);
-  const { rows } = await db.query("select 1 from consents where profile_id = $1 and kind = 'faith_display'", [m]);
-  assert.equal(rows.length, 0, "the permission is gone");
-  await assert.rejects(me(m, "update profiles set religion = 'Christian' where id = $1", [m]), /Agree to show your faith/);
+  assert.deepEqual([f.religion, f.denomination], [null, null], "both values deleted");
+  const { rows } = await db.query("select version, agreed_at, withdrawn_at from consents where profile_id = $1 and kind = 'faith_display'", [m]);
+  assert.equal(rows.length, 1, "the consent record is kept");
+  assert.equal(rows[0].version, "2026-10-06", "with what was agreed");
+  assert.ok(rows[0].agreed_at, "and when");
+  assert.ok(rows[0].withdrawn_at, "stamped withdrawn");
+  await assert.rejects(me(m, "update profiles set religion = 'Christian' where id = $1", [m]), /Agree to show your faith/, "adding again asks again");
+  await assert.rejects(me(m, "update consents set withdrawn_at = null where profile_id = $1", [m]), undefined, "a member can't un-withdraw it");
+  await assert.rejects(me(m, "delete from consents where profile_id = $1", [m]), undefined, "or delete it");
+  await me(m, "insert into consents (profile_id, kind, version) values ($1, 'faith_display', '2026-10-06')", [m]);
+  await me(m, "update profiles set religion = 'Christian' where id = $1", [m]);
+  assert.equal((await faith(m)).religion, "Christian", "a fresh consent lets them add it again");
 });
 
 test("a member can only remove their own faith", async () => {

@@ -38,7 +38,10 @@ export type AnalyticsEvent =
   | "upgrade"
   | "agent_help_reply"
   | "agent_help_handoff"
-  | "agent_answer_mirror";
+  | "agent_answer_mirror"
+  // The member changed their own filters (PRD §5.2.4). Never which
+  // religion or tribe: this event carries no properties.
+  | "filters_changed";
 
 const FORBIDDEN_PROPERTIES = [
   "body", "message", "text", "content", "snippet", "preview",

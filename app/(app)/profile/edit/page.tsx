@@ -36,6 +36,7 @@ export default async function EditProfilePage() {
     .eq("profile_id", user.id)
     .eq("kind", "faith_display")
     .eq("version", FAITH_CONSENT.version)
+    .is("withdrawn_at", null)
     .limit(1);
 
   // Own row only — RLS on profile_history (0013) enforces who else may read it.

@@ -61,7 +61,7 @@ export async function GET() {
     profile, birthdate, history, promptAnswers, photos, repliesSent,
     gistSessions, gistOutcomes, couples, dateCommitments, coins, payments,
     entitlements, reportsFiled, blocks, emergencyContact, genotype,
-    verification, helpMessages, helpTickets, consents,
+    verification, helpMessages, helpTickets, consents, filters,
   ] = await Promise.all([
     read("profiles", "id"),
     read("profile_birthdates", "profile_id"),
@@ -83,7 +83,8 @@ export async function GET() {
     read("verification_sessions", "profile_id", "product, status, result_code, passed, created_at, completed_at"),
     read("support_messages", "profile_id", "conversation_id, role, content, created_at"),
     read("support_tickets", "profile_id", "reference, category, summary, status, created_at"),
-    read("consents", "profile_id", "kind, version, agreed_at"),
+    read("consents", "profile_id", "kind, version, agreed_at, withdrawn_at"),
+    read("member_filters", "profile_id", "religions, religion_include_unsaid, tribes, tribe_include_unsaid, updated_at"),
   ]);
 
   // Messages: the member's own, always; messages sent TO them only when their
@@ -136,7 +137,8 @@ export async function GET() {
     emergency_contact: emergencyContact,
     genotype,
     verification_results: verification,
-    verification_consents: consents,
+    consents,
+    your_filters: filters,
     toastly_help_conversations: helpMessages,
     requests_passed_to_our_team: helpTickets,
   };

@@ -11,6 +11,7 @@ import { PoolPlanNotice } from "@/components/app/pool-plan-notice";
 import { getVisibleGenotypes } from "@/components/genotype/genotype-data";
 import { MatchCard } from "./match-card";
 import { DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
+import { tooFewLine } from "@/lib/filters";
 import {
   isVerifiedReal,
   type Profile,
@@ -82,9 +83,11 @@ export default async function FeedPage() {
   // Diaspora plan (0012): the six came from back home. Told, never silent —
   // and this takes precedence over the city notice, which is for cities not
   // yet open.
-  const [{ data: poolRestriction }, { data: myCountry }] = await Promise.all([
+  const [{ data: poolRestriction }, { data: myCountry }, { data: filtersActive }] = await Promise.all([
     supabase.rpc("pool_restriction", { p_profile_id: user.id }),
     supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
+    // The member's own filters narrowed their own six (PRD §5.2.4).
+    supabase.rpc("my_filters_active"),
   ]);
   const needsDiasporaPlan = poolRestriction === "tier" && (myCountry?.country_code ?? "NG") !== "NG";
 
@@ -158,7 +161,18 @@ export default async function FeedPage() {
           diaspora member to wonder why everyone is in Lagos. */}
       {needsDiasporaPlan ? <PoolPlanNotice /> : fallbackCity ? <FeedFallbackNotice city={String(fallbackCity)} /> : null}
 
-      {cards.length === 0 ? (
+      {/* Never widened silently (PRD §5.2.4): fewer than six because of the
+          member's own filters says so, with the way to change them. */}
+      {filtersActive === true && cards.length < DAILY_MATCH_COUNT ? (
+        <Notice tone="info">
+          {tooFewLine(cards.length)}{" "}
+          <Link href="/profile/filters" className="font-semibold underline">
+            Your filters
+          </Link>
+        </Notice>
+      ) : null}
+
+      {cards.length === 0 && filtersActive === true ? null : cards.length === 0 ? (
         /* Empty state. NOT IN THE PROTOTYPE — flagged. */
         <Card className="grid gap-3 p-[26px]">
           <h2 className="text-h5 text-ink-900">No matches today</h2>

@@ -104,6 +104,19 @@ export function MatchPreferences({
           </button>
         )}
       </div>
+      {/* Addition, flagged: the way into Filters (premium-filters.slim.html;
+          PRD §5.2.4) — a row in this card's own pattern. */}
+      <div className="grid rounded-xl border border-ink-900/[.12] bg-white">
+        <Link href="/profile/filters" className="flex min-h-14 items-center justify-between gap-3 px-[15px] py-3 text-inherit no-underline">
+          <span className="grid min-w-0 gap-[3px]">
+            <span className="text-ui font-medium text-ink-900">Filters</span>
+            <span className="text-[13.5px] leading-[1.5] text-grey-600">Religion and tribe, on your own six</span>
+          </span>
+          <span aria-hidden="true" className="text-[16px] text-grey-400">
+            ›
+          </span>
+        </Link>
+      </div>
       {error ? <Notice tone="error">{error}</Notice> : null}
     </div>
   );

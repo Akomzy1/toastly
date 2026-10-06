@@ -138,6 +138,16 @@ until staging exists** — then staging first, as in §0g, after 0029.
   ```
 - New guards: no trust event or AriyaPlanner brief can carry religion or
   denomination (`faith_meta_is_clean`).
+- Consents gain `withdrawn_at`: removing faith withdraws its consent (kept as
+  evidence, never deleted).
+
+**0031 — self-applied filters** (PRD §5.2.4), same branch, after 0030:
+`member_filters` (religion and tribe, each with "include people who don't
+say"), owner-only; Premium, Premium Plus, Diaspora and Diaspora Plus can set
+them. `build_daily_feed` applies the member's own filters to their own six
+and tops a short six up to six if they widen them the same day — never more
+than six a day. The pricing page now lists the filters that exist: religion
+and tribe.
 
 ## 0g. Staging, then the release — 0027, 0028, 0029
 

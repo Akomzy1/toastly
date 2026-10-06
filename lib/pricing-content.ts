@@ -45,7 +45,10 @@ export const ngTiers: Tier[] = [
       "Everything in Starter, plus:",
       "Unlimited Gist sessions",
       "Priority match feed — still 6 a day, just better matched",
-      "Advanced filters — city, language, intentions",
+      // CORRECTED (decided 6 October 2026, PRD §5.2.4): the prototype promised
+      // "city, language, intentions" — none is built. Launch filters are
+      // religion and tribe; pricing never promises one that isn't built.
+      "Advanced filters — religion and tribe",
     ],
     cta: "Choose Premium",
     flag: "Most chosen",
@@ -136,9 +139,11 @@ export const compareRows: [string, string[]][][] = [
     ],
     ["Gist sessions (audio)", ["2 a month", "Unlimited", "Unlimited"]],
     ["Live-video Gist", ["—", "—", "Included"]],
+    // CORRECTED (decided 6 October 2026, PRD §5.2.4): launch filters are
+    // religion and tribe — never a promise of one that isn't built.
     [
       "Advanced filters",
-      ["—", "City, language, intentions", "City, language, intentions"],
+      ["—", "Religion, tribe", "Religion, tribe"],
     ],
     // ADDED: PRD §7.1 lists incognito as Premium Plus only.
     ["Incognito mode", ["—", "—", "Included"]],
@@ -155,10 +160,11 @@ export const compareRows: [string, string[]][][] = [
     ["Gist sessions (audio)", ["Unlimited", "Unlimited"]],
     ["Live-video Gist", ["—", "Included"]],
     ["Time-zone smart scheduling", ["Included", "Included"]],
-    // CORRECTED: PRD §7.1 gives advanced filters to both diaspora tiers.
+    // CORRECTED: PRD §7.1 gives advanced filters to both diaspora tiers; the
+    // launch filters are religion and tribe (PRD §5.2.4).
     [
       "Advanced filters",
-      ["City, language, intentions", "City, language, intentions"],
+      ["Religion, tribe", "Religion, tribe"],
     ],
     ["Couple Mode", ["Included", "Included"]],
     [

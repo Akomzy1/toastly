@@ -151,9 +151,25 @@ Toastly is non-religious: faith is something members may show, never something t
   - Muslim: Sunni, Shia, Ahmadiyya, Other (up to 30 characters).
   - "Other" text is shown as typed and goes through the normal profile-text report flow. It is not pre-screened by a model.
 - **One visibility setting covers both:** shown on the profile, or hidden. Hiding religion hides denomination. Default when first entered: shown. Never on the feed card; full profile only.
-- **Consent:** the first time a member adds either field, record explicit consent with timestamp and wording version: "I choose to show my faith on my profile. Toastly never uses it to decide who sees me." Removing the field deletes the value.
-- **Filters:** Premium and Premium Plus may filter their own search by religion only. There is no denomination filter, now or planned.
-- **Never an input to anything else:** not the six-a-day selection, not ranking, not the Trust Sentinel, not any AI model or agent payload, not PostHog (no property, no event value), not the AriyaPlanner handoff.
+- **Consent:** the first time a member adds either field, record explicit consent with timestamp and wording version: "I choose to show my faith on my profile. Toastly never uses it to decide who sees me." Removing the field deletes the value. The consent record is then **marked withdrawn, with a timestamp — never deleted** — and kept as evidence of what was agreed and when; adding faith again asks again.
+- **Filters:** every plan with advanced filters (Premium, Premium Plus, Diaspora, Diaspora Plus) may filter their own search by religion only (§5.2.4). There is no denomination filter, now or planned.
+- **Never an input to anything else:** not the six-a-day selection (except the member's own religion filter, §5.2.4), not ranking, not the Trust Sentinel, not any AI model or agent payload, not PostHog (no property, no event value), not the AriyaPlanner handoff.
+
+### 5.2.4 Self-applied filters and the full profile (decided)
+
+**Self-applied filters.** Advanced filters are sold on the pricing page, so they exist at launch.
+- **Plans:** Premium, Premium Plus, Diaspora and Diaspora Plus. Not Starter.
+- **Filters at launch:** religion and tribe, multi-select each, with the note "Filters only change your own search. They never change who sees you."
+- **A filter narrows only the filtering member's own six.** Nobody can see another member's filters, and a filter never changes who sees the member who set it.
+- **Only shown values count.** A filter matches only values the other member has chosen to show; a hidden or empty value is never read. Each filter has "Include people who don't say", on by default.
+- **Too few people: never widen silently.** Show those who match, up to six, with: "Only {n} people match your filters today. Widening them shows you more." plus a link to the filters.
+- **Never filterable:** denomination, genotype, hidden relationship history, and anything not in the §7.1 advanced-filter list.
+- **Storage and analytics:** filters are stored per member and deleted with the account. PostHog may get "filters changed", never which religion or tribe was chosen.
+
+**The full profile** (a Claude Design pass for the whole screen comes first; nothing is built from a single row):
+- Opens only for a member's current six, their matches and their Gist partners. No browsing or search of arbitrary profiles.
+- Each field renders per its own visibility rule for that viewer: relationship history only after a match unless the owner chose otherwise; genotype only where shared with that viewer; faith only if shown. Hidden fields show nothing — no placeholder.
+- "Children: Wants children" is not a PRD field and is not shown.
 
 ### 5.3 Intent Spectrum (critical constraint)
 - Do not hard-gate on marriage at signup. Stated preference on a spectrum: *Just vibing → Getting to know people → Something serious → Marriage-minded.*
