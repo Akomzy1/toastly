@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-06 08:20 UTC against `http://localhost:3123`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
+Run 2026-10-06 09:30 UTC against `http://localhost:3217`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -270,8 +270,8 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/dates/cancelled-reschedule` | 360 | pass | pass | pass | pass | `mobile\audit-dates-cancelled-reschedule-360.png` |
 | `/audit/verify/start` | 320 | pass | pass | pass | pass | `mobile\audit-verify-start-320.png` |
 | `/audit/verify/start` | 360 | pass | pass | pass | pass | `mobile\audit-verify-start-360.png` |
-| `/audit/verify/before-selfie` | 320 | pass | pass | pass | pass | `mobile\audit-verify-before-selfie-320.png` |
-| `/audit/verify/before-selfie` | 360 | pass | pass | pass | pass | `mobile\audit-verify-before-selfie-360.png` |
+| `/audit/verify/reverify` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-320.png` |
+| `/audit/verify/reverify` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-360.png` |
 | `/audit/verify/checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-checking-320.png` |
 | `/audit/verify/checking` | 360 | pass | pass | pass | pass | `mobile\audit-verify-checking-360.png` |
 | `/audit/verify/review` | 320 | pass | pass | pass | pass | `mobile\audit-verify-review-320.png` |

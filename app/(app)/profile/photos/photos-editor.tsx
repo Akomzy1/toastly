@@ -16,8 +16,7 @@ import {
   checkMainPhoto,
   keepAsOtherPhoto,
   nominateMainPhoto,
-  prepareUpload,
-  registerPhoto,
+  uploadPhoto,
   removePhoto,
   setOnlyMatches,
 } from "./actions";
@@ -119,16 +118,11 @@ export function PhotosEditor(props: {
       } catch {
         return fail("That file isn't a photo we can use. Try a JPEG or PNG.");
       }
-      const target = await prepareUpload();
-      if (target?.error || !target?.url || !target.path) return fail(target?.error);
-      const put = await fetch(target.url, {
-        method: "PUT",
-        headers: { "Content-Type": "image/jpeg", "x-upsert": "false" },
-        body: blob,
-      });
-      if (!put.ok) return fail();
-
-      const result = await registerPhoto(target.path, slot);
+      // The server strips every byte of metadata before storing it.
+      const form = new FormData();
+      form.append("photo", blob, "photo.jpg");
+      form.append("position", String(slot));
+      const result = await uploadPhoto(form);
       if (result?.error || !result?.id) return fail(result?.error);
 
       if (slot === 0) {

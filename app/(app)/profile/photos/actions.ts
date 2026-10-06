@@ -3,6 +3,8 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { stripJpeg } from "@/lib/strip-image";
 import { startSelfieCheck } from "@/app/(app)/verify/selfie-actions";
 
 /**
@@ -13,9 +15,9 @@ import { startSelfieCheck } from "@/app/(app)/verify/selfie-actions";
  * it's how they go live, or restore paused access. Never call
  * requireLiveProfile() here (scripts/check-constraints.mjs enforces that).
  *
- * Files are compressed on the phone, then uploaded from the browser straight
- * into the member's own folder in the private bucket; these actions record
- * and remove the rows. The database owns every rule that matters (0029) —
+ * Files are compressed on the phone, then sent here, stripped of every byte
+ * of metadata and stored in the member's own folder in the private bucket;
+ * these actions also record and remove the rows. The database owns every rule that matters (0029) —
  * six at most, nobody writes their own face-match result — so these refuse
  * politely rather than enforce.
  */
@@ -32,36 +34,52 @@ async function signedIn() {
   return { supabase, user };
 }
 
+/** Compressed on the phone to under 700 KB; anything near this isn't from our screen. */
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
+
 /**
- * A one-time upload URL into the member's own folder. The browser PUTs the
- * compressed photo with it, so this screen ships no Supabase client (less to
- * load on mobile data, PRD §5.8). The path is chosen here, never by the browser.
+ * Upload one photo (decided 6 October 2026: every image enters storage
+ * through the server, stripped). The phone has already compressed it; here
+ * it is stripped of everything but the picture — EXIF and GPS location, XMP,
+ * ICC, thumbnails, comments, trailers (lib/strip-image.ts) — and only then
+ * stored, in the member's own folder at a path chosen here. Members' sessions
+ * can't write to the bucket at all (0029), so no file skips this.
  */
-export async function prepareUpload(): Promise<PhotoState & { path?: string; url?: string }> {
+export async function uploadPhoto(formData: FormData): Promise<PhotoState & { id?: string }> {
   const { supabase, user } = await signedIn();
   if (!user) return { error: "Please sign in again." };
+
+  const file = formData.get("photo");
+  const position = Number(formData.get("position"));
+  if (!(file instanceof File) || file.size === 0) return { error: "That photo didn't upload. Try again." };
+  if (file.size > MAX_UPLOAD_BYTES) return { error: "That photo is too large. Try another." };
+
+  let clean: Uint8Array;
+  try {
+    clean = stripJpeg(new Uint8Array(await file.arrayBuffer()));
+  } catch {
+    return { error: "That file isn't a photo we can use. Try a JPEG or PNG." };
+  }
+
+  const admin = createAdminClient();
+  if (!admin) return { error: "Photos can't be uploaded right now. Please try again later." };
   const path = `${user.id}/${randomUUID()}.jpg`;
-  const { data, error } = await supabase.storage.from("profile-photos").createSignedUploadUrl(path);
-  if (error || !data) return { error: "That photo couldn't be uploaded. Try again." };
-  return { path, url: data.signedUrl };
-}
+  const { error: uploadError } = await admin.storage
+    .from("profile-photos")
+    .upload(path, clean, { contentType: "image/jpeg", upsert: false });
+  if (uploadError) return { error: "That photo couldn't be uploaded. Try again." };
 
-/** Record a photo the browser has just uploaded to `${user.id}/…`. */
-export async function registerPhoto(path: string, position: number): Promise<PhotoState & { id?: string }> {
-  const { supabase, user } = await signedIn();
-  if (!user) return { error: "Please sign in again." };
-  if (!path.startsWith(`${user.id}/`) || !/\.jpg$/.test(path)) return { error: "That upload didn't come through. Try again." };
-
+  // The row is the member's own write, under the database's rules (six at
+  // most, nobody writes their own face-match result).
   const { data, error } = await supabase
     .from("profile_photos")
-    .insert({ profile_id: user.id, storage_path: path, position: Math.min(Math.max(position, 0), 5) })
+    .insert({ profile_id: user.id, storage_path: path, position: Number.isFinite(position) ? Math.min(Math.max(position, 0), 5) : 5 })
     .select("id")
     .single();
-  if (error?.message.includes("photo_limit")) {
-    await supabase.storage.from("profile-photos").remove([path]);
-    return { error: "That's the most you can add." };
+  if (error || !data) {
+    await admin.storage.from("profile-photos").remove([path]);
+    return { error: error?.message.includes("photo_limit") ? "That's the most you can add." : "That photo couldn't be saved. Try again." };
   }
-  if (error || !data) return { error: "That photo couldn't be saved. Try again." };
   revalidatePath(PATH);
   return { ok: "Added.", id: data.id };
 }

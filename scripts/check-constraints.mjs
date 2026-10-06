@@ -1342,6 +1342,50 @@ check("the hosted flow never grants Verified Real", (s, f) => {
   return false;
 });
 
+// The surname Smile ID requires is used to verify and for nothing else: never
+// stored, never shown on a profile, never sent to PostHog, Claude or
+// AriyaPlanner (decided 6 October 2026). It may appear only on the Smile ID
+// path — and lib/privacy-content.ts, which says so in prose.
+const SURNAME_FILES = [
+  /lib\/smile-id\.ts$/,
+  /app\/\(app\)\/verify\/selfie-actions\.ts$/,
+  /app\/api\/smile-id\/session\/route\.ts$/,
+  /components\/app\/selfie-details-fields\.tsx$/,
+  /components\/verify\/verify-flow\.tsx$/,
+  /lib\/privacy-content\.ts$/,
+];
+check("the surname goes to Smile ID only — never stored, shown, logged or sent elsewhere", (s, f) => {
+  const n = norm(f);
+  const words = /\b(surname|last_name|lastName|family_name|familyName)\b/;
+  if (!words.test(s)) return false;
+  if (!SURNAME_FILES.some((r) => r.test(n))) return "mentions the surname outside the Smile ID path";
+  if (n.endsWith(".sql")) return "a column or value for the surname";
+  // To the end of the statement — a ")" inside the call mustn't end the search.
+  if (/\.(insert|update|upsert)\(\s*\{[^;]*\b(surname|last_name|lastName|userDetails)\b/.test(s)) return "stores the surname";
+  if (/\bcapture\([^;]*\b(surname|last_name|lastName|userDetails)\b/.test(s)) return "sends the surname to analytics";
+  if (/console\.\w+\([^;]*\b(surname|last_name|lastName|userDetails)\b/.test(stripStrings(s))) return "logs the surname";
+  return false;
+});
+
+// Every image enters storage through the server, stripped of its metadata
+// (lib/strip-image.ts; decided 6 October 2026). Members' sessions can't write
+// to the buckets (0029); this keeps the server side honest.
+check("every image is stripped before it is stored", (s, f) => {
+  if (f.endsWith(".sql")) return false;
+  if (/createSignedUploadUrl|uploadToSignedUrl/.test(s)) return "a direct browser upload skips the strip";
+  if (!/\.upload\(/.test(s)) return false;
+  return /\bstripJpeg\(/.test(s) ? false : "uploads to storage without stripJpeg()";
+});
+
+// The selfie and its frames pass through to Smile ID: never stored, never logged.
+check("the selfie never reaches storage or a log", (s, f) => {
+  if (!/app\/\(app\)\/verify\/selfie-actions\.ts$|app\/api\/smile-id\/callback\/route\.ts$/.test(norm(f))) return false;
+  if (/console\.\w+\([^;]*\b(selfie|frames|formData|capture|userDetails|liveness)\b/.test(stripStrings(s))) return "logs the selfie or the form";
+  const storage = [...s.matchAll(/\.storage\s*\.from\([^)]*\)\s*\.(\w+)\(/g)].map((m) => m[1]);
+  const bad = storage.filter((op) => op !== "download" && op !== "remove");
+  return bad.length ? `storage.${bad.join(", ")} on the selfie path` : false;
+});
+
 // Consent first, with its version; the selfie passes through and is never kept.
 check("a selfie check records consent first and never stores the selfie", (s, f) => {
   if (!/app\/\(app\)\/verify\/selfie-actions\.ts$/.test(norm(f))) return false;

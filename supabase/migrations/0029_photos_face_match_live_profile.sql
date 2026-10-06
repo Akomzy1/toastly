@@ -585,18 +585,29 @@ create policy "photos visible per the owner's reveal choice" on public.profile_p
         and public.profile_is_live(auth.uid()) and public.profile_is_live(profile_id)
         and not public.is_hidden_candidate(id)));
 
+-- Another member reads only a REGISTERED photo — never a stray file in the
+-- folder — and never a candidate still being checked.
 create or replace function public.can_see_photo_file(p_viewer uuid, p_path text)
 returns boolean language sql stable security definer set search_path = public as $$
   select case
     when try_uuid((storage.foldername(p_path))[1]) = p_viewer then true
     else can_see_photos(p_viewer, try_uuid((storage.foldername(p_path))[1]))
          and profile_is_live(p_viewer) and profile_is_live(try_uuid((storage.foldername(p_path))[1]))
-         and not exists (select 1 from profile_photos ph where ph.storage_path = p_path and is_hidden_candidate(ph.id))
+         and exists (select 1 from profile_photos ph where ph.storage_path = p_path and not is_hidden_candidate(ph.id))
   end;
 $$;
 drop policy if exists "profile photo files follow reveal rules" on storage.objects;
 create policy "profile photo files follow reveal rules" on storage.objects for select
   using (bucket_id = 'profile-photos' and public.can_see_photo_file(auth.uid(), name));
+
+-- Every image enters storage through the server, stripped of its metadata —
+-- EXIF and GPS location, XMP, thumbnails, comments (decided 6 October 2026;
+-- lib/strip-image.ts). So members' sessions can't write to either image
+-- bucket: no upload, no overwrite. Members still delete their own photo
+-- files. Message images have no upload screen yet; when one is built, it
+-- uploads through the server the same way.
+drop policy if exists "own profile photo files upload" on storage.objects;
+drop policy if exists "senders upload attachment files" on storage.objects;
 
 drop policy if exists "own feed readable" on public.daily_feed;
 create policy "own feed readable" on public.daily_feed for select

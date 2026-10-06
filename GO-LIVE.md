@@ -209,6 +209,15 @@ open. Consider telling members before it ships.
   ```
 - Server actions accept up to 4 MB (`next.config.mjs`): the selfie and its
   liveness frames pass through one, on to Smile ID, unstored.
+- **Every image enters storage through the server, stripped** (decided
+  6 October 2026): photos are compressed on the phone, then sent to a
+  server action that removes EXIF and GPS location, XMP, ICC, thumbnails,
+  comments and anything after the image (`lib/strip-image.ts`) before
+  storing them. 0029 drops members' own upload policies on both image
+  buckets (`profile-photos`, `message-attachments`), and another member can
+  read only a registered photo file. Message images have no upload screen
+  yet; when one is built it must upload through the server the same way (a
+  constraint check enforces it).
 - Files a reviewer's decision replaces are queued in `storage_deletions` and
   removed on the next Smile ID callback.
 - Deleting an account now ends Couple Mode (the partner is un-paused — before,
