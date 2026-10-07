@@ -229,22 +229,139 @@ also go in Vercel → Environment Variables → **Preview**):
    release, the owner's own account — onboard, then a re-check (expect
    clear), and an Authentication against a random id (expect a refusal).
 
-**Production, in this order — each step only on the owner's go-ahead:**
+**What production holds** (read-only count, 7 October 2026): **one account —
+the owner's** (staff; profile country GB; Verified Real reached through the
+sandbox selfie on 2 October). No other members, photos, Gists, messages,
+reports or dates; there is no waitlist anywhere in the code or the database.
+One real payment: a **live Paystack charge of ₦1,000 on 4 October** for 10
+coins, by the owner — its 10 purchased coins are in the ledger, and the
+automatic pricing review it raised (a naira purchase from a GB profile) is
+open in the queue. Production holds nothing but the owner's own test use,
+but that payment and its coins are real money and the backup keeps them.
+0029's reset will move the owner's account back to "phone verified": the
+owner re-does the onboarding selfie after release.
+
+### Rehearsal on staging — before any production step
+
+Decided 7 October 2026. Needs `.env.staging.local` filled (every value is
+still the placeholder written on 6 October), including `SUPABASE_DB_URL`,
+plus a way to make a **staged production deployment** against staging: a
+second Vercel project (`toastly-staging`, same repo) whose Production
+environment holds the staging values, with "Auto-assign custom production
+domains" off, and `VERCEL_TOKEN` for the CLI.
+
+1. **Production's state.** Apply `0001` … `0026` to staging. Deploy `main`
+   to the staging Vercel project and promote it. `node
+   scripts/db/staging-seed.mjs --before` seeds four testers (one staff), a
+   Gist invite and a report; sign-ins go to `backups/staging-testers.json`.
+   Check sign-in works on `main`.
+2. **Cutover step 1:** apply 0027, then 0028. Check `main` still works.
+3. **Cutover step 2:** `vercel deploy --prod --skip-domain` of `release-1`
+   on the staging project (staged, not promoted).
+4. **Backup and restore check, then cutover step 3:**
+   `node scripts/db/backup.mjs --env .env.staging.local --label staging`,
+   `node scripts/db/restore-check.mjs --dump backups/staging-<time>.dump`
+   (must print RESTORE CHECK PASSED), then apply 0029 … 0034 in order.
+5. **Cutover step 4:** `vercel promote <staged url>`. Then
+   `node scripts/db/staging-seed.mjs --after` (0029 resets the testers'
+   Verified Real, as it will the owner's; this makes them live with four
+   photos each).
+6. **Check, as the testers:** sign in; today's six; a full profile (from the
+   six; fields per visibility; Report and Block in ⋯); a Gist invite (the
+   invitee opens the inviter's profile and accepts); the staff console
+   (queue loads, the seeded report opens, a "Threatening or pressuring me"
+   report lands first).
+7. **Rollback rehearsal:** `node scripts/db/rollback.mjs --env
+   .env.staging.local --dump backups/staging-<time>.dump` (dry run), then
+   `--yes` (must print ROLLBACK PASSED), promote `main` again, check
+   sign-in on `main`. Then re-apply 0029 … 0034 and promote `release-1` again
+   to leave staging at the release.
+
+Record here, for each step: start and end time, how long, and anything
+that broke.
+
+| Step | Started | Took | Result / what broke |
+|---|---|---|---|
+| 1. production's state on staging | | | |
+| 2. 0027, 0028 | | | |
+| 3. staged deploy of release-1 | | | |
+| 4. backup + restore check | | | |
+| 4. 0029 … 0034 | | | |
+| 5. promote | | | |
+| 6. checks | | | |
+| 7. rollback + main | | | |
+
+**Already proven locally** (`node scripts/db/rehearse-local.mjs`, PostgreSQL
+17, 7 October 2026): a 0026-state database with seeded members → backup
+(3.5 s) → restore check passed (63 tables, every row) → 0027 … 0034 (3.2 s)
+→ rollback (7.1 s): public's schema identical to the backup — privileges
+included — every table's rows identical, storage policies and the signup
+trigger back → 0027 … 0034 applied cleanly again. It found and fixed three
+things a plain `pg_restore` gets wrong: objects created after the backup
+block the restore; a foreign key added after the backup blocks it; and
+**every restored function comes back granted to anon and authenticated**
+(Supabase's default privileges), re-opening functions the migrations had
+closed — the rollback switches those defaults off for the restore and puts
+them back. What local can't show — Supabase's roles (its `postgres` is not a
+superuser), extensions, the app over HTTP — is what the staging rehearsal is
+for.
+
+### Production — each step only on the owner's go-ahead
 
 1. Apply 0027, then 0028 (additive; today's `main` keeps working on them).
-2. 0029 … 0034 must meet their code: 0029 retires the hosted selfie, 0030
+2. Build `release-1` as a production deployment **without promoting it**
+   (staged production deploy; `main` stays live).
+3. **Backup first, then 0029 … 0034.** 0029 retires the hosted selfie, 0030
    requires consent to change religion, 0032/0033 stop members reading
-   other members' rows — all break today's `main` — while `release-1`
-   needs 0029 … 0034 (profile_for, member_filters, …) or its names and
-   cards come back empty. So: build `release-1` as a production deployment
-   **without promoting it** (Vercel: staged production deploy), apply 0029,
-   0030, 0031, 0032, 0033, 0034 in order, then promote it at once and merge
-   `release-1` into `main`. The window is the seconds between the last
-   migration and the promotion. Never apply 0029 … 0034 with `main`'s
-   current code live for longer than that.
-3. Retire `country-age-two-way`, `port-live-profile`, `faith-denomination`,
+   other members' rows — all break today's `main` — while `release-1` needs
+   them. Immediately before applying them:
+   - put production's connection string in `.env.production.local`
+     (git-ignored), as `SUPABASE_DB_URL` (Supabase → Connect → Session
+     pooler);
+   - `node scripts/db/backup.mjs --env .env.production.local --label production`
+     — pg_dump of schema + data (public, auth, storage, cron) to
+     `backups/` (git-ignored), with row counts, public's schema as text,
+     and a manifest with the dump's sha256;
+   - `node scripts/db/restore-check.mjs --dump backups/production-<time>.dump`
+     — restores it into a throwaway local database and compares every
+     table's rows. **Go on only if it prints RESTORE CHECK PASSED.**
+   - then apply 0029, 0030, 0031, 0032, 0033, 0034 in order.
+4. **Promote `release-1` at once**, then merge it into `main`. The window is
+   the seconds between the last migration and the promotion.
+5. Retire `country-age-two-way`, `port-live-profile`, `faith-denomination`,
    `full-profile-access` and the old `live-profile-and-prompt-14`.
 
+### Rollback after step 3 — restore from the backup
+
+Not by redeploying `main` alone: `main`'s code can't run on 0029 … 0034's
+schema. The database goes back to the backup, and `main`'s deployment comes
+back with it.
+
+1. `node scripts/db/rollback.mjs --env .env.production.local --dump backups/production-<time>.dump`
+   — a dry run: lists what it will set aside, drop and recreate. Changes
+   nothing.
+2. Same command with `--yes`. In **one transaction** (any error and nothing
+   has changed): switches this role's default privileges off; sets aside the
+   storage.objects policies and the auth.users signup trigger (they depend
+   on public); drops the objects and foreign keys 0027 … 0034 added; restores
+   public from the backup, clean — every table, function, type, policy,
+   grant and row as at the backup; recreates the storage policies and the
+   trigger from the backup; puts the default privileges back. Then it checks
+   public's schema and every table's row count against the backup and
+   prints **ROLLBACK PASSED** or **FAILED**.
+3. In Vercel, promote the previous production deployment (`main`).
+4. Check sign-in, today's six and `/staff` on `main`.
+
+Anything written between the backup and the rollback is lost. auth, storage
+files, cron and vault are not touched by 0027 … 0034 and are not restored.
+Manual equivalent, if the script can't run: `pg_restore -l` the dump; drop
+the storage.objects policies and the `on_auth_user_created` trigger; drop
+public's foreign keys and every public object not in the listing; switch
+off `alter default privileges … in schema public` grants for `postgres`;
+`pg_restore --clean --if-exists -n public` then `pg_restore -L` the POLICY
+storage objects and TRIGGER auth users entries; restore the default
+privileges; compare `pg_dump --schema-only -n public` with the backup's
+`.public-schema.sql`.
 ---
 
 ## 0f. Photos, the face match, no live profile no access (migration 0029) — NOT APPLIED

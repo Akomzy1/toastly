@@ -35,3 +35,6 @@ screenshots/
 # The report, audit/MOBILE-AUDIT.md, IS committed.
 audit/mobile/
 audit/mobile-audit.json
+
+# Database backups and rehearsal sign-ins (scripts/db) - never committed.
+backups/

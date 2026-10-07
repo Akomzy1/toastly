@@ -17,7 +17,7 @@ import { pgcrypto } from "@electric-sql/pglite/contrib/pgcrypto";
 
 const MIGRATIONS = path.resolve("supabase/migrations");
 
-const SHIMS = `
+export const SHIMS = `
 create schema if not exists extensions;
 create extension if not exists pgcrypto with schema extensions;
 create extension if not exists pgcrypto;
