@@ -217,7 +217,7 @@ Three things drifted during the build. Fix them in one pass and report each.
 
 ## PROMPT 14 — Profile photos: four minimum, one face-matched (Phase 1)
 
-> **PARKED (3 October 2026).** Smile ID's documented API can't match an uploaded photo against the enrolled liveness face; a question is out to Smile ID. Resume when they answer. See FINAL-REVIEW.md.
+> **BUILT (6 October 2026), in `release-1`** — no longer parked: the main-photo face match uses Smile ID's `/v3/compare` against the enrolled face (migration 0029). Was parked 3 October while Smile ID's API was in question.
 
 Read PRD §5.1.2 and the new CLAUDE.md photo rule first. *(Prompt 13 — Resend, PostHog and SMS wiring — was issued directly in chat.)*
 

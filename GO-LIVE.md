@@ -241,7 +241,9 @@ but that payment and its coins are real money and the backup keeps them.
 0029's reset will move the owner's account back to "phone verified": the
 owner re-does the onboarding selfie after release.
 
-### Rehearsal on staging — before any production step
+### Rehearsal on staging — SKIPPED (owner, 7 October 2026)
+
+**The owner decided to skip staging.** The local rehearsal below (`node scripts/db/rehearse-local.mjs`) is the proof of backup → cutover → rollback; what it can't show (Supabase's own roles and extensions, the app over HTTP) is not rehearsed, so the backup and restore check before step 3 and the rollback are the safety net. Kept for reference:
 
 Decided 7 October 2026. Needs `.env.staging.local` filled (every value is
 still the placeholder written on 6 October), including `SUPABASE_DB_URL`,
