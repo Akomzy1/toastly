@@ -166,10 +166,16 @@ Toastly is non-religious: faith is something members may show, never something t
 - **Never filterable:** denomination, genotype, hidden relationship history, and anything not in the §7.1 advanced-filter list.
 - **Storage and analytics:** filters are stored per member and deleted with the account. PostHog may get "filters changed", never which religion or tribe was chosen.
 
-**The full profile** (a Claude Design pass for the whole screen comes first; nothing is built from a single row):
-- Opens only for a member's current six, their matches and their Gist partners. No browsing or search of arbitrary profiles.
-- Each field renders per its own visibility rule for that viewer: relationship history only after a match unless the owner chose otherwise; genotype only where shared with that viewer; faith only if shown. Hidden fields show nothing — no placeholder.
-- "Children: Wants children" is not a PRD field and is not shown.
+**The full profile** is the screen a member opens from a card in their six or from a match (a Claude Design pass for the whole screen comes first; nothing is built from a single row).
+- **Who can open it — always two-way** (decided 7 October 2026). Members form a view of each other before deciding anything, so whenever one person can see the other, the reverse is true too. A member can open the full profile of:
+  - **Your six:** anyone in their current six.
+  - **Anyone who reaches out:** anyone who has replied to one of their prompt answers or invited them to a Gist, so they can decide with the same information the other person had about them.
+  - **Matches and Gist partners:** both people, for as long as the match exists. A block ends it either way.
+  - **No browse or search** of arbitrary profiles, and **no "who viewed you"** list or notification. Viewing a profile is never recorded anywhere the other member can read, and never announced.
+- **Starter and the locked inbox.** A Starter member's inbox stays receive-locked (bare count, no sender) — that is the paid feature. So a text reply a Starter member can't read never opens its sender's profile for them; otherwise the profile would name who wrote. **A Gist invitation is different: on every plan, including Starter, the invited member always sees the inviter's full profile before accepting.** Nobody is asked to talk to someone they can't see; safety is never paywalled.
+- **Enforced on the server**, not in the UI: the profile row, prompt answers and photos are readable only through the access rule (migration 0032); photos still follow the owner's reveal choice on top of it.
+- **What shows depends on the viewer:** each field renders per its own visibility rule for that viewer: relationship history only after a match unless the owner chose otherwise; genotype only where the owner chose to share with that viewer; faith only if shown. Hidden fields show nothing — no placeholder.
+- It carries the photos, Verified Real seal, prompt answers (the thing a member replies to), intent and the details block. No field appears that the PRD doesn't define: "Children: Wants children" is not a PRD field and is not shown.
 
 ### 5.3 Intent Spectrum (critical constraint)
 - Do not hard-gate on marriage at signup. Stated preference on a spectrum: *Just vibing → Getting to know people → Something serious → Marriage-minded.*

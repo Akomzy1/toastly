@@ -121,7 +121,9 @@ test("six photos, plus one replacement in flight", async () => {
 test("a replacement is checked while the old main photo stays live, and stays private until it matches", async () => {
   const m = await member("Replacer", { live: true });
   const viewer = await member("Viewer", { live: true });
-  const oldMain = (await db.query("select main_photo_id from profiles where id = $1", [m])).rows[0].main_photo_id;
+  // The viewer has a reason to see the profile (0032): it's in their six.
+  await db.query("insert into daily_feed (profile_id, feed_date, position, candidate_id) values ($1, current_date, 1, $2)", [viewer, m]);
+  const oldMain =(await db.query("select main_photo_id from profiles where id = $1", [m])).rows[0].main_photo_id;
   const cand = await addPhoto(m, "new-main");
   await me(m, "select nominate_main_photo($1)", [cand]);
   assert.equal(await isLive(m), true, "the old main photo keeps the profile live");

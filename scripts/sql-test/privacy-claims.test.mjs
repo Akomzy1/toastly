@@ -51,8 +51,11 @@ test("another member reads only a registered photo, never a stray file in the fo
   const registered = (await db.query("select storage_path from profile_photos where profile_id = $1 order by position limit 1", [alice])).rows[0].storage_path;
   const stray = `${alice}/stray-unstripped.jpg`;
   await db.query("insert into storage.objects (bucket_id, name, owner) values ('profile-photos', $1, $2), ('profile-photos', $3, $2)", [registered, alice, stray]);
-  const { rows } = await me(bola, "select name from storage.objects where bucket_id = 'profile-photos' and name = any($1)", [[registered, stray]]);
-  assert.deepEqual(rows.map((r) => r.name), [registered]);
+  const files = () => me(bola, "select name from storage.objects where bucket_id = 'profile-photos' and name = any($1)", [[registered, stray]]);
+  assert.deepEqual((await files()).rows, [], "a stranger reads no file at all (0032)");
+  // Once Bola has a reason to see Alice's profile — she's in his six:
+  await db.query("insert into daily_feed (profile_id, feed_date, position, candidate_id) values ($1, current_date, 1, $2)", [bola, alice]);
+  assert.deepEqual((await files()).rows.map((r) => r.name), [registered]);
   const own = await me(alice, "select name from storage.objects where bucket_id = 'profile-photos' and name = $1", [stray]);
   assert.equal(own.rows.length, 1, "the owner still sees their own files");
 });

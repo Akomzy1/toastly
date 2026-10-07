@@ -1567,6 +1567,75 @@ check("the consent's bracketed retention line stays visible until Smile ID confi
   return /\[Purpose of retention, and any way to request earlier deletion — to be confirmed with Smile ID\.\]/.test(s) ? false : "the bracketed line is gone";
 });
 
+// --- The full profile: who can open whose (PRD §5.2.4; decided 7 October 2026)
+
+// Replay every migration's policies in order, so only those still standing count.
+const standingPolicies = (() => {
+  const live = new Map();
+  for (const { sql } of MIGS) {
+    const s = stripComments(sql, "x.sql");
+    for (const m of s.matchAll(/(drop policy if exists|create policy)\s+"([^"]+)"\s+on\s+public\.(\w+)([^;]*);/g)) {
+      const key = `${m[3]}:${m[2]}`;
+      if (m[1] === "drop policy if exists") live.delete(key);
+      else live.set(key, { table: m[3], name: m[2], rest: m[4] });
+    }
+  }
+  return [...live.values()];
+})();
+
+// Another member's profile row, prompt answers and photos are readable only
+// through can_open_profile — a member's own rows aside. Anything else is a
+// browse path the PRD rules out.
+check("another member's profile, answers and photos open only through can_open_profile", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false; // run once
+  const bad = standingPolicies
+    .filter((p) => /^(profiles|prompt_answers|profile_photos)$/.test(p.table))
+    .filter((p) => /\bfor\s+(select|all)\b/.test(p.rest) || !/\bfor\s+\w+/.test(p.rest))
+    .filter((p) => {
+      const using = (p.rest.match(/\busing\s*([\s\S]*?)(\bwith check\b|$)/) ?? [])[1] ?? "";
+      const flat = using.replace(/\s+/g, "");
+      const ownOnly = /^\(auth\.uid\(\)=(id|profile_id)\)$/.test(flat);
+      return !ownOnly && !/can_open_profile\(/.test(using);
+    })
+    .map((p) => `${p.table}: "${p.name}"`);
+  return bad.length ? `readable without the access rule — ${bad.join("; ")}` : false;
+});
+
+check("the access rule stays internal, read-only and about the caller", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false;
+  const all = MIGS.map((x) => stripComments(x.sql, "x.sql")).join("\n");
+  // The LAST definition of each, whatever quoting it uses: header up to "as".
+  const lastDef = (name) => {
+    const at = all.lastIndexOf(`create or replace function public.${name}(`);
+    return at < 0 ? null : all.slice(at, all.indexOf(";", all.indexOf("$", at)) + 1);
+  };
+  const inner = lastDef("profile_open_to");
+  const outer = lastDef("can_open_profile");
+  if (!inner || !outer) return "profile_open_to / can_open_profile missing";
+  for (const def of [inner, outer]) {
+    const header = def.slice(0, def.search(/\bas\s+\$/));
+    if (!/language sql\b/.test(header) || !/\bstable\b/.test(header)) return "the access rule isn't a stable SQL function — it could write a view";
+  }
+  if (!/as \$\$\s*select profile_open_to\(auth\.uid\(\), p_owner\)\s*\$\$/.test(outer)) return "can_open_profile answers about someone other than the caller";
+  if (/grant[^;]*on function public\.profile_open_to/.test(all)) return "profile_open_to is granted to someone";
+  if (!/revoke all on function public\.profile_open_to\(uuid, uuid\) from public, anon, authenticated/.test(all)) return "profile_open_to isn't revoked from members";
+  return false;
+});
+
+// The locked inbox: a text reply is a message a Starter member can't read, so
+// it must never open its sender's profile for them.
+check("a text reply opens its sender's profile only for a member who can read it", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false;
+  const body = stripComments(latestFn("profile_open_to") ?? "", "x.sql");
+  const leg = (body.match(/from replies r[\s\S]*?\)\s*\n/) ?? [])[0] ?? "";
+  return /r\.kind = 'gist_invite' or can_read_inbox\(p_viewer\)/.test(leg) ? false : "a text reply opens its sender's profile on Starter";
+});
+
+// No "who viewed you", in any form: no table, column, event or copy for it.
+check("no profile view is recorded — no 'who viewed you'", (s) =>
+  /profile_views?\b|viewed_(by|you|me|at)\b|who.?viewed|profile_viewed|views_count/i.test(s),
+);
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

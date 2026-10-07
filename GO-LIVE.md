@@ -149,6 +149,18 @@ and tops a short six up to six if they widen them the same day — never more
 than six a day. The pricing page now lists the filters that exist: religion
 and tribe.
 
+**0032 — who can open a full profile** (PRD §5.2.4, decided 7 October 2026),
+branch `full-profile-access`, stacked on `faith-denomination`, after 0031.
+**Not merged; not applied anywhere.** Replaces 0029's "any live member reads
+any live profile" with `can_open_profile`: your current six; anyone who
+replied to your answers or invited you to a Gist; matches and Gist partners,
+both ways, until a block. The profile row, prompt answers and photos all
+follow it. A Starter member can no longer list message threads (the count is
+unchanged), and a text reply they can't read doesn't open its sender. What
+members will notice: a Gist invite they sent that was declined or expired
+shows "A member" instead of the name. The full-profile screen itself isn't
+built yet.
+
 ## 0g. Staging, then the release — 0027, 0028, 0029
 
 Decided 6 October 2026: **staging gates every merge.** A branch is merged
