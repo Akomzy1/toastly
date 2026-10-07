@@ -233,3 +233,46 @@ test("no profile view is written anywhere the other member can read", async () =
   assert.deepEqual(await ownerSees(), ownerBefore, "nothing the owner can read changed");
   assert.deepEqual(await snapshot(), before, "nothing anywhere changed — a view is a read and nothing more");
 });
+
+test("age, 'matched' and relationship history follow the same rule", async () => {
+  const { db, me, member, inSix, reply, invite } = await setup();
+  const viewer = await member("Viewer", { tier: "premium" });
+  const owner = await member("Owner");
+  await db.query("update profile_birthdates set date_of_birth = current_date - interval '29 years 2 days' where profile_id = $1", [owner]);
+  await db.query("insert into profile_history (profile_id, history, visibility) values ($1, 'divorced', 'on_match') on conflict (profile_id) do update set history = 'divorced', visibility = 'on_match'", [owner]);
+  const ask = async (who, sql) => (await me(who, sql, [owner])).rows[0];
+  const history = async (who) => (await me(who, "select history from profile_history where profile_id = $1", [owner])).rows.length > 0;
+
+  assert.equal((await ask(viewer, "select age_for($1) as a")).a, null, "a stranger gets no age");
+  assert.equal(await history(viewer), false);
+  await db.query("update profile_history set visibility = 'public' where profile_id = $1", [owner]);
+  assert.equal(await history(viewer), false, "even 'on my profile' history needs a reason to open the profile");
+
+  await inSix(viewer, owner);
+  assert.equal((await ask(viewer, "select age_for($1) as a")).a, 29, "an age, never a date");
+  assert.equal(await history(viewer), true, "public history shows once the profile opens");
+  await db.query("update profile_history set visibility = 'on_match' where profile_id = $1", [owner]);
+  assert.equal((await ask(viewer, "select i_am_matched_with($1) as m")).m, false, "being in the six isn't a match");
+  assert.equal(await history(viewer), false, "'on match' waits for a match");
+  assert.equal((await me(viewer, "select date_of_birth from profile_birthdates where profile_id = $1", [owner])).rows.length, 0,
+    "the date of birth stays the owner's");
+
+  const s = await invite(viewer, owner, "accepted");
+  assert.equal((await ask(viewer, "select i_am_matched_with($1) as m")).m, true);
+  assert.equal(await history(viewer), true, "matched: 'on match' history shows");
+  await db.query("update profile_history set visibility = 'private' where profile_id = $1", [owner]);
+  assert.equal(await history(viewer), false, "'only me' never shows");
+  await db.query("delete from gist_sessions where id = $1", [s]);
+
+  // Starter: a match made of their Gist invite and a text reply they can't
+  // read is not a match they can see — or "on match" fields would name the sender.
+  const starter = await member("Starter");
+  const writer = await member("Writer", { tier: "premium" });
+  await db.query("insert into profile_history (profile_id, history, visibility) values ($1, 'widowed', 'on_match') on conflict (profile_id) do update set history = 'widowed', visibility = 'on_match'", [writer]);
+  await inSix(starter, writer);
+  await reply(starter, writer, "gist_invite");
+  await reply(writer, starter, "text");
+  assert.equal((await me(starter, "select i_am_matched_with($1) as m", [writer])).rows[0].m, false);
+  assert.equal((await me(starter, "select history from profile_history where profile_id = $1", [writer])).rows.length, 0,
+    "a locked reply doesn't reveal itself through a match");
+});

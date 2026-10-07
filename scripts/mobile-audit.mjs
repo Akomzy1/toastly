@@ -71,6 +71,18 @@ const ROUTES = [
   { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },
   { route: "/audit/nav/gists", label: "Nav · gists" },
   { route: "/audit/nav/profile", label: "Nav · profile" },
+  { route: "/audit/full-profile/six", label: "Full profile · six" },
+  { route: "/audit/full-profile/matched", label: "Full profile · matched" },
+  { route: "/audit/full-profile/hidden", label: "Full profile · hidden" },
+  { route: "/audit/full-profile/starter", label: "Full profile · starter" },
+  { route: "/audit/full-profile/invite", label: "Full profile · invite" },
+  { route: "/audit/full-profile/id-checked", label: "Full profile · id-checked" },
+  { route: "/audit/full-profile/no-photos", label: "Full profile · no-photos" },
+  { route: "/audit/full-profile/menu", label: "Full profile · menu" },
+  { route: "/audit/full-profile/report", label: "Full profile · report" },
+  { route: "/audit/full-profile/reported", label: "Full profile · reported" },
+  { route: "/audit/full-profile/block", label: "Full profile · block" },
+  { route: "/audit/full-profile/blocked", label: "Full profile · blocked" },
   { route: "/audit/profile-faith/empty", label: "Profile faith · empty" },
   { route: "/audit/profile-faith/sheet", label: "Profile faith · sheet" },
   { route: "/audit/profile-faith/christian", label: "Profile faith · christian" },
@@ -376,6 +388,8 @@ async function main() {
       const failed = !error && status < 400 && (inspection.overflow || inspection.targets.length || inspection.small.length || !networkIdle);
       const tag = error ? "ERROR" : status >= 400 ? `HTTP ${status}` : failed ? "FAIL" : "ok";
       console.log(`${tag.padEnd(9)} ${String(vp.width).padStart(3)}px  ${route}${networkIdle ? "" : "  (network never idle)"}`);
+      // A partial run writes no report, so say why here.
+      if (partial && failed) console.log(`          ${JSON.stringify({ overflow: inspection.overflow, targets: inspection.targets, small: inspection.small })}`);
     }
   }
 

@@ -50,6 +50,15 @@ export const GENOTYPE_LABELS: Record<GenotypeValue, string> = {
  */
 export const GENOTYPE_UNKNOWN_FOR_OTHERS = "not known yet";
 
+/**
+ * The value in the full profile's details block (full-profile-view.slim.html):
+ * the stated value as plain text. Self-reported — never a verified mark,
+ * never a verdict.
+ */
+export function genotypeForOthers(v: GenotypeValue): string {
+  return v === "unknown" ? "Not known yet" : GENOTYPE_LABELS[v];
+}
+
 export const GENOTYPE_VISIBILITIES = [
   "private",
   "all_matches",

@@ -20,6 +20,8 @@
  * by the database: 0030's faith_rules trigger.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 export const RELIGIONS = [
   "Christian",
   "Muslim",
@@ -96,4 +98,21 @@ export function faithLine(p: FaithFields, viewer: "owner" | "other"): string | n
   // "Christian · White-garment (Celestial, C&S, CAC)".
   const denomination = p.denomination === "other" ? p.denomination_other : found ? found.label : null;
   return denomination ? `${religion} · ${denomination}` : religion;
+}
+
+/**
+ * SERVER ONLY. Another member's faith line for their full profile, or null.
+ * The faith fields are read here so denomination stays on its allowlisted
+ * path; the row is readable only through the profile access rule (0032).
+ */
+export async function loadFaithLineFor(
+  supabase: SupabaseClient,
+  ownerId: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("religion, religion_other, denomination, denomination_other, religion_visibility")
+    .eq("id", ownerId)
+    .maybeSingle();
+  return data ? faithLine(data as FaithFields, "other") : null;
 }

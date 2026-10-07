@@ -228,11 +228,41 @@ with .slim.html copies):
   Added, flagged: a religion stored before the option list (free text) shows
   as the row's value and as a selected option until the member picks from
   the list.
-- **Full profile view** (`faith-profile-view`): NOT BUILT — the app has no
-  screen for another member's full profile. The Faith row's value is ready
-  (lib/faith.ts `faithLine`, e.g. "Christian · White-garment (Celestial,
-  C&S, CAC)"; nothing at all when hidden). The prototype's details block also
-  shows Work and "Children: Wants children", a field that doesn't exist.
+- **Full profile view** (`faith-profile-view`): the Faith row is built in the
+  full profile below (lib/faith.ts `faithLine`; nothing at all when hidden).
+  This prototype's Work and "Children: Wants children" rows are not built —
+  "Children" isn't a PRD field.
+
+**Built against `full-profile-view` (7 October 2026; 0032; PRD §5.2.4)** —
+/members/[id] (app/(app)/members/[id]/page.tsx, components/profile/full-
+profile.tsx, lib/full-profile.ts). The band ("{first}'s profile", where it
+was opened from, ⋯ for Report and Block), the photo gallery with dots, name
+and age, city, the Verified Real seal (ID ring when ID-checked), intent, the
+answers with "Reply to this" (paid) or "Ask for a Gist about this" plus the
+month's count (Starter, from the six), the Details block, and for an open
+invitation the fixed "Not now" / "Accept Gist" bar. Every field follows its
+visibility for this viewer; the database decides who can open it (0032).
+Audit: `/audit/full-profile/*` (twelve states). Flagged:
+  - the seal line reads "Main photo matches their selfie", not "Photos match
+    their selfie": only the main photo is face-matched (PRD §5.1.2);
+  - the band has the prototype's ⋯ menu and no Safety pill — unlike the
+    filters screen, which kept the pill (nav prototypes);
+  - "{first} isn't told who reported them" / "{first} isn't told" instead of
+    "her" / "She": the member's pronouns aren't known;
+  - "Amaka is blocked" drops "You can undo this from Safety kit." — there is
+    no unblock;
+  - on Starter, the invite bar keeps the invite screen's line: "If the call
+    happens, it counts as one of your 2 Gists this month.";
+  - "Not now" leaves the invitation open (it closes itself after three days);
+    "Decline" stays on the invite screen;
+  - the report list is the prototype's five; "Rude or threatening" files as
+    harassment. Underage, scam and "not who they say" stay on the card's
+    report form;
+  - the photo dots are 44px tap targets, so they sit further apart;
+  - not drawn: "Replied to your answer" as the band's subline (someone who
+    replied, outside the six and before a match), a profile whose photos
+    aren't revealed to this viewer (no gallery at all), and the "See
+    {first}'s full profile" links on the feed card and the Gist screen.
 - **Filters** (`premium-filters`; 0031; PRD §5.2.4): /profile/filters,
   components/profile/filters-screen.tsx. "Your search": Religion
   (multi-select, "Any" when none) with the note directly under it, then

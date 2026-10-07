@@ -37,6 +37,11 @@ export function MatchCard({
         {candidate.city ? (
           <span className="text-nav text-grey-600">{candidate.city}</span>
         ) : null}
+        {/* NOT IN THE PROTOTYPE — flagged: the way into the full profile
+            (PRD §5.2.4). Viewing it is never recorded. */}
+        <Link href={`/members/${candidate.id}`} className="inline-flex min-h-11 basis-full items-center text-nav font-semibold text-green-500">
+          See {candidate.display_name.split(" ")[0]}&rsquo;s full profile
+        </Link>
       </div>
 
       {/* Answers first. This ordering is the product. */}

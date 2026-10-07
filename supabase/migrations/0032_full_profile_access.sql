@@ -146,3 +146,94 @@ drop policy if exists "participants see their threads" on public.threads;
 create policy "participants see their threads" on public.threads for select
   using ((auth.uid() = member_a or auth.uid() = member_b)
          and public.profile_is_live(auth.uid()) and public.can_read_inbox(auth.uid()));
+
+-- ---------------------------------------------------------------------------
+-- 4. What the screen reads, through the same rule
+-- ---------------------------------------------------------------------------
+
+-- "Matched", as the viewer is allowed to know it. are_matched (0013) counts
+-- mutual replies of any kind, so a Starter member who invited someone and
+-- got a text reply back would learn, from an "on match" field appearing,
+-- that the other person wrote to them. Here the other person's reply counts
+-- only if the viewer can read it.
+create or replace function public.viewer_matched(p_viewer uuid, p_owner uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p_viewer is not null and p_owner is not null and p_viewer <> p_owner
+    and not exists (
+      select 1 from blocks b
+      where (b.blocker_id = p_viewer and b.blocked_id = p_owner)
+         or (b.blocker_id = p_owner and b.blocked_id = p_viewer)
+    )
+    and (
+      exists (
+        select 1 from gist_sessions g
+        where g.status in ('accepted', 'live', 'completed')
+          and ((g.proposer_id = p_viewer and g.invitee_id = p_owner)
+            or (g.proposer_id = p_owner and g.invitee_id = p_viewer))
+      )
+      or exists (
+        select 1 from couples c
+        where c.status = 'active'
+          and ((c.member_a = p_viewer and c.member_b = p_owner)
+            or (c.member_a = p_owner and c.member_b = p_viewer))
+      )
+      or (
+        exists (select 1 from replies r where r.sender_id = p_viewer and r.recipient_id = p_owner)
+        and exists (
+          select 1 from replies r
+          where r.sender_id = p_owner and r.recipient_id = p_viewer
+            and (r.kind = 'gist_invite' or can_read_inbox(p_viewer))
+        )
+      )
+    );
+$$;
+revoke all on function public.viewer_matched(uuid, uuid) from public, anon, authenticated;
+
+create or replace function public.i_am_matched_with(p_owner uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$ select profile_open_to(auth.uid(), p_owner) and viewer_matched(auth.uid(), p_owner) $$;
+revoke all on function public.i_am_matched_with(uuid) from public, anon;
+grant execute on function public.i_am_matched_with(uuid) to authenticated, service_role;
+
+-- Age, never the date of birth (that stays owner-only, 0015), and only on a
+-- profile the caller can open.
+create or replace function public.age_for(p_owner uuid)
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$ select case when profile_open_to(auth.uid(), p_owner) then _member_age(p_owner) end $$;
+revoke all on function public.age_for(uuid) from public, anon;
+grant execute on function public.age_for(uuid) to authenticated, service_role;
+
+-- Relationship history (0013) follows the access rule too, and "on match"
+-- uses the match the viewer is allowed to know about.
+create or replace function public.history_visible_to_me(
+  p_owner uuid,
+  p_visibility field_visibility
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case
+    when auth.uid() is null or p_owner is null then false
+    when auth.uid() = p_owner then true
+    when not profile_open_to(auth.uid(), p_owner) then false
+    when p_visibility = 'public' then true
+    when p_visibility = 'on_match' then viewer_matched(auth.uid(), p_owner)
+    else false
+  end;
+$$;

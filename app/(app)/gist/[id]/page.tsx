@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
@@ -150,8 +151,16 @@ export default async function GistSessionPage({
   if (!ctx) notFound();
   const starter = !canSendText(tier);
   const status = ctx.effectiveStatus;
+  // Their full profile, when the access rule allows it (0032) — always for an
+  // invitation received, on every plan, before accepting.
+  const { data: canOpen } = await supabase.rpc("can_open_profile", { p_owner: otherId });
   const safety = (
-    <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">
+    <div className="mx-auto grid w-full max-w-[680px] gap-3 px-3.5 pb-8">
+      {canOpen === true ? (
+        <Link href={`/members/${otherId}`} className="inline-flex min-h-11 items-center justify-self-start text-nav font-semibold text-green-500">
+          See {otherName.split(" ")[0]}&rsquo;s full profile
+        </Link>
+      ) : null}
       <SafetyActions memberId={otherId} name={otherName} />
     </div>
   );

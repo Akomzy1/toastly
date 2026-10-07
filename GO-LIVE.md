@@ -158,8 +158,11 @@ both ways, until a block. The profile row, prompt answers and photos all
 follow it. A Starter member can no longer list message threads (the count is
 unchanged), and a text reply they can't read doesn't open its sender. What
 members will notice: a Gist invite they sent that was declined or expired
-shows "A member" instead of the name. The full-profile screen itself isn't
-built yet.
+shows "A member" instead of the name. Also in 0032, for the full-profile
+screen (/members/[id]): `age_for` (an age, never the date of birth, only on
+a profile the caller can open), `i_am_matched_with`, and relationship
+history now needs the access rule too, with "on match" counting only a
+match the viewer can see.
 
 ## 0g. Staging, then the release — 0027, 0028, 0029
 

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+@font-face{font-family:Aleo;src:url("326c4942-4dbc-4b91-ba69-8fe06cf6a7df") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("8a702af9-d8ca-4079-afa4-bddd99f0da80") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("df12bf64-b985-435b-9689-39876f3df792") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("7e6f744d-a115-47a7-8133-3b4690e29610") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:700px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Full profile</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">A member's full profile</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:60ch;text-wrap:pretty">Opened from a Today's six card, a reply or Gist invitation they've received, or a match. Viewing is two-way and never announced. Photos, who they are, their answers, then the details they've chosen to show this viewer. A field that isn't shown is simply absent: no placeholder, no "hidden" label. No score, no summary of the person, nothing about who else they're talking to.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ widths }}" as="w" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ w.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ w.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="5">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="2">
+        <button type="button" sc-camel-on-click="{{ t.pick }}" aria-pressed="{{ t.pressed }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;opacity:{{ t.op }}">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    <p style="margin:0;font-size:13.5px;line-height:1.55;color:#504E52">{{ stateNote }}</p>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:center">
+    <div data-screen-label="Full profile" style="position:relative;width:{{ frameW }};max-width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:clip;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+      <div style="background:#001F1B;padding:12px 6px 12px 16px;display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+        <div style="flex:1;min-width:0;display:grid;gap:2px">
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Amaka's profile</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">{{ origin }}</p>
+        </div>
+        <button type="button" sc-camel-on-click="{{ openMenu }}" aria-label="More options" aria-haspopup="menu" aria-expanded="{{ menuOpen }}" style="flex-shrink:0;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;cursor:pointer" style-hover="background:rgba(235,217,174,0.12)">
+          <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5.5" cy="12" r="1.6" fill="#EBD9AE"></circle><circle cx="12" cy="12" r="1.6" fill="#EBD9AE"></circle><circle cx="18.5" cy="12" r="1.6" fill="#EBD9AE"></circle></svg>
+        </button>
+      </div>
+
+      <div style="padding:14px 14px 28px;display:grid;gap:22px;align-content:start">
+
+        <div style="display:grid;gap:10px">
+          <div ref="{{ galleryRef }}" sc-camel-on-scroll="{{ onGalleryScroll }}" aria-label="Amaka's photos" style="display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:16px">
+            <sc-for list="{{ photos }}" as="p" hint-placeholder-count="5">
+              <div style="flex:0 0 100%;aspect-ratio:4/5;scroll-snap-align:start;border-radius:16px;overflow:hidden;background:#E5F0EE;position:relative">
+                <sc-if value="{{ p.isMain }}" hint-placeholder-val="{{ true }}">
+                  <img src="{{ p.src }}" alt="Amaka, main photo" style="width:100%;height:100%;object-fit:cover;display:block">
+                </sc-if>
+                <sc-if value="{{ p.isSlot }}">
+                  <image-slot id="{{ p.slotId }}" shape="rounded" radius="16" placeholder="{{ p.placeholder }}"></image-slot>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:center;gap:2px">
+            <sc-for list="{{ dots }}" as="d" hint-placeholder-count="5">
+              <button type="button" sc-camel-on-click="{{ d.go }}" aria-label="{{ d.aria }}" aria-current="{{ d.current }}" style="width:22px;height:22px;display:grid;place-items:center;border:0;background:transparent;padding:0;cursor:pointer">
+                <span style="width:{{ d.w }};height:7px;border-radius:999px;background:{{ d.c }};transition:width .2s ease"></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:14px;padding:0 2px">
+          <div style="display:grid;gap:4px">
+            <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309">Amaka, 29</h2>
+            <p style="margin:0;font-size:14px;color:#504E52">Victoria Island, Lagos</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span aria-hidden="true" style="flex-shrink:0;width:36px;height:36px;border-radius:999px;background:#001F1B;display:grid;place-items:center">
+              <svg width="26" height="26" sc-camel-view-box="-1.5 -1.5 27 27" fill="none"><sc-if value="{{ idCheck }}"><circle cx="12" cy="12" r="12.2" stroke="#EBD9AE" stroke-width="0.9"></circle></sc-if><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </span>
+            <span style="display:grid;gap:1px;min-width:0">
+              <span style="font-size:14px;font-weight:600;color:#050309">Verified Real</span>
+              <span style="font-size:13px;line-height:1.4;color:#504E52">{{ sealSub }}</span>
+            </span>
+          </div>
+          <p style="margin:0;font-size:14.5px;color:#504E52">{{ intent }}</p>
+        </div>
+
+        <div style="display:grid;gap:12px">
+          <sc-for list="{{ prompts }}" as="q" hint-placeholder-count="3">
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 14px 14px;display:grid;gap:14px">
+              <div style="display:grid;gap:6px">
+                <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:18px;font-weight:700;line-height:1.3;color:#050309;text-wrap:balance">{{ q.prompt }}</p>
+                <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">“{{ q.answer }}”</p>
+              </div>
+              <sc-if value="{{ showPaid }}" hint-placeholder-val="{{ true }}">
+                <button type="button" style="min-height:44px;padding:10px 14px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Reply to this</button>
+              </sc-if>
+              <sc-if value="{{ showStarter }}">
+                <div style="display:grid;gap:7px">
+                  <a href="gist-invite-starter.html" style="min-height:44px;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-size:14px;font-weight:600;text-decoration:none" style-hover="border-color:#00695C;background:#E5F0EE;color:#050309">
+                    <svg width="17" height="17" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.6" stroke="#050309" stroke-width="1.6"></circle><path d="M12 7.4V12l3.2 2" stroke="#050309" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                    Ask for a Gist about this
+                  </a>
+                  <p style="margin:0;text-align:center;font-size:12.5px;color:#504E52">2 Gists left this month</p>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;gap:6px">
+          <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Details</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:2px 15px">
+            <dl style="margin:0;display:grid">
+              <sc-for list="{{ details }}" as="r" hint-placeholder-count="5">
+                <div style="min-height:44px;padding:10px 0;display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-top:{{ r.rule }}">
+                  <dt style="flex-shrink:0;font-size:13.5px;color:#504E52">{{ r.label }}</dt>
+                  <dd style="margin:0;display:grid;justify-items:end;gap:3px;text-align:right">
+                    <span style="font-size:14.5px;font-weight:500;color:#1E1C21">{{ r.value }}</span>
+                    <sc-if value="{{ r.verified }}">
+                      <span style="display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:#00695C">
+                        <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="#00695C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        Verified
+                      </span>
+                    </sc-if>
+                  </dd>
+                </div>
+              </sc-for>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ isInvite }}">
+        <div style="position:sticky;bottom:0;z-index:1;background:#FFFFFF;border-top:1px solid rgba(5,3,9,0.12);padding:12px 14px 16px;display:grid;gap:8px;box-shadow:0 -12px 28px -22px rgba(5,3,9,0.5)">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+            <button type="button" sc-camel-on-click="{{ notNow }}" style="min-height:48px;padding:14px 12px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:#FFFFFF;color:#050309;font-family:Inter,sans-serif;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Not now</button>
+            <a href="gist-accepted.html" style="display:flex;align-items:center;justify-content:center;min-height:48px;padding:14px 12px;border:0;border-radius:12px;background:#FFB300;color:#001F1B;font-size:15px;font-weight:600;text-decoration:none" style-hover="background:#FFC94C;color:#001F1B">Accept Gist</a>
+          </div>
+          <p style="margin:0;font-size:13px;line-height:1.5;color:#504E52;text-align:center">It's free to accept.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ scrim }}">
+        <div sc-camel-on-click="{{ close }}" style="position:absolute;inset:0;background:rgba(5,3,9,0.42)"></div>
+      </sc-if>
+
+      <sc-if value="{{ showMenu }}">
+        <div role="menu" style="position:absolute;top:58px;right:10px;width:220px;border-radius:12px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);box-shadow:0 18px 40px -20px rgba(5,3,9,0.6);display:grid;overflow:hidden">
+          <button type="button" role="menuitem" sc-camel-on-click="{{ openReport }}" style="min-height:48px;padding:12px 16px;border:0;background:transparent;text-align:left;font-family:Inter,sans-serif;font-size:15px;font-weight:500;color:#050309;cursor:pointer" style-hover="background:#F6F2EA">Report Amaka</button>
+          <button type="button" role="menuitem" sc-camel-on-click="{{ openBlock }}" style="min-height:48px;padding:12px 16px;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;text-align:left;font-family:Inter,sans-serif;font-size:15px;font-weight:500;color:#9B1348;cursor:pointer" style-hover="background:#F6F2EA">Block Amaka</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showReport }}">
+        <div role="dialog" aria-label="Report Amaka" style="position:absolute;top:58px;left:10px;right:10px;border-radius:16px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);box-shadow:0 18px 40px -20px rgba(5,3,9,0.6);padding:18px 0 8px;display:grid;gap:6px">
+          <div style="padding:0 16px 6px;display:grid;gap:4px">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#050309">Report Amaka</p>
+            <p style="margin:0;font-size:13.5px;line-height:1.5;color:#504E52">Amaka isn't told who reported her.</p>
+          </div>
+          <div style="display:grid">
+            <sc-for list="{{ categories }}" as="c" hint-placeholder-count="5">
+              <button type="button" sc-camel-on-click="{{ c.pick }}" style="min-height:52px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;text-align:left;font-family:Inter,sans-serif;font-size:15px;font-weight:500;color:#050309;cursor:pointer" style-hover="background:#F6F2EA">
+                <span>{{ c.label }}</span>
+                <span aria-hidden="true" style="flex-shrink:0;color:#828184;font-size:16px">›</span>
+              </button>
+            </sc-for>
+          </div>
+          <button type="button" sc-camel-on-click="{{ close }}" style="justify-self:center;min-height:44px;padding:10px 18px;border:0;background:transparent;font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#504E52;cursor:pointer" style-hover="color:#050309">Cancel</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showReported }}">
+        <div role="dialog" aria-label="Report sent" style="position:absolute;top:58px;left:10px;right:10px;border-radius:16px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);box-shadow:0 18px 40px -20px rgba(5,3,9,0.6);padding:20px 16px 16px;display:grid;gap:14px">
+          <div style="display:grid;gap:6px">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#050309">Thank you for telling us</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52;text-wrap:pretty">You reported: {{ reportedLabel }}. Our safety team reviews every report within 24 hours.</p>
+          </div>
+          <div style="display:grid;gap:8px">
+            <button type="button" sc-camel-on-click="{{ openBlock }}" style="min-height:48px;padding:12px 20px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#050309;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Block Amaka too</button>
+            <button type="button" sc-camel-on-click="{{ close }}" style="min-height:48px;padding:12px 20px;border:0;border-radius:12px;background:#FFB300;font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#001F1B;cursor:pointer" style-hover="background:#FFC94C">Done</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showBlock }}">
+        <div role="dialog" aria-label="Block Amaka" style="position:absolute;top:58px;left:10px;right:10px;border-radius:16px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);box-shadow:0 18px 40px -20px rgba(5,3,9,0.6);padding:20px 16px 16px;display:grid;gap:14px">
+          <div style="display:grid;gap:6px">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#050309">Block Amaka?</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52;text-wrap:pretty">You won't see each other on Toastly again. She isn't told.</p>
+          </div>
+          <div style="display:grid;gap:8px">
+            <button type="button" sc-camel-on-click="{{ doBlock }}" style="min-height:48px;padding:12px 20px;border:0;border-radius:12px;background:#9B1348;font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#FFFFFF;cursor:pointer" style-hover="background:#7D0F3A">Block</button>
+            <button type="button" sc-camel-on-click="{{ close }}" style="min-height:48px;padding:12px 20px;border:1px solid rgba(5,3,9,0.2);border-radius:12px;background:transparent;font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#050309;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Cancel</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showBlocked }}">
+        <div role="status" style="position:absolute;top:58px;left:10px;right:10px;border-radius:16px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);box-shadow:0 18px 40px -20px rgba(5,3,9,0.6);padding:20px 16px 16px;display:grid;gap:14px">
+          <div style="display:grid;gap:6px">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#050309">Amaka is blocked</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52;text-wrap:pretty">You can undo this from Safety kit.</p>
+          </div>
+          <button type="button" sc-camel-on-click="{{ close }}" style="min-height:48px;padding:12px 20px;border:0;border-radius:12px;background:#FFB300;font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#001F1B;cursor:pointer" style-hover="background:#FFC94C">Back to Today's six</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1100},&quot;photoCount&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;4&quot;,&quot;5&quot;,&quot;6&quot;],&quot;default&quot;:&quot;5&quot;,&quot;tsType&quot;:&quot;\&quot;4\&quot;|\&quot;5\&quot;|\&quot;6\&quot;&quot;}}">
+const IMG = n => (window.__resources && window.__resources[n]) || `assets/img/${n}.jpeg`;
+const PROMPTS = [
+  { prompt: "A Sunday that feels like me…", answer: "Jollof at my aunty's in Surulere, a long call with my brother in Leeds, then choir practice I pretend not to enjoy." },
+  { prompt: "The way to win me over is…", answer: "Remember the small thing I mentioned weeks ago. Bonus points if there's suya involved." },
+  { prompt: "I'm weirdly good at…", answer: "Haggling at Balogun market. My mum taught me and I've never lost." }
+];
+const ROWS = {
+  languages: ["Languages", "Igbo · English"],
+  tribe: ["Tribe", "Igbo"],
+  faith: ["Faith", "Christian · Pentecostal"],
+  profession: ["Profession", "Product manager", true],
+  education: ["Education", "BSc, University of Lagos"],
+  history: ["Relationship history", "Never married"],
+  genotype: ["Genotype", "AS"]
+};
+const STATES = [
+  ["A", "A · From Today's six", "Before matching. Relationship history and genotype aren't part of the profile yet, so they're absent."],
+  ["B", "B · Matched", "After a match, relationship history appears. Genotype appears only when Amaka has shared it with this viewer."],
+  ["C", "C · Most fields hidden", "Amaka shows only languages and faith. The details block is just those two rows."],
+  ["D", "D · Starter viewer", "Starter can't send text, so each answer offers a Gist instead, with the month's count beneath."],
+  ["E", "E · From a Gist invitation", "A Starter member opens the inviter's profile from the invitation. The full profile is visible; safety is never paywalled. Accept Gist and Not now stay fixed at the bottom. Their locked inbox is unaffected."]
+];
+const ORIGIN = { A: "Today's six", B: "Matched", C: "Today's six", D: "Today's six", E: "Gist invitation" };
+const CATEGORIES = ["These photos aren't them", "They're married", "They asked me for money", "Rude or threatening", "Something else"];
+class Component extends DCLogic {
+  state = { w: "390px", view: "A", id: true, geno: true, photo: 0, panel: null, reported: "" };
+  galleryRef = React.createRef();
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  goPhoto(i) {
+    const el = this.galleryRef.current;
+    if (el) el.scrollTo({ left: i * (el.clientWidth + 8), behavior: "smooth" });
+    this.setState({ photo: i });
+  }
+  renderVals() {
+    const s = this.state;
+    const count = Math.min(6, Math.max(4, parseInt(this.props.photoCount ?? 5, 10) || 5));
+    const keys = s.view === "C" ? ["languages", "faith"]
+      : s.view === "B" ? ["languages", "tribe", "faith", "profession", "education", "history"].concat(s.geno ? ["genotype"] : [])
+      : ["languages", "tribe", "faith", "profession", "education"];
+    const cur = STATES.find(x => x[0] === s.view);
+    const set = p => () => this.setState({ panel: p });
+    return {
+      frameW: s.w,
+      widths: [["390px", "390px"], ["320px", "320px"]].map(([v, l]) => this.chip(l, s.w === v, () => this.setState({ w: v }))),
+      states: STATES.map(([k, l]) => this.chip(l, s.view === k, () => this.setState({ view: k, panel: null }))),
+      toggles: [
+        Object.assign(this.chip(s.id ? "ID check done" : "No ID check", s.id, () => this.setState({ id: !s.id })), { pressed: String(s.id), op: "1" }),
+        Object.assign(this.chip(s.geno ? "Genotype shared" : "Genotype not shared", s.geno && s.view === "B", () => this.setState({ geno: !s.geno })), { pressed: String(s.geno), op: s.view === "B" ? "1" : "0.45" })
+      ],
+      stateNote: cur ? cur[2] : "",
+      origin: ORIGIN[s.view],
+      galleryRef: this.galleryRef,
+      onGalleryScroll: e => {
+        const el = e.currentTarget, i = Math.round(el.scrollLeft / (el.clientWidth + 8));
+        if (i !== this.state.photo) this.setState({ photo: i });
+      },
+      photos: Array.from({ length: count }, (_, i) => ({
+        isMain: i === 0, isSlot: i > 0, src: IMG("member-amaka"),
+        slotId: "full-profile-photo-" + (i + 1), placeholder: "Photo " + (i + 1) + " of " + count
+      })),
+      dots: Array.from({ length: count }, (_, i) => ({
+        go: () => this.goPhoto(i), aria: "Photo " + (i + 1) + " of " + count,
+        current: i === s.photo ? "true" : undefined,
+        w: i === s.photo ? "18px" : "7px", c: i === s.photo ? "#001F1B" : "#D9D9DA"
+      })),
+      idCheck: s.id,
+      sealSub: s.id ? "Photos match their selfie · ID checked" : "Photos match their selfie",
+      intent: "Something serious",
+      prompts: PROMPTS,
+      showPaid: s.view === "A" || s.view === "B" || s.view === "C", showStarter: s.view === "D",
+      isInvite: s.view === "E", notNow: () => {},
+      details: keys.map((k, i) => ({ label: ROWS[k][0], value: ROWS[k][1], verified: !!ROWS[k][2], rule: i ? "1px solid rgba(5,3,9,0.1)" : "0" })),
+      menuOpen: String(!!s.panel),
+      openMenu: () => this.setState({ panel: s.panel ? null : "menu" }),
+      openReport: set("report"), openBlock: set("block"),
+      doBlock: set("blocked"), close: set(null),
+      scrim: !!s.panel,
+      showMenu: s.panel === "menu", showReport: s.panel === "report", showReported: s.panel === "reported",
+      showBlock: s.panel === "block", showBlocked: s.panel === "blocked",
+      categories: CATEGORIES.map(c => ({ label: c, pick: () => this.setState({ panel: "reported", reported: c }) })),
+      reportedLabel: "“" + s.reported + "”"
+    };
+  }
+}
+</script>
+
+
+</body></html>
