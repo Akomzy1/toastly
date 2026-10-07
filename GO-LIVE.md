@@ -311,8 +311,8 @@ for.
 ### Production — each step only on the owner's go-ahead
 
 1. ~~Apply 0027, then 0028.~~ **Applied 7 October 2026** (owner's go-ahead), with `scripts/db/apply-migrations.mjs` after a backup (`backups/production-2026-10-07T18-26-51-699Z.dump`, 95 tables, 279 rows) passed its restore check. 0027 took 1.7 s, 0028 9.8 s. Checked after: every existing table's rows unchanged; new tables `residence_countries` (48), `match_config` (1), `country_changes` (0); internal functions closed to members, member functions open; text stored as UTF-8; the site, `/login` and `/pricing` answer 200 and `/feed` sends signed-out visitors to sign in. Until step 4, `main`'s profile form can't change a member's country (0027 moves that to settings, which arrives with `release-1`). Connection: Supabase's **session** pooler (the scripts switch a transaction-pooler string to it; the direct host is IPv6-only).
-2. Build `release-1` as a production deployment **without promoting it**
-   (staged production deploy; `main` stays live).
+2. ~~Build `release-1` as a production deployment without promoting it.~~
+   **Done 7 October 2026** (owner's go-ahead): Smile ID production values set in Vercel's Production environment first (`SMILE_ID_ENV`, `SMILE_ID_API_KEY`, `SMILE_ID_PARTNER_ID`, `SMILE_ID_CALLBACK_URL` = www; no `SMILE_ID_SANDBOX_TESTERS` anywhere); "Auto-assign Custom Production Domains" **turned off**; `release-1` at `fda8c03` built as production deployment `dpl_EQP6gDsRuPz5VrwmKFWSQp88hdK6` (`toastly-49w25ante-akomzy-ai.vercel.app`), ready in 62 s. Vercel's default `toastly-akomzy-ai.vercel.app` alias moved to it and was pointed back at `main`; `www.trytoastly.com` and `trytoastly.com` stayed on `main` (`dpl_5N7yKfEfG1TbgJbJnsXEJwdUtL62`, `278095c`) throughout. **After step 4, turn auto-assign back on.**
 3. **Backup first, then 0029 … 0034.** 0029 retires the hosted selfie, 0030
    requires consent to change religion, 0032/0033 stop members reading
    other members' rows — all break today's `main` — while `release-1` needs
