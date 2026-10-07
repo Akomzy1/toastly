@@ -262,9 +262,11 @@ them"; the Starter accept note "If the call happens, it counts as one of your
   - **(8) One shared report component on every report surface**:
     components/safety/report-reasons.tsx renders the whole of REPORT_REASONS
     (every report_reason value — these photos aren't them, they're married,
-    they asked me for money, rude or threatening, threats or pressure, scam
-    or fraud, not who they say they are, they seem underage, something
-    else). The full profile's report panel, the card / Gist / date report
+    they asked me for money, rude or insulting, threatening or pressuring
+    me, scam or fraud, not who they say they are, they seem underage,
+    something else). Labels only change; the database values stay
+    (harassment → "Rude or insulting"; threats_or_coercion → "Threatening or
+    pressuring me", whose reports go to the top of the review queue, 0034). The full profile's report panel, the card / Gist / date report
     form and the locked inbox all use it; no surface may offer a shorter
     list, and it takes no prop that could narrow it
     (scripts/report-surfaces.test.mjs). The card form and the locked inbox

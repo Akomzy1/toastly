@@ -176,7 +176,21 @@ member's `profiles` row directly gets nothing back (names fall back to
 "this member"). Spot suggestions read both members' city and country with
 the service key, after both said continue, to place the venue.
 
-## 0g. Staging, then the release — 0027, 0028, 0029
+**0034 — threat reports first** (decided 7 October 2026), `release-1`,
+after 0033. Reports filed as "Threatening or pressuring me"
+(`threats_or_coercion`, from any surface, blind reports included) are marked
+urgent and listed first in the review queue; waiting ones are moved up when
+it runs. Report labels changed only — database values are unchanged.
+
+## 0g. release-1 — the one release: staging, then production (0027 … 0034)
+
+Decided 7 October 2026: **`release-1` is the only thing that goes to staging,
+then production.** It combines, in dependency order, `country-age-two-way`
+(0027), `port-live-profile` (0028, 0029), `faith-denomination` (0030, 0031)
+and `full-profile-access` (0032, 0033), plus 0034 (threat reports first).
+Migrations 0027 … 0034 run as one clean sequence; code and migrations ship
+in the same release. `privacy-policy-update` is left out — it waits on the
+UK representative. The older branches are superseded by `release-1`.
 
 Decided 6 October 2026: **staging gates every merge.** A branch is merged
 only after its migrations have run cleanly on the staging Supabase project
@@ -190,8 +204,8 @@ also go in Vercel → Environment Variables → **Preview**):
 
 1. In the staging dashboard, enable the `pg_cron` extension. Vault needs
    nothing — 0014 and 0016 create their keys on first run.
-2. Apply `supabase/migrations/0001` … `0029` in order to staging.
-3. Deploy the branch as a Vercel preview pointed at staging, with Smile ID
+2. Apply `supabase/migrations/0001` … `0034` in order to staging.
+3. Deploy `release-1` as a Vercel preview pointed at staging, with Smile ID
    **sandbox** keys and `SMILE_ID_CALLBACK_URL` = the preview's
    `/api/smile-id/callback`. If previews are behind Vercel login, the
    callback can't arrive: turn protection off for Preview or use a bypass
@@ -217,11 +231,19 @@ also go in Vercel → Environment Variables → **Preview**):
 
 **Production, in this order — each step only on the owner's go-ahead:**
 
-1. Apply 0027, then 0028 (they don't depend on the photo screens).
-2. Merge `country-age-two-way` and `port-live-profile` into `main`; Vercel
-   deploys the photo screens.
-3. **Straight after that deploy is live**, apply 0029. Never before.
-4. Retire the old `live-profile-and-prompt-14` branch.
+1. Apply 0027, then 0028 (additive; today's `main` keeps working on them).
+2. 0029 … 0034 must meet their code: 0029 retires the hosted selfie, 0030
+   requires consent to change religion, 0032/0033 stop members reading
+   other members' rows — all break today's `main` — while `release-1`
+   needs 0029 … 0034 (profile_for, member_filters, …) or its names and
+   cards come back empty. So: build `release-1` as a production deployment
+   **without promoting it** (Vercel: staged production deploy), apply 0029,
+   0030, 0031, 0032, 0033, 0034 in order, then promote it at once and merge
+   `release-1` into `main`. The window is the seconds between the last
+   migration and the promotion. Never apply 0029 … 0034 with `main`'s
+   current code live for longer than that.
+3. Retire `country-age-two-way`, `port-live-profile`, `faith-denomination`,
+   `full-profile-access` and the old `live-profile-and-prompt-14`.
 
 ---
 

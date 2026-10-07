@@ -16,6 +16,8 @@ export type QueueRow = {
   created_at: string;
   stage: string;
   assigned_name: string | null;
+  /** A "Threatening or pressuring me" report (0034): listed first. */
+  urgent?: boolean;
 };
 
 const STATUSES: [string, string][] = [
@@ -50,7 +52,12 @@ export function QueueView({
   const pool = rows.filter(byStatus);
   const list = pool
     .filter((r) => type === "all" || r.kind === type)
-    .sort((a, b) => (sort === "oldest" ? 1 : -1) * (Date.parse(a.created_at) - Date.parse(b.created_at)));
+    // Threat reports first, whichever way the rest is sorted (decided 7 October 2026).
+    .sort(
+      (a, b) =>
+        Number(!!b.urgent) - Number(!!a.urgent) ||
+        (sort === "oldest" ? 1 : -1) * (Date.parse(a.created_at) - Date.parse(b.created_at)),
+    );
   const href = (s: string, t: string, o: string) => `${base}?${new URLSearchParams({ status: s, type: t, sort: o })}`;
   const statusLabel = STATUSES.find(([k]) => k === status)?.[1] ?? "Open";
 

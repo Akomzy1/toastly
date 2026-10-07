@@ -50,8 +50,12 @@ const enumInDb = () => {
 test("the list is every reason the database knows, including the ones every surface must offer", () => {
   const ts = reasonsInTs();
   assert.deepEqual(ts.map((r) => r.value).sort(), enumInDb().sort(), "REPORT_REASONS = the report_reason enum, no more, no less");
+  // The labels decided 7 October 2026, on the database values they file as.
+  const byValue = Object.fromEntries(ts.map((r) => [r.value, r.label]));
+  assert.equal(byValue.harassment, "Rude or insulting");
+  assert.equal(byValue.threats_or_coercion, "Threatening or pressuring me");
   const labels = ts.map((r) => r.label.toLowerCase());
-  for (const must of ["underage", "scam", "not who they say they are", "these photos aren't them", "they're married", "rude or threatening"]) {
+  for (const must of ["underage", "scam", "not who they say they are", "these photos aren't them", "they're married", "rude or insulting", "threatening or pressuring me"]) {
     assert.ok(labels.some((l) => l.includes(must)), `the list offers "${must}"`);
   }
 });

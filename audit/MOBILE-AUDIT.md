@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-06 10:43 UTC against `http://localhost:3217`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
+Run 2026-10-07 15:58 UTC against `http://localhost:3007`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -21,7 +21,7 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/diaspora` | 320 | pass | pass | pass | pass | `mobile\diaspora-320.png` |
 | `/diaspora` | 360 | pass | pass | pass | pass | `mobile\diaspora-360.png` |
 | `/stories` | 320 | pass | pass | pass | pass | `mobile\stories-320.png` |
-| `/stories` | 360 | pass | pass | pass | **FAIL** (a request hung) | `mobile\stories-360.png` |
+| `/stories` | 360 | pass | pass | pass | pass | `mobile\stories-360.png` |
 | `/privacy` | 320 | pass | pass | pass | pass | `mobile\privacy-320.png` |
 | `/privacy` | 360 | pass | pass | pass | pass | `mobile\privacy-360.png` |
 | `/signup` | 320 | pass | pass | pass | pass | `mobile\signup-320.png` |
@@ -72,6 +72,64 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/nav/gists` | 360 | pass | pass | pass | pass | `mobile\audit-nav-gists-360.png` |
 | `/audit/nav/profile` | 320 | pass | pass | pass | pass | `mobile\audit-nav-profile-320.png` |
 | `/audit/nav/profile` | 360 | pass | pass | pass | pass | `mobile\audit-nav-profile-360.png` |
+| `/audit/report/card` | 320 | pass | pass | pass | pass | `mobile\audit-report-card-320.png` |
+| `/audit/report/card` | 360 | pass | pass | pass | pass | `mobile\audit-report-card-360.png` |
+| `/audit/report/plain` | 320 | pass | pass | pass | pass | `mobile\audit-report-plain-320.png` |
+| `/audit/report/plain` | 360 | pass | pass | pass | pass | `mobile\audit-report-plain-360.png` |
+| `/audit/full-profile/six` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-six-320.png` |
+| `/audit/full-profile/six` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-six-360.png` |
+| `/audit/full-profile/matched` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-matched-320.png` |
+| `/audit/full-profile/matched` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-matched-360.png` |
+| `/audit/full-profile/hidden` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-hidden-320.png` |
+| `/audit/full-profile/hidden` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-hidden-360.png` |
+| `/audit/full-profile/starter` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-starter-320.png` |
+| `/audit/full-profile/starter` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-starter-360.png` |
+| `/audit/full-profile/invite` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-invite-320.png` |
+| `/audit/full-profile/invite` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-invite-360.png` |
+| `/audit/full-profile/id-checked` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-id-checked-320.png` |
+| `/audit/full-profile/id-checked` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-id-checked-360.png` |
+| `/audit/full-profile/no-photos` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-no-photos-320.png` |
+| `/audit/full-profile/no-photos` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-no-photos-360.png` |
+| `/audit/full-profile/menu` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-menu-320.png` |
+| `/audit/full-profile/menu` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-menu-360.png` |
+| `/audit/full-profile/report` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-report-320.png` |
+| `/audit/full-profile/report` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-report-360.png` |
+| `/audit/full-profile/reported` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-reported-320.png` |
+| `/audit/full-profile/reported` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-reported-360.png` |
+| `/audit/full-profile/block` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-block-320.png` |
+| `/audit/full-profile/block` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-block-360.png` |
+| `/audit/full-profile/blocked` | 320 | pass | pass | pass | pass | `mobile\audit-full-profile-blocked-320.png` |
+| `/audit/full-profile/blocked` | 360 | pass | pass | pass | pass | `mobile\audit-full-profile-blocked-360.png` |
+| `/audit/profile-faith/empty` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-empty-320.png` |
+| `/audit/profile-faith/empty` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-empty-360.png` |
+| `/audit/profile-faith/sheet` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-sheet-320.png` |
+| `/audit/profile-faith/sheet` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-sheet-360.png` |
+| `/audit/profile-faith/christian` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-christian-320.png` |
+| `/audit/profile-faith/christian` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-christian-360.png` |
+| `/audit/profile-faith/muslim` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-muslim-320.png` |
+| `/audit/profile-faith/muslim` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-muslim-360.png` |
+| `/audit/profile-faith/traditional` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-traditional-320.png` |
+| `/audit/profile-faith/traditional` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-traditional-360.png` |
+| `/audit/profile-faith/other` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-other-320.png` |
+| `/audit/profile-faith/other` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-other-360.png` |
+| `/audit/profile-faith/hidden` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-hidden-320.png` |
+| `/audit/profile-faith/hidden` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-hidden-360.png` |
+| `/audit/profile-faith/religion-open` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-religion-open-320.png` |
+| `/audit/profile-faith/religion-open` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-religion-open-360.png` |
+| `/audit/profile-faith/denomination-open` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-denomination-open-320.png` |
+| `/audit/profile-faith/denomination-open` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-denomination-open-360.png` |
+| `/audit/profile-faith/legacy` | 320 | pass | pass | pass | pass | `mobile\audit-profile-faith-legacy-320.png` |
+| `/audit/profile-faith/legacy` | 360 | pass | pass | pass | pass | `mobile\audit-profile-faith-legacy-360.png` |
+| `/audit/filters/any` | 320 | pass | pass | pass | pass | `mobile\audit-filters-any-320.png` |
+| `/audit/filters/any` | 360 | pass | pass | pass | pass | `mobile\audit-filters-any-360.png` |
+| `/audit/filters/christian` | 320 | pass | pass | pass | pass | `mobile\audit-filters-christian-320.png` |
+| `/audit/filters/christian` | 360 | pass | pass | pass | pass | `mobile\audit-filters-christian-360.png` |
+| `/audit/filters/religion-open` | 320 | pass | pass | pass | pass | `mobile\audit-filters-religion-open-320.png` |
+| `/audit/filters/religion-open` | 360 | pass | pass | pass | pass | `mobile\audit-filters-religion-open-360.png` |
+| `/audit/filters/tribe-open` | 320 | pass | pass | pass | pass | `mobile\audit-filters-tribe-open-320.png` |
+| `/audit/filters/tribe-open` | 360 | pass | pass | pass | pass | `mobile\audit-filters-tribe-open-360.png` |
+| `/audit/filters/locked` | 320 | pass | pass | pass | pass | `mobile\audit-filters-locked-320.png` |
+| `/audit/filters/locked` | 360 | pass | pass | pass | pass | `mobile\audit-filters-locked-360.png` |
 | `/audit/gist-invite/reply-starter` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-starter-320.png` |
 | `/audit/gist-invite/reply-starter` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-starter-360.png` |
 | `/audit/gist-invite/reply-paid` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-paid-320.png` |
@@ -274,6 +332,8 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/verify/reverify` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-360.png` |
 | `/audit/verify/reverify-checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-checking-320.png` |
 | `/audit/verify/reverify-checking` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-checking-360.png` |
+| `/audit/verify/reverify-with-id` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-with-id-320.png` |
+| `/audit/verify/reverify-with-id` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-with-id-360.png` |
 | `/audit/verify/reverify-retry` | 320 | pass | pass | pass | pass | `mobile\audit-verify-reverify-retry-320.png` |
 | `/audit/verify/reverify-retry` | 360 | pass | pass | pass | pass | `mobile\audit-verify-reverify-retry-360.png` |
 | `/audit/verify/checking` | 320 | pass | pass | pass | pass | `mobile\audit-verify-checking-320.png` |
@@ -309,5 +369,4 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 
 ## Failures
 
-### `/stories` at 360px
-- **Network never idle:** a request stayed pending past 20s — measured after `load` + 2s instead. Usually a prefetch of a route that doesn't exist; check the page's links.
+None.

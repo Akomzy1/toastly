@@ -274,3 +274,34 @@ test("diaspora-to-diaspora stays a Diaspora-plan feature: others abroad match ba
   assert.ok(!feed.rows.some((r) => r.candidate_id === peer), "a free member abroad doesn't get the diaspora pool");
   assert.equal((await as(db, free, (tx) => tx.query("select pool_restriction($1) as r", [free]))).rows[0].r, "tier");
 });
+
+// --- "Threatening or pressuring me" goes first (0034) ------------------------
+
+test("a 'Threatening or pressuring me' report goes to the top of the queue, from any surface", async () => {
+  const reporter = await member("Threat Reporter");
+  const older = await member("Rude Member");
+  const threat = await member("Threatening Member");
+  await report(reporter, older, "harassment");
+  await db.query("update reports set created_at = now() - interval '2 days' where reported_id = $1", [older]);
+  await db.query("update review_items set created_at = now() - interval '2 days' where subject_id = $1", [older]);
+  await report(reporter, threat, "threats_or_coercion");
+
+  const queue = (await asStaff("select kind, urgent, reason from staff_queue('open')")).rows;
+  assert.equal(queue[0].urgent, true, "the threat report is first, though it's the newest");
+  assert.equal((await db.query("select urgent from review_items where subject_id = $1", [threat])).rows[0].urgent, true);
+  assert.equal((await db.query("select urgent from review_items where subject_id = $1", [older])).rows[0].urgent, false, "other reasons keep their place");
+  const ids = (await asStaff("select id from staff_queue('open')")).rows.map((r) => r.id);
+  assert.equal(ids.indexOf(await itemFor(threat, "report")) < ids.indexOf(await itemFor(older, "report")), true);
+
+  // From the locked inbox too (a blind report, no sender named to the reporter).
+  const starter = await member("Locked Inbox Reader");
+  const sender = await member("Locked Sender");
+  const t = await thread(sender, starter);
+  await db.query("delete from entitlements where profile_id = $1", [starter]);
+  await db.query("insert into messages (thread_id, sender_id, body) values ($1, $2, 'Reply now or else')", [t, sender]);
+  await as(db, starter, (tx) => tx.query("select blind_report_locked('threats_or_coercion', null)"));
+  assert.equal((await db.query("select urgent from review_items where subject_id = $1 and kind = 'blind_report'", [sender])).rows[0].urgent, true);
+
+  // Members never see the queue, urgent or not.
+  await assert.rejects(as(db, reporter, (tx) => tx.query("select * from staff_queue('open')")));
+});

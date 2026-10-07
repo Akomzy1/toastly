@@ -56,8 +56,9 @@ export const REPORT_REASONS = [
   { value: "photos_not_them", label: "These photos aren't them" },
   { value: "user_is_married", label: "They're married" },
   { value: "asked_for_money", label: "They asked me for money" },
-  { value: "harassment", label: "Rude or threatening" },
-  { value: "threats_or_coercion", label: "Threats or pressure" },
+  { value: "harassment", label: "Rude or insulting" },
+  // Goes to the top of the review queue (0034).
+  { value: "threats_or_coercion", label: "Threatening or pressuring me" },
   { value: "scam_or_fraud", label: "Scam or fraud" },
   { value: "fake_profile", label: "Not who they say they are" },
   { value: "underage", label: "They seem underage" },

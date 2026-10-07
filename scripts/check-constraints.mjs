@@ -1661,6 +1661,15 @@ check("a text reply opens its sender's profile only for a member who can read it
   return /r\.kind = 'gist_invite' or can_read_inbox\(p_viewer\)/.test(leg) ? false : "a text reply opens its sender's profile on Starter";
 });
 
+// "Threatening or pressuring me" reports go first (decided 7 October 2026;
+// 0034): the database lists them first, and the console's own sort, oldest or
+// newest, keeps them there.
+check("threat reports stay at the top of the review queue", (s, f) => {
+  if (!/components\/staff\/queue-view\.tsx$/.test(norm(f))) return false;
+  const sort = (s.match(/\.sort\(([\s\S]*?)\);/) ?? [])[1] ?? "";
+  return /Number\(!!b\.urgent\) - Number\(!!a\.urgent\)\s*\|\|/.test(sort) ? false : "the console's sort doesn't put urgent cases first";
+});
+
 // No "who viewed you", in any form: no table, column, event or copy for it.
 check("no profile view is recorded — no 'who viewed you'", (s) =>
   /profile_views?\b|viewed_(by|you|me|at)\b|who.?viewed|profile_viewed|views_count/i.test(s),
