@@ -19,7 +19,9 @@ export function pg(tool) {
 
 /** Run a tool; returns { code, stdout, stderr }. Secrets in args are never echoed. */
 export function run(tool, args, { input, env, allowFail = false } = {}) {
-  const r = spawnSync(pg(tool), args, { input, env: { ...process.env, ...env }, encoding: "utf8", maxBuffer: 1 << 28 });
+  // UTF8 always: on Windows psql otherwise talks in the console's code page,
+  // and a migration's em dashes would be stored as mojibake in function text.
+  const r = spawnSync(pg(tool), args, { input, env: { ...process.env, PGCLIENTENCODING: "UTF8", ...env }, encoding: "utf8", maxBuffer: 1 << 28 });
   if (r.error) throw new Error(`${tool}: ${r.error.message}`);
   if (r.status !== 0 && !allowFail) {
     throw new Error(`${tool} exited ${r.status}: ${redact(r.stderr).slice(0, 2000)}`);
