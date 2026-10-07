@@ -310,7 +310,7 @@ for.
 
 ### Production — each step only on the owner's go-ahead
 
-1. Apply 0027, then 0028 (additive; today's `main` keeps working on them).
+1. ~~Apply 0027, then 0028.~~ **Applied 7 October 2026** (owner's go-ahead), with `scripts/db/apply-migrations.mjs` after a backup (`backups/production-2026-10-07T18-26-51-699Z.dump`, 95 tables, 279 rows) passed its restore check. 0027 took 1.7 s, 0028 9.8 s. Checked after: every existing table's rows unchanged; new tables `residence_countries` (48), `match_config` (1), `country_changes` (0); internal functions closed to members, member functions open; text stored as UTF-8; the site, `/login` and `/pricing` answer 200 and `/feed` sends signed-out visitors to sign in. Until step 4, `main`'s profile form can't change a member's country (0027 moves that to settings, which arrives with `release-1`). Connection: Supabase's **session** pooler (the scripts switch a transaction-pooler string to it; the direct host is IPv6-only).
 2. Build `release-1` as a production deployment **without promoting it**
    (staged production deploy; `main` stays live).
 3. **Backup first, then 0029 … 0034.** 0029 retires the hosted selfie, 0030

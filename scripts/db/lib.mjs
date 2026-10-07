@@ -51,6 +51,16 @@ export function readEnv(file) {
 export function dbUrlFrom(file, name = "SUPABASE_DB_URL") {
   const v = readEnv(file)[name];
   if (!v) throw new Error(`${name} is empty in ${file} — paste the database connection string (Supabase → Connect → Session pooler or Direct).`);
+  if (!/^postgres(ql)?:\/\//.test(v)) throw new Error(`${name} in ${file} isn't a postgresql:// connection string (Supabase → Connect → Session pooler).`);
+  // Supabase's transaction pooler (port 6543, ?pgbouncer=true) can't run
+  // pg_dump or migrations; its session pooler is the same host on 5432.
+  const u = new URL(v);
+  if (/\.pooler\.supabase\.com$/.test(u.hostname) && u.port === "6543") {
+    u.port = "5432";
+    u.searchParams.delete("pgbouncer");
+    console.log("note: using Supabase's session pooler (port 5432) instead of the transaction pooler (6543)");
+    return u.toString();
+  }
   return v;
 }
 
