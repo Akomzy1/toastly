@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { findPublicVenues, placesConfigured } from "@/lib/places";
 import { notLiveError, requireLiveProfile } from "@/lib/live-profile";
 
@@ -62,7 +63,12 @@ export async function suggestSpots(
     .single();
   if (!session) return { error: "That session doesn't exist." };
 
-  const { data: people } = await supabase
+  // Both members' city and country, only to place the venue — read by the
+  // server, never by either member's session (0033), and only after both
+  // said continue (checked above). Neither is shown or stored.
+  const admin = createAdminClient();
+  if (!admin) return { error: "Spot suggestions aren't available right now. Agree somewhere public between you." };
+  const { data: people } = await admin
     .from("profiles")
     .select("id, city, country_code")
     .in("id", [session.proposer_id, session.invitee_id]);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMemberProfile } from "@/lib/member-profile";
 import { ScreenBand } from "@/components/app/screen-band";
 import { SafetyActions } from "@/components/safety/safety-actions";
 import { DateView, type DateViewProps } from "@/components/dates/date-view";
@@ -42,8 +43,9 @@ export default async function DatePage({ params }: { params: { id: string } }) {
 
   const iAmA = d.member_a === user.id;
   const otherId = iAmA ? d.member_b : d.member_a;
-  const [{ data: other }, { data: me }] = await Promise.all([
-    supabase.from("profiles").select("display_name").eq("id", otherId).maybeSingle(),
+  // The other member only through profile_for (0033).
+  const [other, { data: me }] = await Promise.all([
+    getMemberProfile(supabase, otherId),
     supabase.from("profiles").select("time_zone").eq("id", user.id).maybeSingle(),
   ]);
   const otherName = other?.display_name ?? "this member";

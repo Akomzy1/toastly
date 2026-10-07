@@ -164,6 +164,18 @@ a profile the caller can open), `i_am_matched_with`, and relationship
 history now needs the access rule too, with "on match" counting only a
 match the viewer can see.
 
+**0033 — fields for the viewer** (decided 7 October 2026), same branch,
+after 0032. **Not applied anywhere; staging first, and nothing until
+`.env.staging.local` is filled.** `profile_for(owner)` is the only read of
+another member: it returns just the fields the owner shows this viewer.
+Drops every policy that let a member select another member's row in
+`profiles`, `profile_history` or `profile_photos` (each member keeps their
+own). Genotype "all matches" now uses the viewer's match. **0033 and its
+code must ship together**: after 0033, any code still reading another
+member's `profiles` row directly gets nothing back (names fall back to
+"this member"). Spot suggestions read both members' city and country with
+the service key, after both said continue, to place the venue.
+
 ## 0g. Staging, then the release — 0027, 0028, 0029
 
 Decided 6 October 2026: **staging gates every merge.** A branch is merged

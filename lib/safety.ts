@@ -39,7 +39,12 @@ export const PHOTO_REVEAL_OPTIONS: {
 // ---------------------------------------------------------------------------
 
 /**
- * Report reasons, mirroring the report_reason enum.
+ * Report reasons — every value of the report_reason enum, in the order the
+ * full-profile prototype starts with, then the rest.
+ *
+ * The whole list, on every report surface (decided 7 October 2026): only
+ * components/safety/report-reasons.tsx renders it, and no surface may offer
+ * a shorter one (scripts/report-surfaces.test.mjs).
  *
  * "They're married" is a first-class reason, not buried under "Something
  * else" (PRD §5.2.1). Its wording never suggests Toastly verifies marital
@@ -47,14 +52,14 @@ export const PHOTO_REVEAL_OPTIONS: {
  * IS verifiable.
  */
 export const REPORT_REASONS = [
-  { value: "scam_or_fraud", label: "Scam or fraud" },
-  { value: "asked_for_money", label: "Asked me for money" },
-  { value: "threats_or_coercion", label: "Threats or pressure" },
-  { value: "harassment", label: "Harassment" },
-  { value: "fake_profile", label: "Not who they say they are" },
   // A first-class category (CLAUDE.md, PRD §5.1.2; 0029).
   { value: "photos_not_them", label: "These photos aren't them" },
   { value: "user_is_married", label: "They're married" },
+  { value: "asked_for_money", label: "They asked me for money" },
+  { value: "harassment", label: "Rude or threatening" },
+  { value: "threats_or_coercion", label: "Threats or pressure" },
+  { value: "scam_or_fraud", label: "Scam or fraud" },
+  { value: "fake_profile", label: "Not who they say they are" },
   { value: "underage", label: "They seem underage" },
   { value: "other", label: "Something else" },
 ] as const;

@@ -71,6 +71,8 @@ const ROUTES = [
   { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },
   { route: "/audit/nav/gists", label: "Nav · gists" },
   { route: "/audit/nav/profile", label: "Nav · profile" },
+  { route: "/audit/report/card", label: "Report list · card" },
+  { route: "/audit/report/plain", label: "Report list · Gist screen" },
   { route: "/audit/full-profile/six", label: "Full profile · six" },
   { route: "/audit/full-profile/matched", label: "Full profile · matched" },
   { route: "/audit/full-profile/hidden", label: "Full profile · hidden" },

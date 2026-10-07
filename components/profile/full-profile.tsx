@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { reportMember, blockMember } from "@/lib/safety-actions";
 import { respondToInvite } from "@/app/(app)/gist/actions";
 import { Notice } from "@/components/ui/notice";
+import { SafetyPill } from "@/components/app/nav";
+import { ReportReasons } from "@/components/safety/report-reasons";
 import { originSub, type FullProfileView } from "@/lib/full-profile-view";
 
 /**
@@ -21,14 +23,6 @@ import { originSub, type FullProfileView } from "@/lib/full-profile-view";
 
 type Panel = null | "menu" | "report" | "reported" | "block" | "blocked";
 
-// The prototype's five categories, onto the report reasons (lib/safety.ts).
-const CATEGORIES = [
-  { label: "These photos aren't them", reason: "photos_not_them" },
-  { label: "They're married", reason: "user_is_married" },
-  { label: "They asked me for money", reason: "asked_for_money" },
-  { label: "Rude or threatening", reason: "harassment" },
-  { label: "Something else", reason: "other" },
-] as const;
 
 const OUTLINE =
   "flex min-h-11 items-center justify-center gap-2 rounded-md border border-ink-900/20 bg-transparent px-3.5 py-2.5 text-[14px] font-semibold text-ink-900 no-underline transition-colors hover:border-green-500 hover:bg-green-50 hover:text-ink-900";
@@ -156,9 +150,12 @@ export function FullProfile({
           ‹
         </Link>
         <div className="grid min-w-0 flex-1 gap-0.5">
-          <h1 className="m-0 truncate font-serif text-[19px] font-bold text-white">{first}&rsquo;s profile</h1>
+          <h1 className="m-0 break-words font-serif text-[19px] font-bold leading-tight text-white">{first}&rsquo;s profile</h1>
           <p className="m-0 text-[13px] text-white/[.66]">{originSub(view.origin)}</p>
         </div>
+        {/* The Safety pill sits in the band on every in-app screen (decided
+            7 October 2026); Report and Block stay in the ⋯ menu. */}
+        <SafetyPill />
         <button
           type="button"
           onClick={() => setPanel(panel ? null : "menu")}
@@ -219,7 +216,13 @@ export function FullProfile({
               </div>
             ) : null}
           </div>
-        ) : null}
+        ) : (
+          // A live profile always has photos; none here means the owner's
+          // reveal choice doesn't include this viewer yet (decided 7 October 2026).
+          <p className="m-0 rounded-xl border border-ink-900/[.12] bg-white px-4 py-3.5 text-[14.5px] text-grey-600">
+            Photos appear once you match.
+          </p>
+        )}
 
         <div className="grid gap-3.5 px-0.5">
           <div className="grid gap-1">
@@ -331,26 +334,14 @@ export function FullProfile({
       ) : null}
 
       {panel === "report" ? (
-        <div role="dialog" aria-label={`Report ${first}`} className={`${PANEL} gap-1.5 pb-2 pt-[18px]`}>
+        <div role="dialog" aria-label={`Report ${first}`} className={`${PANEL} max-h-[calc(100dvh-74px)] gap-1.5 overflow-y-auto pb-2 pt-[18px]`}>
           <div className="grid gap-1 px-4 pb-1.5">
             <p className="m-0 font-serif text-[19px] font-bold text-ink-900">Report {first}</p>
             <p className="m-0 text-[13.5px] leading-normal text-grey-600">{first} isn&rsquo;t told who reported them.</p>
           </div>
           {error ? <div className="px-4"><Notice tone="error">{error}</Notice></div> : null}
-          <div className="grid">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.reason}
-                type="button"
-                disabled={busy}
-                onClick={() => report(c.label, c.reason)}
-                className="flex min-h-[52px] items-center justify-between gap-3 border-0 border-t border-ink-900/10 bg-transparent px-4 py-3 text-left text-[15px] font-medium text-ink-900 hover:bg-paper"
-              >
-                <span>{c.label}</span>
-                <span aria-hidden="true" className="flex-shrink-0 text-[16px] text-grey-400">›</span>
-              </button>
-            ))}
-          </div>
+          {/* The whole list, the same on every report surface (decided 7 October 2026). */}
+          <ReportReasons disabled={busy} onPick={(reason, label) => report(label, reason)} />
           <button type="button" onClick={close} className="min-h-11 justify-self-center border-0 bg-transparent px-[18px] py-2.5 text-[14px] font-semibold text-grey-600 hover:text-ink-900">
             Cancel
           </button>
@@ -381,7 +372,7 @@ export function FullProfile({
           <div className="grid gap-1.5">
             <p className="m-0 font-serif text-[19px] font-bold text-ink-900">Block {first}?</p>
             <p className="m-0 text-[14px] leading-[1.6] text-grey-600 [text-wrap:pretty]">
-              You won&rsquo;t see each other on Toastly again. {first} isn&rsquo;t told.
+              You won&rsquo;t see each other again. This can&rsquo;t be undone.
             </p>
           </div>
           {error ? <Notice tone="error">{error}</Notice> : null}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMemberProfile } from "@/lib/member-profile";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { SafetyActions } from "@/components/safety/safety-actions";
@@ -96,11 +97,8 @@ export default async function GistSessionPage({
 
   // The other participant, for the report and block action below.
   const otherId: string = isProposer ? session.invitee_id : session.proposer_id;
-  const { data: other } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("id", otherId)
-    .maybeSingle();
+  // Only through profile_for (0033); null when the profile can't be opened.
+  const other = await getMemberProfile(supabase, otherId);
   const otherName = other?.display_name ?? "this member";
 
   // Null unless both have chosen to share with each other (0014).
@@ -153,7 +151,7 @@ export default async function GistSessionPage({
   const status = ctx.effectiveStatus;
   // Their full profile, when the access rule allows it (0032) — always for an
   // invitation received, on every plan, before accepting.
-  const { data: canOpen } = await supabase.rpc("can_open_profile", { p_owner: otherId });
+  const canOpen = other !== null;
   const safety = (
     <div className="mx-auto grid w-full max-w-[680px] gap-3 px-3.5 pb-8">
       {canOpen === true ? (

@@ -42,9 +42,10 @@ export function BlockButton({ memberId, name }: { memberId: string; name: string
   return (
     <form action={action} className="grid gap-3">
       <input type="hidden" name="blocked_id" value={memberId} />
+      {/* Block is permanent (decided 7 October 2026) — the same words as the
+          full profile's confirm sheet. */}
       <p className="text-ui text-ink-900">
-        Block {name}? You won&rsquo;t see each other again and they can&rsquo;t
-        contact you. They aren&rsquo;t told.
+        Block {name}? You won&rsquo;t see each other again. This can&rsquo;t be undone.
       </p>
       {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
       <div className="flex flex-wrap items-center gap-4">

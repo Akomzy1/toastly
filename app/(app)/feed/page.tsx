@@ -14,9 +14,9 @@ import { DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
 import { tooFewLine } from "@/lib/filters";
 import {
   isVerifiedReal,
-  type Profile,
   type Tier,
 } from "@/lib/types/profile";
+import { getMemberProfiles, type MemberProfile } from "@/lib/member-profile";
 import { requireLiveProfile } from "@/lib/live-profile";
 import { ProfileNotLive } from "@/components/app/profile-not-live";
 
@@ -25,18 +25,19 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Which optional fields this candidate chose to show publicly. */
-function visibleTags(p: Partial<Profile>): string[] {
+/**
+ * The optional fields on the card: only what profile_for (0033) returned —
+ * the fields this candidate shows this viewer; anything hidden never arrives.
+ */
+function visibleTags(p: MemberProfile | undefined): string[] {
+  if (!p) return [];
   const out: string[] = [];
-  if (p.tribe && p.tribe_visibility === "public") out.push(p.tribe);
-  // Religion (and denomination) are never on the feed card — the full
-  // profile only (PRD §5.2.3; decided 6 October 2026).
-  if (p.languages?.length && p.languages_visibility === "public") {
-    out.push(...p.languages);
-  }
-  if (p.profession && p.profession_visibility === "public") out.push(p.profession);
-  // Relationship history is deliberately absent: it defaults to on_match and
-  // is never shown on a feed card by default (CLAUDE.md).
+  if (p.tribe) out.push(p.tribe);
+  // Faith is never on the feed card — the full profile only (PRD §5.2.3;
+  // decided 6 October 2026).
+  if (p.languages?.length) out.push(...p.languages);
+  if (p.profession) out.push(p.profession);
+  // Relationship history is deliberately absent: never on a feed card (CLAUDE.md).
   return out;
 }
 
@@ -93,14 +94,8 @@ export default async function FeedPage() {
 
   const ids = (feed ?? []).map((f: { candidate_id: string }) => f.candidate_id);
 
-  const { data: candidates } = ids.length
-    ? await supabase
-        .from("profiles")
-        .select(
-          "id, display_name, city, stage, tribe, languages, profession, tribe_visibility, languages_visibility, profession_visibility",
-        )
-        .in("id", ids)
-    : { data: [] };
+  // Another member is read only through profile_for (0033).
+  const candidates = await getMemberProfiles(supabase, ids);
 
   const { data: answers } = ids.length
     ? await supabase
@@ -116,7 +111,7 @@ export default async function FeedPage() {
 
   const cards: FeedCandidate[] = (feed ?? []).map(
     (f: { candidate_id: string }) => {
-      const c = (candidates ?? []).find((x) => x.id === f.candidate_id);
+      const c = candidates[f.candidate_id];
       return {
         id: f.candidate_id,
         display_name: c?.display_name ?? "Member",
@@ -130,7 +125,7 @@ export default async function FeedPage() {
               (a.prompts as unknown as { text: string } | null)?.text ?? "Prompt",
             answer: a.answer,
           })),
-        tags: visibleTags(c ?? {}),
+        tags: visibleTags(c),
         genotype: sharedGenotypes[f.candidate_id] ?? null,
       };
     },

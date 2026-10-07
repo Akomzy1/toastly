@@ -25,18 +25,25 @@ async function setup() {
   }
   const answerOf = async (id) => (await db.query("select id from prompt_answers where profile_id = $1", [id])).rows[0].id;
 
+  /** Another member's profile as profile_for() gives it to this viewer (0033), or null. */
+  const profileFor = async (viewer, owner) => (await me(viewer, "select profile_for($1) as p", [owner])).rows[0].p;
+
   /** Everything a full profile carries, as the viewer would get it. */
   async function opens(viewer, owner) {
-    const [can, row, answers, photos] = await Promise.all([
-      me(viewer, "select can_open_profile($1) as ok", [owner]),
-      me(viewer, "select id, display_name from profiles where id = $1", [owner]),
-      me(viewer, "select id from prompt_answers where profile_id = $1", [owner]),
-      me(viewer, "select id from profile_photos where profile_id = $1", [owner]),
-    ].map((p) => p.then((r) => r.rows)));
-    const sees = { can: can[0].ok, row: row.length > 0, answers: answers.length > 0, photos: photos.length > 0 };
-    // The rule and every table it governs must agree.
-    if (sees.can) assert.ok(sees.row && sees.answers, "an openable profile returns its row and answers");
-    else assert.deepEqual(sees, { can: false, row: false, answers: false, photos: false }, "a closed profile returns nothing at all");
+    const [can, prof, answers, row, photos, history] = await Promise.all([
+      me(viewer, "select can_open_profile($1) as ok", [owner]).then((r) => r.rows[0].ok),
+      profileFor(viewer, owner),
+      me(viewer, "select id from prompt_answers where profile_id = $1", [owner]).then((r) => r.rows),
+      me(viewer, "select id from profiles where id = $1", [owner]).then((r) => r.rows),
+      me(viewer, "select id from profile_photos where profile_id = $1", [owner]).then((r) => r.rows),
+      me(viewer, "select profile_id from profile_history where profile_id = $1", [owner]).then((r) => r.rows),
+    ]);
+    // Never a direct read of another member's rows, open or not (0033).
+    assert.deepEqual([row.length, photos.length, history.length], [0, 0, 0], "no direct read of another member's rows");
+    const sees = { can, profile: prof !== null, answers: answers.length > 0 };
+    // The rule and everything it governs must agree.
+    if (sees.can) assert.ok(sees.profile && sees.answers, "an openable profile returns its fields and answers");
+    else assert.deepEqual(sees, { can: false, profile: false, answers: false }, "a closed profile returns nothing at all");
     return sees.can;
   }
 
@@ -48,7 +55,7 @@ async function setup() {
   const invite = async (from, to, status = "proposed") =>
     (await db.query("insert into gist_sessions (proposer_id, invitee_id, status) values ($1, $2, $3) returning id", [from, to, status])).rows[0].id;
 
-  return { db, me, member, opens, inSix, reply, invite };
+  return { db, me, member, opens, profileFor, inSix, reply, invite };
 }
 
 test("a member cannot open a profile outside these relationships", async () => {
@@ -141,15 +148,14 @@ test("everyone who reaches out can be opened, and matches see each other both wa
 });
 
 test("a Starter member CAN open a Gist inviter's profile", async () => {
-  const { db, me, member, opens, invite } = await setup();
+  const { db, member, opens, profileFor, invite } = await setup();
   const starter = await member("Starter");
   for (const tier of [null, "premium", "premium_plus", "diaspora", "diaspora_plus"]) {
     const inviter = await member(`Inviter ${tier ?? "starter"}`, { tier });
     const s = await invite(inviter, starter);
     assert.equal(await opens(starter, inviter), true, `invited by a ${tier ?? "starter"} member`);
     // Photos too, under the inviter's default reveal choice.
-    const { rows } = await me(starter, "select id from profile_photos where profile_id = $1", [inviter]);
-    assert.equal(rows.length, 4, "the inviter's photos come with the profile");
+    assert.equal((await profileFor(starter, inviter)).photos.length, 4, "the inviter's photos come with the profile");
     // Before accepting, and still after saying no.
     await db.query("update gist_sessions set status = 'declined' where id = $1", [s]);
     assert.equal(await opens(starter, inviter), true, "an invitation stays a reason to look");
@@ -157,7 +163,7 @@ test("a Starter member CAN open a Gist inviter's profile", async () => {
 });
 
 test("a Starter member still cannot see who sent a locked message", async () => {
-  const { db, me, member, opens, reply } = await setup();
+  const { db, me, member, opens, profileFor, reply } = await setup();
   const starter = await member("Starter");
   const sender = await member("Sender", { tier: "premium" });
 
@@ -176,6 +182,7 @@ test("a Starter member still cannot see who sent a locked message", async () => 
   assert.equal(await opens(starter, sender), false, "the sender's profile doesn't open, so probing can't name them");
   // Photos have their own "after I reply" reveal; it must not leak the sender either.
   await db.query("update profiles set photo_reveal = 'after_i_reply' where id = $1", [sender]);
+  assert.equal(await profileFor(starter, sender), null);
   assert.equal((await me(starter, "select id from profile_photos where profile_id = $1", [sender])).rows.length, 0);
 
   // Not vacuous: the same member on Premium can read it all.
@@ -186,7 +193,7 @@ test("a Starter member still cannot see who sent a locked message", async () => 
 });
 
 test("no profile view is written anywhere the other member can read", async () => {
-  const { db, me, member, opens, inSix, invite, reply } = await setup();
+  const { db, me, member, opens, profileFor, inSix, invite, reply } = await setup();
   const viewer = await member("Viewer", { tier: "premium" });
   const owner = await member("Owner");
   const other = await member("Other", { tier: "premium" });
@@ -228,20 +235,20 @@ test("no profile view is written anywhere the other member can read", async () =
   for (let k = 0; k < 3; k++) {
     assert.equal(await opens(viewer, owner), true);
     assert.equal(await opens(viewer, other), true);
-    await me(viewer, "select * from profiles where id = $1", [owner]);
+    assert.ok(await profileFor(viewer, owner));
   }
   assert.deepEqual(await ownerSees(), ownerBefore, "nothing the owner can read changed");
   assert.deepEqual(await snapshot(), before, "nothing anywhere changed — a view is a read and nothing more");
 });
 
 test("age, 'matched' and relationship history follow the same rule", async () => {
-  const { db, me, member, inSix, reply, invite } = await setup();
+  const { db, me, member, profileFor, inSix, reply, invite } = await setup();
   const viewer = await member("Viewer", { tier: "premium" });
   const owner = await member("Owner");
   await db.query("update profile_birthdates set date_of_birth = current_date - interval '29 years 2 days' where profile_id = $1", [owner]);
   await db.query("insert into profile_history (profile_id, history, visibility) values ($1, 'divorced', 'on_match') on conflict (profile_id) do update set history = 'divorced', visibility = 'on_match'", [owner]);
   const ask = async (who, sql) => (await me(who, sql, [owner])).rows[0];
-  const history = async (who) => (await me(who, "select history from profile_history where profile_id = $1", [owner])).rows.length > 0;
+  const history = async (who) => Boolean((await profileFor(who, owner))?.history);
 
   assert.equal((await ask(viewer, "select age_for($1) as a")).a, null, "a stranger gets no age");
   assert.equal(await history(viewer), false);
@@ -273,6 +280,93 @@ test("age, 'matched' and relationship history follow the same rule", async () =>
   await reply(starter, writer, "gist_invite");
   await reply(writer, starter, "text");
   assert.equal((await me(starter, "select i_am_matched_with($1) as m", [writer])).rows[0].m, false);
-  assert.equal((await me(starter, "select history from profile_history where profile_id = $1", [writer])).rows.length, 0,
-    "a locked reply doesn't reveal itself through a match");
+  const seen = await profileFor(starter, writer);
+  assert.ok(seen, "the writer is in the Starter member's six");
+  assert.equal(seen.history, undefined, "a locked reply doesn't reveal itself through a match");
+  assert.equal(seen.matched, false);
+});
+
+test("a member who can open a profile cannot read a hidden field by querying the table directly", async () => {
+  const { db, me, member, profileFor, inSix, invite } = await setup();
+  const viewer = await member("Viewer", { tier: "premium" });
+  const owner = await member("Owner");
+  // Every optional field filled, each with a different choice.
+  await db.query("alter table profiles disable trigger faith_rules");
+  await db.query(
+    `update profiles set tribe = 'Yoruba', tribe_visibility = 'private',
+       languages = '{Yoruba,English}', languages_visibility = 'on_match',
+       profession = 'Architect', profession_visibility = 'public',
+       education = 'MSc', education_visibility = 'private',
+       religion = 'Christian', denomination = 'anglican', religion_visibility = 'private',
+       photo_reveal = 'after_gist'
+     where id = $1`, [owner]);
+  await db.query("alter table profiles enable trigger faith_rules");
+  await db.query("insert into profile_history (profile_id, history, visibility) values ($1, 'divorced', 'on_match') on conflict (profile_id) do update set history = 'divorced', visibility = 'on_match'", [owner]);
+  await inSix(viewer, owner);
+
+  // Straight at the tables: nothing, though the profile opens.
+  assert.equal((await me(viewer, "select can_open_profile($1) as ok", [owner])).rows[0].ok, true);
+  for (const sql of [
+    "select tribe, religion, denomination, education from profiles where id = $1",
+    "select * from profiles where id = $1",
+    "select history from profile_history where profile_id = $1",
+    "select storage_path from profile_photos where profile_id = $1",
+  ]) {
+    assert.equal((await me(viewer, sql, [owner])).rows.length, 0, `direct read refused: ${sql}`);
+  }
+  // Nor by listing every row a member can see.
+  assert.deepEqual((await me(viewer, "select id from profiles")).rows.map((r) => r.id), [viewer]);
+
+  // Through profile_for: only what the owner shows this viewer — hidden keys are absent.
+  const p = await profileFor(viewer, owner);
+  assert.equal(p.profession, "Architect", "shown: public");
+  for (const k of ["tribe", "languages", "education", "religion", "denomination", "history", "photos"]) {
+    assert.equal(k in p, false, `${k} is absent, not blank`);
+  }
+  // Every key the function can ever return is a known one.
+  const allowed = new Set(["id", "display_name", "city", "stage", "intent", "age", "matched", "languages", "tribe", "profession",
+    "profession_verified", "education", "religion", "religion_other", "denomination", "denomination_other", "history",
+    "genotype", "time_zone", "photos"]);
+  for (const k of Object.keys(p)) assert.ok(allowed.has(k), `unexpected key ${k}`);
+
+  // Matched: 'on match' fields appear; private ones never do.
+  await invite(viewer, owner, "accepted");
+  const m = await profileFor(viewer, owner);
+  assert.deepEqual(m.languages, ["Yoruba", "English"]);
+  assert.equal(m.history, "divorced");
+  for (const k of ["tribe", "education", "religion", "denomination"]) assert.equal(k in m, false, `${k} stays private`);
+  // Still no direct read.
+  assert.equal((await me(viewer, "select * from profiles where id = $1", [owner])).rows.length, 0);
+
+  // The owner reads their own row normally.
+  const own = (await me(owner, "select tribe, education, religion from profiles where id = $1", [owner])).rows[0];
+  assert.deepEqual(own, { tribe: "Yoruba", education: "MSc", religion: "Christian" });
+  assert.equal((await me(owner, "select history from profile_history where profile_id = $1", [owner])).rows[0].history, "divorced");
+  assert.equal((await me(owner, "select id from profile_photos where profile_id = $1", [owner])).rows.length, 4);
+});
+
+test("genotype 'all matches': a locked text reply never reveals a match to a Starter member", async () => {
+  const { me, member, profileFor, inSix, reply, invite } = await setup();
+  const share = async (id, value) => {
+    await me(id, "select record_genotype_consent(genotype_consent_version())");
+    await me(id, "select set_genotype($1, 'all_matches')", [value]);
+  };
+  const genotypeOf = async (viewer, owner) => (await me(viewer, "select get_genotype_for($1) as g", [owner])).rows[0].g;
+
+  const starter = await member("Starter");
+  const writer = await member("Writer", { tier: "premium" });
+  await share(starter, "AA");
+  await share(writer, "AS");
+  await inSix(starter, writer);
+  // The Starter member's Gist invite, and a text reply back they can't read.
+  await reply(starter, writer, "gist_invite");
+  await reply(writer, starter, "text");
+
+  assert.equal(await genotypeOf(starter, writer), null, "no value: the 'match' rests on a reply the Starter member can't read");
+  assert.equal("genotype" in (await profileFor(starter, writer)), false);
+
+  // Not vacuous: an accepted Gist is a match both can see, and both share.
+  await invite(starter, writer, "accepted");
+  assert.equal(await genotypeOf(starter, writer), "AS");
+  assert.equal((await profileFor(starter, writer)).genotype, "AS");
 });

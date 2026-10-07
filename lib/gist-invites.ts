@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server";
 import type { GistStatus } from "@/lib/gist";
+import { getMemberProfile } from "@/lib/member-profile";
 
 /**
  * Everything the gist-invite screens need about one Gist, read as the member.
@@ -52,11 +53,12 @@ export async function loadInvite(supabase: Supabase, sessionId: string, userId: 
 
   const iAmProposer = s.proposer_id === userId;
   const otherId = iAmProposer ? s.invitee_id : s.proposer_id;
-  const [{ data: people }, { data: answerRows }] = await Promise.all([
-    supabase.from("profiles").select("id, display_name, city, time_zone").in("id", [userId, otherId]),
+  // My own row normally; the other person only through profile_for (0033).
+  const [{ data: mine }, them, { data: answerRows }] = await Promise.all([
+    supabase.from("profiles").select("id, display_name, city, time_zone").eq("id", userId).maybeSingle(),
+    getMemberProfile(supabase, otherId),
     supabase.rpc("gist_answer", { p_session_id: sessionId }),
   ]);
-  const find = (id: string) => (people ?? []).find((p) => p.id === id);
   const a = Array.isArray(answerRows) ? answerRows[0] : null;
 
   const status = s.status as GistStatus;
@@ -65,8 +67,8 @@ export async function loadInvite(supabase: Supabase, sessionId: string, userId: 
     status,
     effectiveStatus: isExpired(status, s.created_at) ? "expired" : status,
     iAmProposer,
-    me: person(find(userId), userId),
-    other: person(find(otherId), otherId),
+    me: person(mine ?? undefined, userId),
+    other: person(them ? { id: them.id, display_name: them.display_name, city: them.city ?? null, time_zone: them.time_zone ?? null } : undefined, otherId),
     answer: a ? { prompt: a.prompt as string, answer: a.answer as string, mine: a.owner_id === userId } : null,
     createdAt: s.created_at,
     scheduledFor: s.scheduled_for,

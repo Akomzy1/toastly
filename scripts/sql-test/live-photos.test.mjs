@@ -127,7 +127,8 @@ test("a replacement is checked while the old main photo stays live, and stays pr
   const cand = await addPhoto(m, "new-main");
   await me(m, "select nominate_main_photo($1)", [cand]);
   assert.equal(await isLive(m), true, "the old main photo keeps the profile live");
-  const seen = (await me(viewer, "select id from profile_photos where profile_id = $1", [m])).rows.map((r) => r.id);
+  // Another member's photos come only from profile_for (0033).
+  const seen = ((await me(viewer, "select profile_for($1) as p", [m])).rows[0].p?.photos ?? []).map((r) => r.id);
   assert.ok(seen.includes(oldMain) && !seen.includes(cand), "others see the old main photo, not the candidate");
 
   const replaced = (await svc("select record_main_photo_match($1, 'matched') as p", [cand])).rows[0].p;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMemberProfiles } from "@/lib/member-profile";
 import { isExpired, sinceLabel } from "@/lib/gist-invites";
 import { localDay, localTime12 } from "@/lib/scheduling";
 import { GistListView, type GistGroup, type GistRow } from "@/components/gist/gists-list-view";
@@ -63,12 +64,14 @@ export default async function GistPage() {
 
   const list = sessions ?? [];
   const otherIds = Array.from(new Set(list.map((s) => (s.proposer_id === user.id ? s.invitee_id : s.proposer_id))));
-  const [{ data: people }, answers] = await Promise.all([
-    supabase.from("profiles").select("id, display_name, time_zone").in("id", [user.id, ...otherIds]),
+  // My own row normally; everyone else only through profile_for (0033).
+  const [{ data: mine }, people, answers] = await Promise.all([
+    supabase.from("profiles").select("time_zone").eq("id", user.id).maybeSingle(),
+    getMemberProfiles(supabase, otherIds),
     Promise.all(list.map((s) => supabase.rpc("gist_answer", { p_session_id: s.id }))),
   ]);
-  const nameOf = (id: string) => (people ?? []).find((p) => p.id === id)?.display_name ?? "A member";
-  const myZone = (people ?? []).find((p) => p.id === user.id)?.time_zone ?? null;
+  const nameOf = (id: string) => people[id]?.display_name ?? "A member";
+  const myZone = mine?.time_zone ?? null;
 
   const invites: Row[] = [];
   const waiting: Row[] = [];

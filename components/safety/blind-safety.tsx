@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { blindBlockLocked, blindReportLocked } from "@/lib/safety-actions";
-import { REPORT_REASONS } from "@/lib/safety";
+import type { ReportReason } from "@/lib/safety";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Label, Select, Textarea } from "@/components/ui/field";
+import { Label, Textarea } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
+import { ReportReasons } from "./report-reasons";
 
 /**
  * Report or block from a locked inbox — decision (a).
@@ -35,6 +36,8 @@ export function BlindSafety() {
   const [reportState, reportAction] = useFormState(blindReportLocked, null);
   const [blockState, blockAction] = useFormState(blindBlockLocked, null);
   const [open, setOpen] = useState(false);
+  // The shared reason list first (ReportReasons), then the note and send.
+  const [reason, setReason] = useState<{ value: ReportReason; label: string } | null>(null);
 
   return (
     <Card className="grid gap-4 p-[26px]">
@@ -64,20 +67,28 @@ export function BlindSafety() {
 
       {open && !reportState?.ok ? (
         <>
+          {!reason ? (
+            <div className="grid gap-3">
+              <p className="text-ui font-medium text-ink-900">What&rsquo;s happening?</p>
+              <div className="overflow-hidden rounded-lg border border-ink-900/[.12] bg-white [&>div>button:first-child]:border-t-0">
+                <ReportReasons onPick={(value, label) => setReason({ value, label })} />
+              </div>
+            </div>
+          ) : (
           <form action={reportAction} className="grid gap-4">
-            <Label htmlFor="blind-reason">
-              What&rsquo;s happening?
-              <Select id="blind-reason" name="reason" required defaultValue="">
-                <option value="" disabled>
-                  Choose one…
-                </option>
-                {REPORT_REASONS.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </Select>
-            </Label>
+            <input type="hidden" name="reason" value={reason.value} />
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+              <p className="text-ui text-ink-900">
+                You&rsquo;re reporting: &ldquo;{reason.label}&rdquo;
+              </p>
+              <button
+                type="button"
+                onClick={() => setReason(null)}
+                className="min-h-11 text-ui text-grey-600 underline underline-offset-4 hover:text-ink-900"
+              >
+                Change
+              </button>
+            </div>
 
             <Label htmlFor="blind-detail">
               Anything we should know?{" "}
@@ -90,6 +101,7 @@ export function BlindSafety() {
             ) : null}
             <Submit label="Send report" />
           </form>
+          )}
 
           {/* The permanence is stated before the button, not after it: an
               innocent sender gets caught by this too, and that trade is the

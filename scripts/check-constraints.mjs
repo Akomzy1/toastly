@@ -219,6 +219,9 @@ check("daily matches is 6 on every tier in the entitlement table", (s, f) => {
 // reading it is a bug, and this fails the build.
 const GENOTYPE_DISPLAY_PATH = [
   "supabase/migrations/0014_genotype.sql",
+  // can_see_genotype's "all matches" rule, and profile_for handing a
+  // permitted viewer the value to display — and nothing else (checked below).
+  "supabase/migrations/0033_fields_for_the_viewer.sql",
   "lib/genotype.ts",
   "lib/genotype-actions.ts",
   "components/genotype/",
@@ -235,6 +238,24 @@ check("genotype is read only on the display path", (s, f) => {
   if (onGenotypePath(f)) return false;
   const hit = f.endsWith(".sql") ? /\bgenotype\w*/i.exec(s) : GENOTYPE_STORAGE.exec(s);
   return hit ? `found ${hit[0]} outside the display path` : false;
+});
+
+// 0033 is on the display path for two functions only.
+check("0033 touches genotype only in can_see_genotype and profile_for", (s, f) => {
+  if (!/0033_fields_for_the_viewer\.sql$/.test(f.replace(/\\/g, "/"))) return false;
+  let rest = s;
+  for (const name of ["can_see_genotype", "profile_for"]) {
+    rest = rest.replace(new RegExp(`create or replace function public\\.${name}\\([\\s\\S]*?\\n\\$\\$;`), "");
+    rest = rest.replace(new RegExp(`revoke all on function public\\.${name}\\([^;]*;`, "g"), "");
+  }
+  const hit = /\bgenotype\w*/i.exec(rest);
+  if (hit) return `found ${hit[0]} outside can_see_genotype and profile_for`;
+  const pf = (s.match(/create or replace function public\.profile_for\([\s\S]*?\n\$\$;/) ?? [""])[0];
+  const uses = [...pf.matchAll(/\bgenotype\w*/gi)].map((m) => m[0]);
+  // Only the value a permitted viewer may see, from the one client-facing read.
+  return uses.every((u) => u === "genotype" || u === "get_genotype_for") && /'genotype', get_genotype_for\(p\.id\)/.test(pf)
+    ? false
+    : `profile_for reads genotype other than through get_genotype_for: ${uses.join(", ")}`;
 });
 
 check("genotype has no compatibility verdict and no verified badge", (s, f) => {
@@ -1420,7 +1441,13 @@ check("no denomination filter on any search or feed query", (s, f) => {
     if (!/\bdenomination\b/.test(s)) return false;
     const bad = [];
     for (const m of s.matchAll(/create or replace function public\.(\w+)[\s\S]*?\$\$([\s\S]*?)\$\$/g)) {
-      if (/\bdenomination\b/.test(m[2]) && !FAITH_GUARDS.test(m[1])) bad.push(m[1]);
+      // profile_for (0033) may hand a viewer the shown value to display —
+      // only as "case when religion is shown then the value", never in a
+      // where, join or order.
+      const body = m[1] === "profile_for"
+        ? m[2].replace(/'denomination(_other)?', case when p\.religion_visibility = 'public' then p\.denomination\1 end/g, "")
+        : m[2];
+      if (/\bdenomination\b/.test(body) && !FAITH_GUARDS.test(m[1])) bad.push(m[1]);
     }
     if (/create policy[^;]*\bdenomination\b/.test(s)) bad.push("a policy");
     if (/create (or replace )?(materialized )?view[^;]*\bdenomination\b/.test(s)) bad.push("a view");
@@ -1583,22 +1610,25 @@ const standingPolicies = (() => {
   return [...live.values()];
 })();
 
-// Another member's profile row, prompt answers and photos are readable only
-// through can_open_profile — a member's own rows aside. Anything else is a
-// browse path the PRD rules out.
-check("another member's profile, answers and photos open only through can_open_profile", (s, f) => {
+// Another member's profile, history and photos are read ONLY through
+// profile_for (0033), which returns just the fields shown to this viewer: no
+// policy may let a member select another member's row in those tables. Prompt
+// answers are readable through can_open_profile (0032). Anything else is a
+// browse path, or a hidden field read straight from the table.
+check("another member's rows are read only through profile_for; answers through can_open_profile", (s, f) => {
   if (!/lib\/countries\.ts$/.test(norm(f))) return false; // run once
-  const bad = standingPolicies
-    .filter((p) => /^(profiles|prompt_answers|profile_photos)$/.test(p.table))
-    .filter((p) => /\bfor\s+(select|all)\b/.test(p.rest) || !/\bfor\s+\w+/.test(p.rest))
-    .filter((p) => {
-      const using = (p.rest.match(/\busing\s*([\s\S]*?)(\bwith check\b|$)/) ?? [])[1] ?? "";
-      const flat = using.replace(/\s+/g, "");
-      const ownOnly = /^\(auth\.uid\(\)=(id|profile_id)\)$/.test(flat);
-      return !ownOnly && !/can_open_profile\(/.test(using);
-    })
-    .map((p) => `${p.table}: "${p.name}"`);
-  return bad.length ? `readable without the access rule — ${bad.join("; ")}` : false;
+  const readable = (p) => /\bfor\s+(select|all)\b/.test(p.rest) || !/\bfor\s+\w+/.test(p.rest);
+  const usingOf = (p) => (p.rest.match(/\busing\s*([\s\S]*?)(\bwith check\b|$)/) ?? [])[1] ?? "";
+  const ownOnly = (p) => /^\(auth\.uid\(\)=(id|profile_id)\)$/.test(usingOf(p).replace(/\s+/g, ""));
+  const bad = [
+    ...standingPolicies
+      .filter((p) => /^(profiles|profile_history|profile_photos)$/.test(p.table) && readable(p) && !ownOnly(p))
+      .map((p) => `${p.table}: "${p.name}" lets a member read another member's row`),
+    ...standingPolicies
+      .filter((p) => p.table === "prompt_answers" && readable(p) && !ownOnly(p) && !/can_open_profile\(/.test(usingOf(p)))
+      .map((p) => `prompt_answers: "${p.name}" is readable without the access rule`),
+  ];
+  return bad.length ? bad.join("; ") : false;
 });
 
 check("the access rule stays internal, read-only and about the caller", (s, f) => {

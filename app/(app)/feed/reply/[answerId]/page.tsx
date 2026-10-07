@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMemberProfile } from "@/lib/member-profile";
 import { ReplyScreen } from "@/components/gist/reply-screen";
 import { canSendText } from "@/lib/feed";
 import { resetDate } from "@/lib/gist-invites";
@@ -35,8 +36,8 @@ export default async function ReplyPage({ params }: { params: { answerId: string
     .maybeSingle();
   if (!row || row.profile_id === user.id) notFound();
 
-  const [{ data: person }, { data: tierRow }, { data: used }, { data: room }] = await Promise.all([
-    supabase.from("profiles").select("display_name, city").eq("id", row.profile_id).maybeSingle(),
+  const [person, { data: tierRow }, { data: used }, { data: room }] = await Promise.all([
+    getMemberProfile(supabase, row.profile_id),
     supabase.rpc("current_tier", { p_profile_id: user.id }),
     supabase.rpc("voice_gists_this_month", { p_profile_id: user.id }),
     supabase.rpc("gist_has_room", { p_profile_id: user.id }),

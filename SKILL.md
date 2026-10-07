@@ -240,29 +240,39 @@ was opened from, ⋯ for Report and Block), the photo gallery with dots, name
 and age, city, the Verified Real seal (ID ring when ID-checked), intent, the
 answers with "Reply to this" (paid) or "Ask for a Gist about this" plus the
 month's count (Starter, from the six), the Details block, and for an open
-invitation the fixed "Not now" / "Accept Gist" bar. Every field follows its
-visibility for this viewer; the database decides who can open it (0032).
-Audit: `/audit/full-profile/*` (twelve states). Flagged:
-  - the seal line reads "Main photo matches their selfie", not "Photos match
-    their selfie": only the main photo is face-matched (PRD §5.1.2);
-  - the band has the prototype's ⋯ menu and no Safety pill — unlike the
-    filters screen, which kept the pill (nav prototypes);
-  - "{first} isn't told who reported them" / "{first} isn't told" instead of
-    "her" / "She": the member's pronouns aren't known;
-  - "Amaka is blocked" drops "You can undo this from Safety kit." — there is
-    no unblock;
-  - on Starter, the invite bar keeps the invite screen's line: "If the call
-    happens, it counts as one of your 2 Gists this month.";
-  - "Not now" leaves the invitation open (it closes itself after three days);
-    "Decline" stays on the invite screen;
-  - the report list is the prototype's five; "Rude or threatening" files as
-    harassment. Underage, scam and "not who they say" stay on the card's
-    report form;
-  - the photo dots are 44px tap targets, so they sit further apart;
-  - not drawn: "Replied to your answer" as the band's subline (someone who
-    replied, outside the six and before a match), a profile whose photos
-    aren't revealed to this viewer (no gallery at all), and the "See
-    {first}'s full profile" links on the feed card and the Gist screen.
+invitation the fixed "Not now" / "Accept Gist" bar. Every field comes from
+profile_for (0033), which returns only what the owner shows this viewer; the
+database decides who can open it (0032). Audit: `/audit/full-profile/*`
+(twelve states). Decided 7 October 2026 (approved as built: age, never the
+date of birth; the seal line "Main photo matches their selfie" — only the
+main photo is face-matched; no pronouns, "{first} isn't told who reported
+them"; the Starter accept note "If the call happens, it counts as one of your
+2 Gists this month."; 44px photo dots):
+  - **(3) The Safety pill stays in the top band on every in-app screen,
+    including the full profile.** Report and Block stay in the ⋯ menu. The
+    band title wraps to a second line rather than being cut off beside the
+    pill.
+  - **(5) Block is permanent.** The confirm sheet says "You won't see each
+    other again. This can't be undone." — the full profile's sheet and the
+    card's Block button alike. "{first} is blocked" has no undo line; there
+    is no unblock anywhere.
+  - "Not now" leaves the invitation open; it closes after three days
+    (gist_respond refuses an older one and the nightly job marks it
+    expired). "Decline" stays on the invite screen.
+  - **(8) One shared report component on every report surface**:
+    components/safety/report-reasons.tsx renders the whole of REPORT_REASONS
+    (every report_reason value — these photos aren't them, they're married,
+    they asked me for money, rude or threatening, threats or pressure, scam
+    or fraud, not who they say they are, they seem underage, something
+    else). The full profile's report panel, the card / Gist / date report
+    form and the locked inbox all use it; no surface may offer a shorter
+    list, and it takes no prop that could narrow it
+    (scripts/report-surfaces.test.mjs). The card form and the locked inbox
+    pick from the list first, then the optional note.
+  - **(10) Approved**: "Replied to your answer" as the band's subline, and
+    the "See {first}'s full profile" links on the feed card and the Gist
+    screen. When the viewer can't see the owner's photos, one line, "Photos
+    appear once you match.", stands where the gallery would be.
 - **Filters** (`premium-filters`; 0031; PRD §5.2.4): /profile/filters,
   components/profile/filters-screen.tsx. "Your search": Religion
   (multi-select, "Any" when none) with the note directly under it, then
