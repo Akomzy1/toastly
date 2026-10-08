@@ -105,16 +105,14 @@
  * 8 OCTOBER 2026 — release-3 (0035–0037), checked against the build:
  *   - Gender and who you'd like to meet (0036): asked at sign-up, needed to go
  *     live, used to match both ways. Gender is locked once live; support (and
- *     a reviewer, on a "Not who they say they are" report, 0038) changes it.
+ *     a reviewer, on a "Not who they say they are" report, 0037) changes it.
  *   - The women's launch offer (0035): launch_offer_grants keeps the phone
  *     number's one-way hash (phone_identities, never the number) after the
  *     account is deleted — profile_id goes to null, the hash stays — so the
  *     offer is once per number. NOTHING PURGES IT YET: its period is
  *     [LAUNCH OFFER RETENTION] until the owner sets one and a purge is built.
- *   - The waitlist (0037): email, city, woman or man. Nobody can read it but
- *     the service role. NOTHING PURGES IT AND THERE IS NO SELF-SERVE REMOVAL
- *     YET: [WAITLIST RETENTION] until the owner sets a period.
- *   STILL OPEN (added): [LAUNCH OFFER RETENTION], [WAITLIST RETENTION].
+ *   - No waitlist: built, then removed the same day (owner, 8 October 2026).
+ *   STILL OPEN (added): [LAUNCH OFFER RETENTION].
  *   SMILE-RETENTION notes sit above each "keeps the images" sentence: if
  *              Smile ID confirms it uses images to improve its technology and
  *              we can't opt out, append "Smile ID may also use them to improve
@@ -270,11 +268,6 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        lead: "The waitlist.",
-        text: "If you join the waitlist before Toastly opens, we keep your email address, your city and whether you're a woman or a man. We use your email only to tell you when Toastly opens, and your city and gender only to plan where it opens first. Nobody else sees the list.",
-      },
-      {
-        kind: "p",
         lead: "Usage information.",
         text: "Which key steps you've reached — such as signing up, getting verified, a first Gist, a first date deposit or upgrading — and when you use our AI help or profile feedback (never what you asked or wrote), so we can fix problems and improve the product. Our hosting provider also keeps standard technical logs, such as IP address and browser type, to run and secure the service.",
       },
@@ -298,7 +291,6 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           ["Process payments and keep financial records", "To run subscriptions and coins, and meet tax law", "Contract; legal obligation"],
           ["Send emergency alerts and confirm emergency contacts", "To support your safety", "Your consent; vital interests in an emergency"],
           ["Send account and verification emails", "To run your account", "Contract"],
-          ["Tell people on the waitlist when Toastly opens, and plan where it opens first", "Because you asked to be told", "Your consent"],
           ["Give the women's launch offer once per phone number", "To keep the offer fair", "Legitimate interest"],
           ["Understand how Toastly is used and fix problems", "To improve the service", "Legitimate interest"],
         ],
@@ -444,7 +436,6 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Toastly Help conversations: 30 days after the last message, then deleted. If you pass something to our team, your words are deleted at the same time; we keep only its reference number and whether it was resolved.",
           "Payment and financial records: 6 years, as tax law requires.",
           "The women's launch offer: when a member who received it deletes their account, we keep a one-way fingerprint of their phone number — never the number — so the offer can be given only once per number. We keep it [LAUNCH OFFER RETENTION], then delete it.",
-          "The waitlist: your email, city and gender are kept [WAITLIST RETENTION], then deleted. You can ask us to remove you sooner at any time.",
         ],
       },
     ],
