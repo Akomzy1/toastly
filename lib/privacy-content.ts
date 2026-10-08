@@ -103,8 +103,8 @@
  *              the day this version is published).
  *
  * 8 OCTOBER 2026 — release-3 (0035–0037), checked against the build:
- *   - Gender and who you'd like to meet (0036): asked at sign-up, needed to go
- *     live, used to match both ways. Gender is locked once live; support (and
+ *   - Woman or man (0036): asked at sign-up, needed to go live; a man is
+ *     matched only with women and a woman only with men. Gender is locked once live; support (and
  *     a reviewer, on a "Not who they say they are" report, 0037) changes it.
  *   - The women's launch offer (0035): launch_offer_grants keeps the phone
  *     number's one-way hash (phone_identities, never the number) after the
@@ -188,8 +188,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       },
       {
         kind: "p",
-        lead: "Who you are and who you'd like to meet.",
-        text: "Your gender and the genders you'd like to meet. We use them to match you only with people who'd like to meet you too, in both directions. Once your profile is live, your gender can only be changed through Toastly Help — or by our team, after a review, if a report shows it isn't right.",
+        lead: "Whether you're a woman or a man.",
+        text: "We use it to match you: men are matched with women, and women with men. Once your profile is live, it can only be changed through Toastly Help — or by our team, after a review, if a report shows it isn't right.",
       },
       {
         kind: "p",
