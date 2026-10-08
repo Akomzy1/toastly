@@ -177,7 +177,7 @@ export async function submitOutcome(
 }
 
 /**
- * One more Gist this month, paid in coins (0038). The database checks it's a
+ * One more Gist this month, paid in coins (0037). The database checks it's a
  * plan with a monthly limit, that this month's are used, that a price is set
  * and that the coins are there — gift coins first. Never cash.
  */

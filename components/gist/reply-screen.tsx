@@ -119,7 +119,7 @@ export function ReplyScreen({
   resetOn: string;
   /** The plan a Starter member would move to, and its price. */
   offer: ReturnType<typeof upgradeOffer>;
-  /** At the limit: one more Gist for coins, while a price is set (0038). */
+  /** At the limit: one more Gist for coins, while a price is set (0037). */
   extraGist?: { coins: number; have: number } | null;
 }) {
   const first = name.split(" ")[0];

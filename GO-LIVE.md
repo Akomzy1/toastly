@@ -280,13 +280,12 @@ privileges; compare `pg_dump --schema-only -n public` with the backup's
 `.public-schema.sql`.
 ---
 
-## 0j. release-3 — launch blockers (0036, 0037, 0038) — NOT APPLIED
+## 0j. release-3 — launch blockers (0036, 0037) — NOT APPLIED
 
-Branch `release-3` (off `release-2`). Decided 8 October 2026; PRD §7.1, §7.3. Apply after release-2 is merged, each step on the owner's go-ahead: backup + restore check → `node scripts/db/apply-migrations.mjs --env .env.production.local --from 0036` (its state check has no entries for 0036+, so check by hand first: `gender_options`, `waitlist`, `gist_extras`, `payment_refunds` absent) → merge `release-3`.
+Branch `release-3` (off `release-2`). Decided 8 October 2026; PRD §7.1, §7.3. Apply after release-2 is merged, each step on the owner's go-ahead: backup + restore check → `node scripts/db/apply-migrations.mjs --env .env.production.local --from 0036` (its state check has no entries for 0036+, so check by hand first: `gender_options`, `gist_extras`, `payment_refunds` absent) → merge `release-3`.
 
 - **0036_who_you_meet_and_first_prompt.sql:** gender required and from `gender_options` (default Woman / Man; Women / Men for who you'd like to meet — **owner to confirm the lists**, they're rows, not code); `profiles.seeking`; the preference is mutual in the six, replies, Gist invites and profile access; going live needs gender, who you'd like to meet and one prompt answer. **Also fixes a gap from 0029:** the six never checked that a candidate was live. **Existing members** without gender, who they'd like to meet or an answer drop out of "live" until they add them — the app sends them to "About you" and "Your first answer". Count them before applying: `select count(*) from profiles where first_live_at is not null and (seeking is null or not exists (select 1 from prompt_answers a where a.profile_id = profiles.id))`.
-- **0037_waitlist.sql:** `waitlist` (email, city, gender), written only through `join_waitlist`, readable by nobody but the service role. `/signup` shows it while `LAUNCH_PAYMENTS_ENABLED` is off; `/signup?tester=1` shows the real form, and only allow-listed emails get through.
-- **0038_extra_gist_refunds_gender.sql:**
+- **0037_extra_gist_refunds_gender.sql:**
   - **An extra Gist with coins** at the Gist cap. **Set the price to switch it on:** `update plan_config set extra_gist_coins = N;` — while it's NULL nothing is on sale and the button doesn't show.
   - **Refunds, processed automatically** (`payment_refund`): Stripe `charge.refunded` (already subscribed) and Paystack `refund.processed` (Paystack sends every event to the webhook — nothing to switch on). A refunded plan ends; coins held towards it come back; unspent coins from a refunded purchase are removed; spent coins, a still-renewing subscription or a partial refund open a **Refund** case in `/staff`. Never cash.
   - **Stripe card country:** read from the charge on every Stripe settlement (webhook and return page) and fed to the pricing-integrity check.
@@ -318,7 +317,7 @@ Branch `release-2` (off `main`). Decided 8 October 2026; PRD §5.4, §7.1, §7.3
 4. Send a Gist invite from the six; on a second account, accept it — the invitee's count doesn't change.
 5. Smallest coin pack (₦1,000, 10 coins) → coin balance shows 10 purchased coins.
 6. One month of Premium (pass, by bank or card) → plan screen shows Premium until its end date.
-7. Refund both in the Paystack dashboard — **on release-2 the app does not reverse a refund on its own** (marking a payment refunded and reversing its coins or plan is a staff step). From release-3 (0038) it does: expect the 10 coins gone and the plan back to Starter.
+7. Refund both in the Paystack dashboard — **on release-2 the app does not reverse a refund on its own** (marking a payment refunded and reversing its coins or plan is a staff step). From release-3 (0037) it does: expect the 10 coins gone and the plan back to Starter.
 8. `/staff`: the pricing case from the payments (if the profile country is abroad), and any report filed during the test.
 
 ## 0f. Photos, the face match, no live profile no access (migration 0029) — applied 7 October 2026 (release-1)

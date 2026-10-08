@@ -135,7 +135,7 @@ export async function handlePaystackEvent(
 
     // A refund made in the Paystack dashboard. Only a processed one changes
     // anything; its amount is this refund's, so a refund smaller than the
-    // payment goes to staff rather than ending anything (payment_refund, 0038).
+    // payment goes to staff rather than ending anything (payment_refund, 0037).
     case "refund.processed": {
       const reference = d.transaction_reference ?? d.transaction?.reference;
       if (!reference || typeof d.amount !== "number") return { status: "ignored", provider: "paystack" };
@@ -307,7 +307,7 @@ export async function handleStripeEvent(
     }
 
     // A refund made in the Stripe dashboard. amount_refunded is the total so
-    // far; less than the payment goes to staff (payment_refund, 0038).
+    // far; less than the payment goes to staff (payment_refund, 0037).
     case "charge.refunded": {
       if (typeof o.amount_refunded !== "number" || o.amount_refunded <= 0) return { status: "ignored", provider: "stripe" };
       const ref = await deps.refundRef({ paymentIntent: o.payment_intent, invoice: o.invoice });

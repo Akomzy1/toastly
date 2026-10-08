@@ -1,4 +1,4 @@
--- Toastly — launch blockers 5, 6, 7 and 8 (decided 8 October 2026). Follows 0037.
+-- Toastly — launch blockers 5, 6, 7 and 8 (decided 8 October 2026). Follows 0036.
 --
 --   5. An extra Gist, bought with coins, from the "You've used this month's
 --      Gist" screen. Price in plan_config.extra_gist_coins — NULL until the

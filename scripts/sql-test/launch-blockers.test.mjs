@@ -1,5 +1,5 @@
 /**
- * Launch blockers decided 8 October 2026 (migrations 0037, 0038) — against a
+ * Launch blockers decided 8 October 2026 (migration 0037) — against a
  * throwaway Postgres (PGlite) with every migration applied. Never production.
  *
  *   node --test scripts/sql-test/launch-blockers.test.mjs
@@ -9,7 +9,6 @@
  *     to staff; nothing is ever paid out.
  *   - A reviewer corrects gender on a "Not who they say they are" report,
  *     which ends the women's launch offer. Never automatic.
- *   - The waitlist: anyone can join; nobody can read it back.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -249,22 +248,3 @@ test("a reviewer corrects gender on a 'Not who they say they are' report, which 
   await assert.rejects(me(subject, "update profiles set gender = 'woman' where id = $1", [subject]), /Toastly Help/);
 });
 
-// --- 9. The waitlist (0037) -------------------------------------------------------
-
-test("anyone can join the waitlist once per email; nobody can read it back", async () => {
-  const { db, me, member } = await setup();
-  const anon = (sql, params) => as(db, null, (tx) => tx.query(sql, params));
-  await anon("select join_waitlist('Ada@Example.com', 'Lagos', 'woman')");
-  await anon("select join_waitlist('ada@example.com', 'Abuja', 'woman')");
-  const rows = (await db.query("select email, city, gender from waitlist")).rows;
-  assert.deepEqual(rows, [{ email: "ada@example.com", city: "Abuja", gender: "woman" }], "one row per email, latest city");
-
-  await assert.rejects(anon("select join_waitlist('not-an-email', 'Lagos', 'woman')"));
-  await assert.rejects(anon("select join_waitlist('b@example.com', 'Lagos', 'robot')"));
-  await assert.rejects(anon("select join_waitlist('c@example.com', 'L', 'man')"));
-  await assert.rejects(anon("select * from waitlist"));
-  await assert.rejects(anon("insert into waitlist (email, city, gender) values ('d@example.com', 'Lagos', 'man')"));
-  const id = await member("Member Mo");
-  await assert.rejects(me(id, "select * from waitlist"));
-  await assert.rejects(me(id, "delete from waitlist"));
-});

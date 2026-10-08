@@ -236,7 +236,7 @@ export function sendRestrictionNotice(to: string, { reasonCategory }: { reasonCa
 }
 
 /**
- * After a reviewer corrects the gender on a profile (0038). The reason
+ * After a reviewer corrects the gender on a profile (0037). The reason
  * category only — never the report or who made it.
  */
 export function sendGenderCorrectedNotice(to: string) {

@@ -82,7 +82,7 @@ export const ACTION_SUB: Record<string, string> = {
 
 /**
  * Labels for an action, including the gender correction on a "Not who they
- * say they are" report (0038), which carries the option's code:
+ * say they are" report (0037), which carries the option's code:
  * "correct_gender:man". NOT IN THE PROTOTYPE — flagged.
  */
 const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

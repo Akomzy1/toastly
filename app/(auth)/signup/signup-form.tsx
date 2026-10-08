@@ -27,7 +27,7 @@ function Submit() {
  * Built from the form's existing field and checkbox styles until a design
  * exists.
  */
-export function SignUpForm({ options, tester = false }: { options: GenderOption[]; tester?: boolean }) {
+export function SignUpForm({ options }: { options: GenderOption[] }) {
   const [state, action] = useFormState(signUp, null);
 
   return (
@@ -43,7 +43,6 @@ export function SignUpForm({ options, tester = false }: { options: GenderOption[
       <Card className="p-[26px]">
         <form action={action} className="grid gap-5">
           {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
-          {tester ? <input type="hidden" name="tester" value="1" /> : null}
 
           <Label htmlFor="display_name">
             Your name

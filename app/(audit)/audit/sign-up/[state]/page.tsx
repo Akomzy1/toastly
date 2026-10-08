@@ -4,7 +4,6 @@ import { requireAuditHarness } from "@/lib/audit-harness";
 import { BrandLockup } from "@/components/brand-mark";
 import { DEFAULT_GENDER_OPTIONS } from "@/lib/gender-options";
 import { SignUpForm } from "@/app/(auth)/signup/signup-form";
-import { WaitlistForm } from "@/app/(auth)/signup/waitlist-form";
 import { AboutYouForm } from "@/app/(app)/profile/about-you/about-you-form";
 import { ScreenBand } from "@/components/app/screen-band";
 
@@ -26,21 +25,11 @@ function AuthShell({ children }: { children: React.ReactNode }) {
 
 const options = DEFAULT_GENDER_OPTIONS;
 
-/** Mobile-audit harness: the waitlist, sign-up and "About you" (0036, 0037). */
+/** Mobile-audit harness: sign-up and "About you" (0036). */
 const STATES: Record<string, () => React.ReactNode> = {
-  waitlist: () => (
-    <AuthShell>
-      <WaitlistForm options={options} />
-    </AuthShell>
-  ),
   signup: () => (
     <AuthShell>
-      <SignUpForm options={options} tester={false} />
-    </AuthShell>
-  ),
-  "signup-tester": () => (
-    <AuthShell>
-      <SignUpForm options={options} tester />
+      <SignUpForm options={options} />
     </AuthShell>
   ),
   "about-you": () => (

@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { capture } from "@/lib/analytics";
 import { dateOfBirthProblem } from "@/lib/age";
 import { getGenderOptions, parseGenderChoice } from "@/lib/gender-options";
-import { onLaunchAllowList, paymentsLaunched } from "@/lib/launch";
 
 export type AuthState = { error?: string } | null;
 
@@ -15,8 +14,7 @@ export type AuthState = { error?: string } | null;
  *
  * Gender and who you'd like to meet are required here (decided 8 October
  * 2026): they decide who sees whom, and the women's launch offer is granted
- * at go-live by the database (0035). Before launch only the allow-list can
- * sign up; everyone else is on the waitlist. Intent is deliberately NOT collected here: it is a spectrum value
+ * at go-live by the database (0035). Intent is deliberately NOT collected here: it is a spectrum value
  * gathered during profile setup and must never block signup (CLAUDE.md).
  */
 export async function signUp(
@@ -40,11 +38,6 @@ export async function signUp(
   // 18 and over only. The database refuses an under-18 date too (0015).
   const dobProblem = dateOfBirthProblem(dateOfBirth);
   if (dobProblem) return { error: dobProblem };
-
-  // Before launch: test accounts only (lib/launch.ts).
-  if (!paymentsLaunched() && !onLaunchAllowList(email)) {
-    return { error: "Toastly opens soon. Join the waitlist and we'll tell you when you can create your account." };
-  }
 
   const supabase = createClient();
   const choice = parseGenderChoice(await getGenderOptions(supabase), gender, seeking);
@@ -98,23 +91,3 @@ export async function signOut() {
   redirect("/");
 }
 
-export type WaitlistState = { ok?: string; error?: string } | null;
-
-/**
- * The waitlist (0037), while sign-up is closed. Email, city and woman or man,
- * through join_waitlist — the table itself can't be read or written by
- * anyone outside the server. Joining twice just updates the entry, and the
- * answer is the same either way, so the form can't be used to test whether
- * an email is already on the list.
- */
-export async function joinWaitlist(_prev: WaitlistState, formData: FormData): Promise<WaitlistState> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const city = String(formData.get("city") ?? "").trim();
-  const gender = String(formData.get("gender") ?? "");
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 254) return { error: "Enter your email address." };
-  if (city.length < 2 || city.length > 80) return { error: "Enter your city." };
-  const supabase = createClient();
-  const { error } = await supabase.rpc("join_waitlist", { p_email: email, p_city: city, p_gender: gender });
-  if (error) return { error: /gender/i.test(error.message) ? "Choose woman or man." : "That didn't go through. Try again." };
-  return { ok: "We'll email you the moment you can create your account." };
-}
