@@ -1,3 +1,4 @@
+import { VIDEO_COMING, type FeatureFlags } from "@/lib/features";
 /**
  * Home page content, transcribed from
  * design/prototype/home-diaspora-offer.slim.html (which replaced
@@ -95,7 +96,7 @@ export const aiPledge = {
   body: "It helps with the admin — verification and payment questions, feedback on your own answers. The talking is always yours.",
 };
 
-export const steps = [
+const STEPS = [
   {
     n: "1",
     title: "Get verified",
@@ -240,4 +241,20 @@ export const posts = [
     alt: "Overhead view of two coffees and two people's hands across a wooden table",
     dek: "Nigerian Gen Z are not short of matches. They are short of intent.",
   },
+];
+
+// Live video is described only while VIDEO_GIST_ENABLED is on (lib/features.ts).
+const VIDEO_STEP = "Guided voice sessions, then video when you both want it. Chemistry before logistics.";
+export const stepsFor = (f: FeatureFlags) =>
+  STEPS.map((s) =>
+    s.body === VIDEO_STEP && !f.videoGist
+      ? { ...s, body: "Guided voice sessions. Live video is coming to Premium Plus. Chemistry before logistics." }
+      : s,
+  );
+
+/** The Gist section's three points on Home. */
+export const gistPointsFor = (f: FeatureFlags) => [
+  "Voice first, so tone does the work photos can’t.",
+  "Prompts written for Nigerian dating, not translated from California.",
+  f.videoGist ? "Live video unlocks on Premium Plus, when you both want it." : VIDEO_COMING,
 ];

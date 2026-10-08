@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { PlanPage, type Grant, type Sub } from "@/components/plan/plan-page";
+import { featureFlags } from "@/lib/features";
+import { dpTiersFor, ngTiersFor } from "@/lib/pricing-content";
 
 /** Mobile-audit harness: the plan page in each state (gated by the layout). */
 const END = "2026-11-03T12:00:00.000Z";
@@ -46,5 +48,6 @@ const STATES: Record<string, Partial<typeof base>> = {
 export default function AuditPlan({ params }: { params: { state: string } }) {
   const s = STATES[params.state];
   if (!s) notFound();
-  return <PlanPage {...base} {...s} />;
+  const all = { ...base, ...s };
+  return <PlanPage {...all} tiers={all.track === "ngn" ? ngTiersFor(featureFlags()) : dpTiersFor(featureFlags())} />;
 }

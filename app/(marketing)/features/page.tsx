@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/ui/card";
 import { PhotoFrame } from "@/components/ui/photo-frame";
 import { Reveal } from "@/components/reveal";
-import { deepDives, minor, toc, trust } from "@/lib/features-content";
+import { deepDivesFor, minor, toc, trust } from "@/lib/features-content";
+import { featureFlags } from "@/lib/features";
+
+// Video lines follow VIDEO_GIST_ENABLED (lib/features.ts).
+const deepDives = deepDivesFor(featureFlags());
 
 export const metadata: Metadata = {
   title: "Features",

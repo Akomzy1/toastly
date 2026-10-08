@@ -1,4 +1,5 @@
 import { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
+import { VIDEO_COMING, type FeatureFlags } from "@/lib/features";
 /**
  * How It Works content, transcribed from
  * design/prototype/how-it-works.slim.html.
@@ -20,7 +21,7 @@ export type Step = {
   tone: "light" | "paper" | "dark";
 };
 
-export const steps: Step[] = [
+const STEPS: Step[] = [
   {
     n: "1",
     kicker: "Verify your identity",
@@ -141,7 +142,7 @@ export const benefits = [
   },
 ];
 
-export const faqs: [string, string][] = [
+const FAQS: [string, string][] = [
   [
     "Is verification really mandatory?",
     "Yes — phone and selfie liveness, for everybody, before a profile goes live. NIN or BVN is the only optional part.",
@@ -173,3 +174,13 @@ export const faqs: [string, string][] = [
     "An optional one-tap handoff from Couple Mode into AriyaPlanner, our wedding-planning product: introduction ceremony, traditional wedding and white wedding, with budgets in Naira or USD.",
   ],
 ];
+
+// Live video is described only while VIDEO_GIST_ENABLED is on (lib/features.ts).
+const VIDEO_POINT = "Live video unlocks on Premium Plus, by mutual consent.";
+const VIDEO_FAQ = "Video is a Premium Plus upgrade you both have to agree to.";
+
+export const stepsFor = (f: FeatureFlags): Step[] =>
+  STEPS.map((s) => ({ ...s, points: s.points.map((p) => (p === VIDEO_POINT && !f.videoGist ? VIDEO_COMING : p)) }));
+
+export const faqsFor = (f: FeatureFlags): [string, string][] =>
+  FAQS.map(([q, a]) => [q, f.videoGist ? a : a.replace(VIDEO_FAQ, VIDEO_COMING)]);

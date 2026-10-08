@@ -18,14 +18,16 @@ import { PricingCompare } from "@/components/pricing-compare";
 import { Reveal } from "@/components/reveal";
 import { Eyebrow } from "@/components/section-parts";
 import { cn } from "@/lib/utils";
+import { featureFlags } from "@/lib/features";
 import {
   coinIntro,
   coinNoShow,
   coinPacks,
   coinTerms,
-  dpTiers,
-  ngTiers,
-  whyPay,
+  compareRowsFor,
+  dpTiersFor,
+  ngTiersFor,
+  whyPayFor,
   whyPayNote,
   type Tier,
 } from "@/lib/pricing-content";
@@ -118,6 +120,8 @@ function TierCard({ tier }: { tier: Tier }) {
  * comparison shows one track at a time — never one blended table.
  */
 export default function PricingPage() {
+  // Live video and see-who-liked-you are listed only while their flags are on.
+  const flags = featureFlags();
   return (
     <>
       {/* 1 — Header. A centred 860px column, as drawn. */}
@@ -155,7 +159,7 @@ export default function PricingPage() {
             </p>
           </Reveal>
           <Reveal className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,290px),1fr))] items-start gap-[18px]">
-            {ngTiers.map((t) => (
+            {ngTiersFor(flags).map((t) => (
               <TierCard key={t.name} tier={t} />
             ))}
           </Reveal>
@@ -182,7 +186,7 @@ export default function PricingPage() {
             </p>
           </Reveal>
           <Reveal className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] items-start gap-[18px]">
-            {dpTiers.map((t) => (
+            {dpTiersFor(flags).map((t) => (
               <TierCard key={t.name} tier={t} />
             ))}
           </Reveal>
@@ -284,7 +288,7 @@ export default function PricingPage() {
         className="border-t border-ink-900/[.08] bg-white"
       >
         <div className="mx-auto max-w-container px-section-x py-section-y">
-          <PricingCompare />
+          <PricingCompare rows={compareRowsFor(flags)} />
         </div>
       </section>
 
@@ -298,7 +302,7 @@ export default function PricingPage() {
             </h2>
           </Reveal>
           <Reveal className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-4">
-            {whyPay.map((w) => (
+            {whyPayFor(flags).map((w) => (
               <article
                 key={w.title}
                 className="grid content-start gap-3 rounded-xl border border-ink-900/[.12] bg-white p-[26px]"

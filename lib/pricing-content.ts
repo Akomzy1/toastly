@@ -1,4 +1,5 @@
 import { STARTER_MONTHLY_GISTS, gistCount, DIASPORA_USD, DIASPORA_PLUS_USD, usd } from "@/lib/plan-numbers";
+import type { FeatureFlags } from "@/lib/features";
 /**
  * Pricing content.
  *
@@ -7,6 +8,10 @@ import { STARTER_MONTHLY_GISTS, gistCount, DIASPORA_USD, DIASPORA_PLUS_USD, usd 
  * CONTENTS come from PRD.md §7.1, which is authoritative and supersedes the
  * generated design output where they disagree. Every place they disagreed is
  * marked CORRECTED below and reported to the user, never silently resolved.
+ *
+ * Live-video Gist and see-who-liked-you are listed only while their flags
+ * are on (lib/features.ts, decided 8 October 2026): use ngTiersFor,
+ * dpTiersFor, compareRowsFor and whyPayFor — never the base lists.
  */
 
 export type Tier = {
@@ -20,7 +25,7 @@ export type Tier = {
   tone: "light" | "dark" | "glass";
 };
 
-export const ngTiers: Tier[] = [
+const NG_TIERS: Tier[] = [
   {
     name: "Starter",
     price: "Free",
@@ -62,12 +67,8 @@ export const ngTiers: Tier[] = [
     for: "For the marriage track, all the way to the wedding.",
     features: [
       "Everything in Premium, plus:",
-      // REMOVED until built (decided 8 October 2026): "Live-video Gist
-      // sessions". Back when lib/features-built.ts VIDEO_GIST_BUILT is true.
-      // CORRECTED: the prototype's Premium Plus card omitted incognito, which
-      // PRD §7.1 lists as a Premium Plus feature — and it is half the reason
-      // the women's 30-day offer is Premium Plus rather than base Premium.
-      "Incognito mode",
+      // Flagged features are added here by ngTiersFor. REMOVED (decided
+      // 8 October 2026): "Incognito mode" — not built.
       // REMOVED (decided 6 October 2026): "Unlimited voice notes" — the
       // prototype lists it, but the feature doesn't exist.
       "Priority support from Lagos",
@@ -77,7 +78,7 @@ export const ngTiers: Tier[] = [
   },
 ];
 
-export const dpTiers: Tier[] = [
+const DP_TIERS: Tier[] = [
   {
     name: "Diaspora",
     price: usd(DIASPORA_USD),
@@ -103,8 +104,7 @@ export const dpTiers: Tier[] = [
     for: "For diaspora couples heading toward a Nigerian wedding abroad.",
     features: [
       "Everything in Diaspora, plus:",
-      // REMOVED until built (decided 8 October 2026): "Live-video Gist
-      // sessions". Back when lib/features-built.ts VIDEO_GIST_BUILT is true.
+      // Flagged features are added here by dpTiersFor.
       "Priority support",
     ],
     cta: "Join Diaspora Plus",
@@ -112,6 +112,18 @@ export const dpTiers: Tier[] = [
     tone: "dark",
   },
 ];
+
+/** The flagged features a Plus plan lists, in order, while each flag is on. */
+function plusExtras(f: FeatureFlags): string[] {
+  return [...(f.videoGist ? ["Live-video Gist sessions"] : []), ...(f.seeWhoLiked ? ["See who liked you"] : [])];
+}
+function withPlusExtras(tiers: Tier[], plus: string, f: FeatureFlags): Tier[] {
+  return tiers.map((t) =>
+    t.name === plus ? { ...t, features: [t.features[0], ...plusExtras(f), ...t.features.slice(1)] } : t,
+  );
+}
+export const ngTiersFor = (f: FeatureFlags): Tier[] => withPlusExtras(NG_TIERS, "Premium Plus", f);
+export const dpTiersFor = (f: FeatureFlags): Tier[] => withPlusExtras(DP_TIERS, "Diaspora Plus", f);
 
 export const trackLabels = ["Nigeria (₦)", "Diaspora ($)"];
 
@@ -125,7 +137,7 @@ export const compareCols = [
   ["Diaspora", "Diaspora Plus"],
 ];
 
-export const compareRows: [string, string[]][][] = [
+const COMPARE_ROWS: [string, string[]][][] = [
   [
     ["Verified Real (phone + liveness)", ["Included", "Included", "Included"]],
     ["Daily match feed", ["6 a day", "6 a day, priority", "6 a day, priority"]],
@@ -141,15 +153,14 @@ export const compareRows: [string, string[]][][] = [
       ],
     ],
     ["Gist sessions (audio)", [`${STARTER_MONTHLY_GISTS} a month`, "Unlimited", "Unlimited"]],
-    // REMOVED until built (decided 8 October 2026): the "Live-video Gist" row.
+    // Flagged rows ("Live-video Gist", "See who liked you") follow here — compareRowsFor.
     // CORRECTED (decided 6 October 2026, PRD §5.2.4): launch filters are
     // religion and tribe — never a promise of one that isn't built.
     [
       "Advanced filters",
       ["—", "Religion, tribe", "Religion, tribe"],
     ],
-    // ADDED: PRD §7.1 lists incognito as Premium Plus only.
-    ["Incognito mode", ["—", "—", "Included"]],
+    // REMOVED (decided 8 October 2026): the "Incognito mode" row — not built.
     ["Couple Mode", ["Included", "Included", "Included"]],
     ["AriyaPlanner handoff", ["Included", "Included", "Included"]],
     // CORRECTED: the prototype gave Premium "48 hours" priority support.
@@ -161,7 +172,7 @@ export const compareRows: [string, string[]][][] = [
     ["Verified Real (phone + liveness)", ["Included", "Included"]],
     ["Matching pools", ["Back home + diaspora", "Back home + diaspora"]],
     ["Gist sessions (audio)", ["Unlimited", "Unlimited"]],
-    // REMOVED until built (decided 8 October 2026): the "Live-video Gist" row.
+    // Flagged rows follow here — compareRowsFor.
     ["Time-zone smart scheduling", ["Included", "Included"]],
     // CORRECTED: PRD §7.1 gives advanced filters to both diaspora tiers; the
     // launch filters are religion and tribe (PRD §5.2.4).
@@ -216,7 +227,7 @@ export const coinPacks = [
   { name: "Diaspora packs — 5 to 50 coins", note: "Billed in USD, by card or Apple Pay", price: "from $1" },
 ];
 
-export const whyPay = [
+const WHY_PAY = [
   {
     title: "Premium buys pace",
     body: "Unlimited Gist sessions and a priority feed, for the months when you are genuinely looking.",
@@ -227,8 +238,8 @@ export const whyPay = [
     // Mode as a Premium Plus feature. It is free on every tier including
     // Starter (CLAUDE.md, PRD §6) and must never be presented as paid.
     title: "Premium Plus buys the whole track",
-    // Live-video Gist REMOVED until built (decided 8 October 2026).
-    body: "Incognito mode and priority support from Lagos. Couple Mode and the AriyaPlanner handoff are already yours on every tier, including free.",
+    // Rewritten by whyPayFor from the flags; incognito removed (not built).
+    body: "Priority support from Lagos. Couple Mode and the AriyaPlanner handoff are already yours on every tier, including free.",
   },
   {
     title: "Nobody buys your place in the six",
@@ -247,3 +258,29 @@ export const whyPay = [
  */
 export const whyPayNote =
   "No tier buys you visibility, raises your position in anybody's feed, or unlocks a person. Every member is verified on every tier — that part is never for sale, and neither is anything about safety: reporting, blocking, photo-reveal control or sharing your date plans.";
+
+/** The comparison rows for each track, with the flagged rows while their flags are on. */
+export function compareRowsFor(f: FeatureFlags): [string, string[]][][] {
+  const add = (rows: [string, string[]][], extra: [string, string[]][]) => {
+    const at = rows.findIndex(([label]) => label === "Gist sessions (audio)") + 1;
+    return [...rows.slice(0, at), ...extra, ...rows.slice(at)];
+  };
+  const ng: [string, string[]][] = [
+    ...(f.videoGist ? ([["Live-video Gist", ["—", "—", "Included"]]] as [string, string[]][]) : []),
+    ...(f.seeWhoLiked ? ([["See who liked you", ["With coins", "With coins", "Included"]]] as [string, string[]][]) : []),
+  ];
+  const dp: [string, string[]][] = [
+    ...(f.videoGist ? ([["Live-video Gist", ["—", "Included"]]] as [string, string[]][]) : []),
+    ...(f.seeWhoLiked ? ([["See who liked you", ["With coins", "Included"]]] as [string, string[]][]) : []),
+  ];
+  return [add(COMPARE_ROWS[0], ng), add(COMPARE_ROWS[1], dp)];
+}
+
+/** "Why pay", with Premium Plus's line naming only what's switched on. */
+export function whyPayFor(f: FeatureFlags) {
+  const plus = [...(f.videoGist ? ["live-video Gist"] : []), ...(f.seeWhoLiked ? ["seeing who liked you"] : []), "priority support from Lagos"];
+  const lead = plus.length === 1 ? plus[0] : `${plus.slice(0, -1).join(", ")} and ${plus[plus.length - 1]}`;
+  return WHY_PAY.map((w, i) =>
+    i === 1 ? { ...w, body: `${lead.charAt(0).toUpperCase()}${lead.slice(1)}. Couple Mode and the AriyaPlanner handoff are already yours on every tier, including free.` } : w,
+  );
+}

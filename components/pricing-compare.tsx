@@ -4,12 +4,7 @@ import * as React from "react";
 import { Reveal } from "@/components/reveal";
 import { Eyebrow } from "@/components/section-parts";
 import { TrackTabs } from "@/components/ui/track-tabs";
-import {
-  compareCols,
-  compareRows,
-  tableCaptions,
-  trackLabels,
-} from "@/lib/pricing-content";
+import { compareCols, tableCaptions, trackLabels } from "@/lib/pricing-content";
 
 /**
  * The feature comparison, switched by track (pricing-offer.slim.html).
@@ -18,10 +13,11 @@ import {
  * separation is the whole point of the control (SKILL.md). The table scrolls
  * horizontally inside its own container so the page body never does.
  */
-export function PricingCompare() {
+/** rows: compareRowsFor(featureFlags()), built on the server (lib/features.ts). */
+export function PricingCompare({ rows: byTrack }: { rows: [string, string[]][][] }) {
   const [track, setTrack] = React.useState(0);
   const cols = compareCols[track];
-  const rows = compareRows[track];
+  const rows = byTrack[track];
 
   return (
     // minmax(0,1fr): without it the 640px table widens the grid track and

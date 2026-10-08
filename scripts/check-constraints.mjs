@@ -1072,30 +1072,21 @@ check("no Starter Gist count or Diaspora price is written out by hand", (s, f) =
   console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
 }
 
-// Unbuilt paid features are never listed for sale (decided 8 October 2026):
-// the pricing page and plan screens (lib/pricing-content.ts and the
-// components that render it), Toastly Help's prompt, llms.txt and the
-// structured data. lib/features-built.ts says what is built.
+// Unbuilt paid features (decided 8 October 2026). Live video and see who
+// liked you are listed only while their flags are on (lib/features.ts): with
+// both flags OFF and payments ON, nothing may list them — the same check the
+// build runs (scripts/check-launch-flags.mjs), here for every flag state's
+// worst case. Incognito isn't built and has no flag: listed nowhere, ever.
 {
-  const name = "unbuilt features are not listed on pricing, plan screens, Help, llms.txt or schema";
-  const flags = fs.readFileSync("lib/features-built.ts", "utf8");
-  const built = (k) => new RegExp(`export const ${k} = true;`).test(flags);
-  const LISTINGS = [
-    "lib/pricing-content.ts", "components/pricing-card.tsx", "components/pricing-compare.tsx",
-    "components/plan/plan-page.tsx", "app/(app)/profile/plan/page.tsx", "app/(marketing)/pricing/page.tsx",
-    "lib/concierge/agent.ts", "app/llms.txt/route.ts", "lib/schema.ts",
-  ];
-  const RULES = [
-    ["VIDEO_GIST_BUILT", /\b(live[- ]?)video\b|\bvideo[- ]Gist/i, "live-video Gist"],
-    ["SEE_WHO_LIKED_BUILT", /who (has )?liked you|who likes you|see who liked/i, "see who liked you"],
-  ];
-  const hits = [];
-  for (const f of LISTINGS) {
-    if (!fs.existsSync(f)) continue;
-    const s = stripComments(fs.readFileSync(f, "utf8"), f);
-    for (const [flag, re, what] of RULES) {
-      if (!built(flag) && re.test(s)) hits.push(`${f} — lists ${what}, which isn't built (${flag} is false)`);
-    }
+  const name = "live video and see-who-liked-you listed only behind their flags; incognito nowhere";
+  const { collectListings, findViolations } = await import("./check-launch-flags.mjs");
+  const off = { videoGist: false, seeWhoLiked: false };
+  const hits = findViolations(collectListings(off), off, true);
+  for (const { source, text } of collectListings({ videoGist: true, seeWhoLiked: true })) {
+    if (/incognito/i.test(text)) hits.push(`${source} lists incognito, which isn't built`);
+  }
+  for (const f of ["lib/pricing-content.ts", "lib/schema.ts", "lib/llms.ts", "lib/concierge/system.ts", "app/llms.txt/route.ts", "app/(marketing)/pricing/page.tsx", "components/plan/plan-page.tsx"]) {
+    if (fs.existsSync(f) && /incognito/i.test(stripComments(fs.readFileSync(f, "utf8"), f))) hits.push(`${f} — lists incognito, which isn't built`);
   }
   if (hits.length) failures.push({ name, hits });
   console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);

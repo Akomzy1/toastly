@@ -21,11 +21,17 @@ import {
   profileChips,
   promptCards,
   pwaStats,
-  steps,
   testimonials,
   verifyStats,
   verifySteps,
+  stepsFor,
+  gistPointsFor,
 } from "@/lib/home-content";
+import { featureFlags } from "@/lib/features";
+
+// Video lines follow VIDEO_GIST_ENABLED (lib/features.ts).
+const flags = featureFlags();
+const steps = stepsFor(flags);
 
 export const metadata: Metadata = {
   // `absolute` bypasses the root "%s · Toastly" template — without it the
@@ -217,11 +223,7 @@ export default function HomePage() {
               where you both stare and say &ldquo;so&rdquo;.
             </p>
             <ul className="grid list-none gap-3 p-0">
-              {[
-                "Voice first, so tone does the work photos can’t.",
-                "Prompts written for Nigerian dating, not translated from California.",
-                "Live video unlocks on Premium Plus, when you both want it.",
-              ].map((t) => (
+              {gistPointsFor(flags).map((t) => (
                 <li key={t} className="flex gap-3 text-body text-ink-900">
                   <span aria-hidden="true" className="font-bold text-green-500">
                     —

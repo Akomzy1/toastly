@@ -10,6 +10,8 @@ import { countryInSentence } from "@/lib/countries";
 import { requireLiveProfile } from "@/lib/live-profile";
 import { ProfileNotLive } from "@/components/app/profile-not-live";
 import { paymentsOpenFor } from "@/lib/launch";
+import { featureFlags } from "@/lib/features";
+import { dpTiersFor, ngTiersFor } from "@/lib/pricing-content";
 import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = { title: "Your plan", robots: { index: false, follow: false } };
@@ -74,6 +76,7 @@ export default async function YourPlan({ searchParams }: { searchParams: { paid?
         stripeOn={open && paymentsConfigured("stripe")}
         closed={!open}
         paid={searchParams.paid ?? null}
+        tiers={naira ? ngTiersFor(featureFlags()) : dpTiersFor(featureFlags())}
       />
       <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">
         <HelpButton />

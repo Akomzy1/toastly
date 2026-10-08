@@ -1,3 +1,4 @@
+import { VIDEO_COMING, type FeatureFlags } from "@/lib/features";
 /**
  * Features content, transcribed from design/prototype/features.slim.html.
  *
@@ -45,7 +46,7 @@ export type Dive = {
   tone: "light" | "paper" | "dark";
 };
 
-export const deepDives: Dive[] = [
+const DEEP_DIVES: Dive[] = [
   {
     n: "02",
     kicker: "Matching",
@@ -181,3 +182,8 @@ export const minor = [
     body: "Photos load at low resolution until tapped, and Gist audio drops bitrate automatically on 3G.",
   },
 ];
+
+// Live video is described only while VIDEO_GIST_ENABLED is on (lib/features.ts).
+const VIDEO_LEDE = "Live video unlocks on Premium Plus when you both agree to it.";
+export const deepDivesFor = (f: FeatureFlags): Dive[] =>
+  DEEP_DIVES.map((d) => (f.videoGist ? d : { ...d, lede: d.lede.replace(VIDEO_LEDE, VIDEO_COMING) }));

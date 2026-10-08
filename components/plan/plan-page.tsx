@@ -6,7 +6,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { checkout, stopRenewal, type PlanState } from "@/app/(app)/profile/plan/actions";
 import { payWithCoins } from "@/app/(app)/coins/actions";
 import { Notice } from "@/components/ui/notice";
-import { ngTiers, dpTiers } from "@/lib/pricing-content";
+import type { Tier } from "@/lib/pricing-content";
 
 /**
  * Your plan — PRD §7, decided 4 October 2026.
@@ -138,10 +138,13 @@ export function PlanPage(p: {
   /** Before launch (lib/launch.ts): nothing can be bought by this member yet. */
   closed?: boolean;
   paid: string | null;
+  /** The track's tiers, built from the feature flags on the server. */
+  tiers: Tier[];
 }) {
   const renewing = p.subs.filter((s) => s.status === "active" || s.status === "past_due" || s.status === "non_renewing");
   const blocksNewRenewal = p.subs.some((s) => s.status === "active" || s.status === "past_due");
-  const tiers = p.track === "ngn" ? ngTiers.filter((t) => t.name !== "Starter") : dpTiers;
+  // Built on the server from the flags (lib/features.ts): ngTiersFor / dpTiersFor.
+  const tiers = p.track === "ngn" ? p.tiers.filter((t) => t.name !== "Starter") : p.tiers;
   const notice = p.paid ? PAID[p.paid] : null;
 
   return (

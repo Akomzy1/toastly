@@ -14,7 +14,12 @@ import {
 import { JsonLd } from "@/components/json-ld";
 import { Reveal } from "@/components/reveal";
 import { faqPageSchema } from "@/lib/schema";
-import { benefits, faqs, steps } from "@/lib/how-it-works-content";
+import { benefits, faqsFor, stepsFor } from "@/lib/how-it-works-content";
+import { featureFlags } from "@/lib/features";
+
+// Video lines follow VIDEO_GIST_ENABLED (lib/features.ts).
+const steps = stepsFor(featureFlags());
+const faqs = faqsFor(featureFlags());
 
 export const metadata: Metadata = {
   title: "How it works",

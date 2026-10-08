@@ -1,4 +1,11 @@
 import { STARTER_MONTHLY_GISTS, DIASPORA_USD, DIASPORA_PLUS_USD } from "@/lib/plan-numbers";
+import { featureFlags, type FeatureFlags } from "@/lib/features";
+
+/** "live-video Gist, see who liked you and priority support" — only what's switched on. */
+function plusList(f: FeatureFlags): string {
+  const items = [...(f.videoGist ? ["live-video Gist"] : []), ...(f.seeWhoLiked ? ["see who liked you"] : []), "priority support"];
+  return items.length === 1 ? items[0] : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
 /**
  * schema.org structured data.
  *
@@ -50,7 +57,7 @@ export function organizationSchema() {
  * separate here as they do on the page — they are different products for
  * different members, not one price converted.
  */
-export function softwareApplicationSchema() {
+export function softwareApplicationSchema(f: FeatureFlags = featureFlags()) {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -81,7 +88,7 @@ export function softwareApplicationSchema() {
         name: "Premium Plus",
         price: "7000",
         priceCurrency: "NGN",
-        description: "Everything in Premium, plus incognito mode and priority support.",
+        description: `Everything in Premium, plus ${plusList(f)}.`,
       },
       {
         "@type": "Offer",
@@ -96,7 +103,7 @@ export function softwareApplicationSchema() {
         name: "Diaspora Plus",
         price: String(DIASPORA_PLUS_USD),
         priceCurrency: "USD",
-        description: "Everything in Diaspora, plus priority support.",
+        description: `Everything in Diaspora, plus ${plusList(f)}.`,
       },
     ],
   };

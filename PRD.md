@@ -292,11 +292,11 @@ Source: the AI-agent research report (October 2026). The market is splitting: in
 | Layer | Mechanism | Notes |
 |---|---|---|
 | Domestic coins | ₦500–₦5,000 packs via Paystack/Flutterwave/USSD/bank transfer/OPay | Date stakes, unlocking the locked inbox, additional Gist sessions, unlock "who liked you", paying domestic naira subscriptions. Held in a closed-loop coin balance, never refunded as cash (§5.5). **No Boosts, no Super Likes** — see §7.2 |
-| Domestic subscription | Premium ~₦3,500/mo; Premium Plus ~₦7,000/mo (unlocks live-video Gist, advanced filters, incognito) | Benchmarked directly against MyPerson's published pricing |
+| Domestic subscription | Premium ~₦3,500/mo; Premium Plus ~₦7,000/mo (unlocks live-video Gist when it ships, advanced filters) | Benchmarked directly against MyPerson's published pricing |
 | Diaspora subscription | $10–20/mo via card/Apple Pay | Covers both back-home and diaspora-to-diaspora matching |
 | AriyaPlanner wedding funnel | Multiple ₦50,000 Event Passes per graduated couple | LTV engine, not launch revenue |
 | Trust | Free, always | Verification and safety features are never paywalled |
-| Women's launch offer | **30 days free Premium Plus (decided) — or 30 days free Diaspora Plus for women abroad**, so the offer matches their track and includes diaspora-to-diaspora matching. **Starts at go-live, not sign-up** (§7.3) | Not base Premium — Premium Plus includes live-video Gist and incognito, both carrying real safety value. Note: shorter than MyPerson's 90-day offer, so Toastly wins on tier but loses on the directly-comparable duration number — monitor whether 30 days is long enough to correct the gender ratio at launch |
+| Women's launch offer | **30 days free Premium Plus (decided) — or 30 days free Diaspora Plus for women abroad**, so the offer matches their track and includes diaspora-to-diaspora matching. **Starts at go-live, not sign-up** (§7.3) | Not base Premium — Premium Plus includes live-video Gist once it ships (incognito is not built, decided 8 October 2026). Note: shorter than MyPerson's 90-day offer, so Toastly wins on tier but loses on the directly-comparable duration number — monitor whether 30 days is long enough to correct the gender ratio at launch |
 
 ### 7.1 Tier-by-tier package (corrected, authoritative)
 
@@ -308,12 +308,12 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Daily match feed | ✅ (6/day — **fixed, not a paid upgrade**) | ✅ (6/day — see note below) | ✅ (6/day) |
 | Text chat | **Receive-locked (decided):** Starter users CAN receive messages from any match, and see only a bare count — **"1 new message" (or a running count for multiple)** — with **no sender name, no photo, and no text preview shown**. Message **content is fully blurred/locked until upgrade**. Starter cannot send free text at all. Framed transparently as a paid feature ("New message waiting — Premium unlocks your inbox"), never presented as a bug or hidden without explanation | ✅ Unlimited send + receive | ✅ Unlimited send + receive |
 | Gist sessions (voice) | ✅ **1/month (decided 8 October 2026; was 2)** — with chat removed, this is Starter's *only* outbound channel. It counts only a Gist the member **started** and only when it **connects**; accepting an invitation is free and never counts, so a Starter can still talk to everyone who invites them. Coins can buy one extra | ✅ Unlimited | ✅ Unlimited |
-| Gist sessions (video) | ❌ | ❌ | ✅ Live-video Gist — **not built yet; not listed on pricing, plan screens or Help until it is (decided 8 October 2026)** |
+| Gist sessions (video) | ❌ | ❌ | ✅ Live-video Gist — **a launch item, not built yet. Listed only while `VIDEO_GIST_ENABLED` is on (decided 8 October 2026); off, Home, How It Works and Features say "Voice first. Live video is coming to Premium Plus."** |
 | Coin-deposit dates | ✅ | ✅ | ✅ |
 | **Couple Mode + AriyaPlanner handoff** | ✅ **Free/universal — moved here, not tier-gated** | ✅ | ✅ |
 | Advanced filters (tribe, religion, state, diaspora, intent) — faith: religion only, never denomination (§5.2.3) | ❌ | ✅ | ✅ |
-| Incognito mode | ❌ | ❌ | ✅ |
-| See-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included — **not built yet (no "like" exists to see); not listed anywhere for sale until it is (decided 8 October 2026)** |
+| Incognito mode | ❌ | ❌ | ~~✅~~ **Not built — not listed anywhere (decided 8 October 2026)** |
+| See-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included — **not built yet (no "like" exists to see). Listed only while `SEE_WHO_LIKED_ENABLED` is on (decided 8 October 2026)** |
 | Priority support | ❌ | ❌ | ✅ ("from Lagos") |
 | Read receipts | N/A on Starter (no chat to have receipts on) — **still flagged, not decided for paid tiers** | | |
 
@@ -326,7 +326,7 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Verified Real profile | ✅ | ✅ (everything in Diaspora, plus:) |
 | Matching pools | Both — "back home" and diaspora-to-diaspora | Both |
 | Gist sessions (voice) | ✅ **Unlimited (decided)** — see rationale below | ✅ Unlimited |
-| Gist sessions (video) | ❌ | ✅ Live-video Gist — **not built yet; not listed until it is** |
+| Gist sessions (video) | ❌ | ✅ Live-video Gist — **listed only while `VIDEO_GIST_ENABLED` is on** |
 | Time-zone aware scheduling | ✅ | ✅ |
 | Advanced filters | ✅ | ✅ |
 | Couple Mode + AriyaPlanner handoff | ✅ Free/universal, same as domestic | ✅ |
@@ -366,7 +366,7 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 - **No plan screen, upgrade prompt or payment UI of any kind before go-live.** Plans, coins, checkout and coin-paid plans need a live profile — enforced in the database (a new checkout can't be opened, coins can't pay a plan) and on every route, not just hidden in the app.
 - **At go-live — women:** women in Nigeria get 30 days of Premium Plus; women abroad get 30 days of Diaspora Plus. No card. **The 30 days start at go-live, not sign-up.** A notice three days before the end, in the app and by email. On day 30 she moves to the free plan. Never charged automatically.
 - **At go-live — everyone else:** one plan screen with "Start free" as an equal choice. Nigeria: Starter / Premium ₦3,500 / Premium Plus ₦7,000. Abroad: free / Diaspora $10 / Diaspora Plus $20. One tap to skip.
-- **After go-live, upgrade prompts appear only in context, at a limit:** a locked message, a reply attempt, the Gist cap reached, filters, the diaspora pool (video and see-who-liked-you once built). Each names the plan and its price, from config, and has "Not now". The Gist cap opens the in-app plan screen. **Never in front of a safety feature:** on the locked inbox, report and block come first and the upgrade sits apart, below them.
+- **After go-live, upgrade prompts appear only in context, at a limit:** a locked message, a reply attempt, the Gist cap reached, filters, the diaspora pool (video and see-who-liked-you once their flags are on). Each names the plan and its price, from config, and has "Not now". The Gist cap opens the in-app plan screen. **Never in front of a safety feature:** on the locked inbox, report and block come first and the upgrade sits apart, below them.
 - **An extra Gist with coins (decided 8 October 2026):** at the Gist cap, the "You've used this month's Gist" screen shows the price with **[Use coins]** and **[Not now]**, and beneath: "Or get unlimited Gists with Premium · ₦3,500/mo" (abroad: "with Diaspora · $10/mo"), prices from config. The price is ₦1,000 in Nigeria and $3 abroad, in coins at the built pack rate, rounded to whole coins — **10 coins** (₦100 a coin) and **15 coins** ($0.20 a coin) — both in config (`plan_config.extra_gist_coins_ngn`, `extra_gist_coins_usd`). [Use coins] sends the invite marked as paid with coins; **the coins come off only when the call connects, once** — however often anyone rejoins — and **nothing is spent if it never connects**. Accepting an invitation stays free. Gift and bought coins can both pay (gift first); stakes still need bought coins. A Gist paid with coins doesn't use the month's free one.
 - **Refunds (decided 8 October 2026):** Stripe and Paystack refunds are processed automatically. A refunded plan ends; coins held towards it come back as coins; unspent coins from a refunded purchase are removed; if some were already spent — or a refunded subscription still renews, or a refund is partial — staff get a case. **Coins are never refunded as cash.**
 - **Protecting the offer:** gender can't be changed in the app once live (through support only); the offer is granted at most once per verified face and once per phone number; a confirmed false gender goes through the review queue, never automatic action — on a "Not who they say they are" report, a reviewer can correct the gender, which ends the offer. Audit-logged, and the member is told with a reason category.
