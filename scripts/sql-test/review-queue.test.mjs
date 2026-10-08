@@ -146,7 +146,8 @@ test("evidence carries the allowed facts and never a message body", async () => 
 test("restrict hides the member and stops new contact; safety tools still work; lifting restores it — all audit-logged", async () => {
   const a = await member("Restrict Reporter");
   const b = await member("Restricted Member");
-  const c = await member("Bystander");
+  // A woman, so only the restriction keeps the (male) restricted member out of her six (0036).
+  const c = await member("Bystander", { gender: "woman" });
   await report(a, b);
   const id = await itemFor(b, "report");
   const d = await asStaff("select staff_decide($1, 'restrict', 'pattern of reports') as d", [id]);
@@ -189,7 +190,8 @@ test("restrict hides the member and stops new contact; safety tools still work; 
 test("re-verification hides the member from new feeds until a fresh selfie passes", async () => {
   const a = await member("RV Reporter");
   const b = await member("Asked To Re-verify");
-  const c = await member("RV Bystander");
+  // A woman, so only the re-verification keeps the (male) member out of her six (0036).
+  const c = await member("RV Bystander", { gender: "woman" });
   await report(a, b, "fake_profile");
   await asStaff("select staff_decide($1, 'request_reverification', 'confirm the account holder first')", [await itemFor(b, "report")]);
   assert.equal((await as(db, b, (tx) => tx.query("select reason_category from reverification_requests"))).rows[0].reason_category, "report");
@@ -269,6 +271,8 @@ test("diaspora-to-diaspora stays a Diaspora-plan feature: others abroad match ba
   const city = (await db.query("select slug from diaspora_cities where active limit 1")).rows[0].slug;
   const free = await member("Free Abroad", { country: "GB" });
   const peer = await member("Peer Abroad", { country: "GB" });
+  // A woman (0036), set after going live so she stays on the free plan too.
+  await db.query("update profiles set gender = 'woman' where id = $1", [peer]);
   await db.query("update profiles set pool = 'diaspora', diaspora_city = $2 where id in ($1, $3)", [free, city, peer]);
   const feed = await as(db, free, (tx) => tx.query("select candidate_id from build_daily_feed($1)", [free]));
   assert.ok(!feed.rows.some((r) => r.candidate_id === peer), "a free member abroad doesn't get the diaspora pool");

@@ -15,8 +15,9 @@ async function setup() {
   const me = (id, sql, params) => as(db, id, (tx) => tx.query(sql, params));
 
   /** A live member, optionally on a plan, with optional shown/hidden faith and tribe. */
-  async function member(name, { tier = null, religion = null, religionShown = true, tribe = null, tribeVis = "public" } = {}) {
-    const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
+  // A man unless the test says otherwise (goLive); 0036 pairs a man and a woman only.
+  async function member(name, { tier = null, religion = null, religionShown = true, tribe = null, tribeVis = "public", gender } = {}) {
+    const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com`, gender });
     await goLive(db, id);
     if (tier) await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, $2, 'subscription', now() + interval '30 days')", [id, tier]);
     await db.query("alter table profiles disable trigger faith_rules");
@@ -96,7 +97,7 @@ test("a religion stored before the list, or 'Prefer not to say', counts as 'does
 test("filters never change who sees the filtering member", async () => {
   const { member, setFilters, six } = await setup();
   const filterer = await member("Filterer", { tier: "premium_plus", religion: "Muslim" });
-  const other = await member("Other", { tier: "premium", religion: "Christian" });
+  const other = await member("Other", { tier: "premium", religion: "Christian", gender: "woman" });
   // The filterer excludes everyone they possibly can…
   await setFilters(filterer, { religions: ["Traditional"], religionUnsaid: false, tribes: ["Tiv"], tribeUnsaid: false });
   // …and still appears in the other member's six.
@@ -107,7 +108,7 @@ test("filters never change who sees the filtering member", async () => {
 
 test("no widening beyond the filter: fewer than six is shown as fewer", async () => {
   const { member, setFilters, six } = await setup();
-  const viewer = await member("Viewer", { tier: "premium" });
+  const viewer = await member("Viewer", { tier: "premium", gender: "woman" });
   const christian = await member("The Christian", { religion: "Christian" });
   const muslims = [];
   for (let i = 0; i < 6; i++) muslims.push(await member(`Muslim ${i}`, { religion: "Muslim" }));
@@ -127,8 +128,9 @@ test("no widening beyond the filter: fewer than six is shown as fewer", async ()
 test("Starter has no filter access", async () => {
   const { db, me, member, setFilters, passes, six } = await setup();
   const starter = await member("Starter");
-  const christian = await member("Christian", { religion: "Christian" });
-  const muslim = await member("Muslim", { religion: "Muslim" });
+  // The Starter member is a man; the two candidates are women (0036).
+  const christian = await member("Christian", { religion: "Christian", gender: "woman" });
+  const muslim = await member("Muslim", { religion: "Muslim", gender: "woman" });
   await assert.rejects(setFilters(starter, { religions: ["Christian"] }), /row-level security/i, "can't set filters");
   assert.equal((await me(starter, "select i_have_advanced_filters() as ok")).rows[0].ok, false);
 

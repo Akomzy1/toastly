@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Sign-up. Open to everyone; payments stay behind the launch switch
- * (lib/launch.ts). Gender and who you'd like to meet come from config (0036).
+ * (lib/launch.ts). "I am" is woman or man (0036).
  */
 export default async function SignUpPage() {
   const options = await getGenderOptions(createClient());

@@ -20,12 +20,8 @@ function Submit() {
 }
 
 /**
- * The sign-up form. Gender and "who you'd like to meet" are required and
- * come from the config list (gender_options, 0036) — decided 8 October 2026.
- *
- * NOT IN THE PROTOTYPE — flagged: the "Who you'd like to meet" checkboxes.
- * Built from the form's existing field and checkbox styles until a design
- * exists.
+ * The sign-up form. "I am" — woman or man — is required (0036, decided
+ * 8 October 2026); a man meets women and a woman meets men.
  */
 export function SignUpForm({ options }: { options: GenderOption[] }) {
   const [state, action] = useFormState(signUp, null);
@@ -98,9 +94,10 @@ export function SignUpForm({ options }: { options: GenderOption[] }) {
           </Label>
 
           {/*
-            Required (decided 8 October 2026): it decides who sees whom, and
-            the women's launch offer is granted when the profile goes live
-            (0035). Locked once the profile is live; support can change it.
+            Required (decided 8 October 2026): woman or man. A man meets
+            women and a woman meets men; the women's launch offer is granted
+            when the profile goes live (0035). Locked once the profile is
+            live; support can change it.
           */}
           <Label htmlFor="gender">
             I am
@@ -116,18 +113,6 @@ export function SignUpForm({ options }: { options: GenderOption[] }) {
             </Select>
           </Label>
 
-          <fieldset className="m-0 grid gap-1 border-0 p-0">
-            <legend className="mb-1 text-ui font-medium text-ink-900">Who you&rsquo;d like to meet</legend>
-            {options.map((o) => (
-              <label key={o.code} className="flex min-h-11 cursor-pointer items-center gap-3 text-ui text-ink-900">
-                <input type="checkbox" name="seeking" value={o.code} className="h-4 w-4 accent-green-500" />
-                {o.plural}
-              </label>
-            ))}
-            <span className="text-caption tracking-normal text-grey-400">
-              Choose one or more. You&rsquo;ll only meet people who&rsquo;d like to meet you too.
-            </span>
-          </fieldset>
 
           <Notice tone="info">
             <span className="flex gap-2.5">

@@ -69,7 +69,7 @@ async function give(db, id, n, bucket = "purchased") {
 async function atCap(ctx, name, opts) {
   const { db, me, member, useGist } = ctx;
   const id = await member(name, opts);
-  await useGist(id, await member(`${name} First`));
+  await useGist(id, await member(`${name} First`, { gender: "woman" }));
   assert.equal(await ctx.room(id), false);
   return id;
 }
@@ -111,9 +111,9 @@ test("coins come off only when the call connects — nothing if it never does", 
   const ctx = await setup();
   const { db, me, member } = ctx;
   const sade = await atCap(ctx, "Starter Sade");
-  const bola = await member("Bola");
-  const chidi = await member("Chidi");
-  const dami = await member("Dami");
+  const bola = await member("Bola", { gender: "woman" });
+  const chidi = await member("Chidi", { gender: "woman" });
+  const dami = await member("Dami", { gender: "woman" });
   const ans = async (id) => (await db.query("select id from prompt_answers where profile_id = $1 limit 1", [id])).rows[0].id;
 
   // At the cap, an ordinary invite is refused; a coin invite needs the coins.
@@ -155,7 +155,7 @@ test("no double charge when either person reconnects", async () => {
   const ctx = await setup();
   const { db, me, member } = ctx;
   const sade = await atCap(ctx, "Starter Sade");
-  const eko = await member("Eko");
+  const eko = await member("Eko", { gender: "woman" });
   await give(db, sade, 25);
   const s = await coinInvite(ctx, sade, eko);
   await connect(ctx, s, sade, eko);
@@ -172,8 +172,8 @@ test("the price is read from config when the call connects, by track; gift coins
   const { db, member } = ctx;
   const home = await atCap(ctx, "Home Halima");
   const away = await atCap(ctx, "Away Ayo", { country: "GB" });
-  const x = await member("Xavier");
-  const y = await member("Yemi");
+  const x = await member("Xena", { gender: "woman" });
+  const y = await member("Yemi", { gender: "woman" });
   await give(db, home, 6, "promotional");
   await give(db, home, 10);
   await give(db, away, 30);
@@ -195,7 +195,7 @@ test("an extra Gist: paid plans never pay, and members can't touch the coin colu
   const { db, me, member } = ctx;
   const paid = await member("Premium Pat");
   await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, 'premium', 'subscription', now() + interval '30 days')", [paid]);
-  const q = await member("Queen");
+  const q = await member("Queen", { gender: "woman" });
   await give(db, paid, 20);
   const s = await coinInvite(ctx, paid, q);
   assert.equal((await db.query("select paid_with_coins from gist_sessions where id = $1", [s])).rows[0].paid_with_coins, false, "unlimited plans don't use coins");

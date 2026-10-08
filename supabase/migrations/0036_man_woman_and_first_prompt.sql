@@ -1,29 +1,32 @@
--- Toastly — gender, who you'd like to meet, and a first prompt before going
--- live (decided 8 October 2026; PRD §7.3). Follows 0035.
+-- Toastly — man and woman, and a first prompt before going live (decided
+-- 8 October 2026; PRD §7.3). Follows 0035.
 --
---   - Gender and "who you'd like to meet" come from a config list
---     (gender_options; Woman/Man by default). Both are asked at sign-up.
---   - Two members appear in each other's six, and can reply, invite or open
---     each other's profile, only if EACH matches the other's preference.
---   - A profile goes live only with gender, who they'd like to meet, and at
---     least one prompt answer — on top of 0029's phone, Verified Real and
---     four photos with a matched main photo.
+--   - A member is a woman or a man — nothing else. Asked at sign-up; locked
+--     once live (support changes it).
+--   - A man meets women and a woman meets men, only. Two members appear in
+--     each other's six, and can reply, invite or open each other's profile,
+--     only if one is a woman and the other a man.
+--   - A profile goes live only with its gender and at least one prompt
+--     answer — on top of 0029's phone, Verified Real and four photos with a
+--     matched main photo.
+--   - Members from before this (sign-up offered Non-binary and Prefer not to
+--     say) are asked to choose woman or man, and are not live until they do.
+--     The lock applies only once a valid choice is set.
 --   - Fixes a gap since 0029: the six only ever draws LIVE members.
 
 -- ---------------------------------------------------------------------------
--- 1. The option list
+-- 1. Woman or man
 -- ---------------------------------------------------------------------------
 
+-- The two labels, readable by the sign-up form. Exactly these two codes.
 create table if not exists public.gender_options (
-  code text primary key check (code ~ '^[a-z_]{2,30}$'),
-  label text not null check (char_length(label) between 1 and 40),   -- "Woman", for "I am"
-  plural text not null check (char_length(plural) between 1 and 40),  -- "Women", for "who you'd like to meet"
-  sort smallint not null default 0,
-  active boolean not null default true
+  code text primary key check (code in ('woman', 'man')),
+  label text not null check (char_length(label) between 1 and 40),
+  sort smallint not null default 0
 );
-insert into public.gender_options (code, label, plural, sort) values
-  ('woman', 'Woman', 'Women', 1),
-  ('man', 'Man', 'Men', 2)
+insert into public.gender_options (code, label, sort) values
+  ('woman', 'Woman', 1),
+  ('man', 'Man', 2)
 on conflict (code) do nothing;
 alter table public.gender_options enable row level security;
 drop policy if exists "anyone reads the gender options" on public.gender_options;
@@ -31,15 +34,12 @@ create policy "anyone reads the gender options" on public.gender_options for sel
 revoke insert, update, delete on public.gender_options from anon, authenticated;
 grant select on public.gender_options to anon, authenticated;
 
-alter table public.profiles add column if not exists seeking text[];
-
 create or replace function public.is_gender_option(p_code text)
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (select 1 from gender_options where code = p_code and active);
+returns boolean language sql immutable as $$
+  select p_code in ('woman', 'man');
 $$;
 
--- A member may only choose from the list. (Gender is also locked once live,
--- guard_gender in 0035; support can change it.)
+-- A member may only choose woman or man.
 create or replace function public.guard_gender_choice()
 returns trigger language plpgsql set search_path = public as $$
 begin
@@ -47,22 +47,33 @@ begin
     return new;
   end if;
   if (tg_op = 'INSERT' or new.gender is distinct from old.gender) and new.gender is not null and not is_gender_option(new.gender) then
-    raise exception 'Choose from the list.' using errcode = '22023';
-  end if;
-  if (tg_op = 'INSERT' or new.seeking is distinct from old.seeking) and new.seeking is not null and (
-       cardinality(new.seeking) = 0
-       or exists (select 1 from unnest(new.seeking) s where not is_gender_option(s))) then
-    raise exception 'Choose who you''d like to meet from the list.' using errcode = '22023';
+    raise exception 'Choose woman or man.' using errcode = '22023';
   end if;
   return new;
 end;
 $$;
 drop trigger if exists guard_gender_choice on public.profiles;
-create trigger guard_gender_choice before insert or update of gender, seeking on public.profiles
+create trigger guard_gender_choice before insert or update of gender on public.profiles
   for each row execute function public.guard_gender_choice();
 
--- handle_new_user: 0035's definition, also storing who they'd like to meet.
--- Anything not on the list is dropped; a profile without both can't go live.
+-- guard_gender: 0035's lock, applied only once the gender is a valid choice.
+-- A member whose old answer was Non-binary or Prefer not to say can still
+-- choose woman or man after going live; after that, support changes it.
+create or replace function public.guard_gender()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if current_user in ('authenticated', 'anon')
+     and new.gender is distinct from old.gender
+     and old.first_live_at is not null
+     and is_gender_option(old.gender) then
+    raise exception 'Your gender can be changed through Toastly Help.' using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+
+-- handle_new_user: 0035's definition; anything but woman or man is dropped
+-- (and the profile can't go live until it's chosen).
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -72,22 +83,16 @@ as $$
 declare
   v_gender text := new.raw_user_meta_data ->> 'gender';
   v_country text := upper(coalesce(new.raw_user_meta_data ->> 'country_code', 'NG'));
-  v_seeking text[];
 begin
   if v_country !~ '^[A-Z]{2}$' then v_country := 'NG'; end if;
   if v_gender is not null and not is_gender_option(v_gender) then v_gender := null; end if;
-  select array_agg(distinct s) into v_seeking
-    from jsonb_array_elements_text(case when jsonb_typeof(new.raw_user_meta_data -> 'seeking') = 'array'
-                                        then new.raw_user_meta_data -> 'seeking' else '[]'::jsonb end) s
-   where is_gender_option(s);
 
-  insert into public.profiles (id, display_name, gender, country_code, seeking)
+  insert into public.profiles (id, display_name, gender, country_code)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'display_name', 'New member'),
     v_gender,
-    v_country,
-    v_seeking
+    v_country
   );
 
   -- Everyone starts on Starter. The women's launch offer begins at go-live
@@ -100,31 +105,30 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
--- 2. Each matches the other's preference
+-- 2. A man and a woman
 -- ---------------------------------------------------------------------------
 
 -- Internal: two arbitrary ids would let a client ask about OTHER pairs.
-create or replace function public.wants_each_other(p_a uuid, p_b uuid)
+create or replace function public.can_meet(p_a uuid, p_b uuid)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from profiles a, profiles b
      where a.id = p_a and b.id = p_b
-       and a.gender is not null and b.gender is not null
-       and a.gender = any (b.seeking)
-       and b.gender = any (a.seeking));
+       and is_gender_option(a.gender) and is_gender_option(b.gender)
+       and a.gender <> b.gender);
 $$;
-revoke all on function public.wants_each_other(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.can_meet(uuid, uuid) from public, anon, authenticated;
 
 -- For the reply policy: only ever about the caller.
-create or replace function public.wants_each_other_with(p_other uuid)
+create or replace function public.can_meet_with(p_other uuid)
 returns boolean language sql stable security definer set search_path = public as $$
-  select wants_each_other(auth.uid(), p_other);
+  select can_meet(auth.uid(), p_other);
 $$;
-revoke all on function public.wants_each_other_with(uuid) from public, anon;
-grant execute on function public.wants_each_other_with(uuid) to authenticated;
+revoke all on function public.can_meet_with(uuid) from public, anon;
+grant execute on function public.can_meet_with(uuid) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 3. Going live needs gender, who you'd like to meet, and a prompt answer
+-- 3. Going live needs a gender and a prompt answer
 -- ---------------------------------------------------------------------------
 
 create or replace function public.profile_is_live(p_profile_id uuid)
@@ -136,14 +140,13 @@ returns boolean language sql stable security definer set search_path = public as
        and p.main_photo_id is not null
        and exists (select 1 from profile_photos m where m.id = p.main_photo_id and m.face_match = 'matched')
        and visible_photo_count(p.id) >= min_live_photos()
-       -- 0036: who they are, who they'd like to meet, and one answer.
+       -- 0036: woman or man, and one answer.
        and is_gender_option(p.gender)
-       and coalesce(cardinality(p.seeking), 0) > 0
        and exists (select 1 from prompt_answers a where a.profile_id = p.id)
       from profiles p where p.id = p_profile_id), false);
 $$;
 
--- What the not-live screen needs (0029's, plus the three new steps).
+-- What the not-live screen needs (0029's, plus the two new steps).
 create or replace function public.live_profile_status()
 returns jsonb language sql stable security definer set search_path = public as $$
   select jsonb_build_object(
@@ -158,21 +161,20 @@ returns jsonb language sql stable security definer set search_path = public as $
       when p.main_photo_id is not null and exists (select 1 from profile_photos m where m.id = p.main_photo_id and m.face_match = 'matched') then 'matched'
       when p.pending_main_photo_id is not null then (select face_match::text from profile_photos where id = p.pending_main_photo_id)
       else 'none' end,
-    'about_you', is_gender_option(p.gender) and coalesce(cardinality(p.seeking), 0) > 0,
+    'about_you', is_gender_option(p.gender),
     'prompt', exists (select 1 from prompt_answers a where a.profile_id = p.id),
     -- Was live before: "access paused", not "not live yet".
     'was_live', p.first_live_at is not null)
   from profiles p where p.id = auth.uid();
 $$;
 
--- Answering the first prompt, or setting who they'd like to meet, can be
--- the step that makes a profile live: stamp it (and so start the women's
--- offer, 0035).
+-- Answering the first prompt, or choosing woman or man, can be the step that
+-- makes a profile live: stamp it (and so start the women's offer, 0035).
 drop trigger if exists prompt_answers_stamp_first_live on public.prompt_answers;
 create trigger prompt_answers_stamp_first_live after insert on public.prompt_answers
   for each row execute function public.stamp_first_live_trigger();
 drop trigger if exists profiles_stamp_first_live_about_you on public.profiles;
-create trigger profiles_stamp_first_live_about_you after update of gender, seeking on public.profiles
+create trigger profiles_stamp_first_live_about_you after update of gender on public.profiles
   for each row execute function public.stamp_first_live_trigger();
 
 -- ---------------------------------------------------------------------------
@@ -180,7 +182,7 @@ create trigger profiles_stamp_first_live_about_you after update of gender, seeki
 -- ---------------------------------------------------------------------------
 
 -- build_daily_feed: 0031's definition, plus (a) only LIVE candidates — a gap
--- since 0029 — and (b) each matches the other's preference.
+-- since 0029 — and (b) a man and a woman only.
 create or replace function public.build_daily_feed(p_profile_id uuid)
 returns setof public.daily_feed
 language plpgsql
@@ -251,8 +253,8 @@ begin
       and p.paused = false
       -- Only live members are ever shown (PRD §5.1.2) — missing since 0029.
       and profile_is_live(p.id)
-      -- Each matches the other's "who you'd like to meet" (0036).
-      and wants_each_other(p_profile_id, p.id)
+      -- A man and a woman only (0036).
+      and can_meet(p_profile_id, p.id)
       and not exists (select 1 from account_restrictions r where r.profile_id = p.id and r.lifted_at is null)
       and not exists (select 1 from reverification_requests v where v.profile_id = p.id)
       and (
@@ -329,8 +331,8 @@ as $$
       where (b.blocker_id = p_viewer and b.blocked_id = p_owner)
          or (b.blocker_id = p_owner and b.blocked_id = p_viewer)
     ) then false
-    -- Each must match the other's "who you'd like to meet" (0036).
-    when not wants_each_other(p_viewer, p_owner) then false
+    -- A man and a woman only (0036).
+    when not can_meet(p_viewer, p_owner) then false
     -- An active couple: paused to everyone else, never to each other.
     when exists (
       select 1 from couples c
@@ -378,12 +380,12 @@ create policy "send a reply" on public.replies for insert
     and public.profile_is_live(auth.uid()) and public.profile_is_live(recipient_id)
     and exists (select 1 from prompt_answers a where a.id = prompt_answer_id and a.profile_id = recipient_id)
     and (kind <> 'text' or current_tier(auth.uid()) <> 'starter')
-    -- Each matches the other's "who you'd like to meet" (0036).
-    and public.wants_each_other_with(recipient_id)
+    -- A man and a woman only (0036).
+    and public.can_meet_with(recipient_id)
     and not exists (select 1 from blocks b where (b.blocker_id = sender_id and b.blocked_id = recipient_id)
                                               or (b.blocker_id = recipient_id and b.blocked_id = sender_id)));
 
--- gist_invite: 0029's definition, plus each matching the other's preference.
+-- gist_invite: 0029's definition, plus a man and a woman only.
 create or replace function public.gist_invite(p_prompt_answer_id uuid)
 returns uuid
 language plpgsql
@@ -414,7 +416,7 @@ begin
   if exists (
     select 1 from blocks b
     where (b.blocker_id = v_me and b.blocked_id = v_to) or (b.blocker_id = v_to and b.blocked_id = v_me)
-  ) or not wants_each_other(v_me, v_to) then
+  ) or not can_meet(v_me, v_to) then
     raise exception 'That answer isn''t available.' using errcode = 'P0002';
   end if;
   -- One open invite or Gist per pair at a time.

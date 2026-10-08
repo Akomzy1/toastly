@@ -14,8 +14,9 @@ before(async () => {
   db = await freshDb();
 });
 
-async function member(name, { paid = false } = {}) {
-  const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
+// A man unless the test says otherwise (goLive); only a man and a woman meet (0036).
+async function member(name, { paid = false, gender } = {}) {
+  const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com`, gender });
   await db.query("update profiles set stage = 'verified_real' where id = $1", [id]);
   await goLive(db, id);
   if (paid) await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, 'premium', 'subscription', now() + interval '30 days')", [id]);
@@ -70,7 +71,7 @@ test("one number, one account: bound by the server, checked by a yes/no", async 
 test("replies: paid members send text, Starter sends a Gist invite, nobody sends as someone else", async () => {
   const paid = await member("Replier Paid", { paid: true });
   const starter = await member("Replier Starter");
-  const them = await member("Answer Writer");
+  const them = await member("Answer Writer", { gender: "woman" });
   const { rows: [ans] } = await db.query("insert into prompt_answers (profile_id, prompt_id, answer) values ($1, 1, 'Jollof, obviously') returning id", [them]);
   // Members read only the answers of today's six, so they can only reply to those.
   for (const [i, who] of [paid, starter].entries()) {
@@ -82,7 +83,7 @@ test("replies: paid members send text, Starter sends a Gist invite, nobody sends
   await me(starter, "insert into replies (sender_id, recipient_id, prompt_answer_id, kind, body) values ($1, $2, $3, 'gist_invite', null)", [starter, them, ans.id]);
   await assert.rejects(me(paid, "insert into replies (sender_id, recipient_id, prompt_answer_id, kind, body) values ($1, $2, $3, 'text', 'hi')", [starter, them, ans.id]),
     "can't send as someone else");
-  const other = await member("Not The Writer");
+  const other = await member("Not The Writer", { gender: "woman" });
   await assert.rejects(me(paid, "insert into replies (sender_id, recipient_id, prompt_answer_id, kind, body) values ($1, $2, $3, 'text', 'hi')", [paid, other, ans.id]),
     "the answer must be the recipient's");
 });

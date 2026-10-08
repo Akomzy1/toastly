@@ -137,10 +137,12 @@ test("dollar payments: card and connection country are checked against where you
 
 test("switched off: the member doesn't see members abroad, and they don't see the member", async () => {
   await reset();
-  const closed = await member("Local Only");
+  // Women in Nigeria, a man abroad (0036: a man and a woman only), so only
+  // the setting decides who sees whom.
+  const closed = await member("Local Only", { gender: "woman" });
   await me(closed, "select confirm_country('NG')");
   await me(closed, "update profiles set open_to_abroad = false where id = $1", [closed]);
-  const open = await member("Local Open");
+  const open = await member("Local Open", { gender: "woman" });
   await me(open, "select confirm_country('NG')");
   const abroad = await member("Abroad Looking Home", { phone: "+447700900444" });
   await me(abroad, "select confirm_country('GB', $1)", [gbCity]);
@@ -173,8 +175,9 @@ test("the age range filters only the member's own six, on every plan, and 70 mea
   const thisYear = new Date().getUTCFullYear();
   const viewer = await member("Viewer 30", { dob: `${thisYear - 30}-01-01` });
   await me(viewer, "select confirm_country('NG')");
-  const inRange = await member("Age 31", { dob: `${thisYear - 31}-01-01` });
-  const tooOld = await member("Age 50", { dob: `${thisYear - 50}-01-01` });
+  // The viewer is a man on Starter; the two candidates are women (0036).
+  const inRange = await member("Age 31", { dob: `${thisYear - 31}-01-01`, gender: "woman" });
+  const tooOld = await member("Age 50", { dob: `${thisYear - 50}-01-01`, gender: "woman" });
   await db.query("update entitlements set ends_at = now() where profile_id = $1 and tier <> 'starter'", [viewer]);
   assert.equal((await db.query("select current_tier($1) as t", [viewer])).rows[0].t, "starter", "free plan");
   await only(viewer, [inRange, tooOld]);

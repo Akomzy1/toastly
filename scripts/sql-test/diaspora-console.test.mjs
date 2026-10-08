@@ -37,7 +37,8 @@ const reset = () => db.exec("delete from daily_feed; delete from seen_candidates
 
 test("one Nigeria pool: members abroad who chose back home appear to members in Nigeria, both ways", async () => {
   await reset();
-  const lagos = await member("Lagos Member");
+  // A woman in Lagos; the members abroad are men (0036: a man and a woman only).
+  const lagos = await member("Lagos Member", { gender: "woman" });
   const homeAbroad = await member("Abroad Back Home", { country: "GB", pool: "back_home" });
   const bothAbroad = await member("Abroad Both", { country: "GB", pool: "both", diasporaPlan: true });
   const onlyDiaspora = await member("Abroad Diaspora Only", { country: "GB", pool: "diaspora", diasporaPlan: true });
@@ -50,7 +51,8 @@ test("one Nigeria pool: members abroad who chose back home appear to members in 
 
 test("'Open to people living abroad' off works both ways (decided 5 October 2026)", async () => {
   await reset();
-  const closed = await member("Local Only");
+  // A woman and a man (0036), so only the setting keeps them apart.
+  const closed = await member("Local Only", { gender: "woman" });
   await as(db, closed, (tx) => tx.query("update profiles set open_to_abroad = false where id = $1", [closed]));
   const abroad = await member("Abroad Looking Home", { country: "US", pool: "back_home" });
   assert.ok(!(await feed(closed)).includes(abroad), "not in their six");
@@ -59,7 +61,8 @@ test("'Open to people living abroad' off works both ways (decided 5 October 2026
 
 test("diaspora-to-diaspora needs a Diaspora plan on both sides and the choice on both sides", async () => {
   await reset();
-  const paidA = await member("Paid A", { country: "GB", pool: "diaspora", diasporaPlan: true });
+  // Paid A is a woman; the others are men (0036: a man and a woman only).
+  const paidA = await member("Paid A", { country: "GB", pool: "diaspora", diasporaPlan: true, gender: "woman" });
   const paidB = await member("Paid B", { country: "GB", pool: "both", diasporaPlan: true });
   const free = await member("Free Abroad", { country: "GB", pool: "diaspora" });
   const paidHomeOnly = await member("Paid Home Only", { country: "GB", pool: "back_home", diasporaPlan: true });

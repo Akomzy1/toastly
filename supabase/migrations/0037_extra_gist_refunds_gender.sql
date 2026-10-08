@@ -155,7 +155,7 @@ begin
   if exists (
     select 1 from blocks b
     where (b.blocker_id = v_me and b.blocked_id = v_to) or (b.blocker_id = v_to and b.blocked_id = v_me)
-  ) or not wants_each_other(v_me, v_to) then
+  ) or not can_meet(v_me, v_to) then
     raise exception 'That answer isn''t available.' using errcode = 'P0002';
   end if;
   -- One open invite or Gist per pair at a time.
@@ -610,7 +610,7 @@ begin
     v_actions := v_actions || coalesce((
       select jsonb_agg('correct_gender:' || o.code order by o.sort)
         from gender_options o
-       where o.active and o.code is distinct from (select gender from profiles where id = i.subject_id)), '[]'::jsonb);
+       where o.code is distinct from (select gender from profiles where id = i.subject_id)), '[]'::jsonb);
   end if;
 
   return jsonb_build_object(

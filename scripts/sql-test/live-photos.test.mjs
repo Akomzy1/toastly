@@ -20,12 +20,13 @@ before(async () => {
   await db.query("insert into staff_members (profile_id) values ($1)", [staff]);
 });
 
-async function member(name, { live = false, paid = false } = {}) {
+async function member(name, { live = false, paid = false, gender = "man" } = {}) {
   const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
   await db.query("update profiles set stage = 'verified_real', phone_verified_at = now() where id = $1", [id]);
   // 0036's steps (gender, who they'd like to meet, a first answer) done up
   // front: these tests are about photos and the selfie.
-  await db.query("update profiles set gender = 'man', seeking = '{woman,man}' where id = $1", [id]);
+  // A man unless the test says otherwise: only a man and a woman meet.
+  await db.query("update profiles set gender = $2 where id = $1", [id, gender]);
   await db.query("insert into prompt_answers (profile_id, prompt_id, answer) values ($1, 10, 'Being early, every time') on conflict do nothing", [id]);
   if (paid) await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, 'premium', 'subscription', now() + interval '30 days')", [id]);
   if (live) await goLive(db, id);
@@ -42,7 +43,8 @@ const isLive = async (id) => (await db.query("select profile_is_live($1) as l", 
 // --- the rule ---------------------------------------------------------------
 
 test("not live: no feed, no other profiles, no answers, no invites, no messages, no dates", async () => {
-  const notLive = await member("Not Live Yet", { paid: true });
+  // A woman, so every refusal below is about going live, not about who meets whom (0036).
+  const notLive = await member("Not Live Yet", { paid: true, gender: "woman" });
   const live = await member("Live Member", { live: true, paid: true });
   const { rows: [ans] } = await db.query("insert into prompt_answers (profile_id, prompt_id, answer) values ($1, 1, 'Suya at midnight') returning id", [live]);
   await db.query("insert into daily_feed (profile_id, feed_date, position, candidate_id) values ($1, current_date, 1, $2)", [notLive, live]);
@@ -124,7 +126,7 @@ test("six photos, plus one replacement in flight", async () => {
 
 test("a replacement is checked while the old main photo stays live, and stays private until it matches", async () => {
   const m = await member("Replacer", { live: true });
-  const viewer = await member("Viewer", { live: true });
+  const viewer = await member("Viewer", { live: true, gender: "woman" });
   // The viewer has a reason to see the profile (0032): it's in their six.
   await db.query("insert into daily_feed (profile_id, feed_date, position, candidate_id) values ($1, current_date, 1, $2)", [viewer, m]);
   const oldMain =(await db.query("select main_photo_id from profiles where id = $1", [m])).rows[0].main_photo_id;

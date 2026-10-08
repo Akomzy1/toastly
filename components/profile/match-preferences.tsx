@@ -107,16 +107,6 @@ export function MatchPreferences({
       {/* Addition, flagged: the way into Filters (premium-filters.slim.html;
           PRD §5.2.4) — a row in this card's own pattern. */}
       <div className="grid rounded-xl border border-ink-900/[.12] bg-white">
-        {/* Addition, flagged (0036): who you'd like to meet, in the same row pattern. */}
-        <Link href="/profile/about-you" className="flex min-h-14 items-center justify-between gap-3 border-b border-ink-900/10 px-[15px] py-3 text-inherit no-underline">
-          <span className="grid min-w-0 gap-[3px]">
-            <span className="text-ui font-medium text-ink-900">Who you&rsquo;d like to meet</span>
-            <span className="text-[13.5px] leading-[1.5] text-grey-600">You only meet people who&rsquo;d like to meet you too</span>
-          </span>
-          <span aria-hidden="true" className="text-[16px] text-grey-400">
-            ›
-          </span>
-        </Link>
         <Link href="/profile/filters" className="flex min-h-14 items-center justify-between gap-3 px-[15px] py-3 text-inherit no-underline">
           <span className="grid min-w-0 gap-[3px]">
             <span className="text-ui font-medium text-ink-900">Filters</span>

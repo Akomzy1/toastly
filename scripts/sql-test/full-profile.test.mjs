@@ -16,9 +16,13 @@ async function setup() {
   const db = await freshDb();
   const me = (id, sql, params) => as(db, id, (tx) => tx.query(sql, params));
 
-  async function member(name, { tier = null, live = true } = {}) {
+  // A man unless `woman` (0036: only a man and a woman meet). A woman is set
+  // after going live, so the women's launch offer never changes the plan a
+  // test gives her.
+  async function member(name, { tier = null, live = true, woman = false } = {}) {
     const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
     if (live) await goLive(db, id);
+    if (woman) await db.query("update profiles set gender = 'woman' where id = $1", [id]);
     if (tier) await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, $2, 'subscription', now() + interval '30 days')", [id, tier]);
     await db.query("insert into prompt_answers (profile_id, prompt_id, answer) values ($1, 1, 'Church, then jollof')", [id]);
     return id;
@@ -61,7 +65,7 @@ async function setup() {
 test("a member cannot open a profile outside these relationships", async () => {
   const { db, me, member, opens, inSix, invite } = await setup();
   const a = await member("Adaeze", { tier: "premium" });
-  const b = await member("Bola", { tier: "premium" });
+  const b = await member("Bola", { tier: "premium", woman: true });
 
   assert.equal(await opens(a, b), false, "two live strangers: no browsing");
   assert.equal(await opens(b, a), false);
@@ -87,7 +91,7 @@ test("a member cannot open a profile outside these relationships", async () => {
   assert.equal(await opens(a, b), false, "blocked: never");
 
   // No live profile, no access — either side.
-  const notLive = await member("Chidi", { live: false });
+  const notLive = await member("Chidi", { live: false, woman: true });
   await inSix(notLive, a);
   assert.equal(await opens(notLive, a), false, "a member who isn't live opens nothing");
   const c = await member("Dami");
@@ -96,8 +100,8 @@ test("a member cannot open a profile outside these relationships", async () => {
 
   // A paused profile is closed — except to an active Couple Mode partner.
   const e = await member("Efe");
-  const f = await member("Femi");
-  const g = await member("Gbenga");
+  const f = await member("Femi", { woman: true });
+  const g = await member("Gbenga", { woman: true });
   await inSix(g, e);
   const [lo, hi] = [e, f].sort();
   await db.query("insert into couples (member_a, member_b, status, proposed_by, started_at) values ($1, $2, 'active', $1, now())", [lo, hi]);
@@ -106,7 +110,7 @@ test("a member cannot open a profile outside these relationships", async () => {
   assert.equal(await opens(g, e), false, "a paused profile leaves everyone's six");
 
   // An invite that was declined or ran out doesn't let the inviter keep looking.
-  const h = await member("Hauwa");
+  const h = await member("Hauwa", { woman: true });
   const i = await member("Ife");
   const s = await invite(h, i);
   assert.equal(await opens(h, i), true, "while the invite is open, both ways");
@@ -120,21 +124,21 @@ test("a member cannot open a profile outside these relationships", async () => {
 test("everyone who reaches out can be opened, and matches see each other both ways", async () => {
   const { db, member, opens, reply, invite } = await setup();
   const a = await member("Adaeze", { tier: "premium" });
-  const b = await member("Bola", { tier: "premium_plus" });
+  const b = await member("Bola", { tier: "premium_plus", woman: true });
 
   await reply(b, a);
   assert.equal(await opens(a, b), true, "a reply to my answer lets me open its sender");
   assert.equal(await opens(b, a), false, "…it doesn't widen what the sender sees");
 
   const c = await member("Chidi", { tier: "diaspora" });
-  const d = await member("Dami");
+  const d = await member("Dami", { woman: true });
   await invite(c, d);
   assert.equal(await opens(d, c), true, "an invitation lets me open the inviter");
   assert.equal(await opens(c, d), true, "…and the inviter me, while it's open");
 
   // Gist partners: for as long as the match exists.
   const e = await member("Efe");
-  const f = await member("Femi");
+  const f = await member("Femi", { woman: true });
   const s = await invite(e, f, "accepted");
   assert.equal(await opens(e, f), true);
   assert.equal(await opens(f, e), true);
@@ -151,7 +155,7 @@ test("a Starter member CAN open a Gist inviter's profile", async () => {
   const { db, member, opens, profileFor, invite } = await setup();
   const starter = await member("Starter");
   for (const tier of [null, "premium", "premium_plus", "diaspora", "diaspora_plus"]) {
-    const inviter = await member(`Inviter ${tier ?? "starter"}`, { tier });
+    const inviter = await member(`Inviter ${tier ?? "starter"}`, { tier, woman: true });
     const s = await invite(inviter, starter);
     assert.equal(await opens(starter, inviter), true, `invited by a ${tier ?? "starter"} member`);
     // Photos too, under the inviter's default reveal choice.
@@ -165,7 +169,7 @@ test("a Starter member CAN open a Gist inviter's profile", async () => {
 test("a Starter member still cannot see who sent a locked message", async () => {
   const { db, me, member, opens, profileFor, reply } = await setup();
   const starter = await member("Starter");
-  const sender = await member("Sender", { tier: "premium" });
+  const sender = await member("Sender", { tier: "premium", woman: true });
 
   // A text reply to one of the Starter member's answers…
   await reply(sender, starter);
@@ -194,7 +198,7 @@ test("a Starter member still cannot see who sent a locked message", async () => 
 
 test("no profile view is written anywhere the other member can read", async () => {
   const { db, me, member, opens, profileFor, inSix, invite, reply } = await setup();
-  const viewer = await member("Viewer", { tier: "premium" });
+  const viewer = await member("Viewer", { tier: "premium", woman: true });
   const owner = await member("Owner");
   const other = await member("Other", { tier: "premium" });
   await inSix(viewer, owner);
@@ -244,7 +248,7 @@ test("no profile view is written anywhere the other member can read", async () =
 test("age, 'matched' and relationship history follow the same rule", async () => {
   const { db, me, member, profileFor, inSix, reply, invite } = await setup();
   const viewer = await member("Viewer", { tier: "premium" });
-  const owner = await member("Owner");
+  const owner = await member("Owner", { woman: true });
   await db.query("update profile_birthdates set date_of_birth = current_date - interval '29 years 2 days' where profile_id = $1", [owner]);
   await db.query("insert into profile_history (profile_id, history, visibility) values ($1, 'divorced', 'on_match') on conflict (profile_id) do update set history = 'divorced', visibility = 'on_match'", [owner]);
   const ask = async (who, sql) => (await me(who, sql, [owner])).rows[0];
@@ -274,7 +278,7 @@ test("age, 'matched' and relationship history follow the same rule", async () =>
   // Starter: a match made of their Gist invite and a text reply they can't
   // read is not a match they can see — or "on match" fields would name the sender.
   const starter = await member("Starter");
-  const writer = await member("Writer", { tier: "premium" });
+  const writer = await member("Writer", { tier: "premium", woman: true });
   await db.query("insert into profile_history (profile_id, history, visibility) values ($1, 'widowed', 'on_match') on conflict (profile_id) do update set history = 'widowed', visibility = 'on_match'", [writer]);
   await inSix(starter, writer);
   await reply(starter, writer, "gist_invite");
@@ -289,7 +293,7 @@ test("age, 'matched' and relationship history follow the same rule", async () =>
 test("a member who can open a profile cannot read a hidden field by querying the table directly", async () => {
   const { db, me, member, profileFor, inSix, invite } = await setup();
   const viewer = await member("Viewer", { tier: "premium" });
-  const owner = await member("Owner");
+  const owner = await member("Owner", { woman: true });
   // Every optional field filled, each with a different choice.
   await db.query("alter table profiles disable trigger faith_rules");
   await db.query(
@@ -354,7 +358,7 @@ test("genotype 'all matches': a locked text reply never reveals a match to a Sta
   const genotypeOf = async (viewer, owner) => (await me(viewer, "select get_genotype_for($1) as g", [owner])).rows[0].g;
 
   const starter = await member("Starter");
-  const writer = await member("Writer", { tier: "premium" });
+  const writer = await member("Writer", { tier: "premium", woman: true });
   await share(starter, "AA");
   await share(writer, "AS");
   await inSix(starter, writer);

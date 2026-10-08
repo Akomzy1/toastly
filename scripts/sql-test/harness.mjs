@@ -123,14 +123,13 @@ export async function asService(db, fn) {
  * the server records these results — every member-facing rule still applies
  * to what the test does next.
  */
-export async function goLive(db, id, { phoneHash, seeking } = {}) {
-  // 0036: going live needs a gender from the list, who they'd like to meet,
-  // and one prompt answer. Test members default to a man who'd meet anyone
-  // (women and men), so any two of them match each other unless a test says
-  // otherwise; the women's offer still follows the gender a test signs up with.
+export async function goLive(db, id, { phoneHash } = {}) {
+  // 0036: going live needs woman or man, and one prompt answer. A test member
+  // with no valid gender becomes a man. A man meets only women, so a test that
+  // pairs two members makes one of them a woman.
   await db.query(
-    "update profiles set gender = case when is_gender_option(gender) then gender else 'man' end, seeking = coalesce($2::text[], seeking, '{woman,man}') where id = $1",
-    [id, seeking ?? null],
+    "update profiles set gender = case when is_gender_option(gender) then gender else 'man' end where id = $1",
+    [id],
   );
   await db.query(
     "insert into prompt_answers (profile_id, prompt_id, answer) values ($1, 10, 'Being early, every time') on conflict do nothing",

@@ -5,15 +5,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { capture } from "@/lib/analytics";
 import { dateOfBirthProblem } from "@/lib/age";
-import { getGenderOptions, parseGenderChoice } from "@/lib/gender-options";
+import { parseGender } from "@/lib/gender-options";
 
 export type AuthState = { error?: string } | null;
 
 /**
  * Signup.
  *
- * Gender and who you'd like to meet are required here (decided 8 October
- * 2026): they decide who sees whom, and the women's launch offer is granted
+ * Gender — woman or man — is required here (decided 8 October 2026): a man
+ * meets women and a woman meets men, and the women's launch offer is granted
  * at go-live by the database (0035). Intent is deliberately NOT collected here: it is a spectrum value
  * gathered during profile setup and must never block signup (CLAUDE.md).
  */
@@ -25,7 +25,6 @@ export async function signUp(
   const password = String(formData.get("password") ?? "");
   const displayName = String(formData.get("display_name") ?? "").trim();
   const gender = String(formData.get("gender") ?? "");
-  const seeking = formData.getAll("seeking").map(String);
   const dateOfBirth = String(formData.get("date_of_birth") ?? "");
 
   if (!email || !password || !displayName) {
@@ -40,8 +39,8 @@ export async function signUp(
   if (dobProblem) return { error: dobProblem };
 
   const supabase = createClient();
-  const choice = parseGenderChoice(await getGenderOptions(supabase), gender, seeking);
-  if (!choice) return { error: "Choose who you are, and who you'd like to meet." };
+  const choice = parseGender(gender);
+  if (!choice) return { error: "Choose woman or man." };
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -49,7 +48,7 @@ export async function signUp(
     options: {
       // date_of_birth is moved out of the metadata into a private table by
       // the database as soon as the profile exists (0015).
-      data: { display_name: displayName, gender: choice.gender, seeking: choice.seeking, date_of_birth: dateOfBirth },
+      data: { display_name: displayName, gender: choice, date_of_birth: dateOfBirth },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/auth/callback`,
     },
   });

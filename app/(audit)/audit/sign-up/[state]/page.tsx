@@ -25,7 +25,7 @@ function AuthShell({ children }: { children: React.ReactNode }) {
 
 const options = DEFAULT_GENDER_OPTIONS;
 
-/** Mobile-audit harness: sign-up and "About you" (0036). */
+/** Mobile-audit harness: sign-up and "About you" — woman or man (0036). */
 const STATES: Record<string, () => React.ReactNode> = {
   signup: () => (
     <AuthShell>
@@ -34,14 +34,14 @@ const STATES: Record<string, () => React.ReactNode> = {
   ),
   "about-you": () => (
     <div className="min-h-screen bg-paper">
-      <ScreenBand title="About you" sub="Who you are, and who you'd like to meet" back="/profile/preferences" />
-      <AboutYouForm options={options} gender={null} seeking={[]} genderLocked={false} />
+      <ScreenBand title="About you" sub="Woman or man" back="/profile/preferences" />
+      <AboutYouForm options={options} gender={null} genderLocked={false} />
     </div>
   ),
   "about-you-locked": () => (
     <div className="min-h-screen bg-paper">
-      <ScreenBand title="About you" sub="Who you are, and who you'd like to meet" back="/profile/preferences" />
-      <AboutYouForm options={options} gender="woman" seeking={["man"]} genderLocked />
+      <ScreenBand title="About you" sub="Woman or man" back="/profile/preferences" />
+      <AboutYouForm options={options} gender="woman" genderLocked />
     </div>
   ),
 };

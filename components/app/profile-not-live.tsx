@@ -94,11 +94,11 @@ function NotLiveYet({ status }: { status: LiveStatus }) {
       kind: status.firstAnswer ? "done" : selfieDone ? "current" : "todo",
     },
   ];
-  // Gender and who they'd like to meet are asked at sign-up; an account from
-  // before 8 October 2026 may not have them yet. NOT IN THE PROTOTYPE — flagged.
+  // Woman or man is asked at sign-up; an account from before 8 October 2026
+  // may not have it (or chose an option that's gone). NOT IN THE PROTOTYPE — flagged.
   const shown = (status.aboutYou
     ? steps
-    : [{ n: 0, label: "About you", sub: "Who you are, and who you'd like to meet", href: "/profile/about-you", kind: "current" as const }, ...steps]
+    : [{ n: 0, label: "About you", sub: "Choose woman or man", href: "/profile/about-you", kind: "current" as const }, ...steps]
   ).map((s, i) => ({ ...s, n: i + 1 }));
 
   return (

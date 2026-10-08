@@ -65,8 +65,10 @@ test("the cap is one config value: one Gist a month on Starter", async () => {
 });
 
 test("a second started Gist in a month is refused without coins", async () => {
-  const { member, invite, accept, connect, used } = await setup();
+  const { db, member, invite, accept, connect, used } = await setup();
   const starter = await member("Starter");
+  // A woman, set after going live so she stays on Starter; the others are men (0036).
+  await db.query("update profiles set gender = 'woman' where id = $1", [starter]);
   const b = await member("Bola");
   const c = await member("Chidi");
   const d = await member("Dami");
@@ -86,8 +88,10 @@ test("a second started Gist in a month is refused without coins", async () => {
 });
 
 test("accepting any number of invitations never counts", async () => {
-  const { member, invite, accept, connect, used, room } = await setup();
+  const { db, member, invite, accept, connect, used, room } = await setup();
   const starter = await member("Starter");
+  // A woman, set after going live so she stays on Starter; the inviters are men (0036).
+  await db.query("update profiles set gender = 'woman' where id = $1", [starter]);
   for (let i = 0; i < 3; i++) {
     const inviter = await member(`Inviter ${i}`, { tier: "premium" });
     const s = await invite(inviter, starter);
@@ -108,6 +112,8 @@ test("accepting any number of invitations never counts", async () => {
 test("a started Gist that never connects doesn't count", async () => {
   const { db, member, invite, accept, used, room } = await setup();
   const starter = await member("Starter");
+  // A woman, set after going live so she stays on Starter; the others are men (0036).
+  await db.query("update profiles set gender = 'woman' where id = $1", [starter]);
   const b = await member("Bola");
   const c = await member("Chidi");
   const accepted = await invite(starter, b);

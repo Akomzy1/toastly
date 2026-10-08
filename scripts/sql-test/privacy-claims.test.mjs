@@ -24,7 +24,8 @@ before(async () => {
   // Supabase grants these table privileges to signed-in members; the
   // policies decide. Mirror that, so a missing grant can't pass a test.
   await db.exec("grant usage on schema storage to authenticated; grant select, insert, update, delete on storage.objects to authenticated");
-  alice = await makeUser(db, { name: "Alice", email: `${crypto.randomUUID()}@example.com` });
+  // A woman and a man: only they can meet (0036).
+  alice = await makeUser(db, { name: "Alice", email: `${crypto.randomUUID()}@example.com`, gender: "woman" });
   bola = await makeUser(db, { name: "Bola", email: `${crypto.randomUUID()}@example.com` });
   await goLive(db, alice);
   await goLive(db, bola);
