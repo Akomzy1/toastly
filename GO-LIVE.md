@@ -280,7 +280,9 @@ privileges; compare `pg_dump --schema-only -n public` with the backup's
 `.public-schema.sql`.
 ---
 
-## 0i. release-2 — launch rules (0035) and the launch switch — NOT APPLIED
+## 0i. release-2 — launch rules (0035) and the launch switch — 0035 APPLIED 8 October 2026
+
+**0035 applied to production 8 October 2026** (owner's go-ahead): backup `backups/production-2026-10-08T12-51-24-322Z.dump` (101 tables, 328 rows) passed its restore check; production confirmed at 0034; applied in 1 s. Checked after: Starter cap 1, Diaspora 1000 / Diaspora Plus 2000 cents, the three new triggers in place, internal functions closed to members, UTF-8 text, all 101 tables' rows unchanged. The live Stripe webhook was moved to `https://www.trytoastly.com/api/webhooks/stripe` with all 10 events the app handles (same day). The code (`release-2`) merges once `LAUNCH_TEST_ACCOUNTS` is set in Vercel Production.
 
 Branch `release-2` (off `main`). Decided 8 October 2026; PRD §5.4, §7.1, §7.3.
 
