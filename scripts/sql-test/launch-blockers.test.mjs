@@ -4,7 +4,8 @@
  *
  *   node --test scripts/sql-test/launch-blockers.test.mjs
  *
- *   - An extra Gist bought with coins, only at the limit, only while priced.
+ *   - An extra Gist with coins at the cap: ₦1,000 or $3 in coins from config,
+ *     taken only when the call connects, once; accepting stays free.
  *   - Refunds: a refunded plan ends; unspent coins are removed; spent ones go
  *     to staff; nothing is ever paid out.
  *   - A reviewer corrects gender on a "Not who they say they are" report,
@@ -56,60 +57,158 @@ async function setup() {
 
 // --- 5. An extra Gist with coins ------------------------------------------------
 
-test("an extra Gist: not on sale until priced, then bought with coins only at the limit", async () => {
-  const { db, me, member, useGist, room, balances, buyPack } = await setup();
-  const starter = await member("Starter Sade");
-  const other = await member("Other Obi");
-  const third = await member("Third Tunde");
+/** Coins straight onto the ledger, as a pack or a gift would leave them. */
+async function give(db, id, n, bucket = "purchased") {
+  await db.query(
+    "insert into coin_ledger (profile_id, delta, kind, bucket, txn_id, note) values ($1, $2, $3, $4, gen_random_uuid(), 'test')",
+    [id, n, bucket === "purchased" ? "purchase" : "promo_grant", bucket],
+  );
+}
 
-  const buy = () => me(starter, "select buy_extra_gist() as r").then((x) => x.rows[0].r);
+/** A live Starter who has used this month's free Gist, plus helpers for a coin Gist. */
+async function atCap(ctx, name, opts) {
+  const { db, me, member, useGist } = ctx;
+  const id = await member(name, opts);
+  await useGist(id, await member(`${name} First`));
+  assert.equal(await ctx.room(id), false);
+  return id;
+}
+async function coinInvite(ctx, from, to) {
+  const { db, me } = ctx;
+  await db.query(`insert into daily_feed (profile_id, feed_date, position, candidate_id)
+    select $1, current_date, coalesce(max(position), 0) + 1, $2 from daily_feed where profile_id = $1 and feed_date = current_date
+    on conflict do nothing`, [from, to]);
+  const answer = (await db.query("select id from prompt_answers where profile_id = $1 limit 1", [to])).rows[0].id;
+  return (await me(from, "select gist_invite($1, true) as id", [answer])).rows[0].id;
+}
+async function connect(ctx, s, from, to) {
+  const { db, me } = ctx;
+  await me(to, "select gist_respond($1, true)", [s]);
+  await db.query("update gist_sessions set proposer_ready_at = now(), invitee_ready_at = now() where id = $1", [s]);
+  await me(from, "select gist_join($1)", [s]);
+  await me(to, "select gist_join($1)", [s]);
+}
+const coinsOf = async (db, id) => (await db.query("select coin_balance($1) as b", [id])).rows[0].b;
 
-  // While the price is unset, nothing is on sale.
-  assert.equal((await db.query("select extra_gist_coins from plan_config")).rows[0].extra_gist_coins, null);
-  await assert.rejects(buy(), /aren't available yet/);
+test("the extra Gist costs ₦1,000 or $3 in coins at the built pack rate — 10 and 15, both in config", async () => {
+  const ctx = await setup();
+  const { db, member } = ctx;
+  const cfg = (await db.query("select extra_gist_coins_ngn as ngn, extra_gist_coins_usd as usd from plan_config")).rows[0];
+  const coinNaira = (await db.query("select coin_naira from coin_config")).rows[0].coin_naira;
+  const usdRates = (await db.query("select distinct amount_minor::numeric / coins as cents from price_list where kind = 'coin_pack' and currency = 'USD' and active")).rows;
+  assert.equal(usdRates.length, 1, "every dollar pack is one rate");
+  assert.equal(cfg.ngn, Math.round(1000 / coinNaira), "₦1,000 at the coin rate");
+  assert.equal(cfg.usd, Math.round(300 / Number(usdRates[0].cents)), "$3 at the dollar pack rate");
+  assert.deepEqual(cfg, { ngn: 10, usd: 15 });
 
-  await db.query("update plan_config set extra_gist_coins = 5");
-  await assert.rejects(buy(), /still have a Gist/, "not before this month's free one is used");
-
-  await useGist(starter, other);
-  assert.equal(await room(starter), false);
-
-  // Short of coins: nothing is spent and the shortfall is named.
-  const short = await buy();
-  assert.equal(short.paid, false);
-  assert.equal(short.shortfall_coins, 5);
-
-  // Gift coins first, then bought ones.
-  await buyPack(starter, "ng-10");
-  await db.query("select grant_promo_coins($1, 3, 'welcome')", [starter]);
-  const paid = await buy();
-  assert.equal(paid.paid, true);
-  assert.deepEqual(await balances(starter), { bought: 8, promo: 0 });
-  assert.equal(await room(starter), true, "the extra Gist makes room");
-  assert.equal((await db.query("select voice_gist_allowance($1) as a", [starter])).rows[0].a, 2);
-  await assert.rejects(buy(), /still have a Gist/, "one at a time — never bought ahead");
-
-  // The extra one is used like the free one.
-  await useGist(starter, third);
-  assert.equal(await room(starter), false);
-  const ledger = (await db.query("select sum(delta)::int as d from coin_ledger where profile_id = $1 and kind = 'gist_top_up'", [starter])).rows[0].d;
-  assert.equal(ledger, -5);
+  const home = await member("Home Hauwa");
+  const away = await member("Away Ade", { country: "GB" });
+  assert.equal((await db.query("select extra_gist_price($1) as p", [home])).rows[0].p, 10);
+  assert.equal((await db.query("select extra_gist_price($1) as p", [away])).rows[0].p, 15);
 });
 
-test("an extra Gist: paid plans, members not live, and direct writes are refused", async () => {
-  const { db, me, member } = await setup();
-  await db.query("update plan_config set extra_gist_coins = 5");
+test("coins come off only when the call connects — nothing if it never does", async () => {
+  const ctx = await setup();
+  const { db, me, member } = ctx;
+  const sade = await atCap(ctx, "Starter Sade");
+  const bola = await member("Bola");
+  const chidi = await member("Chidi");
+  const dami = await member("Dami");
+  const ans = async (id) => (await db.query("select id from prompt_answers where profile_id = $1 limit 1", [id])).rows[0].id;
+
+  // At the cap, an ordinary invite is refused; a coin invite needs the coins.
+  await db.query(`insert into daily_feed (profile_id, feed_date, position, candidate_id)
+    select $1, current_date, coalesce(max(position), 0) + 1, $2 from daily_feed where profile_id = $1 and feed_date = current_date`, [sade, bola]);
+  await assert.rejects(me(sade, "select gist_invite($1)", [await ans(bola)]), /allowance/);
+  await give(db, sade, 3);
+  await assert.rejects(coinInvite(ctx, sade, bola), /You need 10 coins/);
+  await give(db, sade, 17);
+  assert.equal(await coinsOf(db, sade), 20);
+
+  // Declined: nothing spent.
+  const declined = await coinInvite(ctx, sade, bola);
+  assert.equal((await db.query("select paid_with_coins from gist_sessions where id = $1", [declined])).rows[0].paid_with_coins, true);
+  await me(bola, "select gist_respond($1, false)", [declined]);
+  assert.equal(await coinsOf(db, sade), 20, "declined — nothing spent");
+
+  // Accepted but never joined: nothing spent.
+  const quiet = await coinInvite(ctx, sade, chidi);
+  await me(chidi, "select gist_respond($1, true)", [quiet]);
+  assert.equal(await coinsOf(db, sade), 20, "accepted, never connected — nothing spent");
+
+  // Connected: 10 coins, once, recorded on the session.
+  const real = await coinInvite(ctx, sade, dami);
+  await give(db, dami, 5);
+  await connect(ctx, real, sade, dami);
+  assert.equal(await coinsOf(db, sade), 10);
+  const row = (await db.query("select coins_charged, coins_charged_at is not null as charged from gist_sessions where id = $1", [real])).rows[0];
+  assert.deepEqual(row, { coins_charged: 10, charged: true });
+
+  // Accepting stays free: the invitee's coins and count are untouched.
+  assert.equal(await coinsOf(db, dami), 5);
+  assert.equal((await db.query("select voice_gists_this_month($1) as n", [dami])).rows[0].n, 0);
+  // The paid Gist doesn't use the month's free one.
+  assert.equal((await db.query("select voice_gists_this_month($1) as n", [sade])).rows[0].n, 1);
+});
+
+test("no double charge when either person reconnects", async () => {
+  const ctx = await setup();
+  const { db, me, member } = ctx;
+  const sade = await atCap(ctx, "Starter Sade");
+  const eko = await member("Eko");
+  await give(db, sade, 25);
+  const s = await coinInvite(ctx, sade, eko);
+  await connect(ctx, s, sade, eko);
+  for (let i = 0; i < 3; i++) {
+    await me(sade, "select gist_join($1)", [s]);
+    await me(eko, "select gist_join($1)", [s]);
+  }
+  assert.equal(await coinsOf(db, sade), 15, "charged 10 once, however often anyone rejoins");
+  assert.equal((await db.query("select count(distinct txn_id)::int as n from coin_ledger where profile_id = $1 and kind = 'gist_top_up'", [sade])).rows[0].n, 1);
+});
+
+test("the price is read from config when the call connects, by track; gift coins pay first", async () => {
+  const ctx = await setup();
+  const { db, member } = ctx;
+  const home = await atCap(ctx, "Home Halima");
+  const away = await atCap(ctx, "Away Ayo", { country: "GB" });
+  const x = await member("Xavier");
+  const y = await member("Yemi");
+  await give(db, home, 6, "promotional");
+  await give(db, home, 10);
+  await give(db, away, 30);
+
+  const s1 = await coinInvite(ctx, home, x);
+  const s2 = await coinInvite(ctx, away, y);
+  // Config changes between the invite and the call: the call's price wins.
+  await db.query("update plan_config set extra_gist_coins_ngn = 7, extra_gist_coins_usd = 12");
+  await connect(ctx, s1, home, x);
+  await connect(ctx, s2, away, y);
+
+  const b = (await db.query("select purchased_balance($1) as bought, promo_balance($1) as promo", [home])).rows[0];
+  assert.deepEqual(b, { bought: 9, promo: 0 }, "7 coins: the 6 gift coins first, then 1 bought");
+  assert.equal(await coinsOf(db, away), 18, "abroad: the dollar-track price, 12");
+});
+
+test("an extra Gist: paid plans never pay, and members can't touch the coin columns or the price", async () => {
+  const ctx = await setup();
+  const { db, me, member } = ctx;
   const paid = await member("Premium Pat");
   await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, 'premium', 'subscription', now() + interval '30 days')", [paid]);
-  await assert.rejects(me(paid, "select buy_extra_gist()"), /already has unlimited Gists/);
+  const q = await member("Queen");
+  await give(db, paid, 20);
+  const s = await coinInvite(ctx, paid, q);
+  assert.equal((await db.query("select paid_with_coins from gist_sessions where id = $1", [s])).rows[0].paid_with_coins, false, "unlimited plans don't use coins");
+  await connect(ctx, s, paid, q);
+  assert.equal(await coinsOf(db, paid), 20);
 
-  const notLive = await member("Not Live Nneka", { live: false });
-  await assert.rejects(me(notLive, "select buy_extra_gist()"));
-
-  const s = await member("Starter Sola");
-  await assert.rejects(me(s, "insert into gist_extras (profile_id, coins, txn_id) values ($1, 5, gen_random_uuid())", [s]));
-  await assert.rejects(me(s, "update plan_config set extra_gist_coins = 1"));
-  await assert.rejects(as(db, null, (tx) => tx.query("select buy_extra_gist()")));
+  // A member can't mark a free Gist as paid to win back the month's free one.
+  const sade = await atCap(ctx, "Starter Sade");
+  const free = (await db.query("select id from gist_sessions where proposer_id = $1", [sade])).rows[0].id;
+  await assert.rejects(me(sade, "update gist_sessions set coins_charged_at = now(), coins_charged = 1 where id = $1", [free]), /kept by Toastly/);
+  await assert.rejects(me(sade, "update gist_sessions set paid_with_coins = true where id = $1", [free]), /kept by Toastly/);
+  await assert.rejects(me(sade, "update plan_config set extra_gist_coins_ngn = 1"));
+  await assert.rejects(me(sade, "select _charge_extra_gist($1, $2, 1)", [free, sade]));
 });
 
 // --- 6. Refunds --------------------------------------------------------------------

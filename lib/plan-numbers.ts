@@ -28,8 +28,8 @@ export const usd = (n: number) => `$${n}`;
  * decided 8 October 2026): Premium for members in Nigeria, Diaspora for
  * members abroad. Every upgrade prompt reads this — never a typed price.
  */
-export function upgradeOffer(abroad: boolean): { plan: string; price: string } {
+export function upgradeOffer(abroad: boolean): { plan: string; price: string; short: string } {
   return abroad
-    ? { plan: "Diaspora", price: `${usd(DIASPORA_USD)} a month` }
-    : { plan: "Premium", price: `${naira(PREMIUM_NGN)} a month` };
+    ? { plan: "Diaspora", price: `${usd(DIASPORA_USD)} a month`, short: `${usd(DIASPORA_USD)}/mo` }
+    : { plan: "Premium", price: `${naira(PREMIUM_NGN)} a month`, short: `${naira(PREMIUM_NGN)}/mo` };
 }

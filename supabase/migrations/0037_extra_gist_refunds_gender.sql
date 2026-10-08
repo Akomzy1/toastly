@@ -1,8 +1,8 @@
 -- Toastly — launch blockers 5, 6, 7 and 8 (decided 8 October 2026). Follows 0036.
 --
---   5. An extra Gist, bought with coins, from the "You've used this month's
---      Gist" screen. Price in plan_config.extra_gist_coins — NULL until the
---      owner sets it, and while NULL nothing is on sale.
+--   5. An extra Gist with coins, from the "You've used this month's Gist"
+--      screen: 10 coins in Nigeria, 15 abroad (plan_config), taken only when
+--      the call connects, once.
 --   6. Refunds from Stripe and Paystack, processed automatically:
 --        - a refunded plan ends;
 --        - unspent coins from a refunded purchase are removed;
@@ -17,99 +17,259 @@
 set search_path = public;
 
 -- ---------------------------------------------------------------------------
--- 5. An extra Gist, bought with coins
+-- 5. An extra Gist, paid with coins when it connects
 -- ---------------------------------------------------------------------------
+--
+-- Decided 8 October 2026:
+--   * The price is ₦1,000 for members in Nigeria and $3 for members abroad,
+--     in coins at the built pack rate, rounded to whole coins: ₦1,000 at
+--     coin_config.coin_naira (₦100 a coin) = 10; $3 at the dollar packs'
+--     rate (us-5 … us-50, $0.20 a coin) = 15. Both live here, in config.
+--   * Offered at the Gist cap. Choosing it sends the invite marked "paid with
+--     coins"; the coins come off only when the call CONNECTS — once, however
+--     many times either person rejoins. If it never connects, nothing is spent.
+--   * Gift (promotional) and bought coins can both pay, gift coins first.
+--     Stakes still need bought coins (0023, unchanged).
+--   * Accepting an invitation stays free.
 
 alter table public.plan_config
-  add column if not exists extra_gist_coins smallint check (extra_gist_coins is null or extra_gist_coins between 1 and 1000);
+  add column if not exists extra_gist_coins_ngn smallint not null default 10
+    check (extra_gist_coins_ngn between 1 and 1000),
+  add column if not exists extra_gist_coins_usd smallint not null default 15
+    check (extra_gist_coins_usd between 1 and 1000);
 
--- One row per extra Gist bought. It counts for the calendar month it was
--- bought in, like the free one.
-create table if not exists public.gist_extras (
-  id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null references public.profiles (id) on delete cascade,
-  coins integer not null check (coins > 0),
-  txn_id uuid not null,
-  bought_at timestamptz not null default now()
-);
-create index if not exists gist_extras_profile_idx on public.gist_extras (profile_id, bought_at desc);
-alter table public.gist_extras enable row level security;
-drop policy if exists "own extra gists readable" on public.gist_extras;
-create policy "own extra gists readable" on public.gist_extras for select using (auth.uid() = profile_id);
-revoke insert, update, delete on public.gist_extras from anon, authenticated;
+alter table public.gist_sessions
+  -- The proposer chose to pay with coins (at the cap, when inviting).
+  add column if not exists paid_with_coins boolean not null default false,
+  -- What was charged, and when — set once, when the call first connects.
+  add column if not exists coins_charged integer check (coins_charged is null or coins_charged > 0),
+  add column if not exists coins_charged_at timestamptz;
 
--- 0035's allowance, plus the extras bought this month.
-create or replace function public.voice_gist_allowance(p_profile_id uuid)
+-- Members can update their own sessions (0003), so these three are guarded:
+-- only gist_invite and gist_join set them. Otherwise a member could mark a
+-- free Gist as charged and win back the month's free one.
+create or replace function public.guard_gist_coins()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if current_user in ('authenticated', 'anon')
+     and (new.paid_with_coins is distinct from old.paid_with_coins
+          or new.coins_charged is distinct from old.coins_charged
+          or new.coins_charged_at is distinct from old.coins_charged_at) then
+    raise exception 'Coins for a Gist are kept by Toastly.' using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.guard_gist_coins() from public, anon, authenticated;
+drop trigger if exists guard_gist_coins on public.gist_sessions;
+create trigger guard_gist_coins before update on public.gist_sessions
+  for each row execute function public.guard_gist_coins();
+
+-- The extra Gist's price for this member: naira track if their profile is in
+-- Nigeria, dollar track if not — like coin packs (0026).
+create or replace function public.extra_gist_price(p_profile_id uuid)
+returns integer language sql stable security definer set search_path = public as $$
+  select case when coalesce((select country_code from profiles where id = p_profile_id), 'NG') = 'NG'
+              then c.extra_gist_coins_ngn else c.extra_gist_coins_usd end::integer
+    from plan_config c;
+$$;
+revoke all on function public.extra_gist_price(uuid) from public, anon;
+grant execute on function public.extra_gist_price(uuid) to authenticated, service_role;
+
+-- 0035's count, without the Gists paid with coins: those never use the
+-- month's free one.
+create or replace function public.voice_gists_this_month(p_profile_id uuid)
 returns integer
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select case current_tier(p_profile_id)
-           when 'starter' then (select starter_monthly_gists from plan_config)::integer
-                               + (select count(*)::integer from gist_extras x
-                                   where x.profile_id = p_profile_id and x.bought_at >= date_trunc('month', now()))
-           else null end;
+  select count(*)::integer
+    from gist_sessions g
+   where g.medium = 'voice'
+     and g.proposer_id = p_profile_id
+     and g.started_at >= date_trunc('month', now())
+     and g.coins_charged_at is null;
 $$;
 
--- Buy one extra Gist. Only when this month's are used up, only on a plan
--- with a monthly limit, only while a price is set. Gift coins first, then
--- bought ones (as subscribe_with_coins). Short of coins: spends nothing and
--- says how many more are needed.
-create or replace function public.buy_extra_gist()
-returns jsonb
+-- Take an extra Gist's coins: gift coins first, then bought ones, as one
+-- grouped ledger transaction, recorded on the session. Internal — called
+-- only by gist_join, once, when the call first connects.
+create or replace function public._charge_extra_gist(p_session_id uuid, p_member uuid, p_price integer)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  v_promo integer := greatest(promo_balance(p_member), 0);
+  v_from_promo integer := least(v_promo, p_price);
+  v_txn uuid := gen_random_uuid();
+begin
+  -- Never twice for one session.
+  update gist_sessions set coins_charged = p_price, coins_charged_at = now()
+   where id = p_session_id and coins_charged_at is null;
+  if not found then return; end if;
+  if v_from_promo > 0 then
+    insert into coin_ledger (profile_id, delta, kind, bucket, txn_id, note)
+    values (p_member, -v_from_promo, 'gist_top_up', 'promotional', v_txn, 'extra_gist');
+  end if;
+  if p_price - v_from_promo > 0 then
+    insert into coin_ledger (profile_id, delta, kind, bucket, txn_id, note)
+    values (p_member, -(p_price - v_from_promo), 'gist_top_up', 'purchased', v_txn, 'extra_gist');
+  end if;
+end;
+$$;
+revoke all on function public._charge_extra_gist(uuid, uuid, integer) from public, anon, authenticated;
+
+-- gist_invite: 0036's definition, plus p_use_coins. At the cap, an invite is
+-- refused unless the member chooses to pay with coins and has enough of them
+-- — nothing is taken now; gist_join charges when the call connects.
+drop function if exists public.gist_invite(uuid);
+create or replace function public.gist_invite(p_prompt_answer_id uuid, p_use_coins boolean default false)
+returns uuid
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
   v_me uuid := auth.uid();
+  v_to uuid;
+  v_id uuid;
   v_price integer;
-  v_promo integer;
-  v_bought integer;
-  v_from_promo integer;
-  v_txn uuid := gen_random_uuid();
+  v_coins boolean := false;
 begin
-  if v_me is null then raise exception 'Please sign in again.' using errcode = '42501'; end if;
-  perform assert_live(v_me);
-  -- One purchase at a time per member, so a double tap buys one.
-  perform pg_advisory_xact_lock(hashtextextended('extra_gist:' || v_me::text, 0));
-  if is_restricted(v_me) then
-    raise exception 'Your account is restricted while we review it, so you can''t start new conversations right now.' using errcode = '42501';
+  -- No live profile, no access (PRD §5.1.2): sending a Gist invite.
+  perform assert_live(auth.uid());
+  if v_me is null then
+    raise exception 'Please sign in again.' using errcode = '42501';
   end if;
-  if voice_gist_allowance(v_me) is null then
-    raise exception 'Your plan already has unlimited Gists.' using errcode = '22023';
+  select profile_id into v_to from prompt_answers where id = p_prompt_answer_id;
+  if v_to is null or v_to = v_me then
+    raise exception 'That answer isn''t available.' using errcode = 'P0002';
   end if;
-  select extra_gist_coins into v_price from plan_config;
-  if v_price is null then
-    raise exception 'Extra Gists aren''t available yet.' using errcode = '22023';
+  -- Only someone in your six today, exactly like a reply.
+  if not exists (
+    select 1 from daily_feed f
+    where f.profile_id = v_me and f.feed_date = current_date and f.candidate_id = v_to
+  ) then
+    raise exception 'You can invite people from today''s six.' using errcode = '42501';
   end if;
-  if gist_has_room(v_me) then
-    raise exception 'You still have a Gist this month.' using errcode = '22023';
+  if exists (
+    select 1 from blocks b
+    where (b.blocker_id = v_me and b.blocked_id = v_to) or (b.blocker_id = v_to and b.blocked_id = v_me)
+  ) or not wants_each_other(v_me, v_to) then
+    raise exception 'That answer isn''t available.' using errcode = 'P0002';
+  end if;
+  -- One open invite or Gist per pair at a time.
+  if exists (
+    select 1 from gist_sessions g
+    where ((g.proposer_id = v_me and g.invitee_id = v_to) or (g.proposer_id = v_to and g.invitee_id = v_me))
+      and g.status in ('proposed', 'accepted', 'live')
+      and not (g.status = 'proposed' and g.created_at < now() - interval '3 days')
+      -- A Gist whose time has run out is over, even before anyone answers
+      -- "continue?" (status stays 'live' until then).
+      and not (g.status = 'live' and g.ends_at is not null and g.ends_at < now())
+  ) then
+    raise exception 'You already have a Gist open with them.' using errcode = '23505';
+  end if;
+  if not gist_has_room(v_me) then
+    if not p_use_coins then
+      raise exception 'Monthly voice Gist allowance reached' using errcode = '42501';
+    end if;
+    v_price := extra_gist_price(v_me);
+    if greatest(promo_balance(v_me), 0) + greatest(purchased_balance(v_me), 0) < v_price then
+      raise exception 'You need % coins for an extra Gist.', v_price using errcode = '22023';
+    end if;
+    v_coins := true;
   end if;
 
-  v_promo := greatest(promo_balance(v_me), 0);
-  v_bought := greatest(purchased_balance(v_me), 0);
-  if v_promo + v_bought < v_price then
-    return jsonb_build_object('paid', false, 'price_coins', v_price, 'shortfall_coins', v_price - v_promo - v_bought);
-  end if;
-
-  v_from_promo := least(v_promo, v_price);
-  if v_from_promo > 0 then
-    insert into coin_ledger (profile_id, delta, kind, bucket, txn_id, note)
-    values (v_me, -v_from_promo, 'gist_top_up', 'promotional', v_txn, 'extra_gist');
-  end if;
-  if v_price - v_from_promo > 0 then
-    insert into coin_ledger (profile_id, delta, kind, bucket, txn_id, note)
-    values (v_me, -(v_price - v_from_promo), 'gist_top_up', 'purchased', v_txn, 'extra_gist');
-  end if;
-  insert into gist_extras (profile_id, coins, txn_id) values (v_me, v_price, v_txn);
-  return jsonb_build_object('paid', true, 'price_coins', v_price);
+  insert into gist_sessions (proposer_id, invitee_id, medium, prompt_answer_id, paid_with_coins)
+  values (v_me, v_to, 'voice', p_prompt_answer_id, v_coins)
+  returning id into v_id;
+  return v_id;
 end;
 $$;
-revoke all on function public.buy_extra_gist() from public, anon;
-grant execute on function public.buy_extra_gist() to authenticated;
+revoke all on function public.gist_invite(uuid, boolean) from public, anon;
+grant execute on function public.gist_invite(uuid, boolean) to authenticated;
+
+-- 0003's insert check, letting through a voice Gist paid with coins. Only
+-- gist_invite can insert one (members can't insert Gist rows, 0020), and it
+-- has already checked the coins. Video stays gated to its tiers.
+create or replace function public.enforce_gist_entitlement()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.medium = 'voice' and new.paid_with_coins then
+    return new;
+  end if;
+  if not can_start_gist(new.proposer_id, new.medium) then
+    if new.medium = 'video' then
+      raise exception 'Live video Gist requires Premium Plus or Diaspora Plus';
+    else
+      raise exception 'Monthly voice Gist allowance reached';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+-- gist_join: 0035's definition. When the call first connects and the
+-- proposer is past the month's free Gist, a Gist paid with coins is charged
+-- now — once; a rejoin finds started_at set and charges nothing.
+create or replace function public.gist_join(p_session_id uuid)
+returns timestamptz
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s gist_sessions%rowtype;
+  v_charge integer := 0;
+begin
+  -- No live profile, no access (PRD §5.1.2): joining a Gist call.
+  perform assert_live(auth.uid());
+  select * into s from gist_sessions where id = p_session_id for update;
+  if not found or auth.uid() not in (s.proposer_id, s.invitee_id) then
+    raise exception 'That session doesn''t exist.' using errcode = 'P0002';
+  end if;
+  if s.status not in ('accepted', 'live')
+     or s.proposer_ready_at is null or s.invitee_ready_at is null then
+    raise exception 'You can join once you''ve both said you''re ready.' using errcode = '42501';
+  end if;
+  if s.ends_at is not null and now() >= s.ends_at then
+    raise exception 'This Gist has finished.' using errcode = '42501';
+  end if;
+
+  if s.started_at is null then
+    if not gist_has_room(s.proposer_id) then
+      if s.paid_with_coins then
+        v_charge := extra_gist_price(s.proposer_id);
+        if greatest(promo_balance(s.proposer_id), 0) + greatest(purchased_balance(s.proposer_id), 0) < v_charge then
+          if auth.uid() = s.proposer_id then
+            raise exception 'You need % coins to start this Gist.', v_charge using errcode = '42501';
+          end if;
+          raise exception 'This Gist can''t start right now.' using errcode = '42501';
+        end if;
+      elsif auth.uid() = s.proposer_id then
+        raise exception 'Monthly voice Gist allowance reached' using errcode = '42501';
+      else
+        -- Never reveal the other person's plan or usage.
+        raise exception 'This Gist can''t start right now.' using errcode = '42501';
+      end if;
+    end if;
+    update gist_sessions
+       set started_at = now(),
+           ends_at = now() + interval '18 minutes',
+           status = 'live'
+     where id = p_session_id
+    returning * into s;
+    -- Charged once, as the call first connects (decided 8 October 2026).
+    if v_charge > 0 then
+      perform _charge_extra_gist(s.id, s.proposer_id, v_charge);
+    end if;
+  end if;
+  return s.ends_at;
+end;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- 6. Refunds

@@ -106,6 +106,7 @@ const ROUTES = [
   { route: "/audit/gist-invite/reply-limit", label: "Gist invite · reply-limit" },
   { route: "/audit/gist-invite/reply-limit-coins", label: "Gist invite · reply-limit-coins" },
   { route: "/audit/gist-invite/reply-limit-short", label: "Gist invite · reply-limit-short" },
+  { route: "/audit/gist-invite/reply-limit-abroad", label: "Gist invite · reply-limit-abroad" },
   { route: "/audit/gist-invite/sent", label: "Gist invite · sent" },
   { route: "/audit/gist-invite/list", label: "Gist invite · list" },
   { route: "/audit/gist-invite/list-quiet", label: "Gist invite · list-quiet" },

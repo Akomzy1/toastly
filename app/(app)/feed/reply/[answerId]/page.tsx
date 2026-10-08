@@ -43,10 +43,11 @@ export default async function ReplyPage({ params }: { params: { answerId: string
     supabase.rpc("voice_gists_this_month", { p_profile_id: user.id }),
     supabase.rpc("gist_has_room", { p_profile_id: user.id }),
     supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
-    supabase.from("plan_config").select("extra_gist_coins").maybeSingle(),
+    supabase.rpc("extra_gist_price", { p_profile_id: user.id }),
     supabase.rpc("coin_balance", { p_profile_id: user.id }),
   ]);
-  const extraPrice = (cfg as { extra_gist_coins: number | null } | null)?.extra_gist_coins ?? null;
+  // ₦1,000 or $3 in coins, by the member's track — both in plan_config (0037).
+  const extraPrice = typeof cfg === "number" && cfg > 0 ? cfg : null;
   const tier = (tierRow as Tier | null) ?? "starter";
   const paid = canSendText(tier);
   const prompt = (Array.isArray(row.prompts) ? row.prompts[0]?.text : (row.prompts as { text?: string } | null)?.text) ?? "";

@@ -1036,7 +1036,7 @@ check("no Starter Gist count or Diaspora price is written out by hand", (s, f) =
     "components/profile/filters-screen.tsx": /offer\.price/,
     "components/app/pool-plan-notice.tsx": /offer\.price/,
     "components/profile/pool-choice.tsx": /usd\(DIASPORA_USD\)/,
-    "components/gist/reply-screen.tsx": /offer\.price/,
+    "components/gist/reply-screen.tsx": /offer\.(price|short)/,
   };
   const NOT_NOW = ["lib/inbox.ts", "components/profile/filters-screen.tsx", "components/app/pool-plan-notice.tsx",
     "components/profile/pool-choice.tsx", "components/gist/reply-screen.tsx"];

@@ -30,7 +30,12 @@ function capMessage(message: string): string | null {
   return null;
 }
 
-export async function inviteToGist(promptAnswerId: string): Promise<GistState> {
+/**
+ * useCoins: at the monthly cap, send the invite as an extra Gist paid with
+ * coins (0037). Nothing is taken now — the database charges the coins only
+ * when the call connects, once.
+ */
+export async function inviteToGist(promptAnswerId: string, useCoins = false): Promise<GistState> {
   const { supabase, user } = await me();
   if (!user) return { error: "Please sign in again." };
   const live = await requireLiveProfile(supabase);
@@ -38,6 +43,7 @@ export async function inviteToGist(promptAnswerId: string): Promise<GistState> {
 
   const { data: sessionId, error } = await supabase.rpc("gist_invite", {
     p_prompt_answer_id: promptAnswerId,
+    p_use_coins: useCoins,
   });
   if (error || typeof sessionId !== "string") {
     return { error: capMessage(error?.message ?? "") ?? error?.message ?? "That didn't send. Please try again." };
@@ -56,7 +62,7 @@ export async function inviteToGist(promptAnswerId: string): Promise<GistState> {
 
 /** The same, for a <form action>. */
 export async function inviteToGistForm(_prev: GistState, formData: FormData): Promise<GistState> {
-  return inviteToGist(String(formData.get("prompt_answer_id") ?? ""));
+  return inviteToGist(String(formData.get("prompt_answer_id") ?? ""), formData.get("use_coins") === "1");
 }
 
 export async function respondToInvite(sessionId: string, accept: boolean): Promise<GistState> {
@@ -176,26 +182,3 @@ export async function submitOutcome(
   };
 }
 
-/**
- * One more Gist this month, paid in coins (0037). The database checks it's a
- * plan with a monthly limit, that this month's are used, that a price is set
- * and that the coins are there — gift coins first. Never cash.
- */
-export async function buyExtraGist(_prev: GistState, formData: FormData): Promise<GistState> {
-  const { supabase, user } = await me();
-  if (!user) return { error: "Please sign in again." };
-  const live = await requireLiveProfile(supabase);
-  if (!live.live) return { error: notLiveError(live) };
-
-  const { data, error } = await supabase.rpc("buy_extra_gist");
-  if (error) return { error: error.message };
-  const r = data as { paid: boolean; shortfall_coins?: number };
-  if (!r.paid) {
-    const n = r.shortfall_coins ?? 0;
-    return { error: `You need ${n} more coin${n === 1 ? "" : "s"} for this.` };
-  }
-  revalidatePath("/gist");
-  const back = String(formData.get("back") ?? "");
-  if (back.startsWith("/feed/reply/")) revalidatePath(back);
-  return { ok: "Done — you have one more Gist this month." };
-}

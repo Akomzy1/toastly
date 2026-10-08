@@ -4,8 +4,7 @@ import { STARTER_MONTHLY_GISTS, gistCount, type upgradeOffer } from "@/lib/plan-
 import * as React from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
-import { buyExtraGist, inviteToGistForm } from "@/app/(app)/gist/actions";
-import { useRouter } from "next/navigation";
+import { inviteToGistForm } from "@/app/(app)/gist/actions";
 import { replyToAnswer } from "@/app/(app)/feed/actions";
 import { Notice } from "@/components/ui/notice";
 import { AMBER, AnswerQuote, Band, CARD, ClockIcon, NOTE, OUTLINE, PersonHead } from "./invite-parts";
@@ -39,14 +38,6 @@ function Submit({ children, disabled }: { children: React.ReactNode; disabled?: 
   );
 }
 
-function ExtraGistButton({ coins }: { coins: number }) {
-  const { pending } = useFormStatus();
-  return (
-    <button type="submit" disabled={pending} className={OUTLINE}>
-      {pending ? "Adding…" : `One more Gist · ${coins} coins`}
-    </button>
-  );
-}
 
 const OPTION =
   "flex min-h-[72px] w-full items-center gap-3 rounded-[14px] border px-[13px] py-3.5 text-left font-sans transition-colors duration-200";
@@ -119,7 +110,7 @@ export function ReplyScreen({
   resetOn: string;
   /** The plan a Starter member would move to, and its price. */
   offer: ReturnType<typeof upgradeOffer>;
-  /** At the limit: one more Gist for coins, while a price is set (0037). */
+  /** At the limit: one more Gist for coins — its price for this member's track, and their balance (0037). */
   extraGist?: { coins: number; have: number } | null;
 }) {
   const first = name.split(" ")[0];
@@ -127,12 +118,6 @@ export function ReplyScreen({
   const [text, setText] = React.useState("");
   const [inviteState, invite] = useFormState(inviteToGistForm, null);
   const [msgState, message] = useFormState(replyToAnswer, null);
-  const [extraState, buyExtra] = useFormState(buyExtraGist, null);
-  const router = useRouter();
-  // Bought: the page reloads into the invite screen with the new Gist.
-  React.useEffect(() => {
-    if (extraState?.ok) router.refresh();
-  }, [extraState?.ok, router]);
 
   const inviteForm = (label: string, icon?: boolean) => (
     <form action={invite} className="grid gap-3">
@@ -172,40 +157,59 @@ export function ReplyScreen({
                 You&rsquo;ve used your {gistCount(STARTER_MONTHLY_GISTS)} this month.
               </p>
               <p className="m-0 text-ui leading-[1.6] text-gold-800">
-                They reset on {resetOn}. {offer.plan} ({offer.price}) gives you unlimited Gists and messages.
+                They reset on {resetOn}.
+                {extraGist ? null : <> {offer.plan} ({offer.price}) gives you unlimited Gists and messages.</>}
               </p>
             </div>
-            <div className="grid gap-2.5">
-              <Link href="/profile/plan" className={AMBER}>
-                See {offer.plan} · {offer.price}
-              </Link>
-              {/* Addition, flagged (decided 8 October 2026): one more Gist for
-                  coins. Not in gist-invite-limit.slim.html — this screen's own
-                  outline button until the prototype arrives. */}
-              {extraGist ? (
-                extraGist.have >= extraGist.coins ? (
-                  <form action={buyExtra} className="grid">
-                    <input type="hidden" name="back" value={`/feed/reply/${answerId}`} />
-                    <ExtraGistButton coins={extraGist.coins} />
-                  </form>
-                ) : (
-                  <Link href="/coins/get" className={OUTLINE}>
-                    One more Gist · {extraGist.coins} coins — get coins
-                  </Link>
-                )
-              ) : null}
-              <Link href="/feed" className={OUTLINE}>
-                Not now
-              </Link>
-            </div>
-            {extraState?.error ? <Notice tone="error">{extraState.error}</Notice> : null}
-            {extraState?.ok ? <Notice tone="success">{extraState.ok}</Notice> : null}
             {extraGist ? (
-              <p className={NOTE}>
-                You have {extraGist.have} coin{extraGist.have === 1 ? "" : "s"}. An extra Gist is for this month, and only
-                counts if the call happens.
-              </p>
-            ) : null}
+              /* Addition, flagged (decided 8 October 2026): one more Gist for
+                 coins, with [Use coins] and [Not now] and the upgrade beneath.
+                 Not in gist-invite-limit.slim.html — this screen's own buttons
+                 until the prototype arrives. */
+              <div className="grid gap-2.5">
+                <p className="m-0 px-0.5 text-ui font-semibold text-ink-900">
+                  One more Gist · {extraGist.coins} coins
+                </p>
+                <p className={NOTE}>
+                  The coins are only used if the call happens. You have {extraGist.have} coin
+                  {extraGist.have === 1 ? "" : "s"}
+                  {extraGist.have < extraGist.coins ? (
+                    <>
+                      {" "}
+                      —{" "}
+                      <Link href="/coins/get" className="inline-flex min-h-11 items-center font-semibold underline">
+                        get coins
+                      </Link>
+                    </>
+                  ) : null}
+                  .
+                </p>
+                <form action={invite} className="grid gap-2.5">
+                  <input type="hidden" name="prompt_answer_id" value={answerId} />
+                  <input type="hidden" name="use_coins" value="1" />
+                  {inviteState?.error ? <Notice tone="error">{inviteState.error}</Notice> : null}
+                  <Submit disabled={extraGist.have < extraGist.coins}>Use coins</Submit>
+                </form>
+                <Link href="/feed" className={OUTLINE}>
+                  Not now
+                </Link>
+                <p className="m-0 px-0.5 text-center text-[13.5px] leading-[1.6] text-ink-800">
+                  Or get unlimited Gists with{" "}
+                  <Link href="/profile/plan" className="inline-flex min-h-11 items-center font-semibold underline">
+                    {offer.plan} · {offer.short}
+                  </Link>
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-2.5">
+                <Link href="/profile/plan" className={AMBER}>
+                  See {offer.plan} · {offer.price}
+                </Link>
+                <Link href="/feed" className={OUTLINE}>
+                  Not now
+                </Link>
+              </div>
+            )}
             <p className="m-0 px-0.5 text-center text-[13px] leading-[1.6] text-grey-600">
               Invites others send you still arrive, and accepting one is always free.
             </p>
