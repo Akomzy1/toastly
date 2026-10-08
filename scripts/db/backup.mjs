@@ -31,7 +31,7 @@ const envFile = arg("env");
 const label = arg("label", "db");
 const outDir = arg("out", "backups");
 if (!envFile) {
-  console.error("Usage: node scripts/db/backup.mjs --env <env file> --label <production|staging|…>");
+  console.error("Usage: node scripts/db/backup.mjs --env <env file> --label <production|…>");
   process.exit(2);
 }
 

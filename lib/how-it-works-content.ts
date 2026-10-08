@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
 /**
  * How It Works content, transcribed from
  * design/prototype/how-it-works.slim.html.
@@ -60,9 +61,8 @@ export const steps: Step[] = [
       "Live video unlocks on Premium Plus, by mutual consent.",
       "Audio is compressed for Nigerian data plans.",
     ],
-    // The re-exported prototype already says 2, not the 5 recorded as a
-    // known conflict in SKILL.md. Verified against PRD §7.1: 2 is correct.
-    meta: "2 free sessions a month on Starter",
+    // From lib/plan-numbers.ts (PRD §7.1; one a month from 8 October 2026).
+    meta: `${STARTER_MONTHLY_GISTS} free session${STARTER_MONTHLY_GISTS === 1 ? "" : "s"} a month on Starter`,
     img: "/img/how-it-works/step-gisting.webp",
     alt: "A woman laughing during a voice gist session on her sofa at home",
     tone: "light",

@@ -1,5 +1,6 @@
 "use client";
 
+import { DIASPORA_USD, usd } from "@/lib/plan-numbers";
 import * as React from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
@@ -59,12 +60,15 @@ export function PoolChoice({
   diasporaPlan,
   cityOpen,
   current,
+  live = true,
 }: {
   city: string;
   hasCity: boolean;
   diasporaPlan: boolean;
   cityOpen: boolean;
   current: Pool;
+  /** Not live yet: no plan offer (PRD §7.3). */
+  live?: boolean;
 }) {
   const [state, action] = useFormState<PoolState, FormData>(savePool, null);
   const [pool, setPool] = React.useState<Pool>(current);
@@ -154,10 +158,10 @@ export function PoolChoice({
         })}
       </div>
 
-      {!diasporaPlan ? (
+      {!diasporaPlan && !live ? null : !diasporaPlan ? (
         <div className="grid gap-3 rounded-[14px] border border-ink-900/[.12] bg-white px-3.5 py-[15px]">
           <p className="m-0 text-[14.5px] leading-[1.6] text-ink-800 [text-wrap:pretty]">
-            Match with Nigerians in your city on a Diaspora plan, from $15 a month.
+            Match with Nigerians in your city on a Diaspora plan, from {usd(DIASPORA_USD)} a month.
           </p>
           <Link
             href="/profile/plan"

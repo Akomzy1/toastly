@@ -1,3 +1,4 @@
+import { DIASPORA_USD, usd } from "@/lib/plan-numbers";
 /**
  * Diaspora content, transcribed from design/prototype/diaspora.slim.html.
  *
@@ -67,7 +68,7 @@ export const blocks: DiasporaBlock[] = [
   {
     kicker: "Pricing in USD",
     title: "A separate track, not a converted one.",
-    lede: "Diaspora membership is billed in USD by card or Apple Pay, from $15 a month with both matching pools included. Coin packs for date commitments are priced in USD too, so nothing is quoted at a rate that moved last week.",
+    lede: `Diaspora membership is billed in USD by card or Apple Pay, from ${usd(DIASPORA_USD)} a month with both matching pools included. Coin packs for date commitments are priced in USD too, so nothing is quoted at a rate that moved last week.`,
     href: "/pricing",
     cta: "See USD pricing",
     img: "/img/diaspora/diaspora-usd.webp",

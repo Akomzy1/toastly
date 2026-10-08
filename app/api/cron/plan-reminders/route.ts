@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendPlanEnding } from "@/lib/email";
+import { sendOfferEnding, sendPlanEnding } from "@/lib/email";
 import { TIER_LABELS } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
 
@@ -58,5 +58,18 @@ export async function GET(request: NextRequest) {
       sent++;
     }
   }
-  return NextResponse.json({ checked: ending?.length ?? 0, sent });
+  // The women's launch offer, three days before it ends (0035): the database
+  // records the in-app notice once and returns who to email; a second run
+  // returns nobody.
+  let offers = 0;
+  const { data: ending30 } = await admin.rpc("offer_ending_notices");
+  for (const o of (ending30 ?? []) as { profile_id: string; ends_at: string; tier: Tier }[]) {
+    const { data: account } = await admin.auth.admin.getUserById(o.profile_id);
+    const email = account?.user?.email;
+    if (!email) continue;
+    const ends = new Date(o.ends_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "Africa/Lagos" });
+    const result = await sendOfferEnding(email, { plan: TIER_LABELS[o.tier], ends });
+    if (result.sent) offers++;
+  }
+  return NextResponse.json({ checked: ending?.length ?? 0, sent, offers });
 }

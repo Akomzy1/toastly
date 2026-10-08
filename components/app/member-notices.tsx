@@ -68,6 +68,17 @@ export function MemberNoticesView({
               <DismissNotice id={n.id} />
             </span>
           </Notice>
+        ) : n.kind === "offer_ending" ? (
+          <Notice key={n.id} tone="info" title="Your free month ends in three days">
+            Your 30 free days end soon. Nothing is charged — after that you&rsquo;re on Starter, which is free, and you
+            keep your matches and verification.
+            <span className="mt-1 flex flex-wrap gap-x-4">
+              <Link href="/profile/plan" className="flex min-h-11 items-center font-semibold underline">
+                See your plan
+              </Link>
+              <DismissNotice id={n.id} />
+            </span>
+          </Notice>
         ) : null,
       )}
     </div>

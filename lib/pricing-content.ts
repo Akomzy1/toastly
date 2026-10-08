@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS, gistCount, DIASPORA_USD, DIASPORA_PLUS_USD, usd } from "@/lib/plan-numbers";
 /**
  * Pricing content.
  *
@@ -28,7 +29,7 @@ export const ngTiers: Tier[] = [
     features: [
       "Verified Real profile",
       "Six matches a day",
-      "2 Gist sessions a month",
+      `${gistCount(STARTER_MONTHLY_GISTS)} a month — accepting an invitation is always free`,
       "Receive messages (unlock to read with Premium)",
       "Coin-deposit dates",
       "Couple Mode + AriyaPlanner handoff",
@@ -78,7 +79,7 @@ export const ngTiers: Tier[] = [
 export const dpTiers: Tier[] = [
   {
     name: "Diaspora",
-    price: "$15",
+    price: usd(DIASPORA_USD),
     per: " /month",
     for: "For Nigerians abroad matching back home or within their community.",
     features: [
@@ -86,7 +87,7 @@ export const dpTiers: Tier[] = [
       "Both matching pools",
       "Unlimited Gist sessions",
       "Time-zone aware scheduling",
-      // CORRECTED: PRD §7.1 gives advanced filters to Diaspora at $15. The
+      // CORRECTED: PRD §7.1 gives advanced filters to Diaspora at $10. The
       // prototype reserved them for Diaspora Plus.
       "Advanced filters",
       "Couple Mode + AriyaPlanner handoff",
@@ -96,7 +97,7 @@ export const dpTiers: Tier[] = [
   },
   {
     name: "Diaspora Plus",
-    price: "$30",
+    price: usd(DIASPORA_PLUS_USD),
     per: " /month",
     for: "For diaspora couples heading toward a Nigerian wedding abroad.",
     features: [
@@ -137,7 +138,7 @@ export const compareRows: [string, string[]][][] = [
         "Unlimited send + receive",
       ],
     ],
-    ["Gist sessions (audio)", ["2 a month", "Unlimited", "Unlimited"]],
+    ["Gist sessions (audio)", [`${STARTER_MONTHLY_GISTS} a month`, "Unlimited", "Unlimited"]],
     ["Live-video Gist", ["—", "—", "Included"]],
     // CORRECTED (decided 6 October 2026, PRD §5.2.4): launch filters are
     // religion and tribe — never a promise of one that isn't built.

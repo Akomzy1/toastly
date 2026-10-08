@@ -1,5 +1,6 @@
 "use client";
 
+import { PAYMENTS_CLOSED } from "@/lib/launch";
 import * as React from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
@@ -66,6 +67,7 @@ export function GetCoins({
   packs,
   balance,
   enabled,
+  closed = false,
   added,
   paid,
 }: {
@@ -73,6 +75,8 @@ export function GetCoins({
   packs: StorePack[];
   balance: number;
   enabled: boolean;
+  /** Before launch (lib/launch.ts). */
+  closed?: boolean;
   added: number | null;
   paid: string | null;
 }) {
@@ -130,7 +134,7 @@ export function GetCoins({
       {paid === "cancelled" ? <Notice tone="info">No payment was taken.</Notice> : null}
       {!enabled ? (
         <Notice tone="locked">
-          {currency === "USD" ? "Dollar payments aren’t connected here yet." : "Naira payments aren’t connected here yet."}
+          {closed ? PAYMENTS_CLOSED : currency === "USD" ? "Dollar payments aren’t connected here yet." : "Naira payments aren’t connected here yet."}
         </Notice>
       ) : null}
 

@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
 import type { Tier } from "@/lib/types/profile";
 
 /**
@@ -45,7 +46,7 @@ export type Capabilities = {
 const TABLE: Record<Tier, Capabilities> = {
   starter: {
     dailyMatches: 6,
-    voiceGistsPerMonth: 2,
+    voiceGistsPerMonth: STARTER_MONTHLY_GISTS,
     liveVideoGist: false,
     sendText: false,
     readInbox: false,
@@ -92,7 +93,7 @@ const TABLE: Record<Tier, Capabilities> = {
   },
   diaspora: {
     dailyMatches: 6,
-    // Parity with domestic Premium, deliberately: Diaspora at $15 is priced
+    // Parity with domestic Premium, deliberately: Diaspora at $10 is priced
     // far above ₦3,500, so capping its Gist allowance below Premium's would
     // charge more for less (PRD §7.1 rationale).
     voiceGistsPerMonth: null,

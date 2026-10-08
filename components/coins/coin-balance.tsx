@@ -1,5 +1,6 @@
 "use client";
 
+import { PAYMENTS_CLOSED } from "@/lib/launch";
 import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import Link from "next/link";
@@ -98,6 +99,7 @@ export function CoinBalance({
   premiumPlusCoins,
   history,
   paid = null,
+  paymentsOpen = true,
 }: {
   total: number;
   stakeable: number;
@@ -109,6 +111,8 @@ export function CoinBalance({
   premiumPlusCoins: number;
   history: LedgerRow[];
   paid?: string | null;
+  /** Before launch only the allow-list can buy (lib/launch.ts). */
+  paymentsOpen?: boolean;
 }) {
   const notice = paid ? PAID[paid] : null;
   return (
@@ -138,7 +142,8 @@ export function CoinBalance({
 
       {/* Coins pay naira plans only, and members abroad are never quoted naira
           (CLAUDE.md, PRD §5.5) — so this card is for members in Nigeria. */}
-      {!abroad ? (
+      {!paymentsOpen ? <Notice tone="locked">{PAYMENTS_CLOSED}</Notice> : null}
+      {paymentsOpen && !abroad ? (
         <div className={CARD}>
           <p className={LABEL_CAPS}>Pay for a plan with coins</p>
           <PlanOffer tier="premium" name="Premium" coins={premiumCoins} />
@@ -147,6 +152,7 @@ export function CoinBalance({
         </div>
       ) : null}
 
+      {paymentsOpen ? (
       <div className={CARD}>
         <p className={LABEL_CAPS}>Get coins</p>
         <p className="m-0 text-nav leading-[1.55] text-grey-600">
@@ -159,6 +165,7 @@ export function CoinBalance({
           Get coins
         </Link>
       </div>
+      ) : null}
 
       <div className="grid gap-2.5">
         <p className={`${LABEL_CAPS} px-0.5`}>History</p>

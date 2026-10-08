@@ -1,5 +1,6 @@
 "use server";
 
+import { STARTER_MONTHLY_GISTS, gistCount } from "@/lib/plan-numbers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +26,7 @@ async function me() {
  * into calm copy and move the member to the next screen.
  */
 function capMessage(message: string): string | null {
-  if (/allowance/i.test(message)) return "You've used your 2 Gists this month.";
+  if (/allowance/i.test(message)) return `You've used your ${gistCount(STARTER_MONTHLY_GISTS)} this month.`;
   return null;
 }
 

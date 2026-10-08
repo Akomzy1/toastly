@@ -14,7 +14,8 @@
  *
  * What this can't show: Supabase's own roles and permissions (the postgres
  * role there is not a superuser), its extensions, and the app over HTTP.
- * The staging rehearsal covers those.
+ * There is no staging project (owner's decision, 7 October 2026): the
+ * backup, its restore check and the rollback are the safety net for those.
  */
 import fs from "node:fs";
 import os from "node:os";

@@ -158,14 +158,9 @@ export function ReceivedView({
                   Accept
                 </button>
               </div>
-              {/* A Gist counts when it connects, for both people (decision of
-                  3 October 2026), so "It's free to accept" is only the whole
-                  truth on a paid plan. */}
-              <p className="m-0 text-center text-[13px] leading-normal text-grey-600">
-                {starter
-                  ? "It's free to accept. If the call happens, it counts as one of your 2 Gists this month."
-                  : "It's free to accept."}
-              </p>
+              {/* Accepting an invitation never counts toward anyone's Gists —
+                  only a Gist the member started does (decided 8 October 2026). */}
+              <p className="m-0 text-center text-[13px] leading-normal text-grey-600">It&rsquo;s free to accept.</p>
             </div>
           </div>
         )}

@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -55,7 +56,7 @@ export default async function ReplyPage({ params }: { params: { answerId: string
       city={person?.city ?? null}
       prompt={prompt}
       answer={row.answer}
-      gistsLeft={paid ? null : Math.max(0, 2 - ((used as number | null) ?? 0))}
+      gistsLeft={paid ? null : Math.max(0, STARTER_MONTHLY_GISTS - ((used as number | null) ?? 0))}
       resetOn={resetDate()}
     />
   );

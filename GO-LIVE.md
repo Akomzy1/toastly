@@ -117,11 +117,11 @@ Every decision is in `staff_audit_log`, which nothing can edit.
 
 ---
 
-## 0h. Religion and denomination (migration 0030) — NOT APPLIED, branch `faith-denomination`
+## 0h. Religion and denomination (migration 0030) — applied 7 October 2026 (release-1)
 
 Decided 6 October 2026 (PRD §5.2.3). Built on `faith-denomination`, stacked on
 `port-live-profile` (0030 follows 0029). **Not merged; not applied anywhere
-until staging exists** — then staging first, as in §0g, after 0029.
+until release-1** — applied 7 October 2026 (§0g).
 
 - Adds `denomination` (enum) and the 30-character "Other" texts for religion
   and denomination to `profiles`; one visibility (`religion_visibility`)
@@ -165,8 +165,7 @@ history now needs the access rule too, with "on match" counting only a
 match the viewer can see.
 
 **0033 — fields for the viewer** (decided 7 October 2026), same branch,
-after 0032. **Not applied anywhere; staging first, and nothing until
-`.env.staging.local` is filled.** `profile_for(owner)` is the only read of
+after 0032. **Applied 7 October 2026 with release-1 (§0g).** `profile_for(owner)` is the only read of
 another member: it returns just the fields the owner shows this viewer.
 Drops every policy that let a member select another member's row in
 `profiles`, `profile_history` or `profile_photos` (each member keeps their
@@ -182,52 +181,16 @@ after 0033. Reports filed as "Threatening or pressuring me"
 urgent and listed first in the review queue; waiting ones are moved up when
 it runs. Report labels changed only — database values are unchanged.
 
-## 0g. release-1 — the one release: staging, then production (0027 … 0034)
+## 0g. release-1 — applied to production 7 October 2026 (0027 … 0034)
 
-Decided 7 October 2026: **`release-1` is the only thing that goes to staging,
-then production.** It combines, in dependency order, `country-age-two-way`
+Decided 7 October 2026: **`release-1` was the one release.** It combined, in dependency order, `country-age-two-way`
 (0027), `port-live-profile` (0028, 0029), `faith-denomination` (0030, 0031)
 and `full-profile-access` (0032, 0033), plus 0034 (threat reports first).
 Migrations 0027 … 0034 run as one clean sequence; code and migrations ship
 in the same release. `privacy-policy-update` is left out — it waits on the
 UK representative. The older branches are superseded by `release-1`.
 
-Decided 6 October 2026: **staging gates every merge.** A branch is merged
-only after its migrations have run cleanly on the staging Supabase project
-(`toastly-staging`), the app has run against it on a Vercel preview, and
-the migrations have been applied to production. Production only gets
-migrations that ran cleanly on staging. **Nothing touches production
-without the owner's go-ahead.**
-
-**Staging** (values in `.env.staging.local`, git-ignored; the `[P]` names
-also go in Vercel → Environment Variables → **Preview**):
-
-1. In the staging dashboard, enable the `pg_cron` extension. Vault needs
-   nothing — 0014 and 0016 create their keys on first run.
-2. Apply `supabase/migrations/0001` … `0034` in order to staging.
-3. Deploy `release-1` as a Vercel preview pointed at staging, with Smile ID
-   **sandbox** keys and `SMILE_ID_CALLBACK_URL` = the preview's
-   `/api/smile-id/callback`. If previews are behind Vercel login, the
-   callback can't arrive: turn protection off for Preview or use a bypass
-   secret.
-4. `SMILE_ENV_FILE=.env.staging.local npm run smile:sandbox -- selfie.jpg`.
-5. On the preview, as a sandbox tester: sign up → phone → where you live →
-   four photos → onboarding selfie (identity "clear") → the callback makes
-   the profile live. Then, as staff, "Request re-verification" on that
-   member → the member's re-check selfie → the callback clears the request.
-   Then the optional ID check in the page (NIN or BVN, "clear" identity) →
-   both halves clear → the second ring. Then replace the main photo →
-   Authentication + Compare → matched. Callback URL carries the bypass
-   secret (`?x-vercel-protection-bypass=…`).
-
-   **What staging can't prove.** Sandbox verdicts follow the test identity's
-   name, not the face: measured 6 October 2026, Authentication against an
-   id that was **never enrolled also comes back clear**. So no sandbox run —
-   script or preview — shows that the onboarding selfie registered the face.
-   That needs one of: Smile ID confirming in writing that production
-   Authentication fails for an unenrolled `user_id`; or, on production after
-   release, the owner's own account — onboard, then a re-check (expect
-   clear), and an Authentication against a random id (expect a refusal).
+**No staging project** (owner's decision, 7 October 2026; `.env.staging.local` deleted 8 October). What replaced it: a read-only look at what production holds; a full backup of production with a restore check before any migration; a local rehearsal of backup → cutover → rollback (`node scripts/db/rehearse-local.mjs`); and every production step only on the owner's go-ahead.
 
 **What production holds** (read-only count, 7 October 2026): **one account —
 the owner's** (staff; profile country GB; Verified Real reached through the
@@ -241,58 +204,6 @@ but that payment and its coins are real money and the backup keeps them.
 0029's reset will move the owner's account back to "phone verified": the
 owner re-does the onboarding selfie after release.
 
-### Rehearsal on staging — SKIPPED (owner, 7 October 2026)
-
-**The owner decided to skip staging.** The local rehearsal below (`node scripts/db/rehearse-local.mjs`) is the proof of backup → cutover → rollback; what it can't show (Supabase's own roles and extensions, the app over HTTP) is not rehearsed, so the backup and restore check before step 3 and the rollback are the safety net. Kept for reference:
-
-Decided 7 October 2026. Needs `.env.staging.local` filled (every value is
-still the placeholder written on 6 October), including `SUPABASE_DB_URL`,
-plus a way to make a **staged production deployment** against staging: a
-second Vercel project (`toastly-staging`, same repo) whose Production
-environment holds the staging values, with "Auto-assign custom production
-domains" off, and `VERCEL_TOKEN` for the CLI.
-
-1. **Production's state.** Apply `0001` … `0026` to staging. Deploy `main`
-   to the staging Vercel project and promote it. `node
-   scripts/db/staging-seed.mjs --before` seeds four testers (one staff), a
-   Gist invite and a report; sign-ins go to `backups/staging-testers.json`.
-   Check sign-in works on `main`.
-2. **Cutover step 1:** apply 0027, then 0028. Check `main` still works.
-3. **Cutover step 2:** `vercel deploy --prod --skip-domain` of `release-1`
-   on the staging project (staged, not promoted).
-4. **Backup and restore check, then cutover step 3:**
-   `node scripts/db/backup.mjs --env .env.staging.local --label staging`,
-   `node scripts/db/restore-check.mjs --dump backups/staging-<time>.dump`
-   (must print RESTORE CHECK PASSED), then apply 0029 … 0034 in order.
-5. **Cutover step 4:** `vercel promote <staged url>`. Then
-   `node scripts/db/staging-seed.mjs --after` (0029 resets the testers'
-   Verified Real, as it will the owner's; this makes them live with four
-   photos each).
-6. **Check, as the testers:** sign in; today's six; a full profile (from the
-   six; fields per visibility; Report and Block in ⋯); a Gist invite (the
-   invitee opens the inviter's profile and accepts); the staff console
-   (queue loads, the seeded report opens, a "Threatening or pressuring me"
-   report lands first).
-7. **Rollback rehearsal:** `node scripts/db/rollback.mjs --env
-   .env.staging.local --dump backups/staging-<time>.dump` (dry run), then
-   `--yes` (must print ROLLBACK PASSED), promote `main` again, check
-   sign-in on `main`. Then re-apply 0029 … 0034 and promote `release-1` again
-   to leave staging at the release.
-
-Record here, for each step: start and end time, how long, and anything
-that broke.
-
-| Step | Started | Took | Result / what broke |
-|---|---|---|---|
-| 1. production's state on staging | | | |
-| 2. 0027, 0028 | | | |
-| 3. staged deploy of release-1 | | | |
-| 4. backup + restore check | | | |
-| 4. 0029 … 0034 | | | |
-| 5. promote | | | |
-| 6. checks | | | |
-| 7. rollback + main | | | |
-
 **Already proven locally** (`node scripts/db/rehearse-local.mjs`, PostgreSQL
 17, 7 October 2026): a 0026-state database with seeded members → backup
 (3.5 s) → restore check passed (63 tables, every row) → 0027 … 0034 (3.2 s)
@@ -305,8 +216,9 @@ block the restore; a foreign key added after the backup blocks it; and
 (Supabase's default privileges), re-opening functions the migrations had
 closed — the rollback switches those defaults off for the restore and puts
 them back. What local can't show — Supabase's roles (its `postgres` is not a
-superuser), extensions, the app over HTTP — is what the staging rehearsal is
-for.
+superuser), extensions, the app over HTTP — was covered in production by the
+backup, its restore check and the rollback, with each step on the owner's
+go-ahead.
 
 ### Production — each step only on the owner's go-ahead
 
@@ -368,9 +280,36 @@ privileges; compare `pg_dump --schema-only -n public` with the backup's
 `.public-schema.sql`.
 ---
 
-## 0f. Photos, the face match, no live profile no access (migration 0029) — NOT APPLIED
+## 0i. release-2 — launch rules (0035) and the launch switch — NOT APPLIED
 
-Run after 0028, **on staging first**, and only with a working Smile ID face
+Branch `release-2` (off `main`). Decided 8 October 2026; PRD §5.4, §7.1, §7.3.
+
+- **0035_launch_rules.sql:** Starter's Gist cap is **one** a month, held in `plan_config` and counting only a Gist the member **started** once it **connects** (accepting is free and never counts); Diaspora **$10**, Diaspora Plus **$20** in `price_list`; no new checkout or coin-paid plan before go-live; the women's offer granted **at go-live** (no longer at sign-up), at most once per phone number (`launch_offer_grants` keeps the number's hash after an account is deleted — see the privacy note in the report); gender locked for the member once live; the three-day ending notice (`offer_ending_notices()`, called by the daily reminder job, in the app and by email).
+- **Launch switch:** `LAUNCH_PAYMENTS_ENABLED` (off unless exactly `true`) and `LAUNCH_TEST_ACCOUNTS` (comma-separated emails). Set `LAUNCH_TEST_ACCOUNTS` to the owner's email in Vercel **Production** before deploying; leave `LAUNCH_PAYMENTS_ENABLED` unset. **Launch day = set it to `true` and redeploy.** Staff can always pay (for testing).
+- **Stripe Prices for $10 / $20.** The app finds prices by lookup key and amount, and creates one on first checkout if none matches — no Price ID goes in an env var. To create them yourself instead, in **both** test and live mode: Product "Toastly Diaspora", recurring monthly, USD **10.00**, lookup key `toastly_diaspora_monthly` ("transfer lookup key" on); Product "Toastly Diaspora Plus", recurring monthly, USD **20.00**, lookup key `toastly_diaspora_plus_monthly` (transfer on). Archive the $15/$30 prices only after confirming — nobody subscribes to them today.
+
+**Order (each on the owner's go-ahead):** backup + restore check → `node scripts/db/apply-migrations.mjs --env .env.production.local --from 0035` (check only, then `--yes`) → set the launch variables in Vercel → merge `release-2` into `main` (deploys). 0035 works with today's code; the code reads nothing that 0035 hasn't made.
+
+### Webhooks and callbacks as configured (read 8 October 2026)
+
+- **Stripe (live):** one endpoint, `https://trytoastly.com/api/webhooks/stripe` — **the bare domain, which redirects (308) to www; Stripe doesn't follow redirects, so every delivery fails.** It must be `https://www.trytoastly.com/api/webhooks/stripe`. Its events are 6 of the 9 the app handles: missing `checkout.session.expired`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `customer.subscription.created`; it also sends `charge.refunded`, which the app ignores. Changing the URL keeps the signing secret.
+- **Paystack (live):** the webhook URL is only visible in the Paystack dashboard (Settings → API Keys & Webhooks) — check it reads `https://www.trytoastly.com/api/webhooks/paystack`. The bare-domain URL would fail the same way.
+- **Smile ID:** Vercel Production `SMILE_ID_CALLBACK_URL` = `https://www.trytoastly.com/api/smile-id/callback` (set 7 October 2026). If allowlisting is on in Smile ID's portal, register www for production.
+
+### Live test on the owner's account (after release-2 is deployed)
+
+1. Sign up (or sign in) → phone code → where you live → four photos → the selfie (Smile ID **production**). Expect: live; the profile hub now shows "Your plan" and "Coins".
+2. Re-check from `/verify`: expect clear. (The real face-match test — sandbox could never show it.)
+3. Today's six → open a full profile from a card.
+4. Send a Gist invite from the six; on a second account, accept it — the invitee's count doesn't change.
+5. Smallest coin pack (₦1,000, 10 coins) → coin balance shows 10 purchased coins.
+6. One month of Premium (pass, by bank or card) → plan screen shows Premium until its end date.
+7. Refund both in the Paystack dashboard — **then see the report: the app does not reverse a refund on its own today** (no refund event is handled; marking a payment refunded and reversing its coins or plan is a staff step).
+8. `/staff`: the pricing case from the payments (if the profile country is abroad), and any report filed during the test.
+
+## 0f. Photos, the face match, no live profile no access (migration 0029) — applied 7 October 2026 (release-1)
+
+Run after 0028, and only with a working Smile ID face
 match end to end (the user's rule for these screens). **Never apply 0029 to
 production before the code with the photo screens is live** (decided
 6 October 2026): it ships in the same release, straight after the deploy —
@@ -452,9 +391,9 @@ open. Consider telling members before it ships.
 - Deleting an account now ends Couple Mode (the partner is un-paused — before,
   they stayed hidden) and returns every stake on a date not yet settled.
 
-## 0e. Ported fixes and the AriyaPlanner brief rule (migration 0028) — NOT APPLIED
+## 0e. Ported fixes and the AriyaPlanner brief rule (migration 0028) — applied 7 October 2026
 
-Run after 0027, on staging first. Apply it **before** deploying the code:
+Run after 0027. Apply it **before** deploying the code:
 the phone step calls `phone_in_use` and `record_phone_verified`.
 
 - **Phone binding needs `SUPABASE_SERVICE_ROLE_KEY`** server-side: the number
@@ -464,7 +403,7 @@ the phone step calls `phone_in_use` and `record_phone_verified`.
 - `build_daily_feed` refuses any id but the caller's; `gist_mutual_continue`
   is now true for members when both said yes (it was always false); text
   replies work (replies had no insert policy).
-## 0d. Where you live, two-way "open to abroad", age range (migration 0027) — NOT APPLIED
+## 0d. Where you live, two-way "open to abroad", age range (migration 0027) — applied 7 October 2026
 
 1. Run `supabase/migrations/0027_country_age_two_way.sql` in the SQL editor
    **before** deploying the code that reads it — the app layout and `/verify`

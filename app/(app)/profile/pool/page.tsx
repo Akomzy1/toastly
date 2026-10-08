@@ -17,9 +17,10 @@ export default async function PoolPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: tierRow }] = await Promise.all([
+  const [{ data: profile }, { data: tierRow }, { data: isLive }] = await Promise.all([
     supabase.from("profiles").select("country_code, pool, diaspora_city").eq("id", user.id).maybeSingle(),
     supabase.rpc("current_tier", { p_profile_id: user.id }),
+    supabase.rpc("profile_is_live", { p_profile_id: user.id }),
   ]);
   if (!profile) redirect("/verify");
   // Members in Nigeria have one pool; their setting is "open to abroad".
@@ -41,6 +42,7 @@ export default async function PoolPage() {
         diasporaPlan={diasporaPlan}
         cityOpen={Boolean(city?.active)}
         current={diasporaPlan ? ((profile.pool as MatchPool) ?? "back_home") : "back_home"}
+        live={isLive === true}
       />
     </>
   );

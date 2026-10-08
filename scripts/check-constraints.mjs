@@ -953,15 +953,76 @@ check("the Gist clock is 18 minutes, server-kept, extendable once", (s, f) => {
   return false;
 });
 
-// A Gist counts when the call CONNECTS, for BOTH people (decision of
-// 3 October 2026; PRD §7.1). The count must key on started_at, never on an
-// invite or an acceptance.
-check("Starter Gists are counted on connect, for both people", (s, f) => {
-  if (!/0020_gist_invites\.sql$/.test(f)) return false;
-  const fn = (s.match(/function public\.voice_gists_this_month[\s\S]*?\$\$;/) ?? [""])[0];
-  if (!/g\.started_at >= date_trunc\('month', now\(\)\)/.test(fn)) return "not counted on connect";
-  if (!/g\.proposer_id = p_profile_id or g\.invitee_id = p_profile_id/.test(fn)) return "not counted for both people";
+// Starter's Gist cap (decided 8 October 2026; PRD §7.1, 0035): it counts only
+// a Gist the member STARTED, and only when the call CONNECTS. Accepting an
+// invitation is free and never counts, so nothing checks the allowance on
+// accepting, and the moment of connecting checks only the proposer's.
+check("Starter Gists count only a Gist the member started, once it connects", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(f.replace(/\\/g, "/"))) return false; // run once
+  const latest = (name) => {
+    let body = "";
+    for (const m of fs.readdirSync("supabase/migrations").filter((x) => /\.sql$/.test(x)).sort()) {
+      const sql = fs.readFileSync(`supabase/migrations/${m}`, "utf8");
+      const re = new RegExp(`create or replace function public\\.${name}\\([\\s\\S]*?\\n\\$\\$;`, "g");
+      for (const x of sql.matchAll(re)) body = x[0];
+    }
+    return body.replace(/--[^\n]*/g, "");
+  };
+  const count = latest("voice_gists_this_month");
+  if (!/g\.proposer_id = p_profile_id/.test(count) || /invitee_id/.test(count)) return "the count isn't only the member's own started Gists";
+  if (!/g\.started_at >= date_trunc\('month', now\(\)\)/.test(count)) return "not counted when the call connects";
+  if (/gist_has_room|allowance/i.test(latest("gist_respond"))) return "accepting an invitation checks the allowance";
+  const join = latest("gist_join");
+  if (!/gist_has_room\(s\.proposer_id\)/.test(join) || /gist_has_room\(auth\.uid\(\)\)|gist_has_room\(v_other\)/.test(join)) {
+    return "connecting checks someone other than the proposer";
+  }
+  if (!/from plan_config/.test(latest("voice_gist_allowance"))) return "the Starter cap isn't read from plan_config";
   return false;
+});
+
+// One number per plan rule (decided 8 October 2026): lib/plan-numbers.ts
+// holds what screens say, the database what's enforced and charged. They
+// must agree, and nothing else may write the numbers out.
+{
+  const name = "plan numbers in lib/plan-numbers.ts match the database";
+  let hit = null;
+  try {
+    const ts = fs.readFileSync("lib/plan-numbers.ts", "utf8");
+    const num = (k) => Number((ts.match(new RegExp(`export const ${k} = (\\d+);`)) ?? [])[1]);
+    const migs = fs.readdirSync("supabase/migrations").filter((x) => /\.sql$/.test(x)).sort()
+      .map((x) => fs.readFileSync(`supabase/migrations/${x}`, "utf8").replace(/--[^\n]*/g, ""));
+    let cap = null;
+    const price = {};
+    for (const sql of migs) {
+      for (const m of sql.matchAll(/insert into public\.plan_config \(id, starter_monthly_gists\) values \(true, (\d+)\)/g)) cap = Number(m[1]);
+      for (const m of sql.matchAll(/\('([a-z_]+)',\s*'plan',\s*'(?:paystack|stripe)',\s*'(?:NGN|USD)',\s*(\d+),/g)) price[m[1]] = Number(m[2]);
+      for (const m of sql.matchAll(/update public\.price_list set amount_minor = (\d+) where sku = '([a-z_]+)'/g)) price[m[2]] = Number(m[1]);
+    }
+    const want = [
+      ["STARTER_MONTHLY_GISTS", cap],
+      ["PREMIUM_NGN", price.premium / 100],
+      ["PREMIUM_PLUS_NGN", price.premium_plus / 100],
+      ["DIASPORA_USD", price.diaspora / 100],
+      ["DIASPORA_PLUS_USD", price.diaspora_plus / 100],
+    ];
+    const bad = want.filter(([k, v]) => num(k) !== v).map(([k, v]) => `${k} is ${num(k)}, the database says ${v}`);
+    if (bad.length) hit = bad.join("; ");
+  } catch (e) {
+    hit = e.message;
+  }
+  if (hit) failures.push({ name, hits: [hit] });
+  console.log(`${hit ? "FAIL" : "ok  "}  ${name}`);
+}
+
+check("no Starter Gist count or Diaspora price is written out by hand", (s, f) => {
+  const n = f.replace(/\\/g, "/");
+  if (f.endsWith(".sql") || /lib\/plan-numbers\.ts$/.test(n)) return false;
+  const hit =
+    s.match(/\b\d+\s+(?:free\s+|voice\s+)?Gists?(?:\s+sessions?)?\s+(?:a|per|this)\s+month/i) ||
+    s.match(/your \d+ Gists?\b/i) ||
+    s.match(/\bof your \d+\b/i) ||
+    s.match(/\$(?:15|30)\b(?!\d)/);
+  return hit ? `writes out "${hit[0]}" — read it from lib/plan-numbers.ts` : false;
 });
 
 // "Photos match their selfie" is only true once the photo match ships
@@ -1262,9 +1323,10 @@ check("the AriyaPlanner brief is never filled from profiles", (s, f) => {
 
 // Route segments that ARE feed, profile-view, invite, message or date routes.
 // A new one is guarded the moment it exists, by name.
-const GUARDED_ROUTE = /^app\/\(app\)\/(feed|gist|inbox|messages?|chat|threads?|matches|members?|people)\//;
+// Plans, coins and filters too: nobody pays, or is asked to, before going live (PRD §7.3, decided 8 October 2026).
+const GUARDED_ROUTE = /^app\/\(app\)\/(feed|gist|inbox|messages?|chat|threads?|matches|members?|people|coins|profile\/plan|profile\/filters)\//;
 // Open whatever the member's status (PRD §5.1.2; decided 5 October 2026).
-const ALWAYS_OPEN_ROUTE = /^app\/\(app\)\/(verify|profile|safety-kit|couple|coins|help)\//;
+const ALWAYS_OPEN_ROUTE = /^app\/\(app\)\/(verify|profile(?!\/(plan|filters)\/)|safety-kit|couple|help)\//;
 
 check("every feed, profile-view, invite and message route is live-guarded", (s, f) => {
   const n = norm(f);
@@ -1299,7 +1361,7 @@ check("dates: only proposing and staking need a live profile", (s, f) => {
   return false;
 });
 
-check("verification, photos, settings, data, safety, Couple Mode and coins never require a live profile", (s, f) => {
+check("verification, photos, settings, data, safety and Couple Mode never require a live profile", (s, f) => {
   const n = norm(f);
   if (!ALWAYS_OPEN_ROUTE.test(n) || !/\.(tsx?)$/.test(n)) return false;
   return /\brequireLiveProfile\s*\(/.test(s) ? "calls requireLiveProfile() on an always-open screen" : false;

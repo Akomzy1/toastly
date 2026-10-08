@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { capture } from "@/lib/analytics";
+import { requireLiveProfile, notLiveError } from "@/lib/live-profile";
 import { FILTER_RELIGIONS, FILTER_TRIBES, type MemberFilters } from "@/lib/filters";
 
 export type FiltersResult = { error?: string } | null;
@@ -18,6 +19,8 @@ export async function saveFilters(input: MemberFilters): Promise<FiltersResult> 
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
 
   const { data: allowed } = await supabase.rpc("i_have_advanced_filters");
   if (allowed !== true) return { error: "Filters come with Premium, Premium Plus, Diaspora and Diaspora Plus." };

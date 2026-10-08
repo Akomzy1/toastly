@@ -80,12 +80,15 @@ test("saving a diaspora pool needs a Diaspora plan; back home is open to everyon
   assert.equal((await db.query("select pool from profiles where id = $1", [paid])).rows[0].pool, "both");
 });
 
-test("a woman who signs up with a country abroad starts on Diaspora Plus", async () => {
+test("a woman who signs up with a country abroad gets Diaspora Plus when she goes live", async () => {
   const id = crypto.randomUUID();
   await db.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)",
     [id, `${id}@example.com`, JSON.stringify({ display_name: "Abroad Woman", gender: "woman", country_code: "gb" })]);
-  assert.equal((await db.query("select current_tier($1) as t", [id])).rows[0].t, "diaspora_plus");
   assert.equal((await db.query("select country_code from profiles where id = $1", [id])).rows[0].country_code, "GB");
+  // The offer starts at go-live, not at sign-up (0035).
+  assert.equal((await db.query("select current_tier($1) as t", [id])).rows[0].t, "starter");
+  await goLive(db, id);
+  assert.equal((await db.query("select current_tier($1) as t", [id])).rows[0].t, "diaspora_plus");
 });
 
 // --- USD coin packs -----------------------------------------------------------

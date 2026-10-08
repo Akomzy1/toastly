@@ -89,9 +89,9 @@ export default function SignUpPage() {
           </Label>
 
           {/*
-            Collected here because the women's launch offer is granted at
-            signup as a real entitlement — 30 days of full Premium Plus, no
-            card. "Prefer not to say" is a first-class option and costs the
+            Collected here because the women's launch offer is granted when
+            the profile goes live (0035) as a real entitlement — 30 days of
+            full Premium Plus, no card. "Prefer not to say" is a first-class option and costs the
             member nothing except that offer.
           */}
           <Label htmlFor="gender">
@@ -111,8 +111,8 @@ export default function SignUpPage() {
             <span className="flex gap-2.5">
               <VerifiedSeal size={16} className="mt-0.5 text-green-550" />
               <span>
-                Women get 30 days of Premium Plus free from the day they verify
-                — or Diaspora Plus if you live abroad. No card needed.
+                Women get 30 days of Premium Plus free from the day their profile
+                goes live — or Diaspora Plus if you live abroad. No card needed.
               </span>
             </span>
           </Notice>

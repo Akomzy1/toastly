@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requireLiveProfile, notLiveError } from "@/lib/live-profile";
+import { paymentsOpenFor, PAYMENTS_CLOSED } from "@/lib/launch";
 
 export type CoinPayState = { ok?: string; error?: string; shortfallCoins?: number; shortfallNaira?: number } | null;
 
@@ -20,6 +22,9 @@ export async function payWithCoins(_prev: CoinPayState, formData: FormData): Pro
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
+  if (!(await paymentsOpenFor(supabase, user))) return { error: PAYMENTS_CLOSED };
 
   const { data, error } = await supabase.rpc("subscribe_with_coins", { p_tier: tier });
   if (error) return { error: error.message };

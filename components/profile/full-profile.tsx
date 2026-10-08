@@ -1,5 +1,6 @@
 "use client";
 
+import { gistCount } from "@/lib/plan-numbers";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -263,7 +264,7 @@ export function FullProfile({
                       Ask for a Gist about this
                     </Link>
                     <p className="m-0 text-center text-[12.5px] text-grey-600">
-                      {view.gistsLeft === 1 ? "1 Gist left this month" : `${view.gistsLeft ?? 0} Gists left this month`}
+                      {gistCount(view.gistsLeft ?? 0)} left this month
                     </p>
                   </div>
                 ) : null}
@@ -309,14 +310,9 @@ export function FullProfile({
               Accept Gist
             </button>
           </div>
-          {/* A Gist counts when it connects, for both people (decision of
-              3 October 2026), so "It's free to accept" is only the whole
-              truth on a paid plan — as on the invite screen. */}
-          <p className="m-0 text-center text-[13px] leading-normal text-grey-600">
-            {view.invite.starter
-              ? "It's free to accept. If the call happens, it counts as one of your 2 Gists this month."
-              : "It's free to accept."}
-          </p>
+          {/* Accepting an invitation never counts toward anyone's Gists —
+              only a Gist the member started does (decided 8 October 2026). */}
+          <p className="m-0 text-center text-[13px] leading-normal text-grey-600">It&rsquo;s free to accept.</p>
         </div>
       ) : null}
 

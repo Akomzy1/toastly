@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS, gistCount } from "@/lib/plan-numbers";
 import Link from "next/link";
 import { AMBER, AnswerStrip, Band, Monogram, OUTLINE } from "./invite-parts";
 
@@ -33,7 +34,7 @@ export function InviteSentView({
           <p className="m-0 text-ui leading-[1.6] text-ink-800">We&rsquo;ll let you know when they reply.</p>
           {starter ? (
             <p className="m-0 text-[13px] leading-[1.6] text-grey-600">
-              This only counts toward your 2 Gists once the call connects.
+              This only counts toward your {gistCount(STARTER_MONTHLY_GISTS)} this month once the call connects.
             </p>
           ) : null}
         </div>

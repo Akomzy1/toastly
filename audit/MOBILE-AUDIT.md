@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-07 15:58 UTC against `http://localhost:3007`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
+Run 2026-10-08 11:53 UTC against `http://localhost:3007`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 

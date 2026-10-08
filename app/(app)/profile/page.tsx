@@ -20,11 +20,12 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: birth }, { data: tierRow }, { data: answers }] = await Promise.all([
+  const [{ data: profile }, { data: birth }, { data: tierRow }, { data: answers }, { data: isLive }] = await Promise.all([
     supabase.from("profiles").select("display_name, city, stage, country_code").eq("id", user.id).maybeSingle(),
     supabase.from("profile_birthdates").select("date_of_birth").eq("profile_id", user.id).maybeSingle(),
     supabase.rpc("current_tier", { p_profile_id: user.id }),
     supabase.from("prompt_answers").select("prompt_id, answer, prompts(text, sort_order)").eq("profile_id", user.id),
+    supabase.rpc("profile_is_live", { p_profile_id: user.id }),
   ]);
   if (!profile) redirect("/verify");
 
@@ -57,6 +58,7 @@ export default async function ProfilePage() {
         verified={profile.stage === "verified_real" || profile.stage === "id_confirmed"}
         prompts={prompts}
         abroad={(profile.country_code ?? "NG") !== "NG"}
+        live={isLive === true}
       />
     </>
   );

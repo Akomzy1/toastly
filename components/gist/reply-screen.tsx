@@ -1,5 +1,6 @@
 "use client";
 
+import { STARTER_MONTHLY_GISTS, gistCount } from "@/lib/plan-numbers";
 import * as React from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
@@ -20,9 +21,8 @@ import { AMBER, AnswerQuote, Band, CARD, ClockIcon, NOTE, OUTLINE, PersonHead } 
  * Deviations, flagged:
  *   - Age and profession are not shown: date of birth is private, and
  *     profession follows its owner's visibility setting.
- *   - The limit screen's "You can still accept Gist invites… always free"
- *     is replaced: a Gist counts when it connects, for both people
- *     (decision of 3 October 2026), so an invitee at the limit can't accept.
+ *   - A Gist counts only when one the member STARTED connects; accepting
+ *     an invitation is free and never counts (decided 8 October 2026).
  */
 
 type Mode = "starter" | "limit" | "paid";
@@ -135,7 +135,7 @@ export function ReplyScreen({
             {inviteForm("Invite to a Gist", true)}
             <p className={NOTE}>
               An 18-minute voice chat, with questions to get you talking. You have{" "}
-              {gistsLeft === 1 ? "1 Gist" : `${gistsLeft ?? 2} Gists`} left this month — it only counts if the call
+              {gistCount(gistsLeft ?? STARTER_MONTHLY_GISTS)} left this month — it only counts if the call
               happens.
             </p>
           </div>
@@ -145,7 +145,7 @@ export function ReplyScreen({
           <>
             <div className="grid gap-2 rounded-xl border border-champagne/90 bg-gold-50 px-3.5 py-4">
               <p className="m-0 font-serif text-[19px] font-bold leading-[1.3] text-ink-900 [text-wrap:balance]">
-                You&rsquo;ve used your 2 Gists this month.
+                You&rsquo;ve used your {gistCount(STARTER_MONTHLY_GISTS)} this month.
               </p>
               <p className="m-0 text-ui leading-[1.6] text-gold-800">
                 They reset on {resetOn}. Premium gives you unlimited Gists and messages.
@@ -160,7 +160,7 @@ export function ReplyScreen({
               </Link>
             </div>
             <p className="m-0 px-0.5 text-center text-[13px] leading-[1.6] text-grey-600">
-              Invites others send you will still arrive, but you can&rsquo;t accept one until your Gists reset.
+              Invites others send you still arrive, and accepting one is always free.
             </p>
           </>
         ) : null}

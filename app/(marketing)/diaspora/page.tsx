@@ -1,3 +1,4 @@
+import { DIASPORA_USD, usd } from "@/lib/plan-numbers";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -255,7 +256,7 @@ export default function DiasporaPage() {
             Your person is waiting — whether back home or right here.
           </h2>
           <p className="max-w-[56ch] text-body-lg text-white/[.78]">
-            Diaspora membership from $15 a month, both pools included.
+            Diaspora membership from {usd(DIASPORA_USD)} a month, both pools included.
             AriyaPlanner plans Nigerian weddings in the US, UK and Canada too.
           </p>
           <div className="flex flex-wrap gap-3">

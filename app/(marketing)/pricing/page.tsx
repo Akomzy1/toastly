@@ -229,11 +229,12 @@ export default function PricingPage() {
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
                     <p className="text-ui text-white/[.74]">
-                      When you verify as a woman, your account starts with 30
-                      days of Premium Plus already active — or Diaspora Plus if
-                      you live abroad — with no payment method on file. It ends
-                      automatically after 30 days; from there you can move to
-                      any paid tier or drop back to Starter, free forever.
+                      The day your profile goes live — phone, photos and selfie
+                      done — 30 days of Premium Plus start for women, or
+                      Diaspora Plus if you live abroad, with no payment method
+                      on file. We&rsquo;ll remind you three days before it ends,
+                      in the app and by email. On day 30 you move to Starter,
+                      free forever; nothing is ever charged.
                     </p>
                   </AccordionContent>
                 </AccordionItem>

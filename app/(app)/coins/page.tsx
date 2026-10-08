@@ -6,6 +6,9 @@ import { HelpButton } from "@/components/help/help-button";
 import { CoinBalance, type LedgerRow } from "@/components/coins/coin-balance";
 import { TIER_LABELS } from "@/lib/entitlements";
 import type { Tier } from "@/lib/types/profile";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { paymentsOpenFor } from "@/lib/launch";
 
 export const metadata: Metadata = { title: "Coins", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -17,6 +20,11 @@ export default async function CoinsPage({ searchParams }: { searchParams: { paid
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No payment UI before going live (PRD §7.3).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
+  const open = await paymentsOpenFor(supabase, user);
 
   const [{ data: profile }, { data: tierRow }, { data: total }, { data: stakeable }, { data: promo }, { data: cfg }, { data: rows }] = await Promise.all([
     supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
@@ -42,6 +50,7 @@ export default async function CoinsPage({ searchParams }: { searchParams: { paid
         premiumPlusCoins={cfg?.premium_plus_coins ?? 70}
         history={(rows ?? []) as LedgerRow[]}
         paid={searchParams.paid ?? null}
+        paymentsOpen={open}
       />
       <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">
         <HelpButton />

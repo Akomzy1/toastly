@@ -9,15 +9,15 @@ import type { Tier } from "@/lib/types/profile";
  * The 5–7 minute figure that appeared in earlier drafts is superseded and is
  * deliberately NOT defined here, so it cannot be reintroduced by autocomplete
  * or by someone reading an old draft. It was calibrated before Starter
- * dropped to 2 sessions a month: at 7 minutes a free member would get about
- * 14 minutes of conversation a month against ~180 possible matches, which
+ * dropped to a handful of sessions a month (one, from 8 October 2026): at 7
+ * minutes a free member would get a few minutes of conversation a month against ~180 possible matches, which
  * cannot carry the question deck's subject matter.
  */
 export const GIST_DEFAULT_MINUTES = 18;
 export const GIST_EXTENSION_MINUTES = 18;
 
-/** Starter's monthly voice allowance. Not 5, 8 or 10 — those are superseded. */
-export const STARTER_VOICE_GISTS_PER_MONTH = 2;
+/** Starter's monthly allowance lives in lib/plan-numbers.ts (and plan_config, 0035). */
+export { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
 
 export type GistMedium = "voice" | "video";
 

@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { canSendText } from "@/lib/feed";
 import { shownFaithLine } from "@/lib/faith";
@@ -91,7 +92,7 @@ export async function loadFullProfile(
     })),
     // A Starter Gist invite can only go to someone in today's six (gist_invite, 0029).
     action: openInvite ? "none" : paid ? "reply" : inSix ? "gist" : "none",
-    gistsLeft: paid ? null : Math.max(0, 2 - ((used as number | null) ?? 0)),
+    gistsLeft: paid ? null : Math.max(0, STARTER_MONTHLY_GISTS - ((used as number | null) ?? 0)),
     details,
     invite: openInvite ? { sessionId: openInvite.id, starter: !paid } : null,
   };

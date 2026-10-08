@@ -1,3 +1,4 @@
+import { STARTER_MONTHLY_GISTS, DIASPORA_USD, DIASPORA_PLUS_USD } from "@/lib/plan-numbers";
 /**
  * schema.org structured data.
  *
@@ -66,7 +67,7 @@ export function softwareApplicationSchema() {
         price: "0",
         priceCurrency: "NGN",
         description:
-          "Verified Real profile, six matches a day, 2 voice Gist sessions a month, Couple Mode and the AriyaPlanner handoff.",
+          `Verified Real profile, six matches a day, ${STARTER_MONTHLY_GISTS} voice Gist session${STARTER_MONTHLY_GISTS === 1 ? "" : "s"} a month, Couple Mode and the AriyaPlanner handoff.`,
       },
       {
         "@type": "Offer",
@@ -85,7 +86,7 @@ export function softwareApplicationSchema() {
       {
         "@type": "Offer",
         name: "Diaspora",
-        price: "15",
+        price: String(DIASPORA_USD),
         priceCurrency: "USD",
         description:
           "Both matching pools, unlimited voice Gist, time-zone aware scheduling, advanced filters.",
@@ -93,7 +94,7 @@ export function softwareApplicationSchema() {
       {
         "@type": "Offer",
         name: "Diaspora Plus",
-        price: "30",
+        price: String(DIASPORA_PLUS_USD),
         priceCurrency: "USD",
         description: "Everything in Diaspora, plus live-video Gist and priority support.",
       },

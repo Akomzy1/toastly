@@ -42,6 +42,7 @@ export function ProfileHub({
   verified,
   prompts,
   abroad = false,
+  live = true,
 }: {
   name: string;
   /** "Yaba, Lagos · Starter" */
@@ -50,6 +51,8 @@ export function ProfileHub({
   prompts: HubPrompt[];
   /** Lives outside Nigeria: chooses a pool, rather than "open to abroad" (PRD §5.6). */
   abroad?: boolean;
+  /** Not live yet: no plan or coin rows (nobody pays before going live, PRD §7.3). */
+  live?: boolean;
 }) {
   // "Match preferences" (decided 6 October 2026), opening Settings
   // (where-you-live-settings.slim.html): phone number, where you live, and
@@ -61,7 +64,7 @@ export function ProfileHub({
       sub: abroad ? "Where you live, age range, your match pool" : "Where you live, age range, people abroad",
       href: "/profile/settings",
     },
-    ...HUB,
+    ...HUB.filter((r) => live || (r.href !== "/profile/plan" && r.href !== "/coins")),
   ];
   const [help, setHelp] = React.useState(false);
   return (

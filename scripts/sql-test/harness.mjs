@@ -123,7 +123,12 @@ export async function asService(db, fn) {
  * the server records these results — every member-facing rule still applies
  * to what the test does next.
  */
-export async function goLive(db, id) {
+export async function goLive(db, id, { phoneHash } = {}) {
+  // The confirmed number's hash, as record_phone_verified stores it (0028).
+  await db.query(
+    "insert into phone_identities (phone_hash, profile_id) values (coalesce($2, md5($1::text) || md5($1::text || 'phone')), $1::uuid) on conflict do nothing",
+    [id, phoneHash ?? null],
+  );
   await db.query(
     "update profiles set phone_verified_at = coalesce(phone_verified_at, now()), stage = case when stage in ('verified_real', 'id_confirmed') then stage else 'verified_real' end where id = $1",
     [id],

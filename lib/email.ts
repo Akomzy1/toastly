@@ -150,6 +150,26 @@ export function sendPlanEnding(to: string, { plan, ends }: { plan: string; ends:
 }
 
 /**
+ * The women's launch offer ends in three days (PRD §7.3; 0035). Sent once,
+ * with the in-app notice. Nothing is ever charged — a reminder, never a
+ * countdown or "last chance".
+ */
+export function sendOfferEnding(to: string, { plan, ends }: { plan: string; ends: string }) {
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.trytoastly.com"}/profile/plan`;
+  return sendEmail({
+    to,
+    subject: `Your free ${plan} ends on ${ends}`,
+    text: `Your 30 free days of ${plan} end on ${ends}. Nothing is charged: from then you're on Starter, which is free, and you keep your matches and verification. If you'd like to stay on a paid plan, you can choose one here: ${url}.`,
+    html: shell(
+      `Your free ${plan} ends on ${ends}`,
+      `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#1E1C21">Nothing is charged. From then you&rsquo;re on Starter, which is free, and you keep your matches and verification.</p>
+       <p style="margin:0 0 18px"><a href="${url}" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#FFB300;color:#050309;font-size:15px;font-weight:600;text-decoration:none">See your plan</a></p>
+       <p style="margin:0;font-size:14px;line-height:1.6;color:#504E52">If you&rsquo;d like to stay on a paid plan, you can choose one there. If not, there&rsquo;s nothing to do.</p>`,
+    ),
+  });
+}
+
+/**
  * The re-check notice (PRD §5.1.1).
  *
  * The member is always told, and never told why (decided 6 October 2026):

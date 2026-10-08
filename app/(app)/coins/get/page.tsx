@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { ScreenBand } from "@/components/app/screen-band";
 import { GetCoins, type StorePack } from "@/components/coins/get-coins";
 import { paymentsConfigured } from "@/lib/payments/config";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { paymentsOpenFor } from "@/lib/launch";
 
 export const metadata: Metadata = { title: "Get coins", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -19,6 +22,11 @@ export default async function GetCoinsPage({ searchParams }: { searchParams: { p
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No payment UI before going live (PRD §7.3).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
+  const open = await paymentsOpenFor(supabase, user);
 
   const { data: profile } = await supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle();
   const currency: "NGN" | "USD" = (profile?.country_code ?? "NG") === "NG" ? "NGN" : "USD";
@@ -56,7 +64,8 @@ export default async function GetCoinsPage({ searchParams }: { searchParams: { p
         currency={currency}
         packs={store}
         balance={bal}
-        enabled={paymentsConfigured(currency === "USD" ? "stripe" : "paystack")}
+        enabled={open && paymentsConfigured(currency === "USD" ? "stripe" : "paystack")}
+        closed={!open}
         added={added}
         paid={searchParams.paid ?? null}
       />

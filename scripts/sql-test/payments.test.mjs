@@ -9,14 +9,19 @@
  */
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { freshDb, as, asService, makeUser } from "./harness.mjs";
+import { freshDb, as, asService, makeUser, goLive } from "./harness.mjs";
 
 let db;
 before(async () => {
   db = await freshDb();
 });
 
-const member = (name = "Pay Test") => makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
+// Live members: nobody pays before going live (0035).
+const member = async (name = "Pay Test") => {
+  const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
+  await goLive(db, id);
+  return id;
+};
 const ref = () => `tst_${crypto.randomUUID()}`;
 const svc = (sql, params) => asService(db, (tx) => tx.query(sql, params));
 const one = async (sql, params) => (await svc(sql, params)).rows[0];
@@ -161,7 +166,7 @@ test("modes are checked: no passes or part-payments on Stripe, no packs as plans
   await assert.rejects(open(id, "nope", "pack", ref()));
   const o = await open(id, "diaspora", "recurring", ref());
   assert.equal(o.provider, "stripe");
-  assert.equal(o.amount_minor, 1500);
+  assert.equal(o.amount_minor, 1000); // $10 (0035)
 });
 
 test("a renewing card plan: first charge, subscription, then a renewal we didn't start", async () => {

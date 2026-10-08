@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireLiveProfile, notLiveError } from "@/lib/live-profile";
 import { startCheckout, type Method, type Mode } from "@/lib/payments/checkout";
 import { stopRenewal as stopAtProvider } from "@/lib/payments/stop-renewal";
 
@@ -13,6 +14,9 @@ const MODES: Mode[] = ["pack", "pass", "recurring", "remainder"];
 
 /** Send the member to Paystack's or Stripe's hosted checkout. */
 export async function checkout(_prev: PlanState, formData: FormData): Promise<PlanState> {
+  // Nobody pays before going live (PRD §7.3). Stopping a renewal never needs it.
+  const live = await requireLiveProfile(createClient());
+  if (!live.live) return { error: notLiveError(live) };
   const sku = String(formData.get("sku") ?? "");
   const mode = String(formData.get("mode") ?? "") as Mode;
   if (!MODES.includes(mode)) return { error: "Choose how to pay." };

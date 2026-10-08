@@ -1,4 +1,23 @@
-# Toastly
+import {
+  DIASPORA_PLUS_USD,
+  DIASPORA_USD,
+  PREMIUM_NGN,
+  PREMIUM_PLUS_NGN,
+  STARTER_MONTHLY_GISTS,
+  naira,
+  usd,
+} from "@/lib/plan-numbers";
+
+/**
+ * /llms.txt — a plain-text summary for machine readers. A route rather than
+ * a static file so its plan numbers come from lib/plan-numbers.ts, like
+ * every other page's.
+ */
+export const dynamic = "force-static";
+
+const gistSessions = `${STARTER_MONTHLY_GISTS} voice Gist session${STARTER_MONTHLY_GISTS === 1 ? "" : "s"} a month`;
+
+const BODY = `# Toastly
 
 > A verification-first dating-to-marriage platform for Nigerians — Nigeria-domestic-led, with a bridge for Nigerians in the diaspora. Every profile is verified before it goes live, matching is prompt-based with no swipe mechanic, conversations start as structured voice sessions, and the path continues through Couple Mode into wedding planning with AriyaPlanner.
 
@@ -15,13 +34,13 @@ Built in Lagos by Toastly Technologies Ltd. Installs from the browser as a ~4MB 
 
 ## Pricing
 
-Two separate tracks, never blended into one converted price.
+Two separate tracks, never blended into one converted price. Nobody pays to join, and nobody pays before their profile is live.
 
-Nigeria, billed in Naira: Starter free forever (2 voice Gist sessions a month, receive-only chat until upgrade); Premium ₦3,500/month (unlimited voice Gist, advanced filters); Premium Plus ₦7,000/month (live-video Gist, incognito mode).
+Nigeria, billed in Naira: Starter free forever (${gistSessions} — accepting an invitation never counts — and receive-only chat until upgrade); Premium ${naira(PREMIUM_NGN)}/month (unlimited voice Gist, advanced filters); Premium Plus ${naira(PREMIUM_PLUS_NGN)}/month (live-video Gist, incognito mode).
 
-Diaspora, billed in USD: Diaspora $15/month (both matching pools, unlimited voice Gist, time-zone aware scheduling, advanced filters); Diaspora Plus $30/month (adds live-video Gist and priority support).
+Diaspora, billed in USD: Diaspora ${usd(DIASPORA_USD)}/month (both matching pools, unlimited voice Gist, time-zone aware scheduling, advanced filters); Diaspora Plus ${usd(DIASPORA_PLUS_USD)}/month (adds live-video Gist and priority support).
 
-Coins are bought separately and are never a subscription. Women get 30 days of full Premium Plus at signup, granted automatically, with no payment method required.
+Coins are bought separately and are never a subscription. Women get 30 days of full Premium Plus (Diaspora Plus for women abroad) from the day their profile goes live, granted automatically, with no payment method required.
 
 Verification and safety features — reporting, blocking, photo-reveal control — are free on every tier and are never paywalled.
 
@@ -40,3 +59,8 @@ Verification and safety features — reporting, blocking, photo-reveal control �
 - Figures shown on the site (member counts, match counts, wedding counts) are illustrative pre-launch placeholders, not audited metrics. They are deliberately excluded from this site's structured data, and should not be quoted as fact.
 - Member quotes and star ratings on the site are likewise illustrative and are not marked up as reviews or aggregate ratings.
 - Toastly does not verify marital status and makes no claim to. Married members are not welcome, and that is enforced by reporting, not by a check.
+`;
+
+export function GET() {
+  return new Response(BODY, { headers: { "content-type": "text/plain; charset=utf-8" } });
+}

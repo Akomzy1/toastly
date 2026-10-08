@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireLiveProfile, notLiveError } from "@/lib/live-profile";
+import { paymentsOpenFor, PAYMENTS_CLOSED } from "@/lib/launch";
 import { newReference, paymentsConfigured, paymentsOffReason, siteUrl } from "./config";
 import { paystackCustomer, paystackInitialize, paystackPlanCode } from "./paystack";
 import { stripeCheckout } from "./stripe";
@@ -28,6 +30,12 @@ export async function startCheckout(sku: string, mode: Mode, method: Method = nu
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in again." };
+
+  // Nobody pays before going live (PRD §7.3; the database refuses too, 0035),
+  // and nobody pays before launch unless they're on the allow-list.
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
+  if (!(await paymentsOpenFor(supabase, user))) return { error: PAYMENTS_CLOSED };
 
   const { data: price } = await supabase.from("price_list").select("sku, kind, provider, tier").eq("sku", sku).eq("active", true).maybeSingle();
   if (!price) return { error: "That isn't something you can buy." };

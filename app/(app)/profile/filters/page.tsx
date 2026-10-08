@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ScreenBand } from "@/components/app/screen-band";
 import { FiltersLocked, FiltersScreen } from "@/components/profile/filters-screen";
 import { NO_FILTERS, type MemberFilters } from "@/lib/filters";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
 
 export const metadata: Metadata = {
   title: "Filters",
@@ -23,6 +25,11 @@ export default async function FiltersPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Filters shape the six, which opens at go-live — and nothing is offered
+  // for sale before then (PRD §7.3).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
 
   const [{ data: allowed }, { data: row }] = await Promise.all([
     supabase.rpc("i_have_advanced_filters"),

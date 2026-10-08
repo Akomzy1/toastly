@@ -1,5 +1,6 @@
 "use client";
 
+import { PAYMENTS_CLOSED } from "@/lib/launch";
 import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { checkout, stopRenewal, type PlanState } from "@/app/(app)/profile/plan/actions";
@@ -134,6 +135,8 @@ export function PlanPage(p: {
   coinNaira: number;
   paystackOn: boolean;
   stripeOn: boolean;
+  /** Before launch (lib/launch.ts): nothing can be bought by this member yet. */
+  closed?: boolean;
   paid: string | null;
 }) {
   const renewing = p.subs.filter((s) => s.status === "active" || s.status === "past_due" || s.status === "non_renewing");
@@ -203,7 +206,7 @@ export function PlanPage(p: {
             {p.track === "ngn" ? (
               <>
                 {!p.paystackOn ? (
-                  <Notice tone="locked">Naira payments aren&rsquo;t connected in this environment yet.</Notice>
+                  <Notice tone="locked">{p.closed ? PAYMENTS_CLOSED : <>Naira payments aren&rsquo;t connected in this environment yet.</>}</Notice>
                 ) : null}
                 {blocksNewRenewal ? (
                   <p className={SMALL}>Stop your current renewal to switch to a card plan for this one.</p>
@@ -211,7 +214,7 @@ export function PlanPage(p: {
                   <Pay sku={sku} mode="recurring" label="Pay by card · renews monthly" disabled={!p.paystackOn} />
                 )}
                 <Pay sku={sku} mode="pass" label="Pay by bank or USSD · 30 days" className={OUTLINE} disabled={!p.paystackOn} />
-                {p.coins >= coinPrice ? (
+                {p.closed ? null : p.coins >= coinPrice ? (
                   <CoinsInFull tier={sku} coins={coinPrice} />
                 ) : p.coins > 0 ? (
                   <Pay
@@ -225,7 +228,9 @@ export function PlanPage(p: {
               </>
             ) : (
               <>
-                {!p.stripeOn ? <Notice tone="locked">Dollar payments aren&rsquo;t connected in this environment yet.</Notice> : null}
+                {!p.stripeOn ? (
+                  <Notice tone="locked">{p.closed ? PAYMENTS_CLOSED : <>Dollar payments aren&rsquo;t connected in this environment yet.</>}</Notice>
+                ) : null}
                 {blocksNewRenewal ? (
                   <p className={SMALL}>Stop your current renewal to switch to this one.</p>
                 ) : (

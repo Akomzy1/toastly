@@ -7,6 +7,9 @@ import { PlanPage, type Grant, type Sub } from "@/components/plan/plan-page";
 import { paymentsConfigured } from "@/lib/payments/config";
 import { TIER_LABELS } from "@/lib/entitlements";
 import { countryInSentence } from "@/lib/countries";
+import { requireLiveProfile } from "@/lib/live-profile";
+import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { paymentsOpenFor } from "@/lib/launch";
 import type { Tier } from "@/lib/types/profile";
 
 export const metadata: Metadata = { title: "Your plan", robots: { index: false, follow: false } };
@@ -22,6 +25,12 @@ export default async function YourPlan({ searchParams }: { searchParams: { paid?
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // No plan screen before going live (PRD §7.3).
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return <ProfileNotLive status={live} />;
+  // Before launch, only the allow-list can pay (lib/launch.ts).
+  const open = await paymentsOpenFor(supabase, user);
 
   const [{ data: tierRow }, { data: profile }, { data: grants }, { data: subs }, { data: total }, { data: cfg }] = await Promise.all([
     supabase.rpc("current_tier", { p_profile_id: user.id }),
@@ -61,8 +70,9 @@ export default async function YourPlan({ searchParams }: { searchParams: { paid?
         premiumCoins={cfg?.premium_coins ?? 35}
         premiumPlusCoins={cfg?.premium_plus_coins ?? 70}
         coinNaira={cfg?.coin_naira ?? 100}
-        paystackOn={paymentsConfigured("paystack")}
-        stripeOn={paymentsConfigured("stripe")}
+        paystackOn={open && paymentsConfigured("paystack")}
+        stripeOn={open && paymentsConfigured("stripe")}
+        closed={!open}
         paid={searchParams.paid ?? null}
       />
       <div className="mx-auto w-full max-w-[680px] px-3.5 pb-8">
