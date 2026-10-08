@@ -110,9 +110,10 @@
  *     number's one-way hash (phone_identities, never the number) after the
  *     account is deleted — profile_id goes to null, the hash stays — so the
  *     offer is once per number. NOTHING PURGES IT YET: its period is
- *     [LAUNCH OFFER RETENTION] until the owner sets one and a purge is built.
+ *     12 months after the account is deleted (owner, 8 October 2026): 0038's
+ *     released_at and the nightly purge (retention_config.launch_offer_phone).
  *   - No waitlist: built, then removed the same day (owner, 8 October 2026).
- *   STILL OPEN (added): [LAUNCH OFFER RETENTION].
+ *   Settled 8 October 2026: the launch-offer retention, 12 months.
  *   SMILE-RETENTION notes sit above each "keeps the images" sentence: if
  *              Smile ID confirms it uses images to improve its technology and
  *              we can't opt out, append "Smile ID may also use them to improve
@@ -435,7 +436,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           "Coins: unspent coins are lost when you delete your account. We'll show you your balance and offer you the chance to use them before you confirm.",
           "Toastly Help conversations: 30 days after the last message, then deleted. If you pass something to our team, your words are deleted at the same time; we keep only its reference number and whether it was resolved.",
           "Payment and financial records: 6 years, as tax law requires.",
-          "The women's launch offer: when a member who received it deletes their account, we keep a one-way fingerprint of their phone number — never the number — so the offer can be given only once per number. We keep it [LAUNCH OFFER RETENTION], then delete it.",
+          "The women's launch offer: when a member who received it deletes their account, we keep a one-way fingerprint of their phone number — never the number — so the offer can be given only once per number. We keep it for 12 months after the account is deleted, then delete it.",
         ],
       },
     ],
