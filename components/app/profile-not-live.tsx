@@ -85,7 +85,21 @@ function NotLiveYet({ status }: { status: LiveStatus }) {
       kind: selfieDone ? "done" : status.mainPhoto === "checking" ? "ring" : photosDone && status.phoneConfirmed ? "current" : "todo",
       dash: "24 60",
     },
+    // 0036: one prompt answer before going live (PRD §7.3).
+    {
+      n: 4,
+      label: "Your first answer",
+      sub: status.firstAnswer ? "Answered" : "Answer one prompt — it's what people reply to",
+      href: "/profile/prompts",
+      kind: status.firstAnswer ? "done" : selfieDone ? "current" : "todo",
+    },
   ];
+  // Gender and who they'd like to meet are asked at sign-up; an account from
+  // before 8 October 2026 may not have them yet. NOT IN THE PROTOTYPE — flagged.
+  const shown = (status.aboutYou
+    ? steps
+    : [{ n: 0, label: "About you", sub: "Who you are, and who you'd like to meet", href: "/profile/about-you", kind: "current" as const }, ...steps]
+  ).map((s, i) => ({ ...s, n: i + 1 }));
 
   return (
     <>
@@ -101,7 +115,7 @@ function NotLiveYet({ status }: { status: LiveStatus }) {
         <div className="grid gap-2.5">
           <p className="mx-0.5 text-chip font-semibold uppercase tracking-[0.12em] text-green-500">What&rsquo;s left</p>
           <ol className="grid list-none overflow-hidden rounded-xl border border-ink-900/[.12] bg-white p-0">
-            {steps.map((s, i) => {
+            {shown.map((s, i) => {
               const current = s.kind === "ring" || s.kind === "current";
               return (
                 <li key={s.n} className={i ? "border-t border-ink-900/10" : ""}>

@@ -15,6 +15,7 @@ import {
 } from "@/lib/inbox";
 import type { Tier } from "@/lib/types/profile";
 import { requireLiveProfile } from "@/lib/live-profile";
+import { upgradeOffer } from "@/lib/plan-numbers";
 import { ProfileNotLive } from "@/components/app/profile-not-live";
 
 export const metadata: Metadata = {
@@ -50,8 +51,13 @@ export default async function InboxPage() {
 
   let inbox: Inbox;
 
+  let abroad = false;
   if (!canReadInbox(tier)) {
-    const { data: count } = await supabase.rpc("unread_count");
+    const [{ data: count }, { data: me }] = await Promise.all([
+      supabase.rpc("unread_count"),
+      supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
+    ]);
+    abroad = (me?.country_code ?? "NG") !== "NG";
     inbox = { kind: "locked", unreadCount: (count as number | null) ?? 0 };
   } else {
     const { data: threads } = await supabase
@@ -96,15 +102,16 @@ export default async function InboxPage() {
             </p>
           </Card>
         ) : (
-          /* A bare count, and a row carrying no sender, no initial, no
-             snippet. There is nothing to reconstruct an identity from.
-
-             Below it: report and block, free, without ever naming a sender
-             (decision (a)). Reading a message is a paid feature; being
-             protected from one is not. */
+          /* Report and block FIRST, free, without ever naming a sender
+             (decision (a)); then, set apart, the bare count — a row carrying
+             no sender, no initial, no snippet — and the upgrade, which names
+             the plan and its price (decided 8 October 2026). Reading a
+             message is a paid feature; being protected from one is not. */
           <>
-            <LockedRow label={lockedLabel(inbox.unreadCount)} />
             <BlindSafety />
+            <div className="grid gap-3 border-t border-ink-900/10 pt-5">
+              <LockedRow label={lockedLabel(inbox.unreadCount)} offer={upgradeOffer(abroad)} />
+            </div>
           </>
         )
       ) : !inbox.threads.length ? (

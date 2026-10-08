@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireAuditHarness } from "@/lib/audit-harness";
 import { ScreenBand } from "@/components/app/screen-band";
 import { FiltersLocked, FiltersScreen } from "@/components/profile/filters-screen";
+import { upgradeOffer } from "@/lib/plan-numbers";
 import { NO_FILTERS, type MemberFilters } from "@/lib/filters";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default function AuditFilters({ params }: { params: { state: string } }) 
     <div className="min-h-screen bg-paper">
       <ScreenBand title="Filters" sub="Premium" />
       <div className="mx-auto grid w-full max-w-[680px] gap-4 px-3.5 pb-8 pt-[18px]">
-        {s.locked ? <FiltersLocked /> : <FiltersScreen initial={{ ...NO_FILTERS, ...s.filters }} preview={{ open: s.open }} />}
+        {s.locked ? <FiltersLocked offer={upgradeOffer(false)} /> : <FiltersScreen initial={{ ...NO_FILTERS, ...s.filters }} preview={{ open: s.open }} />}
       </div>
     </div>
   );

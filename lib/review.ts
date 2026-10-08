@@ -11,6 +11,7 @@ export const REASON_LABEL: Record<string, string> = {
   date_attendance: "a date",
   verification: "verification",
   safety: "account safety",
+  payment: "a payment",
 };
 
 /** Case types, in the prototype's order. "Report" and "ID check" are added (flagged). */
@@ -24,6 +25,7 @@ export const KIND_LABEL: Record<string, string> = {
   married_report: "Married-user report",
   report: "Report",
   attendance: "Date-attendance dispute",
+  refund: "Refund",
 };
 export const KIND_ORDER = Object.keys(KIND_LABEL);
 
@@ -37,6 +39,7 @@ export const SOURCE_LABEL: Record<string, string> = {
   married_report: "member report",
   report: "member report",
   attendance: "dispute filed",
+  refund: "payment provider",
 };
 
 export const STAGE_LABEL: Record<string, string> = {
@@ -76,6 +79,21 @@ export const ACTION_SUB: Record<string, string> = {
   attended: "Both stakes go back to their owners. The case closes.",
   no_show: "The stake goes to the member who showed up. The case closes.",
 };
+
+/**
+ * Labels for an action, including the gender correction on a "Not who they
+ * say they are" report (0038), which carries the option's code:
+ * "correct_gender:man". NOT IN THE PROTOTYPE — flagged.
+ */
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+export function actionLabel(a: string): string | undefined {
+  if (a.startsWith("correct_gender:")) return `Correct gender to ${capital(a.slice("correct_gender:".length))}`;
+  return ACTION_LABEL[a];
+}
+export function actionSub(a: string): string | undefined {
+  if (a.startsWith("correct_gender:")) return "Sets their gender. Ends the women's launch offer if they have it. The case closes.";
+  return ACTION_SUB[a];
+}
 
 /** The prototype asks for a short sentence; the database enforces the same. */
 export const MIN_REASON = 12;

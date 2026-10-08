@@ -308,12 +308,12 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Daily match feed | ✅ (6/day — **fixed, not a paid upgrade**) | ✅ (6/day — see note below) | ✅ (6/day) |
 | Text chat | **Receive-locked (decided):** Starter users CAN receive messages from any match, and see only a bare count — **"1 new message" (or a running count for multiple)** — with **no sender name, no photo, and no text preview shown**. Message **content is fully blurred/locked until upgrade**. Starter cannot send free text at all. Framed transparently as a paid feature ("New message waiting — Premium unlocks your inbox"), never presented as a bug or hidden without explanation | ✅ Unlimited send + receive | ✅ Unlimited send + receive |
 | Gist sessions (voice) | ✅ **1/month (decided 8 October 2026; was 2)** — with chat removed, this is Starter's *only* outbound channel. It counts only a Gist the member **started** and only when it **connects**; accepting an invitation is free and never counts, so a Starter can still talk to everyone who invites them. Coins can buy one extra | ✅ Unlimited | ✅ Unlimited |
-| Gist sessions (video) | ❌ | ❌ | ✅ Live-video Gist |
+| Gist sessions (video) | ❌ | ❌ | ✅ Live-video Gist — **not built yet; not listed on pricing, plan screens or Help until it is (decided 8 October 2026)** |
 | Coin-deposit dates | ✅ | ✅ | ✅ |
 | **Couple Mode + AriyaPlanner handoff** | ✅ **Free/universal — moved here, not tier-gated** | ✅ | ✅ |
 | Advanced filters (tribe, religion, state, diaspora, intent) — faith: religion only, never denomination (§5.2.3) | ❌ | ✅ | ✅ |
 | Incognito mode | ❌ | ❌ | ✅ |
-| See-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included |
+| See-who-liked-you | Coin-purchasable à la carte | Coin-purchasable à la carte, or included at a to-be-decided level | Included — **not built yet (no "like" exists to see); not listed anywhere for sale until it is (decided 8 October 2026)** |
 | Priority support | ❌ | ❌ | ✅ ("from Lagos") |
 | Read receipts | N/A on Starter (no chat to have receipts on) — **still flagged, not decided for paid tiers** | | |
 
@@ -326,7 +326,7 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Verified Real profile | ✅ | ✅ (everything in Diaspora, plus:) |
 | Matching pools | Both — "back home" and diaspora-to-diaspora | Both |
 | Gist sessions (voice) | ✅ **Unlimited (decided)** — see rationale below | ✅ Unlimited |
-| Gist sessions (video) | ❌ | ✅ Live-video Gist |
+| Gist sessions (video) | ❌ | ✅ Live-video Gist — **not built yet; not listed until it is** |
 | Time-zone aware scheduling | ✅ | ✅ |
 | Advanced filters | ✅ | ✅ |
 | Couple Mode + AriyaPlanner handoff | ✅ Free/universal, same as domestic | ✅ |
@@ -358,13 +358,20 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 
 ### 7.3 Onboarding and payment (decided 8 October 2026)
 
-**Nobody pays to join, and nobody pays before going live.** The order: phone code → basics (first name, date of birth 18+, gender, who you'd like to meet, country, city) → 4 photos → selfie (Verified Real and the main-photo match) → prompts and intent → the profile goes live.
+**Nobody pays to join, and nobody pays before going live.** The order, as built: the account form (first name, email, password, date of birth 18+, **gender**, **who you'd like to meet**) → phone code → 4 photos → selfie (Verified Real and the main-photo match) → **at least one prompt answer** → the profile goes live. Country and city are set on the profile. (An earlier draft put the phone code first; the account form stays first — decided 8 October 2026.)
+
+- **Gender and who you'd like to meet (decided 8 October 2026):** gender is required at sign-up and locked once live (support changes it). Who you'd like to meet is one or more options and can be changed any time; it applies from the next six. **The preference is mutual and enforced in the database** — two members are in each other's six, can reply, invite each other to a Gist or open each other's profile **only if each is someone the other would like to meet**. The option lists come from config (default Woman / Man and Women / Men; the owner confirms the lists). Not a filter on protected attributes — it decides who is in your pool, both ways.
+- **One prompt answer before go-live (decided 8 October 2026):** a profile with no answer can't go live — the six is built from answers, and an empty profile gives nobody anything to reply to.
+- **The waitlist (decided 8 October 2026):** until `LAUNCH_PAYMENTS_ENABLED` is on, public sign-up shows a waitlist instead — email, city, woman or man, with a one-line privacy notice. Allow-listed test accounts still sign up. Follow the waitlist prototype when it arrives.
 
 - **No plan screen, upgrade prompt or payment UI of any kind before go-live.** Plans, coins, checkout and coin-paid plans need a live profile — enforced in the database (a new checkout can't be opened, coins can't pay a plan) and on every route, not just hidden in the app.
 - **At go-live — women:** women in Nigeria get 30 days of Premium Plus; women abroad get 30 days of Diaspora Plus. No card. **The 30 days start at go-live, not sign-up.** A notice three days before the end, in the app and by email. On day 30 she moves to the free plan. Never charged automatically.
 - **At go-live — everyone else:** one plan screen with "Start free" as an equal choice. Nigeria: Starter / Premium ₦3,500 / Premium Plus ₦7,000. Abroad: free / Diaspora $10 / Diaspora Plus $20. One tap to skip.
-- **After go-live, upgrade prompts appear only in context, at a limit:** a locked message, a reply attempt, the Gist cap reached, filters, video, see-who-liked-you. Each names the plan and its price and has "Not now". Never in front of a safety feature.
-- **Protecting the offer:** gender can't be changed in the app once live (through support only); the offer is granted at most once per verified face and once per phone number; a confirmed false gender goes through the review queue, never automatic action.
+- **After go-live, upgrade prompts appear only in context, at a limit:** a locked message, a reply attempt, the Gist cap reached, filters, the diaspora pool (video and see-who-liked-you once built). Each names the plan and its price, from config, and has "Not now". The Gist cap opens the in-app plan screen. **Never in front of a safety feature:** on the locked inbox, report and block come first and the upgrade sits apart, below them.
+- **An extra Gist with coins (decided 8 October 2026):** at the Gist cap, a Starter member can buy one more Gist for this month with coins (gift coins first). Only at the cap, one at a time; the coin price is in config (`plan_config.extra_gist_coins`) and nothing is on sale until the owner sets it.
+- **Refunds (decided 8 October 2026):** Stripe and Paystack refunds are processed automatically. A refunded plan ends; coins held towards it come back as coins; unspent coins from a refunded purchase are removed; if some were already spent — or a refunded subscription still renews, or a refund is partial — staff get a case. **Coins are never refunded as cash.**
+- **Protecting the offer:** gender can't be changed in the app once live (through support only); the offer is granted at most once per verified face and once per phone number; a confirmed false gender goes through the review queue, never automatic action — on a "Not who they say they are" report, a reviewer can correct the gender, which ends the offer. Audit-logged, and the member is told with a reason category.
+- **Card country (decided 8 October 2026):** Stripe's card issuing country is read on every settlement and feeds the pricing-integrity review, as Paystack's already does. A review signal, never a block.
 - **Launch switch.** Until launch day, payments stay closed behind one server-side flag (`LAUNCH_PAYMENTS_ENABLED`, off by default): no plan screen, checkout or coin purchase completes for anyone but an allow-list of staff and test accounts. Launch day is flipping it on; nothing else changes.
 
 ## 8. Design & Frontend Requirements

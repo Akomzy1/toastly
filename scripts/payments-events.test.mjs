@@ -96,11 +96,12 @@ test("Paystack: charge.failed releases the payment; unrelated events do nothing"
   assert.equal(quiet.calls.length, 0);
 });
 
+const NO_LOOKUPS = { cardCountry: async () => null, refundRef: async () => null };
 const sub = (over = {}) => ({ id: "sub_1", status: "active", cancel_at_period_end: false, current_period_end: 1793750400, customer: "cus_1", metadata: { profile_id: "p1", tier: "diaspora" }, ...over });
 
 test("Stripe checkout: a coin pack settles; a subscription settles and is synced with its period end", async () => {
   const pack = fakeDb({ payment_settle: "granted" });
-  const deps = { subscription: async () => sub() };
+  const deps = { subscription: async () => sub(), ...NO_LOOKUPS };
   const out = await handleStripeEvent(
     { type: "checkout.session.completed", data: { object: { id: "cs_1", mode: "payment", payment_status: "paid", client_reference_id: "tly_3", amount_total: 600, currency: "usd", customer: null, metadata: { profile_id: "p1" } } } },
     pack,
@@ -122,7 +123,7 @@ test("Stripe checkout: a coin pack settles; a subscription settles and is synced
 });
 
 test("Stripe: unpaid sessions grant nothing; the first invoice is left to checkout; renewals are recorded", async () => {
-  const deps = { subscription: async () => sub() };
+  const deps = { subscription: async () => sub(), ...NO_LOOKUPS };
   const unpaid = fakeDb();
   await handleStripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs", payment_status: "unpaid", client_reference_id: "r", amount_total: 1, currency: "usd" } } }, unpaid, deps);
   assert.equal(unpaid.calls.length, 0);
@@ -152,11 +153,75 @@ test("Stripe subscription status maps to ours", () => {
 
 test("Stripe: a deleted subscription ends; a missing tier is ignored rather than guessed", async () => {
   const db = fakeDb();
-  await handleStripeEvent({ type: "customer.subscription.deleted", data: { object: sub() } }, db, { subscription: async () => sub() });
+  await handleStripeEvent({ type: "customer.subscription.deleted", data: { object: sub() } }, db, { subscription: async () => sub(), ...NO_LOOKUPS });
   assert.equal(db.calls[0].args.p_status, "ended");
   const none = fakeDb();
-  await handleStripeEvent({ type: "customer.subscription.updated", data: { object: sub({ metadata: {} }) } }, none, { subscription: async () => sub() });
+  await handleStripeEvent({ type: "customer.subscription.updated", data: { object: sub({ metadata: {} }) } }, none, { subscription: async () => sub(), ...NO_LOOKUPS });
   assert.equal(none.calls.length, 0);
+});
+
+test("Stripe: the card's issuing country reaches payment_settle, from checkout and from renewals", async () => {
+  const seen = [];
+  const deps = { subscription: async () => sub(), refundRef: async () => null, cardCountry: async (from) => (seen.push(from), "gb") };
+  const pack = fakeDb({ payment_settle: "granted" });
+  await handleStripeEvent(
+    { type: "checkout.session.completed", data: { object: { id: "cs_9", mode: "payment", payment_status: "paid", client_reference_id: "tly_9", amount_total: 600, currency: "usd", payment_intent: "pi_9" } } },
+    pack,
+    deps,
+  );
+  assert.equal(pack.calls[0].args.p_card_country, "GB");
+  assert.deepEqual(seen[0], { paymentIntent: "pi_9", invoice: undefined });
+
+  const renew = fakeDb({ payment_record_renewal: "granted" });
+  await handleStripeEvent(
+    { type: "invoice.paid", data: { object: { id: "in_9", billing_reason: "subscription_cycle", subscription: "sub_1", charge: "ch_9", amount_paid: 1000, currency: "usd", subscription_details: { metadata: { tier: "diaspora" } } } } },
+    renew,
+    deps,
+  );
+  assert.equal(renew.calls[0].args.p_card_country, "GB");
+  assert.deepEqual(seen[1], { charge: "ch_9", invoice: "in_9" });
+
+  // A failed lookup never blocks the payment: it settles without the signal.
+  const broken = fakeDb({ payment_settle: "granted" });
+  await handleStripeEvent(
+    { type: "checkout.session.completed", data: { object: { id: "cs_8", mode: "payment", payment_status: "paid", client_reference_id: "tly_8", amount_total: 600, currency: "usd", payment_intent: "pi_8" } } },
+    broken,
+    { ...deps, cardCountry: async () => { throw new Error("Stripe: down"); } },
+  );
+  assert.equal(broken.calls[0].fn, "payment_settle");
+  assert.equal(broken.calls[0].args.p_card_country, null);
+});
+
+test("refunds: Stripe charge.refunded and Paystack refund.processed reach payment_refund with the amount", async () => {
+  const stripe = fakeDb({ payment_refund: "refunded" });
+  const out = await handleStripeEvent(
+    { type: "charge.refunded", data: { object: { id: "ch_1", payment_intent: "pi_1", invoice: null, amount_refunded: 600 } } },
+    stripe,
+    { ...NO_LOOKUPS, subscription: async () => sub(), refundRef: async (c) => (c.paymentIntent === "pi_1" ? "tly_5" : null) },
+  );
+  assert.deepEqual(out, { status: "refunded", provider: "stripe", ref: "tly_5" });
+  assert.deepEqual(stripe.calls[0], { fn: "payment_refund", args: { p_provider: "stripe", p_ref: "tly_5", p_amount_minor: 600 } });
+
+  const lost = fakeDb();
+  assert.equal(
+    (await handleStripeEvent({ type: "charge.refunded", data: { object: { id: "ch_2", payment_intent: "pi_x", amount_refunded: 600 } } }, lost, { ...NO_LOOKUPS, subscription: async () => sub() })).status,
+    "unknown",
+  );
+  assert.equal(lost.calls.length, 0);
+
+  const paystack = fakeDb({ payment_refund: "partial" });
+  const p = await handlePaystackEvent(
+    { event: "refund.processed", data: { transaction_reference: "tly_6", amount: 100000, currency: "NGN", status: "processed" } },
+    paystack,
+    paystackDeps,
+  );
+  assert.deepEqual(p, { status: "partial", provider: "paystack", ref: "tly_6" });
+  assert.deepEqual(paystack.calls[0].args, { p_provider: "paystack", p_ref: "tly_6", p_amount_minor: 100000 });
+
+  // A refund still pending changes nothing.
+  const pending = fakeDb();
+  await handlePaystackEvent({ event: "refund.pending", data: { transaction_reference: "tly_6", amount: 100000 } }, pending, paystackDeps);
+  assert.equal(pending.calls.length, 0);
 });
 
 test("a database error propagates, so the webhook answers 500 and the provider retries", async () => {

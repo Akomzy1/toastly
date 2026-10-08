@@ -1,4 +1,4 @@
-import { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
+import { STARTER_MONTHLY_GISTS, upgradeOffer } from "@/lib/plan-numbers";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -37,12 +37,16 @@ export default async function ReplyPage({ params }: { params: { answerId: string
     .maybeSingle();
   if (!row || row.profile_id === user.id) notFound();
 
-  const [person, { data: tierRow }, { data: used }, { data: room }] = await Promise.all([
+  const [person, { data: tierRow }, { data: used }, { data: room }, { data: me }, { data: cfg }, { data: coins }] = await Promise.all([
     getMemberProfile(supabase, row.profile_id),
     supabase.rpc("current_tier", { p_profile_id: user.id }),
     supabase.rpc("voice_gists_this_month", { p_profile_id: user.id }),
     supabase.rpc("gist_has_room", { p_profile_id: user.id }),
+    supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
+    supabase.from("plan_config").select("extra_gist_coins").maybeSingle(),
+    supabase.rpc("coin_balance", { p_profile_id: user.id }),
   ]);
+  const extraPrice = (cfg as { extra_gist_coins: number | null } | null)?.extra_gist_coins ?? null;
   const tier = (tierRow as Tier | null) ?? "starter";
   const paid = canSendText(tier);
   const prompt = (Array.isArray(row.prompts) ? row.prompts[0]?.text : (row.prompts as { text?: string } | null)?.text) ?? "";
@@ -58,6 +62,8 @@ export default async function ReplyPage({ params }: { params: { answerId: string
       answer={row.answer}
       gistsLeft={paid ? null : Math.max(0, STARTER_MONTHLY_GISTS - ((used as number | null) ?? 0))}
       resetOn={resetDate()}
+      offer={upgradeOffer((me?.country_code ?? "NG") !== "NG")}
+      extraGist={extraPrice ? { coins: extraPrice, have: Math.max(0, Number(coins ?? 0)) } : null}
     />
   );
 }

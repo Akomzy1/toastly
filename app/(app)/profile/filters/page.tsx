@@ -6,6 +6,7 @@ import { FiltersLocked, FiltersScreen } from "@/components/profile/filters-scree
 import { NO_FILTERS, type MemberFilters } from "@/lib/filters";
 import { requireLiveProfile } from "@/lib/live-profile";
 import { ProfileNotLive } from "@/components/app/profile-not-live";
+import { upgradeOffer } from "@/lib/plan-numbers";
 
 export const metadata: Metadata = {
   title: "Filters",
@@ -31,20 +32,21 @@ export default async function FiltersPage() {
   const live = await requireLiveProfile(supabase);
   if (!live.live) return <ProfileNotLive status={live} />;
 
-  const [{ data: allowed }, { data: row }] = await Promise.all([
+  const [{ data: allowed }, { data: row }, { data: me }] = await Promise.all([
     supabase.rpc("i_have_advanced_filters"),
     supabase
       .from("member_filters")
       .select("religions, religion_include_unsaid, tribes, tribe_include_unsaid")
       .eq("profile_id", user.id)
       .maybeSingle<MemberFilters>(),
+    supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),
   ]);
 
   return (
     <>
       <ScreenBand title="Filters" sub="Premium" back="/profile/preferences" />
       <div className="mx-auto grid w-full max-w-[680px] gap-4 px-3.5 pb-8 pt-[18px]">
-        {allowed === true ? <FiltersScreen initial={row ?? NO_FILTERS} /> : <FiltersLocked />}
+        {allowed === true ? <FiltersScreen initial={row ?? NO_FILTERS} /> : <FiltersLocked offer={upgradeOffer((me?.country_code ?? "NG") !== "NG")} />}
       </div>
     </>
   );

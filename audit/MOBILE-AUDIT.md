@@ -1,6 +1,6 @@
 # Mobile audit
 
-Run 2026-10-08 11:53 UTC against `http://localhost:3007`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
+Run 2026-10-08 14:05 UTC against `http://localhost:3123`. Viewports 320×568 and 360×640 (the review console at 768×1024 and 1280×800), device scale 2, touch.
 
 Checks: **overflow** (scrollWidth > innerWidth), **targets** (every visible a/button/input/select/[role=button]/[role=tab] at least 44×44px), **text** (no visible text under 12px).
 
@@ -136,6 +136,10 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/gist-invite/reply-paid` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-paid-360.png` |
 | `/audit/gist-invite/reply-limit` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-320.png` |
 | `/audit/gist-invite/reply-limit` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-360.png` |
+| `/audit/gist-invite/reply-limit-coins` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-coins-320.png` |
+| `/audit/gist-invite/reply-limit-coins` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-coins-360.png` |
+| `/audit/gist-invite/reply-limit-short` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-short-320.png` |
+| `/audit/gist-invite/reply-limit-short` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-reply-limit-short-360.png` |
 | `/audit/gist-invite/sent` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-sent-320.png` |
 | `/audit/gist-invite/sent` | 360 | pass | pass | pass | pass | `mobile\audit-gist-invite-sent-360.png` |
 | `/audit/gist-invite/list` | 320 | pass | pass | pass | pass | `mobile\audit-gist-invite-list-320.png` |
@@ -236,6 +240,18 @@ The in-app surfaces are measured through `/audit/*` harness routes that render t
 | `/audit/going-live/selfie` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-360.png` |
 | `/audit/going-live/selfie-photos` | 320 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-photos-320.png` |
 | `/audit/going-live/selfie-photos` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-selfie-photos-360.png` |
+| `/audit/going-live/not-live-about-you` | 320 | pass | pass | pass | pass | `mobile\audit-going-live-not-live-about-you-320.png` |
+| `/audit/going-live/not-live-about-you` | 360 | pass | pass | pass | pass | `mobile\audit-going-live-not-live-about-you-360.png` |
+| `/audit/sign-up/waitlist` | 320 | pass | pass | pass | pass | `mobile\audit-sign-up-waitlist-320.png` |
+| `/audit/sign-up/waitlist` | 360 | pass | pass | pass | pass | `mobile\audit-sign-up-waitlist-360.png` |
+| `/audit/sign-up/signup` | 320 | pass | pass | pass | pass | `mobile\audit-sign-up-signup-320.png` |
+| `/audit/sign-up/signup` | 360 | pass | pass | pass | pass | `mobile\audit-sign-up-signup-360.png` |
+| `/audit/sign-up/signup-tester` | 320 | pass | pass | pass | pass | `mobile\audit-sign-up-signup-tester-320.png` |
+| `/audit/sign-up/signup-tester` | 360 | pass | pass | pass | pass | `mobile\audit-sign-up-signup-tester-360.png` |
+| `/audit/sign-up/about-you` | 320 | pass | pass | pass | pass | `mobile\audit-sign-up-about-you-320.png` |
+| `/audit/sign-up/about-you` | 360 | pass | pass | pass | pass | `mobile\audit-sign-up-about-you-360.png` |
+| `/audit/sign-up/about-you-locked` | 320 | pass | pass | pass | pass | `mobile\audit-sign-up-about-you-locked-320.png` |
+| `/audit/sign-up/about-you-locked` | 360 | pass | pass | pass | pass | `mobile\audit-sign-up-about-you-locked-360.png` |
 | `/audit/where-you-live/signup` | 320 | pass | pass | pass | pass | `mobile\audit-where-you-live-signup-320.png` |
 | `/audit/where-you-live/signup` | 360 | pass | pass | pass | pass | `mobile\audit-where-you-live-signup-360.png` |
 | `/audit/where-you-live/signup-ghana` | 320 | pass | pass | pass | pass | `mobile\audit-where-you-live-signup-ghana-320.png` |

@@ -22,3 +22,14 @@ export const DIASPORA_PLUS_USD = 20;
 
 export const naira = (n: number) => `₦${n.toLocaleString("en-NG")}`;
 export const usd = (n: number) => `$${n}`;
+
+/**
+ * The plan an in-context upgrade prompt names, with its price (PRD §7.3,
+ * decided 8 October 2026): Premium for members in Nigeria, Diaspora for
+ * members abroad. Every upgrade prompt reads this — never a typed price.
+ */
+export function upgradeOffer(abroad: boolean): { plan: string; price: string } {
+  return abroad
+    ? { plan: "Diaspora", price: `${usd(DIASPORA_USD)} a month` }
+    : { plan: "Premium", price: `${naira(PREMIUM_NGN)} a month` };
+}

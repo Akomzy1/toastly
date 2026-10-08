@@ -62,7 +62,8 @@ export const ngTiers: Tier[] = [
     for: "For the marriage track, all the way to the wedding.",
     features: [
       "Everything in Premium, plus:",
-      "Live-video Gist sessions",
+      // REMOVED until built (decided 8 October 2026): "Live-video Gist
+      // sessions". Back when lib/features-built.ts VIDEO_GIST_BUILT is true.
       // CORRECTED: the prototype's Premium Plus card omitted incognito, which
       // PRD §7.1 lists as a Premium Plus feature — and it is half the reason
       // the women's 30-day offer is Premium Plus rather than base Premium.
@@ -102,7 +103,8 @@ export const dpTiers: Tier[] = [
     for: "For diaspora couples heading toward a Nigerian wedding abroad.",
     features: [
       "Everything in Diaspora, plus:",
-      "Live-video Gist sessions",
+      // REMOVED until built (decided 8 October 2026): "Live-video Gist
+      // sessions". Back when lib/features-built.ts VIDEO_GIST_BUILT is true.
       "Priority support",
     ],
     cta: "Join Diaspora Plus",
@@ -139,7 +141,7 @@ export const compareRows: [string, string[]][][] = [
       ],
     ],
     ["Gist sessions (audio)", [`${STARTER_MONTHLY_GISTS} a month`, "Unlimited", "Unlimited"]],
-    ["Live-video Gist", ["—", "—", "Included"]],
+    // REMOVED until built (decided 8 October 2026): the "Live-video Gist" row.
     // CORRECTED (decided 6 October 2026, PRD §5.2.4): launch filters are
     // religion and tribe — never a promise of one that isn't built.
     [
@@ -159,7 +161,7 @@ export const compareRows: [string, string[]][][] = [
     ["Verified Real (phone + liveness)", ["Included", "Included"]],
     ["Matching pools", ["Back home + diaspora", "Back home + diaspora"]],
     ["Gist sessions (audio)", ["Unlimited", "Unlimited"]],
-    ["Live-video Gist", ["—", "Included"]],
+    // REMOVED until built (decided 8 October 2026): the "Live-video Gist" row.
     ["Time-zone smart scheduling", ["Included", "Included"]],
     // CORRECTED: PRD §7.1 gives advanced filters to both diaspora tiers; the
     // launch filters are religion and tribe (PRD §5.2.4).
@@ -225,7 +227,8 @@ export const whyPay = [
     // Mode as a Premium Plus feature. It is free on every tier including
     // Starter (CLAUDE.md, PRD §6) and must never be presented as paid.
     title: "Premium Plus buys the whole track",
-    body: "Live-video Gist and incognito mode. Couple Mode and the AriyaPlanner handoff are already yours on every tier, including free.",
+    // Live-video Gist REMOVED until built (decided 8 October 2026).
+    body: "Incognito mode and priority support from Lagos. Couple Mode and the AriyaPlanner handoff are already yours on every tier, including free.",
   },
   {
     title: "Nobody buys your place in the six",

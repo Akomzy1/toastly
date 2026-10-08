@@ -27,7 +27,7 @@ Built in Lagos by Toastly Technologies Ltd. Installs from the browser as a ~4MB 
 
 - **Verification is the front door, not a badge.** Phone plus a three-second selfie liveness check, mandatory for every account, before the profile is visible to anyone. NIN or BVN is optional and adds a second ring to the seal; the number itself is never displayed.
 - **No swiping.** The feed is six people a day, ranked on prompt answers, intentions and location. Six is fixed on every tier — paying can improve how well those six are matched to you, it never buys more of them, and nothing a member buys inserts them into someone else's feed.
-- **Gist sessions are voice-first.** A scheduled call with guided prompts drawn from both profiles, 18 minutes by default. Live video unlocks on the top tier, by mutual consent.
+- **Gist sessions are voice-first.** A scheduled call with guided prompts drawn from both profiles, 18 minutes by default.
 - **Dates carry a mutual stake.** Both people put down a few coins when a date is confirmed; both showing up returns both stakes, and cancelling with notice costs nothing. It is framed as a promise, not a penalty.
 - **Couple Mode and the AriyaPlanner handoff are free on every tier, including the free one.** They are not an upsell.
 - **Optional fields are display-only.** Religion, tribe, language, relationship history, profession and education never filter anyone out of anyone's feed.
@@ -36,9 +36,9 @@ Built in Lagos by Toastly Technologies Ltd. Installs from the browser as a ~4MB 
 
 Two separate tracks, never blended into one converted price. Nobody pays to join, and nobody pays before their profile is live.
 
-Nigeria, billed in Naira: Starter free forever (${gistSessions} — accepting an invitation never counts — and receive-only chat until upgrade); Premium ${naira(PREMIUM_NGN)}/month (unlimited voice Gist, advanced filters); Premium Plus ${naira(PREMIUM_PLUS_NGN)}/month (live-video Gist, incognito mode).
+Nigeria, billed in Naira: Starter free forever (${gistSessions} — accepting an invitation never counts — and receive-only chat until upgrade); Premium ${naira(PREMIUM_NGN)}/month (unlimited voice Gist, advanced filters); Premium Plus ${naira(PREMIUM_PLUS_NGN)}/month (incognito mode, priority support).
 
-Diaspora, billed in USD: Diaspora ${usd(DIASPORA_USD)}/month (both matching pools, unlimited voice Gist, time-zone aware scheduling, advanced filters); Diaspora Plus ${usd(DIASPORA_PLUS_USD)}/month (adds live-video Gist and priority support).
+Diaspora, billed in USD: Diaspora ${usd(DIASPORA_USD)}/month (both matching pools, unlimited voice Gist, time-zone aware scheduling, advanced filters); Diaspora Plus ${usd(DIASPORA_PLUS_USD)}/month (adds priority support).
 
 Coins are bought separately and are never a subscription. Women get 30 days of full Premium Plus (Diaspora Plus for women abroad) from the day their profile goes live, granted automatically, with no payment method required.
 

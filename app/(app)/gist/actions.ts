@@ -175,3 +175,27 @@ export async function submitOutcome(
     ok: "Thanks — that stays private. If you both said yes, you'll both hear.",
   };
 }
+
+/**
+ * One more Gist this month, paid in coins (0038). The database checks it's a
+ * plan with a monthly limit, that this month's are used, that a price is set
+ * and that the coins are there — gift coins first. Never cash.
+ */
+export async function buyExtraGist(_prev: GistState, formData: FormData): Promise<GistState> {
+  const { supabase, user } = await me();
+  if (!user) return { error: "Please sign in again." };
+  const live = await requireLiveProfile(supabase);
+  if (!live.live) return { error: notLiveError(live) };
+
+  const { data, error } = await supabase.rpc("buy_extra_gist");
+  if (error) return { error: error.message };
+  const r = data as { paid: boolean; shortfall_coins?: number };
+  if (!r.paid) {
+    const n = r.shortfall_coins ?? 0;
+    return { error: `You need ${n} more coin${n === 1 ? "" : "s"} for this.` };
+  }
+  revalidatePath("/gist");
+  const back = String(formData.get("back") ?? "");
+  if (back.startsWith("/feed/reply/")) revalidatePath(back);
+  return { ok: "Done — you have one more Gist this month." };
+}

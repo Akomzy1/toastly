@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { LOCKED_COPY } from "@/lib/inbox";
+import { lockedCopy } from "@/lib/inbox";
 
 /**
  * The locked inbox row and its upgrade panel.
@@ -19,8 +19,9 @@ import { LOCKED_COPY } from "@/lib/inbox";
  *   - no countdown timers, no "expires in", no fabricated scarcity;
  *   - a one-tap path to upgrade, and a plain way to dismiss.
  */
-export function LockedRow({ label }: { label: string }) {
+export function LockedRow({ label, offer }: { label: string; offer: { plan: string; price: string } }) {
   const [open, setOpen] = React.useState(false);
+  const LOCKED_COPY = lockedCopy(offer);
 
   return (
     <>

@@ -23,6 +23,10 @@ before(async () => {
 async function member(name, { live = false, paid = false } = {}) {
   const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com` });
   await db.query("update profiles set stage = 'verified_real', phone_verified_at = now() where id = $1", [id]);
+  // 0036's steps (gender, who they'd like to meet, a first answer) done up
+  // front: these tests are about photos and the selfie.
+  await db.query("update profiles set gender = 'man', seeking = '{woman,man}' where id = $1", [id]);
+  await db.query("insert into prompt_answers (profile_id, prompt_id, answer) values ($1, 10, 'Being early, every time') on conflict do nothing", [id]);
   if (paid) await db.query("insert into entitlements (profile_id, tier, source, ends_at) values ($1, 'premium', 'subscription', now() + interval '30 days')", [id]);
   if (live) await goLive(db, id);
   return id;

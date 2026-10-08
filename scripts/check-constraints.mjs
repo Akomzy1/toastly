@@ -657,7 +657,7 @@ check("no scanning of message content for contact info", (s, f) => {
 
 // No countdown timers, no fabricated scarcity in the upgrade prompt.
 check("locked inbox copy uses no fake scarcity", (s, f) => {
-  if (!/LOCKED_COPY/.test(s)) return false;
+  if (!/LOCKED_COPY|lockedCopy/.test(s)) return false;
   const hit = /expires? (in|soon)|only \d+ (hours?|days?) left|countdown|hurry|act now/i.exec(
     s,
   );
@@ -1024,6 +1024,82 @@ check("no Starter Gist count or Diaspora price is written out by hand", (s, f) =
     s.match(/\$(?:15|30)\b(?!\d)/);
   return hit ? `writes out "${hit[0]}" — read it from lib/plan-numbers.ts` : false;
 });
+
+// Upgrade prompts (decided 8 October 2026): every one names its price, read
+// from lib/plan-numbers.ts, and offers "Not now"; the Gist limit opens the
+// in-app plan screen, not the public pricing page.
+{
+  const name = "upgrade prompts show the price from config and offer Not now";
+  const PROMPTS = {
+    "lib/inbox.ts": /offer\.price/,
+    "app/(app)/inbox/locked-row.tsx": /lockedCopy\(offer\)/,
+    "components/profile/filters-screen.tsx": /offer\.price/,
+    "components/app/pool-plan-notice.tsx": /offer\.price/,
+    "components/profile/pool-choice.tsx": /usd\(DIASPORA_USD\)/,
+    "components/gist/reply-screen.tsx": /offer\.price/,
+  };
+  const NOT_NOW = ["lib/inbox.ts", "components/profile/filters-screen.tsx", "components/app/pool-plan-notice.tsx",
+    "components/profile/pool-choice.tsx", "components/gist/reply-screen.tsx"];
+  const hits = [];
+  for (const [f, price] of Object.entries(PROMPTS)) {
+    const s = fs.existsSync(f) ? stripComments(fs.readFileSync(f, "utf8"), f) : "";
+    if (!price.test(s)) hits.push(`${f} — no price from lib/plan-numbers.ts`);
+    if (NOT_NOW.includes(f) && !/Not now/.test(s)) hits.push(`${f} — no "Not now"`);
+  }
+  const reply = fs.readFileSync("components/gist/reply-screen.tsx", "utf8");
+  if (/href="\/pricing"/.test(reply)) hits.push("components/gist/reply-screen.tsx — the Gist limit links to /pricing, not /profile/plan");
+  const inbox = fs.readFileSync("app/(app)/inbox/page.tsx", "utf8");
+  if (!(inbox.indexOf("<BlindSafety") > -1 && inbox.indexOf("<BlindSafety") < inbox.indexOf("<LockedRow")))
+    hits.push("app/(app)/inbox/page.tsx — report and block must come before the locked-inbox upgrade");
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
+// Payments (decided 8 October 2026): Stripe's card issuing country reaches
+// the pricing-integrity check on every Stripe settlement, and refunds from
+// both providers are processed — by payment_refund, which never pays out.
+{
+  const name = "Stripe settles with the card country; both providers' refunds are handled";
+  const s = stripComments(fs.readFileSync("lib/payments/events.ts", "utf8"), "events.ts");
+  const hits = [];
+  if (/p_card_country:\s*null/.test(s)) hits.push("lib/payments/events.ts — a settlement passes no card country");
+  if (!/case "charge\.refunded"/.test(s)) hits.push("lib/payments/events.ts — Stripe charge.refunded isn't handled");
+  if (!/case "refund\.processed"/.test(s)) hits.push("lib/payments/events.ts — Paystack refund.processed isn't handled");
+  for (const f of ["app/api/webhooks/stripe/route.ts", "app/api/payments/stripe/return/route.ts"]) {
+    if (!/cardCountry:\s*stripeCardCountry/.test(fs.readFileSync(f, "utf8"))) hits.push(`${f} — no card-country lookup`);
+  }
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
+// Unbuilt paid features are never listed for sale (decided 8 October 2026):
+// the pricing page and plan screens (lib/pricing-content.ts and the
+// components that render it), Toastly Help's prompt, llms.txt and the
+// structured data. lib/features-built.ts says what is built.
+{
+  const name = "unbuilt features are not listed on pricing, plan screens, Help, llms.txt or schema";
+  const flags = fs.readFileSync("lib/features-built.ts", "utf8");
+  const built = (k) => new RegExp(`export const ${k} = true;`).test(flags);
+  const LISTINGS = [
+    "lib/pricing-content.ts", "components/pricing-card.tsx", "components/pricing-compare.tsx",
+    "components/plan/plan-page.tsx", "app/(app)/profile/plan/page.tsx", "app/(marketing)/pricing/page.tsx",
+    "lib/concierge/agent.ts", "app/llms.txt/route.ts", "lib/schema.ts",
+  ];
+  const RULES = [
+    ["VIDEO_GIST_BUILT", /\b(live[- ]?)video\b|\bvideo[- ]Gist/i, "live-video Gist"],
+    ["SEE_WHO_LIKED_BUILT", /who (has )?liked you|who likes you|see who liked/i, "see who liked you"],
+  ];
+  const hits = [];
+  for (const f of LISTINGS) {
+    if (!fs.existsSync(f)) continue;
+    const s = stripComments(fs.readFileSync(f, "utf8"), f);
+    for (const [flag, re, what] of RULES) {
+      if (!built(flag) && re.test(s)) hits.push(`${f} — lists ${what}, which isn't built (${flag} is false)`);
+    }
+  }
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
 
 // "Photos match their selfie" is only true once the photo match ships
 // (Prompt 14, parked).

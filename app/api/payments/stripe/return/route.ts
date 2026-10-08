@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCharge } from "@/lib/payments-notify";
 import { safeNext } from "@/lib/payments/checkout";
-import { stripeSession, stripeSubscription } from "@/lib/payments/stripe";
+import { stripeCardCountry, stripeRefundRef, stripeSession, stripeSubscription } from "@/lib/payments/stripe";
 import { handleStripeEvent } from "@/lib/payments/events";
 
 /**
@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
     const outcome = await handleStripeEvent(
       { type: "checkout.session.completed", data: { object: session as never } },
       admin,
-      { subscription: stripeSubscription },
+      // Settling is first-wins, so the card country is read here too — the
+      // webhook arriving second can't add it afterwards.
+      { subscription: stripeSubscription, cardCountry: stripeCardCountry, refundRef: stripeRefundRef },
     );
     if (outcome.ref && outcome.status === "granted") await notifyCharge(admin, outcome.ref, "stripe");
     return to("1");

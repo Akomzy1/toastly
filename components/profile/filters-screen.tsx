@@ -158,15 +158,23 @@ export function FiltersScreen({ initial, preview }: { initial: MemberFilters; pr
   );
 }
 
-/** Starter: filters come with a paid plan. NOT IN THE PROTOTYPE — flagged. */
-export function FiltersLocked() {
+/**
+ * Starter: filters come with a paid plan. Names the plan and its price, with
+ * "Not now" (decided 8 October 2026). NOT IN THE PROTOTYPE — flagged.
+ */
+export function FiltersLocked({ offer }: { offer: { plan: string; price: string } }) {
   return (
     <Notice tone="info" title="Filters come with a paid plan">
-      Premium, Premium Plus, Diaspora and Diaspora Plus can filter their own six by religion and tribe. Filters only change
-      your own search — they never change who sees you.{" "}
-      <Link href="/profile/plan" className="mt-1 flex min-h-11 items-center font-semibold underline">
-        See plans
-      </Link>
+      {offer.plan} ({offer.price}) and the plans above it can filter their own six by religion and tribe. Filters only
+      change your own search — they never change who sees you.
+      <span className="mt-1 flex flex-wrap gap-x-4">
+        <Link href="/profile/plan" className="flex min-h-11 items-center font-semibold underline">
+          See {offer.plan} · {offer.price}
+        </Link>
+        <Link href="/profile/preferences" className="flex min-h-11 items-center underline">
+          Not now
+        </Link>
+      </span>
     </Notice>
   );
 }

@@ -167,7 +167,11 @@ export function PoolChoice({
             href="/profile/plan"
             className="grid min-h-12 place-items-center rounded-xl border border-ink-900/20 px-[18px] py-3 text-button text-ink-900 no-underline hover:border-green-500 hover:bg-green-50"
           >
-            See Diaspora plans
+            See Diaspora plans · from {usd(DIASPORA_USD)} a month
+          </Link>
+          {/* "Not now" (decided 8 October 2026) — not in pool-choice.slim.html, flagged. */}
+          <Link href="/profile/preferences" className="grid min-h-11 place-items-center text-ui text-grey-600 underline">
+            Not now
           </Link>
         </div>
       ) : (

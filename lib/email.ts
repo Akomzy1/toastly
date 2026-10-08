@@ -235,6 +235,25 @@ export function sendRestrictionNotice(to: string, { reasonCategory }: { reasonCa
   });
 }
 
+/**
+ * After a reviewer corrects the gender on a profile (0038). The reason
+ * category only — never the report or who made it.
+ */
+export function sendGenderCorrectedNotice(to: string) {
+  const line =
+    "After a review by a person on our team — the reason category is \"a report about your account\" — we've corrected the gender on your Toastly profile. Any offer that depended on it has ended.";
+  return sendEmail({
+    to,
+    subject: "We've updated your Toastly profile",
+    text: `${line} If you think this is a mistake, reply to this email or open Toastly Help in the app.`,
+    html: shell(
+      "We've updated your profile",
+      `<p style="${P}">${line}</p>
+       <p style="${SMALL}">If you think this is a mistake, reply to this email or open Toastly Help in the app.</p>`,
+    ),
+  });
+}
+
 export function sendRestrictionLifted(to: string) {
   return sendEmail({
     to,

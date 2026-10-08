@@ -47,6 +47,10 @@ type PaystackData = {
   email_token?: string;
   next_payment_date?: string | null;
   subscription?: { subscription_code?: string; email_token?: string; next_payment_date?: string | null; plan?: unknown } | null;
+  /** refund.* events */
+  transaction_reference?: string;
+  transaction?: { reference?: string } | null;
+  status?: string;
 };
 
 export async function handlePaystackEvent(
@@ -129,6 +133,19 @@ export async function handlePaystackEvent(
       return { status: result, provider: "paystack" };
     }
 
+    // A refund made in the Paystack dashboard. Only a processed one changes
+    // anything; its amount is this refund's, so a refund smaller than the
+    // payment goes to staff rather than ending anything (payment_refund, 0038).
+    case "refund.processed": {
+      const reference = d.transaction_reference ?? d.transaction?.reference;
+      if (!reference || typeof d.amount !== "number") return { status: "ignored", provider: "paystack" };
+      return {
+        status: await rpc(db, "payment_refund", { p_provider: "paystack", p_ref: reference, p_amount_minor: d.amount }),
+        provider: "paystack",
+        ref: reference,
+      };
+    }
+
     default:
       return { status: "ignored", provider: "paystack" };
   }
@@ -147,7 +164,29 @@ export type StripeSub = {
   metadata?: Record<string, string> | null;
 };
 
-export type StripeDeps = { subscription: (id: string) => Promise<StripeSub> };
+export type StripeDeps = {
+  subscription: (id: string) => Promise<StripeSub>;
+  /**
+   * The issuing country of the card behind a payment, from the charge's
+   * payment-method details. Two letters, or null. Never the card itself.
+   */
+  cardCountry: (from: { charge?: string | null; paymentIntent?: string | null; invoice?: string | null }) => Promise<string | null>;
+  /** Our reference for the payment a refunded charge paid for. */
+  refundRef: (charge: { paymentIntent?: string | null; invoice?: string | null }) => Promise<string | null>;
+};
+
+/**
+ * The card country is a pricing-integrity signal, never a gate: if Stripe
+ * can't be asked, the payment is still honoured, without the signal.
+ */
+async function cardCountryOrNull(deps: StripeDeps, from: Parameters<StripeDeps["cardCountry"]>[0]): Promise<string | null> {
+  try {
+    const c = await deps.cardCountry(from);
+    return c && /^[A-Za-z]{2}$/.test(c) ? c.toUpperCase() : null;
+  } catch {
+    return null;
+  }
+}
 
 export function stripeStatus(sub: Pick<StripeSub, "status" | "cancel_at_period_end">): "active" | "non_renewing" | "past_due" | "ended" {
   if (sub.status === "canceled" || sub.status === "incomplete_expired") return "ended";
@@ -190,6 +229,10 @@ type StripeObject = Record<string, unknown> & {
   status?: string;
   cancel_at_period_end?: boolean;
   current_period_end?: number;
+  payment_intent?: string | null;
+  invoice?: string | null;
+  charge?: string | null;
+  amount_refunded?: number;
 };
 
 export async function handleStripeEvent(
@@ -213,7 +256,7 @@ export async function handleStripeEvent(
         p_ref: ref,
         p_amount_minor: o.amount_total,
         p_currency: o.currency,
-        p_card_country: null,
+        p_card_country: await cardCountryOrNull(deps, { paymentIntent: o.payment_intent, invoice: o.invoice }),
         p_channel: "card",
         p_customer: o.customer ?? null,
         p_subscription: o.subscription ?? null,
@@ -250,7 +293,7 @@ export async function handleStripeEvent(
         p_tier: tier,
         p_amount_minor: o.amount_paid,
         p_currency: o.currency,
-        p_card_country: null,
+        p_card_country: await cardCountryOrNull(deps, { charge: o.charge, invoice: o.id }),
         p_channel: "card",
         p_period_end: iso(o.lines?.data?.[0]?.period?.end ?? null),
       });
@@ -261,6 +304,19 @@ export async function handleStripeEvent(
       if (!o.subscription) return { status: "ignored", provider: "stripe" };
       const sub = await deps.subscription(o.subscription);
       return { status: await syncStripeSub(db, sub, "past_due", null), provider: "stripe" };
+    }
+
+    // A refund made in the Stripe dashboard. amount_refunded is the total so
+    // far; less than the payment goes to staff (payment_refund, 0038).
+    case "charge.refunded": {
+      if (typeof o.amount_refunded !== "number" || o.amount_refunded <= 0) return { status: "ignored", provider: "stripe" };
+      const ref = await deps.refundRef({ paymentIntent: o.payment_intent, invoice: o.invoice });
+      if (!ref) return { status: "unknown", provider: "stripe" };
+      return {
+        status: await rpc(db, "payment_refund", { p_provider: "stripe", p_ref: ref, p_amount_minor: o.amount_refunded }),
+        provider: "stripe",
+        ref,
+      };
     }
 
     case "customer.subscription.created":

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ACTION_LABEL, KIND_LABEL, STAGE_LABEL, caseNo, wat } from "@/lib/review";
+import { actionLabel, KIND_LABEL, STAGE_LABEL, caseNo, wat } from "@/lib/review";
 
 /**
  * Decision history — built against design/prototype/review-history.slim.html.
@@ -27,7 +27,7 @@ export function HistoryView({
   entries: HistoryEntry[];
   base?: string;
 }) {
-  const outcome = (c: HistoryCase) => (c.stage === "decided" ? ACTION_LABEL[c.decision ?? ""] ?? "Decided" : STAGE_LABEL[c.stage]);
+  const outcome = (c: HistoryCase) => (c.stage === "decided" ? actionLabel(c.decision ?? "") ?? "Decided" : STAGE_LABEL[c.stage]);
   return (
     <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-wrap items-start gap-5 p-6">
       <aside aria-label="Cases" className="grid max-w-full flex-[1_1_280px] gap-2.5">

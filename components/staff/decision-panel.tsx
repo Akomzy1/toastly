@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { assign, decide } from "@/app/(staff)/staff/actions";
 import { Notice } from "@/components/ui/notice";
-import { ACTION_LABEL, ACTION_SUB, MIN_REASON, wat } from "@/lib/review";
+import { actionLabel, actionSub, MIN_REASON, wat } from "@/lib/review";
 
 /**
  * The decision panel — review-case.slim.html. Choose an action, write the
@@ -47,7 +47,7 @@ export function DecisionPanel({
     const r = await decide(id, choice, reason.trim());
     setBusy(false);
     if (r.error) return setError(r.error);
-    setDone({ label: ACTION_LABEL[choice] ?? choice, at: new Date().toISOString(), who: r.who ?? "You", why: reason.trim() });
+    setDone({ label: actionLabel(choice) ?? choice, at: new Date().toISOString(), who: r.who ?? "You", why: reason.trim() });
     router.refresh();
   }
 
@@ -105,15 +105,15 @@ export function DecisionPanel({
                 choice === a ? "border-green-500 bg-green-50" : "border-ink-900/[.18] bg-white"
               }`}
             >
-              <span className="text-[14px] font-semibold text-ink-900">{ACTION_LABEL[a] ?? a}</span>
-              <span className="text-[12.5px] leading-[1.45] text-grey-600">{ACTION_SUB[a] ?? ""}</span>
+              <span className="text-[14px] font-semibold text-ink-900">{actionLabel(a) ?? a}</span>
+              <span className="text-[12.5px] leading-[1.45] text-grey-600">{actionSub(a) ?? ""}</span>
             </button>
           ))}
 
           {choice ? (
             <div className="mt-1 grid gap-2 border-t border-ink-900/10 pt-3">
               <label htmlFor="reason" className="text-nav font-semibold text-ink-900">
-                Reason for &ldquo;{ACTION_LABEL[choice] ?? choice}&rdquo; <span className="font-normal text-grey-600">(required)</span>
+                Reason for &ldquo;{actionLabel(choice) ?? choice}&rdquo; <span className="font-normal text-grey-600">(required)</span>
               </label>
               <textarea
                 id="reason"
@@ -137,7 +137,7 @@ export function DecisionPanel({
                     ok && !busy ? "cursor-pointer bg-green-800 text-white" : "cursor-not-allowed bg-grey-200 text-grey-600"
                   }`}
                 >
-                  {busy ? "Saving…" : `Confirm: ${ACTION_LABEL[choice] ?? choice}`}
+                  {busy ? "Saving…" : `Confirm: ${actionLabel(choice) ?? choice}`}
                 </button>
                 <button
                   type="button"

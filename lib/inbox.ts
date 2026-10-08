@@ -50,10 +50,12 @@ export function lockedLabel(count: number): string {
  * broken state or an unexplained blank — and with no countdown, no "expires
  * soon", no fabricated scarcity (Prompt 6).
  */
-export const LOCKED_COPY = {
-  rowLabel: "Unlock with Premium to view",
-  title: "New message waiting.",
-  body: "Premium unlocks your inbox — see who's messaged you and reply, with unlimited Gist sessions too.",
-  cta: "Unlock with Premium",
-  dismiss: "Not now",
-} as const;
+export function lockedCopy(offer: { plan: string; price: string }) {
+  return {
+    rowLabel: `Unlock with ${offer.plan} to view`,
+    title: "New message waiting.",
+    body: `${offer.plan} (${offer.price}) unlocks your inbox — see who's messaged you and reply, with unlimited Gist sessions too.`,
+    cta: `Unlock with ${offer.plan} · ${offer.price}`,
+    dismiss: "Not now",
+  };
+}

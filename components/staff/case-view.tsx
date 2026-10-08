@@ -2,7 +2,7 @@ import Link from "next/link";
 import { DecisionPanel } from "./decision-panel";
 import { TIER_LABELS } from "@/lib/entitlements";
 import { COUNTRY_NAME } from "@/lib/countries";
-import { ACTION_LABEL, KIND_LABEL, SOURCE_LABEL, STAGE_LABEL, STAGE_STYLE, caseNo, memberNo, waited, wat } from "@/lib/review";
+import { actionLabel, KIND_LABEL, SOURCE_LABEL, STAGE_LABEL, STAGE_STYLE, caseNo, memberNo, waited, wat } from "@/lib/review";
 import type { Tier } from "@/lib/types/profile";
 
 /**
@@ -131,6 +131,25 @@ export function caseSections(c: CaseItem): Section[] {
       ],
     });
     out.push({ title: "Activity — reported member", rows: [{ k: "New conversations opened", v: `${e.conversations_opened_9_days ?? 0} in the last 9 days` }] });
+  } else if (c.kind === "refund") {
+    // NOT IN THE PROTOTYPE — flagged. Amounts and coin counts only.
+    const money = (minor: unknown) => `${e.currency === "USD" ? "$" : "₦"}${(Number(minor ?? 0) / 100).toLocaleString("en-GB")}`;
+    out.push({
+      title: "Refund",
+      rows: [
+        { k: "Payment", v: `${money(e.amount_minor)} · ${PAY_KIND[String(e.kind)] ?? e.kind}${e.paid_at ? ` · paid ${day(String(e.paid_at))}` : ""}` },
+        { k: "Refunded", v: `${money(e.refunded_minor)}${e.full_refund ? " (in full)" : " (part — nothing changed automatically)"}` },
+        ...(Number(e.coins_in_purchase ?? 0) > 0
+          ? [
+              { k: "Coins from this purchase", v: String(e.coins_in_purchase) },
+              { k: "Removed from their balance", v: String(e.coins_removed ?? 0) },
+              { k: "Already spent or staked", v: String(e.coins_already_spent ?? 0) },
+            ]
+          : []),
+        ...(e.full_refund && Number(e.coins_in_purchase ?? 0) === 0 ? [{ k: "Plan grants ended", v: String(e.plans_ended ?? 0) }] : []),
+        ...(e.still_renewing ? [{ k: "Subscription", v: "Still renews with the provider — stop it there if the refund means it should end" }] : []),
+      ],
+    });
   } else if (c.kind === "attendance") {
     const stake = Number(e.stake_coins ?? 0);
     out.push({
@@ -175,7 +194,7 @@ export function caseSections(c: CaseItem): Section[] {
       title: `Report history — ${m.role.toLowerCase()}`,
       rows: [
         { k: "Reports about this member", v: m.reports_about.length ? m.reports_about.map((r) => `${r.reason} · ${day(r.at)} · ${r.status}`).join("\n") : "None" },
-        { k: "Earlier cases", v: m.earlier_cases.length ? m.earlier_cases.map((o) => `${caseNo(o.case_no)} · ${KIND_LABEL[o.kind] ?? o.kind}${o.decision ? ` · ${ACTION_LABEL[o.decision] ?? o.decision}` : ""}`).join("\n") : "None" },
+        { k: "Earlier cases", v: m.earlier_cases.length ? m.earlier_cases.map((o) => `${caseNo(o.case_no)} · ${KIND_LABEL[o.kind] ?? o.kind}${o.decision ? ` · ${actionLabel(o.decision) ?? o.decision}` : ""}`).join("\n") : "None" },
         ...(m.dates ? [{ k: "Coin-deposit dates", v: `${m.dates.attended} attended, ${m.dates.missed} missed, ${m.dates.cancelled} cancelled` }] : []),
       ],
     });

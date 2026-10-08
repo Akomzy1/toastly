@@ -15,6 +15,8 @@ const BASE: LiveStatus = {
   photoCount: 2,
   minPhotos: 4,
   mainPhoto: "missing",
+  aboutYou: true,
+  firstAnswer: false,
 };
 
 /**
@@ -25,6 +27,8 @@ const BASE: LiveStatus = {
 export default async function AuditGoingLive({ params }: { params: { state: string } }) {
   requireAuditHarness();
   if (params.state === "not-live") return <div className="min-h-screen bg-paper">{await ProfileNotLive({ status: BASE })}</div>;
+  // An account from before 8 October 2026: no gender or "who you'd like to meet" yet (0036).
+  if (params.state === "not-live-about-you") return <div className="min-h-screen bg-paper">{await ProfileNotLive({ status: { ...BASE, aboutYou: false } })}</div>;
   if (params.state === "restricted") return <div className="min-h-screen bg-paper">{await ProfileNotLive({ status: { ...BASE, restricted: true, wasLive: true } })}</div>;
   if (params.state === "selfie" || params.state === "selfie-photos") {
     return (

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCharge } from "@/lib/payments-notify";
 import { stripeWebhookSecret } from "@/lib/payments/config";
-import { stripeSubscription, verifyStripeSignature } from "@/lib/payments/stripe";
+import { stripeCardCountry, stripeRefundRef, stripeSubscription, verifyStripeSignature } from "@/lib/payments/stripe";
 import { handleStripeEvent } from "@/lib/payments/events";
 
 /**
@@ -30,7 +30,11 @@ export async function POST(request: NextRequest) {
   if (!admin) return NextResponse.json({ error: "not configured" }, { status: 503 });
 
   try {
-    const outcome = await handleStripeEvent(JSON.parse(raw), admin, { subscription: stripeSubscription });
+    const outcome = await handleStripeEvent(JSON.parse(raw), admin, {
+      subscription: stripeSubscription,
+      cardCountry: stripeCardCountry,
+      refundRef: stripeRefundRef,
+    });
     if (outcome.ref && (outcome.status === "granted" || outcome.status === "credited_as_coins")) {
       await notifyCharge(admin, outcome.ref, "stripe");
     }

@@ -9,6 +9,7 @@ import {
   sendRestrictionNotice,
   sendReverificationNotice,
   sendSwitchPlanNotice,
+  sendGenderCorrectedNotice,
 } from "@/lib/email";
 import { MIN_REASON, reasonLabel } from "@/lib/review";
 
@@ -64,6 +65,7 @@ export async function decide(id: string, action: string, note: string): Promise<
     if (action === "request_reverification") await sendReverificationNotice(email);
     if (action === "restrict") await sendRestrictionNotice(email, { reasonCategory: category });
     if (action === "lift_restriction") await sendRestrictionLifted(email);
+    if (action.startsWith("correct_gender:")) await sendGenderCorrectedNotice(email);
   }
   revalidatePath("/staff");
   revalidatePath(`/staff/${id}`);

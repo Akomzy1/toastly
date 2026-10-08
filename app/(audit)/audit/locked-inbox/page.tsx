@@ -3,6 +3,7 @@ import { requireAuditHarness } from "@/lib/audit-harness";
 import { LockedRow } from "@/app/(app)/inbox/locked-row";
 import { BlindSafety } from "@/components/safety/blind-safety";
 import { lockedLabel } from "@/lib/inbox";
+import { upgradeOffer } from "@/lib/plan-numbers";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ export default function AuditLockedInbox() {
           {unread}
         </span>
       </div>
-      <LockedRow label={lockedLabel(unread)} />
+      <LockedRow label={lockedLabel(unread)} offer={upgradeOffer(false)} />
       <BlindSafety />
     </div>
   );

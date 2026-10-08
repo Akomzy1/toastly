@@ -1,10 +1,11 @@
 "use client";
 
-import { STARTER_MONTHLY_GISTS, gistCount } from "@/lib/plan-numbers";
+import { STARTER_MONTHLY_GISTS, gistCount, type upgradeOffer } from "@/lib/plan-numbers";
 import * as React from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
-import { inviteToGistForm } from "@/app/(app)/gist/actions";
+import { buyExtraGist, inviteToGistForm } from "@/app/(app)/gist/actions";
+import { useRouter } from "next/navigation";
 import { replyToAnswer } from "@/app/(app)/feed/actions";
 import { Notice } from "@/components/ui/notice";
 import { AMBER, AnswerQuote, Band, CARD, ClockIcon, NOTE, OUTLINE, PersonHead } from "./invite-parts";
@@ -15,8 +16,10 @@ import { AMBER, AnswerQuote, Band, CARD, ClockIcon, NOTE, OUTLINE, PersonHead } 
  *
  * Starter: one action, no message box; the Gist count is a quiet line, never
  * a badge. Paid: two equal options, nothing preselected; picking one opens
- * only what that reply needs. At the limit: a plain note, and See Premium and
- * Not now the same size, so declining is as easy as upgrading.
+ * only what that reply needs. At the limit: a plain note, and the upgrade
+ * (naming the plan and its price, opening the in-app plan screen) and Not
+ * now the same size, so declining is as easy as upgrading (decided 8 October
+ * 2026).
  *
  * Deviations, flagged:
  *   - Age and profession are not shown: date of birth is private, and
@@ -32,6 +35,15 @@ function Submit({ children, disabled }: { children: React.ReactNode; disabled?: 
   return (
     <button type="submit" disabled={disabled || pending} className={AMBER}>
       {pending ? "Sending…" : children}
+    </button>
+  );
+}
+
+function ExtraGistButton({ coins }: { coins: number }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className={OUTLINE}>
+      {pending ? "Adding…" : `One more Gist · ${coins} coins`}
     </button>
   );
 }
@@ -92,6 +104,8 @@ export function ReplyScreen({
   answer,
   gistsLeft,
   resetOn,
+  offer,
+  extraGist = null,
 }: {
   mode: Mode;
   answerId: string;
@@ -103,12 +117,22 @@ export function ReplyScreen({
   /** Starter only. */
   gistsLeft: number | null;
   resetOn: string;
+  /** The plan a Starter member would move to, and its price. */
+  offer: ReturnType<typeof upgradeOffer>;
+  /** At the limit: one more Gist for coins, while a price is set (0038). */
+  extraGist?: { coins: number; have: number } | null;
 }) {
   const first = name.split(" ")[0];
   const [pick, setPick] = React.useState<"msg" | "gist" | null>(null);
   const [text, setText] = React.useState("");
   const [inviteState, invite] = useFormState(inviteToGistForm, null);
   const [msgState, message] = useFormState(replyToAnswer, null);
+  const [extraState, buyExtra] = useFormState(buyExtraGist, null);
+  const router = useRouter();
+  // Bought: the page reloads into the invite screen with the new Gist.
+  React.useEffect(() => {
+    if (extraState?.ok) router.refresh();
+  }, [extraState?.ok, router]);
 
   const inviteForm = (label: string, icon?: boolean) => (
     <form action={invite} className="grid gap-3">
@@ -148,17 +172,40 @@ export function ReplyScreen({
                 You&rsquo;ve used your {gistCount(STARTER_MONTHLY_GISTS)} this month.
               </p>
               <p className="m-0 text-ui leading-[1.6] text-gold-800">
-                They reset on {resetOn}. Premium gives you unlimited Gists and messages.
+                They reset on {resetOn}. {offer.plan} ({offer.price}) gives you unlimited Gists and messages.
               </p>
             </div>
             <div className="grid gap-2.5">
-              <Link href="/pricing" className={AMBER}>
-                See Premium
+              <Link href="/profile/plan" className={AMBER}>
+                See {offer.plan} · {offer.price}
               </Link>
+              {/* Addition, flagged (decided 8 October 2026): one more Gist for
+                  coins. Not in gist-invite-limit.slim.html — this screen's own
+                  outline button until the prototype arrives. */}
+              {extraGist ? (
+                extraGist.have >= extraGist.coins ? (
+                  <form action={buyExtra} className="grid">
+                    <input type="hidden" name="back" value={`/feed/reply/${answerId}`} />
+                    <ExtraGistButton coins={extraGist.coins} />
+                  </form>
+                ) : (
+                  <Link href="/coins/get" className={OUTLINE}>
+                    One more Gist · {extraGist.coins} coins — get coins
+                  </Link>
+                )
+              ) : null}
               <Link href="/feed" className={OUTLINE}>
                 Not now
               </Link>
             </div>
+            {extraState?.error ? <Notice tone="error">{extraState.error}</Notice> : null}
+            {extraState?.ok ? <Notice tone="success">{extraState.ok}</Notice> : null}
+            {extraGist ? (
+              <p className={NOTE}>
+                You have {extraGist.have} coin{extraGist.have === 1 ? "" : "s"}. An extra Gist is for this month, and only
+                counts if the call happens.
+              </p>
+            ) : null}
             <p className="m-0 px-0.5 text-center text-[13px] leading-[1.6] text-grey-600">
               Invites others send you still arrive, and accepting one is always free.
             </p>

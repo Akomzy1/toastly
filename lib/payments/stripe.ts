@@ -176,6 +176,53 @@ export function stripeSubscription(id: string): Promise<StripeSubscription> {
   return call<StripeSubscription>(`/subscriptions/${encodeURIComponent(id)}`);
 }
 
+type CardDetails = { payment_method_details?: { card?: { country?: string | null } | null } | null } | null;
+const countryOf = (c: CardDetails | string | undefined) => (c && typeof c === "object" ? c.payment_method_details?.card?.country ?? null : null);
+
+/**
+ * The issuing country of the card that paid: from the charge, the payment
+ * intent's latest charge, or the invoice's charge. Two letters or null.
+ */
+export async function stripeCardCountry(from: { charge?: string | null; paymentIntent?: string | null; invoice?: string | null }): Promise<string | null> {
+  if (from.charge) return countryOf(await call<CardDetails>(`/charges/${encodeURIComponent(from.charge)}`));
+  if (from.paymentIntent) {
+    const pi = await call<{ latest_charge?: CardDetails | string }>(
+      `/payment_intents/${encodeURIComponent(from.paymentIntent)}?expand[]=latest_charge`,
+    );
+    return countryOf(pi.latest_charge);
+  }
+  if (from.invoice) {
+    const inv = await call<{ charge?: CardDetails | string }>(`/invoices/${encodeURIComponent(from.invoice)}?expand[]=charge`);
+    return countryOf(inv.charge);
+  }
+  return null;
+}
+
+/**
+ * Our payment reference for a refunded charge. A first subscription invoice
+ * was settled under the checkout's reference; a renewal under the invoice id;
+ * a one-off payment under the checkout's reference.
+ */
+export async function stripeRefundRef(charge: { paymentIntent?: string | null; invoice?: string | null }): Promise<string | null> {
+  if (charge.invoice) {
+    const inv = await call<{ id: string; billing_reason?: string; subscription?: string | null }>(
+      `/invoices/${encodeURIComponent(charge.invoice)}`,
+    );
+    if (inv.billing_reason !== "subscription_create" || !inv.subscription) return inv.id;
+    const list = await call<{ data: { client_reference_id: string | null }[] }>(
+      `/checkout/sessions?limit=1&subscription=${encodeURIComponent(inv.subscription)}`,
+    );
+    return list.data[0]?.client_reference_id ?? null;
+  }
+  if (charge.paymentIntent) {
+    const list = await call<{ data: { client_reference_id: string | null }[] }>(
+      `/checkout/sessions?limit=1&payment_intent=${encodeURIComponent(charge.paymentIntent)}`,
+    );
+    return list.data[0]?.client_reference_id ?? null;
+  }
+  return null;
+}
+
 /** Stop a subscription renewing; the member keeps the period they paid for. */
 export async function stripeCancelAtPeriodEnd(id: string): Promise<void> {
   await call(`/subscriptions/${encodeURIComponent(id)}`, { method: "POST", body: { cancel_at_period_end: true } });

@@ -38,6 +38,10 @@ export type LiveStatus = {
   photoCount: number;
   minPhotos: number;
   mainPhoto: "matched" | "checking" | "missing";
+  /** Gender and who they'd like to meet (0036). */
+  aboutYou: boolean;
+  /** At least one prompt answer (0036). */
+  firstAnswer: boolean;
 };
 
 const NOT_LIVE: LiveStatus = {
@@ -49,6 +53,8 @@ const NOT_LIVE: LiveStatus = {
   photoCount: 0,
   minPhotos: 4,
   mainPhoto: "missing",
+  aboutYou: false,
+  firstAnswer: false,
 };
 
 /**
@@ -69,6 +75,8 @@ export async function requireLiveProfile(supabase: Supabase): Promise<LiveStatus
     photoCount: Number(s.photo_count ?? 0),
     minPhotos: Number(s.photos_min ?? 4),
     mainPhoto: s.main === "matched" ? "matched" : s.main === "pending" || s.main === "review" ? "checking" : "missing",
+    aboutYou: s.about_you === true,
+    firstAnswer: s.prompt === true,
   };
 }
 
@@ -77,7 +85,7 @@ export function notLiveError(status: LiveStatus): string {
   if (status.restricted) return "Your account is restricted while our team reviews it, so this is paused.";
   return status.wasLive
     ? "Your profile is hidden for now, so this is paused. Open Today to see what's needed to restore it."
-    : "Your profile isn't live yet. Finish verification and add your photos first.";
+    : "Your profile isn't live yet. Finish verification, add your photos and answer a prompt first.";
 }
 
 /** True when the database refused because someone in it isn't live (PT403). */

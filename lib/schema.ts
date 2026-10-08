@@ -81,7 +81,7 @@ export function softwareApplicationSchema() {
         name: "Premium Plus",
         price: "7000",
         priceCurrency: "NGN",
-        description: "Everything in Premium, plus live-video Gist and incognito mode.",
+        description: "Everything in Premium, plus incognito mode and priority support.",
       },
       {
         "@type": "Offer",
@@ -96,7 +96,7 @@ export function softwareApplicationSchema() {
         name: "Diaspora Plus",
         price: String(DIASPORA_PLUS_USD),
         priceCurrency: "USD",
-        description: "Everything in Diaspora, plus live-video Gist and priority support.",
+        description: "Everything in Diaspora, plus priority support.",
       },
     ],
   };

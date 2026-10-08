@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAuditHarness } from "@/lib/audit-harness";
 import { ReplyScreen } from "@/components/gist/reply-screen";
+import { upgradeOffer } from "@/lib/plan-numbers";
 import { InviteSentView } from "@/components/gist/invite-sent-view";
 import { GistListView, type GistGroup } from "@/components/gist/gists-list-view";
 import { AfterAccepting, ReceivedView, SenderOutcome, TimePending } from "@/components/gist/invite-views";
@@ -35,9 +36,11 @@ const QUIET: GistGroup[] = BUSY.map((g, i) => ({ ...g, rows: i === 1 ? g.rows : 
 const pickerProps = { sessionId: ID, name: "Amaka Eze", city: "Toronto", myCity: "Lagos", todayLabel: "Sat 3 Oct", tomorrowLabel: "Sun 4 Oct", nowMine: "9:40 pm", nowTheirs: "4:40 pm" };
 
 const STATES: Record<string, () => React.ReactElement> = {
-  "reply-starter": () => <ReplyScreen mode="starter" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={1} resetOn="1 November" />,
-  "reply-paid": () => <ReplyScreen mode="paid" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={null} resetOn="1 November" />,
-  "reply-limit": () => <ReplyScreen mode="limit" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={0} resetOn="1 November" />,
+  "reply-starter": () => <ReplyScreen mode="starter" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={1} resetOn="1 November" offer={upgradeOffer(false)} />,
+  "reply-paid": () => <ReplyScreen mode="paid" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={null} resetOn="1 November" offer={upgradeOffer(false)} />,
+  "reply-limit": () => <ReplyScreen mode="limit" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={0} resetOn="1 November" offer={upgradeOffer(false)} />,
+  "reply-limit-coins": () => <ReplyScreen mode="limit" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={0} resetOn="1 November" offer={upgradeOffer(false)} extraGist={{ coins: 5, have: 12 }} />,
+  "reply-limit-short": () => <ReplyScreen mode="limit" answerId={ID} recipientId={ID} name="Amaka Eze" city="Toronto" {...AMAKA} gistsLeft={0} resetOn="1 November" offer={upgradeOffer(false)} extraGist={{ coins: 5, have: 2 }} />,
   sent: () => <InviteSentView otherName="Amaka Eze" starter since="just now" answer={AMAKA} />,
   list: () => <GistListView groups={BUSY} />,
   "list-quiet": () => <GistListView groups={QUIET} />,
