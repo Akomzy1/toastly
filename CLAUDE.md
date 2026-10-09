@@ -36,7 +36,7 @@ Concretely, this means:
 
 These aren't just product decisions — they have direct technical implications. Do not implement around them.
 
-- **No swipe mechanic.** Prompt-based, feed-style matching only. Don't build swipe-card gesture components.
+- **No swipe mechanic.** Prompt-based, feed-style matching only. Don't build swipe-card gesture components. **One exception (owner, 9 October 2026):** inside a Gist, swiping the question card moves to the next question, as a shortcut for "Next question" — in `components/gist/deck-card.tsx` only, never in matching, the feed or profiles. The constraint check allows it in that file alone.
 - **Gist sessions are an 18-minute time-box, extendable once.** Not 5–7 minutes — that figure appeared in earlier drafts of the PRD and build prompts and is superseded (PRD §5.4). 18 minutes is already shipped in public copy on Home, How It Works and Features; do not implement a shorter box, and do not edit those pages down to match an old figure.
 - **Voice-first Gist by default; video is gated to the upper pricing tier**, not the base paid tier. Enforce this at the entitlement/access-control layer, not just in UI copy.
 - **Couple Mode and the AriyaPlanner handoff must be entitled to every tier, including Starter (free) — never gated behind Premium or Premium Plus.** This is the platform's core LTV mechanism (PRD §6). Do not implement this as a paid feature under any circumstances without an explicit product decision to change it; a generated design mockup once gated this incorrectly (see PRD §7.1) — treat that as a corrected error, not a reference implementation.

@@ -66,6 +66,7 @@ const ROUTES = [
   { route: "/audit/gist-deck/first", label: "Gist deck · first" },
   { route: "/audit/gist-deck/real", label: "Gist deck · real" },
   { route: "/audit/gist-deck/done", label: "Gist deck · done" },
+  { route: "/audit/gist-deck/dark", label: "Gist deck · dark" },
   // In-app navigation (nav-*.slim.html)
   { route: "/audit/nav/today", label: "Nav · today" },
   { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },

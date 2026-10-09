@@ -189,6 +189,21 @@ Toastly is non-religious: faith is something members may show, never something t
 - No mic/camera activates until both parties opt in. Screenshot/screen-record blocking on the video tier.
 - Session data feeds the AriyaPlanner warm brief (see §6).
 
+**The question deck (decided 8 October 2026; voice and video alike; gist-video-call.html):**
+- **Six questions per Gist** (was 9), one config value (`gist_config.deck_size` = `GIST_DECK_SIZE` = 6). Every "Question X of N" reads it.
+- **Six slots in a fixed arc,** each drawing from its own question bank: 1 an easy opener · 2 everyday life · 3 family · 4 money and plans · 5 the future (including japa plans) · 6 what each is looking for. A Gist's cards are dealt when the call starts, avoiding any card either person has already had, where the bank allows.
+- **Either participant advances,** with "Next question" or by swiping the card (the one swipe in Toastly — never a matching gesture; CLAUDE.md); the change is synchronised for both, and two taps at once move it once. Six progress dots. After card 6: **"That's the deck. Keep talking."** The one-time extension adds time, not cards.
+- **No card may ask directly about religion, tribe or genotype** — a database check on the bank and a build check over it.
+
+**Live video (Phase 2, decided 8 October 2026; gist-video-call.html):**
+- **Unlock:** video is available in a Gist if **either** participant has Premium Plus or Diaspora Plus (including the women's offer). Checked server-side when the call is created and on every video request. With no video plan on either side there is no video control at all — no upsell, no locked icon.
+- **Camera starts off; every Gist starts as voice.** "Ask for video" becomes available after 3 minutes (config).
+- **Both or neither:** the server enables video tracks only after both accept. If either turns video off, the server stops both video tracks and the Gist returns to voice. A declined request blocks further requests for the rest of that Gist.
+- **No upgrade prompts during any call. No recording, anywhere.**
+- **Weak connection:** automatic fallback to voice for both, with a banner.
+- **A one-time mobile-data notice** before the first video ("Video uses about 5–10 MB a minute").
+- `VIDEO_GIST_ENABLED` stays off until it's built and tested.
+
 ### 5.5 Coin-Deposit Date-Commitment
 - Both parties stake a small coin deposit ahead of a confirmed date.
 

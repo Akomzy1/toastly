@@ -16,6 +16,13 @@ import type { Tier } from "@/lib/types/profile";
 export const GIST_DEFAULT_MINUTES = 18;
 export const GIST_EXTENSION_MINUTES = 18;
 
+/**
+ * Questions per Gist (decided 8 October 2026; PRD §5.4). Mirrors
+ * gist_config.deck_size (0039) — a constraint check keeps the two equal. Every
+ * "Question X of N" reads this. The extension adds time, never cards.
+ */
+export const GIST_DECK_SIZE = 6;
+
 /** Starter's monthly allowance lives in lib/plan-numbers.ts (and plan_config, 0035). */
 export { STARTER_MONTHLY_GISTS } from "@/lib/plan-numbers";
 

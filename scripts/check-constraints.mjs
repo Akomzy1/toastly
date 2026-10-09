@@ -70,12 +70,16 @@ function check(name, test) {
 // JSX prose is bare text in the source, not a string literal, so stripping
 // strings is not enough — "Nothing to swipe" survives it. A real swipe
 // mechanic looks like an identifier, a handler or an import, so match those
-// shapes rather than the bare word.
+// shapes rather than the bare word. `\bon\w*Swipe` catches onSwipe and
+// onSwipeLeft, which the first version missed (found 9 October 2026).
 const SWIPE_MECHANIC =
-  /\bon[A-Z]\w*Swipe\w*|\bSwipe[A-Z]\w*|\bswipe[A-Z]\w*|\buse\w*Swipe\w*|\bswipeable\b|from\s+["'][^"']*(swipe|tinder-card|use-gesture)/i;
+  /\bon\w*Swipe\w*|\bSwipe[A-Z]\w*|\bswipe[A-Z]\w*|\buse\w*Swipe\w*|\bswipeable\b|from\s+["'][^"']*(swipe|tinder-card|use-gesture)/i;
 
-check("no swipe mechanic or swipe gesture handling", (s) =>
-  SWIPE_MECHANIC.test(stripStrings(s)),
+// The one exception (owner, 9 October 2026): swiping the Gist question card
+// to the next question, in components/gist/deck-card.tsx only. Never in
+// matching, the feed, profiles or anywhere else.
+check("no swipe mechanic or swipe gesture handling", (s, f) =>
+  !/components[\\/]gist[\\/]deck-card\.tsx$/.test(f) && SWIPE_MECHANIC.test(stripStrings(s)),
 );
 
 check("no heart / flame / super-like iconography", (s) =>
@@ -1024,6 +1028,39 @@ check("no Starter Gist count or Diaspora price is written out by hand", (s, f) =
     s.match(/\$(?:15|30)\b(?!\d)/);
   return hit ? `writes out "${hit[0]}" — read it from lib/plan-numbers.ts` : false;
 });
+
+// The Gist deck (decided 8 October 2026; PRD §5.4): one count, in config and
+// lib/gist.ts, equal; "Question X of N" reads it; and no card in the bank asks
+// about religion, tribe or genotype.
+{
+  const name = "Gist deck: one size in config and code; no card on religion, tribe or genotype";
+  const hits = [];
+  const ts = fs.readFileSync("lib/gist.ts", "utf8");
+  const code = Number((ts.match(/export const GIST_DECK_SIZE = (\d+);/) ?? [])[1]);
+  let db = null;
+  const banned = /(relig|church|mosque|\bgod\b|\bfaith|\bpray|muslim|christian|islam|tribe|tribal|ethnic|yoruba|igbo|hausa|genotype|sickle|\bAS\b|\bSS\b|\bAA\b)/i;
+  for (const f of fs.readdirSync("supabase/migrations").filter((x) => x.endsWith(".sql")).sort()) {
+    const sql = fs.readFileSync(`supabase/migrations/${f}`, "utf8").replace(/--[^\n]*/g, "");
+    for (const m of sql.matchAll(/insert into public\.gist_config \(id, deck_size\) values \(true, (\d+)\)/g)) db = Number(m[1]);
+    // Every question text written to the bank, by insert or update.
+    for (const block of sql.matchAll(/(?:insert into public\.gist_questions[\s\S]*?;|update public\.gist_questions[\s\S]*?;)/g)) {
+      for (const q of block[0].matchAll(/'((?:[^']|'')+)'/g)) {
+        if (q[1].length > 12 && banned.test(q[1])) hits.push(`${f} — a card asks about a protected topic: "${q[1]}"`);
+      }
+    }
+  }
+  if (code !== db) hits.push(`lib/gist.ts GIST_DECK_SIZE is ${code}, gist_config.deck_size is ${db}`);
+  const card = fs.readFileSync("components/gist/deck-card.tsx", "utf8");
+  if (!/of \{GIST_DECK_SIZE\}/.test(card)) hits.push("components/gist/deck-card.tsx — \"Question X of N\" doesn't read GIST_DECK_SIZE");
+  for (const f of files) {
+    if (/check-constraints/.test(f) || f.endsWith(".sql")) continue;
+    const s = stripComments(fs.readFileSync(f, "utf8"), f);
+    const m = s.match(/Question \{?[^}\n]*\}? of (\d+)/);
+    if (m) hits.push(`${f} — writes "Question … of ${m[1]}" by hand; read GIST_DECK_SIZE`);
+  }
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
 
 // Upgrade prompts (decided 8 October 2026): every one names its price, read
 // from lib/plan-numbers.ts, and offers "Not now"; the Gist limit opens the

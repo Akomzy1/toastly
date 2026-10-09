@@ -26,8 +26,10 @@ export type GistClock = {
   you_asked_to_extend: boolean;
   they_asked_to_extend: boolean;
   finished: boolean;
-  /** The shared question card both people are on (0022). */
+  /** How many of this Gist's cards are done — the card both people are on (0022). */
   deck_index: number;
+  /** This Gist's own cards, in order (0039); empty until the call starts. */
+  deck: { position: number; text: string }[];
 };
 
 /** The clock as the server sees it, from the member's own view of the row. */
@@ -42,6 +44,7 @@ export async function readClock(
     .eq("id", sessionId)
     .maybeSingle();
   if (!s) return null;
+  const { data: cards } = await supabase.rpc("gist_deck", { p_session_id: sessionId });
   const isProposer = s.proposer_id === userId;
   return {
     ends_at: s.ends_at,
@@ -50,5 +53,6 @@ export async function readClock(
     they_asked_to_extend: Boolean(isProposer ? s.invitee_extend_at : s.proposer_extend_at),
     finished: Boolean(s.ends_at && Date.now() >= Date.parse(s.ends_at)),
     deck_index: typeof s.deck_index === "number" ? s.deck_index : 0,
+    deck: ((cards ?? []) as { deck_position: number; question: string }[]).map((c) => ({ position: c.deck_position, text: c.question })),
   };
 }

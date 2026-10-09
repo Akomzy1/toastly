@@ -80,11 +80,6 @@ export default async function GistSessionPage({
   });
   const tier = (tierRow as Tier | null) ?? "starter";
 
-  const { data: questions } = await supabase
-    .from("gist_questions")
-    .select("id, text, depth")
-    .order("sort_order")
-    .order("id");
 
   const isProposer = session.proposer_id === user.id;
   const youReady = isProposer
@@ -304,7 +299,7 @@ export default async function GistSessionPage({
               call can&rsquo;t start.
             </Notice>
           ) : (
-            <GistCall sessionId={session.id} otherName={otherName} questions={(questions ?? []) as { id: number; text: string; depth: number }[]} />
+            <GistCall sessionId={session.id} otherName={otherName} />
           )}
         </Card>
       )}
