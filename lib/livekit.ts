@@ -143,6 +143,57 @@ export async function closeGistRoom(roomName: string): Promise<boolean> {
 }
 
 /**
+ * Camera rights for everyone in a Gist room — the server half of "both or
+ * neither" (0040). Video on: both may publish a camera. Video off (either
+ * person turned it off, a decline, a weak connection): camera rights are
+ * withdrawn from both, and LiveKit unpublishes any camera track still live.
+ * Microphone and data are always kept.
+ *
+ * Calls RoomService.UpdateParticipant with a short-lived room-admin token.
+ * Someone who isn't in the room yet gets the same rule from their join token
+ * (app/api/gist/[id]/join). Never throws.
+ */
+export async function setGistCamera(roomName: string, identities: string[], allowed: boolean): Promise<boolean> {
+  const url = livekitUrl();
+  const creds = credentials();
+  if (!url || !creds) return false;
+  const { apiKey, apiSecret } = creds;
+  const now = Math.floor(Date.now() / 1000);
+  const signingInput = `${b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))}.${b64url(
+    JSON.stringify({ iss: apiKey, nbf: now - 10, exp: now + 60, video: { roomAdmin: true, room: roomName } }),
+  )}`;
+  const token = `${signingInput}.${b64url(createHmac("sha256", apiSecret).update(signingInput).digest())}`;
+  const host = url.replace(/^wss:/, "https:").replace(/^ws:/, "http:").replace(/\/$/, "");
+  const results = await Promise.all(
+    identities.map(async (identity) => {
+      try {
+        const res = await fetch(`${host}/twirp/livekit.RoomService/UpdateParticipant`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            room: roomName,
+            identity,
+            permission: {
+              can_subscribe: true,
+              can_publish: true,
+              can_publish_data: true,
+              can_publish_sources: allowed ? ["MICROPHONE", "CAMERA"] : ["MICROPHONE"],
+            },
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10_000),
+        });
+        // Not in the room right now: their next join token carries the rule.
+        return res.ok || res.status === 404;
+      } catch {
+        return false;
+      }
+    }),
+  );
+  return results.every(Boolean);
+}
+
+/**
  * Configuration check for the signed-in diagnostic route: can this server
  * reach LiveKit, and does LiveKit accept its key and secret? Returns yes/no
  * facts only — never the key, the secret or a token.

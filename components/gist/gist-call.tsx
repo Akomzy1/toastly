@@ -3,22 +3,34 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
+  ConnectionQuality,
   Room,
   RoomEvent,
   Track,
+  VideoPresets,
+  type LocalTrackPublication,
   type RemoteTrack,
   type Participant,
 } from "livekit-client";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
-import { DeckCard } from "./deck-card";
+import { ReportForm } from "@/components/safety/report-form";
+import { GIST_DEFAULT_MINUTES, GIST_EXTENSION_MINUTES } from "@/lib/gist";
+import type { GistVideo } from "@/lib/gist-clock";
+import { CallScreen, type CallSheet, type VideoRow } from "./call-screen";
 
 /**
- * The Gist call — voice only (Phase 1). Live video is Phase 2 (P2-D): the
- * token withholds camera rights and nothing here asks for a camera.
+ * The Gist call. In the call, the screen is design/prototype/
+ * gist-video-call.html (CallScreen), for voice and video alike. Before
+ * joining and after leaving it keeps the session page's own cards and
+ * buttons (no prototype draws those — flagged).
  *
- * NOT IN THE PROTOTYPE — flagged. No Gist room was designed; this is built
- * from the session page's own cards and buttons.
+ * Every Gist starts as voice. Video (Phase 2; 0040) exists only when
+ * clock.video is set — VIDEO_GIST_ENABLED on and a Premium Plus or Diaspora
+ * Plus member in the call. Both or neither: the camera turns on only when
+ * the server says video is on, and off the moment it says otherwise. A weak
+ * connection falls back to voice for both. A one-time notice comes before
+ * the first video on mobile data. No upgrade prompt during a call.
  *
  * The clock is the server's (0019, 0020). Either person can extend once —
  * both-clocks.slim.html: "Either of you can extend it once, by 18 minutes."
@@ -36,7 +48,27 @@ type Clock = {
   finished: boolean;
   deck_index: number;
   deck: { position: number; text: string }[];
+  video: GistVideo | null;
 };
+
+/** Mobile data, where the browser can tell (Android Chrome); iOS can't. */
+function onMobileData(): boolean {
+  const c = (navigator as Navigator & { connection?: { type?: string } }).connection;
+  return c?.type === "cellular";
+}
+const DATA_NOTICE_KEY = "toastly.videoDataNoticeSeen";
+function dataNoticeSeen(): boolean {
+  try {
+    return localStorage.getItem(DATA_NOTICE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function markDataNoticeSeen() {
+  try {
+    localStorage.setItem(DATA_NOTICE_KEY, "1");
+  } catch {}
+}
 
 type Phase = "idle" | "connecting" | "in_call" | "reconnecting" | "ended" | "left";
 
@@ -50,13 +82,26 @@ function mmss(total: number) {
 export function GistCall({
   sessionId,
   otherName,
+  otherId,
+  myName = "You",
+  myPhoto = null,
+  otherPhoto = null,
 }: {
   sessionId: string;
   otherName: string;
+  /** For Report, on every state of the call. */
+  otherId?: string;
+  myName?: string;
+  /** Short-lived signed URLs of each main photo, for the call screen. */
+  myPhoto?: string | null;
+  otherPhoto?: string | null;
 }) {
   const router = useRouter();
   const roomRef = React.useRef<Room | null>(null);
   const audioRef = React.useRef<HTMLDivElement>(null);
+  const remoteVideoRef = React.useRef<HTMLDivElement>(null);
+  const localVideoRef = React.useRef<HTMLDivElement>(null);
+  const poorSinceRef = React.useRef<number | null>(null);
   const finishingRef = React.useRef(false);
 
   const [phase, setPhase] = React.useState<Phase>("idle");
@@ -68,6 +113,9 @@ export function GistCall({
   const [speaking, setSpeaking] = React.useState<{ you: boolean; them: boolean }>({ you: false, them: false });
   const [needsTap, setNeedsTap] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const [reportOpen, setReportOpen] = React.useState(false);
+  // The one-time mobile-data notice: before asking, or before accepting.
+  const [dataSheet, setDataSheet] = React.useState<null | "ask" | "accept">(null);
 
   const secondsLeft = clock?.ends_at ? Math.ceil((Date.parse(clock.ends_at) - now) / 1000) : null;
 
@@ -149,9 +197,22 @@ export function GistCall({
     const sync = () => setTheyHere(room.remoteParticipants.size > 0);
     room
       .on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
-        if (track.kind !== Track.Kind.Audio) return;
         const el = track.attach();
-        audioRef.current?.appendChild(el);
+        if (track.kind === Track.Kind.Video) {
+          el.className = "h-full w-full object-cover";
+          remoteVideoRef.current?.replaceChildren(el);
+        } else {
+          audioRef.current?.appendChild(el);
+        }
+      })
+      .on(RoomEvent.LocalTrackPublished, (pub: LocalTrackPublication) => {
+        if (pub.source !== Track.Source.Camera || !pub.track) return;
+        const el = pub.track.attach();
+        el.className = "h-full w-full object-cover";
+        localVideoRef.current?.replaceChildren(el);
+      })
+      .on(RoomEvent.ConnectionQualityChanged, (quality: ConnectionQuality) => {
+        poorSinceRef.current = quality === ConnectionQuality.Poor ? (poorSinceRef.current ?? Date.now()) : null;
       })
       .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
         track.detach().forEach((el) => el.remove());
@@ -238,6 +299,55 @@ export function GistCall({
     setBusy(false);
   }
 
+  // Video: one action at a time; the server decides, and mirrors it in LiveKit.
+  const videoAction = React.useCallback(
+    async (action: "request" | "cancel" | "accept" | "decline" | "off", reason?: string) => {
+      setBusy(true);
+      try {
+        const res = await fetch(`/api/gist/${sessionId}/video`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, reason }),
+        });
+        const json = (await res.json()) as { clock?: Clock; error?: string };
+        if (json.clock) setClock(json.clock);
+        else if (json.error) setError(json.error);
+        await tellOther();
+      } catch {}
+      setBusy(false);
+    },
+    [sessionId, tellOther],
+  );
+
+  const videoOn = clock?.video?.state === "on";
+
+  // Both or neither: the camera follows the server's state, never a button.
+  React.useEffect(() => {
+    const room = roomRef.current;
+    if (!room || (phase !== "in_call" && phase !== "reconnecting")) return;
+    if (videoOn) {
+      room.localParticipant
+        .setCameraEnabled(true, { resolution: VideoPresets.h360.resolution })
+        .catch(() => void videoAction("off", "camera_unavailable"));
+    } else {
+      void room.localParticipant.setCameraEnabled(false).catch(() => undefined);
+      localVideoRef.current?.replaceChildren();
+      remoteVideoRef.current?.replaceChildren();
+    }
+  }, [videoOn, phase, videoAction]);
+
+  // A weak connection while video is on: back to voice, for both.
+  React.useEffect(() => {
+    if (!videoOn) return;
+    const t = window.setInterval(() => {
+      if (poorSinceRef.current && Date.now() - poorSinceRef.current > 3000) {
+        poorSinceRef.current = null;
+        void videoAction("off", "weak_connection");
+      }
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [videoOn, videoAction]);
+
   // Next question (or a swipe): either person, after agreeing out loud. The
   // server moves the card for both; the other phone hears about it at once.
   async function advance() {
@@ -301,67 +411,127 @@ export function GistCall({
   }
 
   const warn = secondsLeft !== null && secondsLeft <= WARN_SECONDS;
+  const v = clock?.video ?? null;
+  const askOpen = v?.ask_from ? now >= Date.parse(v.ask_from) : false;
+  const minutes = Math.max(1, Math.round((v?.ask_after_seconds ?? 180) / 60));
 
-  return (
-    <div className="grid gap-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-h5 text-ink-900">
-          {phase === "reconnecting" ? "Reconnecting…" : theyHere ? `You're talking with ${first}` : `Waiting for ${first}`}
-        </h2>
-        <span
-          role="timer"
-          aria-live={warn ? "polite" : "off"}
-          className={`font-serif text-[28px] font-bold tabular-nums ${warn ? "text-gold-800" : "text-ink-900"}`}
-        >
-          {secondsLeft === null ? "--:--" : mmss(secondsLeft)}
-        </span>
-      </div>
+  // The video row: absent with no video plan (no upsell, no locked icon).
+  let row: VideoRow | null = null;
+  if (v && v.state !== "on" && !(v.state === "requested" && !v.asked_by_you)) {
+    if (v.declined) row = { kind: "declined", note: v.asked_by_you ? `${first} would like to stay on voice` : null };
+    else if (v.state === "requested") row = { kind: "waiting", onCancel: () => void videoAction("cancel") };
+    else if (!askOpen) row = { kind: "locked", note: `Available after ${minutes} minute${minutes === 1 ? "" : "s"}` };
+    else
+      row = {
+        kind: "ask",
+        busy,
+        onAsk: () => (onMobileData() && !dataNoticeSeen() ? setDataSheet("ask") : void videoAction("request")),
+      };
+  }
 
-      <ul className="m-0 flex list-none flex-wrap gap-2 p-0 text-nav">
-        <li className={`rounded-pill px-3 py-1.5 ${speaking.you ? "bg-green-50 text-green-550" : "bg-grey-100 text-grey-600"}`}>
-          You{muted ? " · muted" : speaking.you ? " · speaking" : ""}
-        </li>
-        <li className={`rounded-pill px-3 py-1.5 ${speaking.them ? "bg-green-50 text-green-550" : "bg-grey-100 text-grey-600"}`}>
-          {first}
-          {!theyHere ? " · not here yet" : speaking.them ? " · speaking" : ""}
-        </li>
-      </ul>
+  // Sheets: the one-time data notice first; then a request to answer.
+  let sheet: CallSheet | null = null;
+  if (dataSheet) {
+    sheet = {
+      title: "Video uses about 5–10 MB a minute. Continue?",
+      body: "You're on mobile data. We'll only ask this once.",
+      yes: "Continue",
+      busy,
+      onYes: () => {
+        markDataNoticeSeen();
+        const next = dataSheet;
+        setDataSheet(null);
+        void videoAction(next === "ask" ? "request" : "accept");
+      },
+      // Stay on voice keeps the Gist as voice for both.
+      onNo: () => {
+        const next = dataSheet;
+        setDataSheet(null);
+        if (next === "accept") void videoAction("decline");
+      },
+    };
+  } else if (v?.state === "requested" && !v.asked_by_you) {
+    sheet = {
+      title: `${first} would like to turn on video`,
+      body: "Both cameras go on together. Either of you can turn video off at any time.",
+      yes: "Turn on video",
+      busy,
+      onYes: () => (onMobileData() && !dataNoticeSeen() ? setDataSheet("accept") : void videoAction("accept")),
+      onNo: () => void videoAction("decline"),
+    };
+  }
 
+  const extra = (
+    <>
+      {phase === "reconnecting" ? <p className="m-0 text-center text-[13px] text-white/75">Reconnecting…</p> : null}
+      {!theyHere ? <p className="m-0 text-center text-[13px] text-white/75">Waiting for {first} to join.</p> : null}
       {needsTap ? (
-        <Button variant="outline" className="justify-self-start" onClick={() => void roomRef.current?.startAudio()}>
+        <button
+          type="button"
+          onClick={() => void roomRef.current?.startAudio()}
+          className="min-h-11 rounded-xl border border-champagne/55 bg-transparent text-[14px] font-semibold text-white"
+        >
           Tap to hear {first}
-        </Button>
+        </button>
       ) : null}
-
-      {error ? <Notice tone="error">{error}</Notice> : null}
-
-      {/* gist-video-call.html's deck (decided 8 October 2026): six cards, one
-          at a time, the same on both screens. Toastly never asks the
-          question; the two of you do. */}
-      {clock?.deck.length ? <DeckCard cards={clock.deck} index={clock.deck_index} busy={busy} onNext={() => void advance()} /> : null}
-
+      {error ? <p role="alert" className="m-0 rounded-xl bg-gold-50 px-3.5 py-2.5 text-[14px] text-gold-800">{error}</p> : null}
       {warn && clock && !clock.extended ? (
-        <div className="grid gap-2 rounded-lg border border-champagne/90 bg-gold-50 px-[13px] py-3.5">
-          <p className="m-0 text-ui font-semibold text-gold-800">
-            {mmss(secondsLeft ?? 0)} left. Want 18 more minutes?
-          </p>
-          <p className="m-0 text-nav text-gold-800">Either of you can extend it once, by 18 minutes.</p>
-          <Button variant="outline" className="justify-self-start" disabled={busy} onClick={extend}>
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-champagne/30 bg-green-700 py-1 pl-3.5 pr-1">
+          <span className="text-[14px] text-white">{mmss(secondsLeft ?? 0)} left. Either of you can add 18 minutes, once.</span>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={extend}
+            className="min-h-11 flex-shrink-0 rounded-[10px] border-0 bg-transparent px-3 text-[14px] font-semibold text-champagne hover:bg-champagne/[.08]"
+          >
             Add 18 minutes
-          </Button>
+          </button>
         </div>
       ) : null}
+    </>
+  );
 
-      <div className="flex flex-wrap gap-2.5">
-        <Button variant="outline" onClick={toggleMute}>
-          {muted ? "Unmute" : "Mute"}
-        </Button>
-        <Button variant="outline" onClick={leave}>
-          Leave the call
-        </Button>
+  return (
+    <div className="fixed inset-0 z-50 flex justify-center bg-green-800">
+      <div className="flex h-full w-full max-w-[480px] flex-col">
+        <CallScreen
+          peer={{ name: otherName, img: otherPhoto }}
+          me={{ name: myName, img: myPhoto }}
+          mode={videoOn ? "video" : "voice"}
+          timeLeft={secondsLeft === null ? "--:--" : mmss(secondsLeft)}
+          timeOf={`${clock?.extended ? GIST_DEFAULT_MINUTES + GIST_EXTENSION_MINUTES : GIST_DEFAULT_MINUTES}:00`}
+          peerSpeaking={speaking.them}
+          cards={clock?.deck ?? []}
+          deckIndex={clock?.deck_index ?? 0}
+          deckBusy={busy}
+          onNext={() => void advance()}
+          row={row}
+          banner={v?.state === "off" && v.off_reason === "weak_connection"}
+          sheet={sheet}
+          remoteVideo={<div ref={remoteVideoRef} className="h-full w-full" />}
+          localVideo={<div ref={localVideoRef} className="h-full w-full" />}
+          muted={muted}
+          onMute={toggleMute}
+          onEnd={leave}
+          onTurnOffVideo={() => void videoAction("off", "turned_off")}
+          onReport={() => setReportOpen(true)}
+          extra={extra}
+        />
+        <div ref={audioRef} hidden />
       </div>
-      <p className="text-nav text-grey-600">Nothing is recorded. Either of you can leave at any time.</p>
-      <div ref={audioRef} hidden />
+      {reportOpen ? (
+        <div className="absolute inset-0 z-10 flex items-end justify-center bg-green-800/[.72] p-2.5">
+          <div role="dialog" aria-modal="true" aria-label={`Report ${first}`} className="grid max-h-[90vh] w-full max-w-[460px] gap-3 overflow-y-auto rounded-2xl bg-paper p-[18px] text-ink-900">
+            <div className="flex items-center justify-between gap-3">
+              <p className="m-0 font-serif text-[20px] font-bold">Report {first}</p>
+              <button type="button" onClick={() => setReportOpen(false)} className="min-h-11 rounded-lg px-3 text-[14px] font-semibold text-ink-900 underline">
+                Close
+              </button>
+            </div>
+            <ReportForm memberId={otherId ?? ""} name={otherName} />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

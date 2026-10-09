@@ -939,13 +939,15 @@ check("Toastly Help hand-offs are filed only by the member's tap", (s, f) => {
   return /support_tickets/.test(stripComments(s, f)) ? "the assistant writes a ticket itself" : false;
 });
 
-// --- Gist calls: voice only in Phase 1, 18 minutes kept by the server -------
-check("Phase 1 Gist tokens never grant the camera", (s, f) => {
+// --- Gist calls: voice first, 18 minutes kept by the server -----------------
+// A token grants the camera only when video is already on in that Gist (both
+// accepted; 0040) — never by plan alone, never at the start of a call.
+check("Gist tokens grant the camera only while video is on", (s, f) => {
   if (!/app[\\/]api[\\/]gist[\\/]/.test(f)) return false;
   if (!/createGistToken/.test(s)) return false;
-  return /canPublishVideo:\s*false\b/.test(stripComments(s, f))
+  return /canPublishVideo:\s*(false\b|clock\?\.video\?\.state === "on")/.test(stripComments(s, f))
     ? false
-    : "a Gist token may grant camera rights — live video is Phase 2 (P2-D)";
+    : "a Gist token may grant camera rights without video being on";
 });
 
 check("the Gist clock is 18 minutes, server-kept, extendable once", (s, f) => {
@@ -1136,11 +1138,66 @@ check("no claim that photos match a selfie before the photo match exists", (s, f
   return /Photos match their selfie/.test(stripComments(s, f)) ? "photo-match claim shipped before Prompt 14" : false;
 });
 
-check("Gist calls never ask for a camera", (s, f) => {
-  if (!/components[\\/]gist[\\/]/.test(f)) return false;
-  return /setCameraEnabled|getUserMedia\(\s*\{[^}]*video:\s*true|Track\.Source\.Camera/.test(stripComments(s, f))
-    ? "the call requests a camera"
+// Video in a Gist (Phase 2, 0040; decided 8 October 2026). The camera is
+// touched in one place — the call component — and only video the server has
+// turned on (both accepted) reaches it: the clock carries video only behind
+// VIDEO_GIST_ENABLED, and the join token grants a camera only when video is on.
+check("a camera is touched only by the Gist call, behind the server's video state", (s, f) => {
+  // The /audit transport harness tries the camera on purpose, to prove the
+  // token refuses it; it only runs with AUDIT_HARNESS set.
+  if (!/\.(tsx?)$/.test(f) || /components[\\/]gist[\\/]gist-call\.tsx$/.test(f) || /app[\\/]\(audit\)[\\/]/.test(f)) return false;
+  return /setCameraEnabled|getUserMedia\(\s*\{[^}]*video:\s*true|Track\.Source\.Camera\b(?!\s*\|\|)/.test(stripComments(s, f)) &&
+    !/lib[\\/]livekit\.ts$/.test(f)
+    ? "touches a camera outside components/gist/gist-call.tsx"
     : false;
+});
+{
+  const name = "video reaches a call only behind the flag and the server's 'on'";
+  const hits = [];
+  const call = stripComments(fs.readFileSync("components/gist/gist-call.tsx", "utf8"), "x.tsx");
+  if (/setCameraEnabled\(\s*true/.test(call) && !/const videoOn = clock\?\.video\?\.state === "on"/.test(call))
+    hits.push("components/gist/gist-call.tsx — the camera turns on without following the server's video state");
+  const clock = stripComments(fs.readFileSync("lib/gist-clock.ts", "utf8"), "x.ts");
+  if (!/if \(featureFlags\(\)\.videoGist\)/.test(clock)) hits.push("lib/gist-clock.ts — video isn't behind VIDEO_GIST_ENABLED");
+  const join = stripComments(fs.readFileSync("app/api/gist/[id]/join/route.ts", "utf8"), "x.ts");
+  if (!/canPublishVideo: clock\?\.video\?\.state === "on"/.test(join)) hits.push("join route — the camera grant doesn't follow the server's video state");
+  const route = stripComments(fs.readFileSync("app/api/gist/[id]/video/route.ts", "utf8"), "x.ts");
+  if (!/if \(!featureFlags\(\)\.videoGist\)/.test(route)) hits.push("video route — not refused while VIDEO_GIST_ENABLED is off");
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+// Every /audit page renders only with AUDIT_HARNESS set: the page calls
+// requireAuditHarness, or a layout between it and app/(audit) does. A client
+// page can't call it, so a missed layout would publish a harness page.
+{
+  const name = "every /audit page is behind AUDIT_HARNESS";
+  const hits = [];
+  const gated = (p) => fs.existsSync(p) && /requireAuditHarness\(\)/.test(fs.readFileSync(p, "utf8"));
+  for (const f of files) {
+    const n = f.replace(/\\/g, "/");
+    if (!/^app\/\(audit\)\/.*\/page\.tsx$/.test(n)) continue;
+    let dir = path.dirname(n);
+    let ok = gated(n);
+    while (!ok && dir.startsWith("app/(audit)")) {
+      ok = gated(`${dir}/layout.tsx`);
+      dir = path.dirname(dir);
+    }
+    if (!ok) hits.push(`${n} — renders without requireAuditHarness`);
+  }
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
+// No recording, anywhere (PRD §5.4): no LiveKit egress, no MediaRecorder.
+check("no call is ever recorded", (s, f) =>
+  /\b(Egress|egress\w*|MediaRecorder|startRecording|RoomCompositeEgress|TrackEgress)\b/.test(stripStrings(s))
+    ? "starts or configures a recording"
+    : false,
+);
+// No upgrade prompts during any call (PRD §5.4).
+check("no upgrade prompt on the call screens", (s, f) => {
+  if (!/components[\\/]gist[\\/](gist-call|call-screen|deck-card)\.tsx$/.test(f)) return false;
+  return /\/profile\/plan|\/pricing|\bupgrade\b|Premium Plus|Diaspora Plus|See plans/i.test(s) ? "an upgrade prompt during a call" : false;
 });
 
 // The Gist deck records which questions were answered or skipped — never

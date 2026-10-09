@@ -96,6 +96,20 @@ export default async function GistSessionPage({
   const other = await getMemberProfile(supabase, otherId);
   const otherName = other?.display_name ?? "this member";
 
+  // The call screen shows both main photos (gist-video-call.html): signed for
+  // half an hour, each through the reader's own storage access.
+  const { data: myProfile } = await supabase.from("profiles").select("display_name, main_photo_id").eq("id", user.id).maybeSingle();
+  const { data: myMain } = myProfile?.main_photo_id
+    ? await supabase.from("profile_photos").select("storage_path").eq("profile_id", user.id).eq("id", myProfile.main_photo_id).maybeSingle()
+    : { data: null };
+  const photoPaths = [myMain?.storage_path ?? null, other?.photos?.[0]?.path ?? null];
+  const signed = await Promise.all(
+    photoPaths.map(async (path) =>
+      path ? ((await supabase.storage.from("profile-photos").createSignedUrl(path, 60 * 30)).data?.signedUrl ?? null) : null,
+    ),
+  );
+  const [myPhoto, otherPhoto] = signed;
+
   // Null unless both have chosen to share with each other (0014).
   const otherGenotype = await getVisibleGenotype(otherId);
 
@@ -299,7 +313,14 @@ export default async function GistSessionPage({
               call can&rsquo;t start.
             </Notice>
           ) : (
-            <GistCall sessionId={session.id} otherName={otherName} />
+            <GistCall
+              sessionId={session.id}
+              otherName={otherName}
+              otherId={otherId}
+              myName={myProfile?.display_name ?? "You"}
+              myPhoto={myPhoto}
+              otherPhoto={otherPhoto}
+            />
           )}
         </Card>
       )}

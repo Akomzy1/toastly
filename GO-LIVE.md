@@ -280,7 +280,15 @@ privileges; compare `pg_dump --schema-only -n public` with the backup's
 `.public-schema.sql`.
 ---
 
-## 0j. release-3 — launch blockers (0036, 0037, 0038) — NOT APPLIED
+## 0k. release-4 — the six-card deck (0039) and video in a Gist (0040) — NOT APPLIED
+
+Branch `release-4` (off `main` at release-3). Apply each step on the owner's go-ahead: backup + restore check → `node scripts/db/apply-migrations.mjs --env .env.production.local --from 0039 --to 0040` (check only, then `--yes`; its state check has no entries for 0039+, so check by hand first: `gist_config` and `gist_session_cards` absent) → push `release-4` to `main`.
+
+- **0039_gist_deck_six.sql:** six cards per Gist (`gist_config.deck_size`), one per slot from the approved bank (one question per slot; the other old questions kept, switched off); dealt when a call starts; either person advances, by "Next question" or a swipe on the card; "That's the deck. Keep talking." after the last. No card may ask about religion, tribe or genotype (a check on the bank).
+- **0040_gist_video.sql:** video in a Gist, **behind `VIDEO_GIST_ENABLED` — leave it unset.** The rules are in the database; the app mirrors them in LiveKit with `RoomService.UpdateParticipant` (the existing `LIVEKIT_API_KEY` signs a room-admin token — nothing new to configure).
+- **Before switching `VIDEO_GIST_ENABLED` on:** a two-phone test on real devices (one on mobile data) — ask after 3 minutes, accept on the other phone, both cameras on; turn off on either, both off; decline, then no more asking; walk out of signal and confirm the fall back to voice with the banner; the data notice appears once. Then set it to `true` in Vercel Production and redeploy.
+
+## 0j. release-3 — launch blockers (0036, 0037, 0038) — APPLIED 9 October 2026
 
 Branch `release-3` (off `release-2`). Decided 8 October 2026; PRD §7.1, §7.3. Apply after release-2 is merged, each step on the owner's go-ahead: backup + restore check → `node scripts/db/apply-migrations.mjs --env .env.production.local --from 0036` (its state check has no entries for 0036+, so check by hand first: `gender_options`, `gist_extras`, `payment_refunds` absent) → merge `release-3`.
 

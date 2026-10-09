@@ -11,8 +11,10 @@ export const runtime = "nodejs";
  * Mutual opt-in gates the hardware: gist_join refuses until BOTH people have
  * said they're ready, so no token — and no microphone — exists before that.
  *
- * VOICE ONLY in Phase 1. Live video transport is Phase 2 (P2-D), so the token
- * withholds camera publish rights for every session and every plan here.
+ * Every Gist starts as voice: the token withholds camera rights unless video
+ * is already on in this Gist (both accepted, 0040) and VIDEO_GIST_ENABLED is
+ * on — so someone rejoining mid-video gets the camera, and nobody else ever
+ * does. While video is on, the server also grants it live (lib/livekit.ts).
  * The identity is the profile UUID: never a name, never a phone number.
  */
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
@@ -33,13 +35,14 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   // The token outlives the box only by a minute; the room is closed by the
   // server when the time is up regardless.
   const secondsLeft = Math.max(60, Math.ceil((Date.parse(endsAt) - Date.now()) / 1000) + 60);
+  const clock = await readClock(supabase, params.id, user.id);
   const token = createGistToken({
     roomName: gistRoomName(params.id),
     identity: user.id,
     ttlSeconds: Math.min(secondsLeft, 40 * 60),
-    canPublishVideo: false,
+    // clock.video is null unless the flag is on and a video plan is present.
+    canPublishVideo: clock?.video?.state === "on",
   });
 
-  const clock = await readClock(supabase, params.id, user.id);
   return json({ url: livekitUrl(), token, clock });
 }
