@@ -43,6 +43,7 @@ export function ProfileHub({
   prompts,
   abroad = false,
   live = true,
+  openHelp = false,
 }: {
   name: string;
   /** "Yaba, Lagos · Starter" */
@@ -51,6 +52,8 @@ export function ProfileHub({
   prompts: HubPrompt[];
   /** Lives outside Nigeria: chooses a pool, rather than "open to abroad" (PRD §5.6). */
   abroad?: boolean;
+  /** Opened from a "reply from our team" notice (/profile?help=1). */
+  openHelp?: boolean;
   /** Not live yet: no plan or coin rows (nobody pays before going live, PRD §7.3). */
   live?: boolean;
 }) {
@@ -66,7 +69,7 @@ export function ProfileHub({
     },
     ...HUB.filter((r) => live || (r.href !== "/profile/plan" && r.href !== "/coins")),
   ];
-  const [help, setHelp] = React.useState(false);
+  const [help, setHelp] = React.useState(openHelp);
   return (
     <div className="mx-auto grid w-full max-w-[680px] content-start gap-3 px-3.5 pb-6 pt-4">
       <div className="grid gap-3.5 rounded-xl border border-ink-900/10 bg-white p-3.5">

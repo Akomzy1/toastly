@@ -281,14 +281,24 @@ export function sendRemovalNotice(to: string, { reasonCategory }: { reasonCatego
 }
 
 /**
- * Tell the team a Toastly Help hand-off is waiting. Reference and category
- * only: the member's words stay in support_tickets (cleared after the
- * retention period), not in an inbox that keeps them forever.
+ * A reply from the team to a Toastly Help ticket. The words go to the member
+ * (they're the member's own support conversation); the same reply is in the
+ * app, in Toastly Help. Staff alerts are in lib/support-alerts.ts and never
+ * carry words.
  */
-export function sendSupportTicketNotice(reference: string, category: string): Promise<EmailResult> {
-  const to = process.env.SUPPORT_INBOX || "support@trytoastly.com";
-  const subject = `Toastly Help hand-off ${reference} (${category})`;
-  const text = `A member passed a ${category} request to the team through Toastly Help.\n\nReference: ${reference}\n\nRead it in Supabase: support_tickets, where reference = '${reference}'. Reply to the member by email within the retention period.`;
-  const html = `<p>A member passed a <strong>${category}</strong> request to the team through Toastly Help.</p><p>Reference: <strong>${reference}</strong></p><p>Read it in Supabase: <code>support_tickets</code>, where reference = '${reference}'. Reply to the member by email within the retention period.</p>`;
-  return sendEmail({ to, subject, html, text });
+export function sendSupportReply(to: string, reference: string, body: string): Promise<EmailResult> {
+  const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  const paras = body
+    .split(/\n{2,}/)
+    .map((p) => `<p style="${P}">${esc(p).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  return sendEmail({
+    to,
+    subject: `Toastly Help: a reply about ${reference}`,
+    text: `A person from our team replied about ${reference}:\n\n${body}\n\nYou can also read it in Toastly Help (Profile, then Toastly Help). To answer, reply to this email or write in Toastly Help.`,
+    html: shell(
+      `A reply about ${esc(reference)}`,
+      `${paras}<p style="${SMALL}">You can also read it in Toastly Help (Profile, then Toastly Help). To answer, reply to this email or write in Toastly Help.</p>`,
+    ),
+  });
 }

@@ -422,33 +422,38 @@ check("SMS is never reachable from the call path", (s, f) => {
     : false;
 });
 
-// The company (owner, 10 October 2026): "Toastly, operated by Ariya Planner
-// Ltd" — the name in privacy policy section 1. "Toastly Technologies Ltd"
-// doesn't exist and must not appear anywhere.
-check("the operator is Ariya Planner Ltd, never Toastly Technologies", (s) =>
-  /Toastly\s+Technologies/i.test(s) ? "names Toastly Technologies" : false,
-);
-
-// "Tonight on Toastly" (owner, 10 October 2026): hidden until 500 verified
-// members, then live counts only. The card renders only what
-// getTonightStats() returns (home_live_stats, 0043) — never a typed-in figure.
-check("Tonight on Toastly shows live counts only, behind the threshold", (s, f) => {
+// SMS has exactly two senders (lib/sms.ts, "what SMS is for"): emergency
+// contacts and panic alerts (lib/emergency-actions.ts), and the on-call
+// staff alert for an urgent Toastly Help ticket (lib/support-alerts.ts).
+check("SMS is sent only for emergency contacts and on-call staff alerts", (s, f) => {
   const p = f.replace(/\\/g, "/");
-  if (p.endsWith("app/(marketing)/page.tsx")) {
-    if (!/const tonight = await getTonightStats\(\)/.test(s)) return "the card isn't fed by getTonightStats()";
-    if (!/\{tonight \? \(\s*<Reveal>[\s\S]*?Tonight on Toastly/.test(s)) return "the card isn't hidden when there are no stats";
-    if (!/tonight\.map\(/.test(s) || /heroStats/.test(s)) return "the card renders figures that aren't live";
-    return false;
-  }
-  if (p.endsWith("lib/home-content.ts")) return /heroStats/.test(s) ? "typed-in hero figures are back" : false;
-  if (p.endsWith("lib/home-stats.ts")) {
-    if (!/rpc\("home_live_stats"\)/.test(s)) return "not read from home_live_stats";
-    return /value:\s*"/.test(s) ? "a typed-in figure" : false;
-  }
-  if (p.endsWith("0043_tonight_stats.sql")) {
-    if (!/if v_verified < coalesce\(v_min, 500\) then\s*return null;/.test(s)) return "the counts aren't withheld below the threshold";
-    if (!/\('tonight_min_verified_members', 500\)/.test(s)) return "the threshold isn't 500";
-    return false;
+  if (p.endsWith("lib/sms.ts") || p.endsWith("lib/emergency-actions.ts") || p.endsWith("lib/support-alerts.ts")) return false;
+  return /@\/lib\/sms\b|from "\.\.?\/[^"]*sms"/.test(stripComments(s, f)) ? "a new SMS sender" : false;
+});
+
+// Staff alerts carry the ticket number, its urgency and a console link —
+// never a name, a category or the member's words: the SMS and email bodies
+// come only from alertSms / alertEmail / digestEmail, which take nothing else.
+check("staff alerts carry no member data", (s, f) => {
+  if (!f.replace(/\\/g, "/").endsWith("lib/support-alerts.ts")) return false;
+  const code = stripComments(s, f);
+  const sms = [...code.matchAll(/sendSms\(([^,]+),\s*([^)]+\))/g)].map((m) => m[2]);
+  if (!sms.length || sms.some((b) => !/^alertSms\(t,/.test(b.trim()))) return "an SMS body isn't alertSms(t, …)";
+  const mails = [...code.matchAll(/sendEmail\(\{([^}]*)\}\)/g)].map((m) => m[1]);
+  if (!mails.length || mails.some((b) => !/^\s*to: inbox\(\),\s*\.\.\.(alertEmail\(t,|digestEmail\(rows,)/.test(b))) return "an alert email isn't built by alertEmail / digestEmail";
+  if (!/const t: AlertTicket = \{ reference: ticket\.reference, urgency: ticket\.urgency \}/.test(code)) return "the alert ticket isn't narrowed to reference and urgency";
+  return false;
+});
+
+const supportFnBody = (src, name) => (src.match(new RegExp("function public\\." + name + "\\([\\s\\S]*?\\n\\$\\$;")) ?? [])[0] ?? "";
+// The Support tab shows the Toastly Help conversation and nothing else of the
+// member's: no member-to-member messages, Gist data, photos or genotype.
+check("the Support tab reads only Toastly Help's own records", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const names = [...s.matchAll(/create or replace function public\.(staff_support_[a-z_]+|_support_transcript|file_support_ticket)\(/g)].map((m) => m[1]);
+  for (const n of names) {
+    const hit = /\b(from|join)\s+(public\.)?(messages|replies|threads|message_attachments|gist_\w+|profile_photos|member_genotypes|genotype\w*|verification_images|profile_history|prompt_answers)\b/i.exec(supportFnBody(s, n));
+    if (hit) return `${n} reads ${hit[3]}`;
   }
   return false;
 });
@@ -909,14 +914,15 @@ check("every model call goes through lib/ai/client.ts", (s, f) => {
   return /new\s+Anthropic\s*\(/.test(stripComments(s, "x.ts")) ? "constructs its own Anthropic client" : false;
 });
 
-// The concierge may read status codes and propose; it may never move money,
-// change an account or read chats.
+// The concierge may read status codes; it may never move money, change an
+// account or read chats. Hand-offs are its structured answer, not a tool
+// (owner, 9 October 2026): the server files the ticket.
 check("Toastly Help tools are read-only", (s, f) => {
   if (!/lib\/concierge\/tools\.ts$/.test(norm(f))) return false;
   const code = stripComments(s, f);
   const names = (code.match(/CONCIERGE_TOOL_NAMES = \[([\s\S]*?)\]/) ?? [])[1] ?? "";
   const listed = [...names.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
-  const allowed = ["create_support_ticket", "escalate_safety", "get_coin_balance", "get_subscription_status", "get_verification_status"];
+  const allowed = ["get_coin_balance", "get_subscription_status", "get_verification_status"];
   if (listed.join() !== allowed.join()) return `tool list changed: ${listed.join(", ")}`;
   if (/\.(insert|update|upsert|delete)\s*\(/.test(code)) return "a tool writes to the database";
   const rpcs = [...code.matchAll(/\.rpc\(\s*"([a-z_]+)"/g)].map((m) => m[1]);
@@ -965,9 +971,45 @@ check("AI is labelled at first contact; the pledge is shown", (s, f) => {
   return false;
 });
 
-check("Toastly Help hand-offs are filed only by the member's tap", (s, f) => {
+// The assistant never files anything itself: it returns {handoff, category}
+// and the server decides (owner, 9 October 2026; lib/help-escalation.ts).
+check("the assistant never files a ticket itself", (s, f) => {
   if (!/lib\/concierge\//.test(norm(f))) return false;
-  return /support_tickets/.test(stripComments(s, f)) ? "the assistant writes a ticket itself" : false;
+  return /support_tickets|file_support_ticket|fileTicket/.test(stripComments(s, f)) ? "the assistant writes a ticket itself" : false;
+});
+
+// The server decides the hand-off: the keyword check runs before the model,
+// an urgent hit never reaches the model, and the decision goes through
+// decideHandoff (each category's floor; the higher of model and keyword).
+check("Toastly Help hand-offs are decided on the server, keyword check first", (s, f) => {
+  if (!/app\/api\/help\/route\.ts$/.test(norm(f))) return false;
+  const code = stripComments(s, f);
+  const k = code.indexOf("keywordCheck(message)");
+  const m = code.indexOf("runHelp(");
+  if (k < 0) return "no keyword check on the member's message";
+  if (m < 0 || k > m) return "the keyword check doesn't run before the model";
+  if (!/if \(keyword\?\.handoff !== "urgent"\)[\s\S]*?runHelp\(/.test(code)) return "an urgent keyword hit can still reach the model";
+  if (!/decideHandoff\(/.test(code)) return "the hand-off isn't decided by decideHandoff";
+  if (!/fileTicket\(/.test(code)) return "a hand-off doesn't file a ticket";
+  return false;
+});
+
+// A member's tap is always honoured, but never pages the on-call phone:
+// urgent comes only from the server's own decision.
+check("a member's tap files a normal ticket, never an urgent one", (s, f) => {
+  if (!/app\/api\/help\/handoff\/route\.ts$/.test(norm(f))) return false;
+  const code = stripComments(s, f);
+  if (!/fileTicket\([^)]*handoff: "normal"/.test(code)) return "the tap route doesn't file as normal";
+  if (/handoff: "urgent"|"urgent"/.test(code)) return "the tap route can file urgent";
+  return false;
+});
+
+// Crisis lines reach a member only once reviewed: through crisisLinesFor(),
+// never the raw list.
+check("crisis lines are shown only once reviewed", (s, f) => {
+  const p = norm(f);
+  if (p.endsWith("lib/crisis-lines.ts")) return /\.filter\(isReviewed\)/.test(s) ? false : "crisisLinesFor doesn't filter to reviewed lines";
+  return /allCrisisLines\(|CRISIS_LINES\b/.test(stripComments(s, f)) ? "reads the unreviewed list" : false;
 });
 
 // --- Gist calls: voice first, 18 minutes kept by the server -----------------

@@ -76,7 +76,8 @@ export default async function SafetyKitPage() {
         blurImages={me?.blur_incoming_images ?? true}
       />
 
-      <Card className="grid gap-3 p-[26px]">
+      {/* Toastly Help's Block and Report buttons land here. */}
+      <Card id="report-or-block" className="grid scroll-mt-20 gap-3 p-[26px]">
         <h2 className="text-h5 text-ink-900">Report or block</h2>
         <p className="text-ui text-grey-600">
           You can report or block anyone from their match card. Reports on

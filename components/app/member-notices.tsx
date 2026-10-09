@@ -20,7 +20,7 @@ export async function MemberNotices() {
     // Never the reason (decided 6 October 2026): the re-check is never
     // explained, so its reason category isn't even read here.
     supabase.from("reverification_requests").select("profile_id").maybeSingle(),
-    supabase.from("member_notices").select("id, kind").is("dismissed_at", null).order("created_at", { ascending: false }),
+    supabase.from("member_notices").select("id, kind, reason_category").is("dismissed_at", null).order("created_at", { ascending: false }),
   ]);
   return <MemberNoticesView restriction={restriction} reverify={reverify} notices={notices ?? []} />;
 }
@@ -33,7 +33,8 @@ export function MemberNoticesView({
 }: {
   restriction: { reason_category: string } | null;
   reverify: { profile_id: string } | null;
-  notices: { id: string; kind: string }[];
+  /** reason_category carries the ticket reference on a support_reply notice — never the reply. */
+  notices: { id: string; kind: string; reason_category?: string }[];
 }) {
   if (!restriction && !reverify && !notices.length) return null;
 
@@ -64,6 +65,16 @@ export function MemberNoticesView({
             <span className="mt-1 flex flex-wrap gap-x-4">
               <Link href="/profile/plan" className="flex min-h-11 items-center font-semibold underline">
                 See your plan
+              </Link>
+              <DismissNotice id={n.id} />
+            </span>
+          </Notice>
+        ) : n.kind === "support_reply" ? (
+          <Notice key={n.id} tone="info" title="A reply from our team">
+            A person from our team has replied about {n.reason_category}. It&rsquo;s in Toastly Help, and in your email.
+            <span className="mt-1 flex flex-wrap gap-x-4">
+              <Link href="/profile?help=1" className="flex min-h-11 items-center font-semibold underline">
+                Read the reply
               </Link>
               <DismissNotice id={n.id} />
             </span>

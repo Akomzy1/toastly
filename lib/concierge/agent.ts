@@ -4,7 +4,8 @@ import type Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { HAIKU, aiClient } from "@/lib/ai/client";
 import { redact } from "@/lib/ai/redact";
-import { CONCIERGE_TOOLS, runConciergeTool, type TicketCategory } from "@/lib/concierge/tools";
+import { CONCIERGE_TOOLS, runConciergeTool } from "@/lib/concierge/tools";
+import { HANDOFF_LEVELS, HELP_CATEGORIES, isCategory, type Handoff, type HelpCategory } from "@/lib/help-escalation";
 
 /**
  * Toastly Help — the Verification & Support Concierge (PRD §5.9 #1).
@@ -19,20 +20,23 @@ import { CONCIERGE_TOOLS, runConciergeTool, type TicketCategory } from "@/lib/co
  * from allow-listed fields — never their profile.
  *
  * A person decides refunds, disputes, appeals and any account restriction.
- * The assistant can only OFFER a hand-off; the member taps to file it.
+ * The assistant never files anything: it returns {handoff, category} as
+ * structured output, and the Help route decides with lib/help-escalation.ts
+ * (a keyword check can raise it; the higher wins) and files the ticket.
  */
 
-export const REPLY_ACTIONS = ["none", "retry_selfie", "check_id", "payment", "coins", "safety_kit"] as const;
+export const REPLY_ACTIONS = ["none", "retry_selfie", "check_id", "payment", "coins"] as const;
 export type ReplyAction = (typeof REPLY_ACTIONS)[number];
 
 export type HelpLanguage = "en" | "pcm";
 
+/** The model's answer: words for the member, plus its hand-off verdict. */
 export type HelpReply = {
   language: HelpLanguage;
   paragraphs: string[];
   action: ReplyAction;
-  handoff: TicketCategory | null;
-  safety: boolean;
+  handoff: Handoff;
+  category: HelpCategory;
 };
 
 export type HelpTurn = { role: "member" | "assistant"; content: string };
@@ -43,8 +47,10 @@ const REPLY_SCHEMA = {
     language: { type: "string", enum: ["en", "pcm"] },
     paragraphs: { type: "array", items: { type: "string" } },
     action: { type: "string", enum: [...REPLY_ACTIONS] },
+    handoff: { type: "string", enum: [...HANDOFF_LEVELS] },
+    category: { type: "string", enum: [...HELP_CATEGORIES] },
   },
-  required: ["language", "paragraphs", "action"],
+  required: ["language", "paragraphs", "action", "handoff", "category"],
   additionalProperties: false,
 } as const;
 
@@ -52,18 +58,10 @@ const REPLY_SCHEMA = {
 // changes with it — the assistant must never promise what Toastly doesn't do.
 const SYSTEM = conciergeSystem(featureFlags());
 
-/** Plain signals that skip the model and go straight to safety resources. */
-const SAFETY_SIGNALS =
-  /\b(kill (myself|me)|suicid|self[- ]?harm|end my life|rap(e|ed)|assault|kidnap|blackmail|threaten|in danger|emergency|he hit me|she hit me|dem wan kill|i no safe)\b/i;
-
-export function hasSafetySignal(text: string): boolean {
-  return SAFETY_SIGNALS.test(text);
-}
-
 const MAX_TURNS = 12;
 const MAX_TOOL_ROUNDS = 4;
 
-function parseReply(raw: string): Pick<HelpReply, "language" | "paragraphs" | "action"> | null {
+function parseReply(raw: string): HelpReply | null {
   let v: unknown;
   try {
     v = JSON.parse(raw.trim());
@@ -77,8 +75,12 @@ function parseReply(raw: string): Pick<HelpReply, "language" | "paragraphs" | "a
   const paragraphs = Array.isArray(o.paragraphs)
     ? o.paragraphs.filter((p): p is string => typeof p === "string" && p.trim().length > 0).slice(0, 4)
     : [];
-  if (!language || !action || paragraphs.length === 0) return null;
-  return { language, paragraphs, action };
+  const handoff = (HANDOFF_LEVELS as readonly string[]).includes(o.handoff as string) ? (o.handoff as Handoff) : null;
+  const category = isCategory(o.category) ? o.category : null;
+  if (!language || !action || !handoff || !category) return null;
+  // A hand-off may come with no words: the route supplies the copy.
+  if (paragraphs.length === 0 && handoff === "none") return null;
+  return { language, paragraphs, action, handoff, category };
 }
 
 export async function runHelp(
@@ -96,9 +98,6 @@ export async function runHelp(
   // The API requires the first turn to be the member's.
   while (messages.length && messages[0].role !== "user") messages.shift();
   if (!messages.length) return null;
-
-  let handoff: TicketCategory | null = null;
-  let safety = false;
 
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
     const response = await client.messages.create({
@@ -118,12 +117,8 @@ export async function runHelp(
       const results: Anthropic.ToolResultBlockParam[] = [];
       for (const use of uses) {
         const outcome = await runConciergeTool(use.name, use.input, supabase, profileId);
-        if (outcome.handoff) handoff = outcome.handoff;
-        if (outcome.safety) safety = true;
         results.push({ type: "tool_result", tool_use_id: use.id, content: JSON.stringify(outcome.result) });
       }
-      // Safety stops the task: no further model turn, fixed copy instead.
-      if (safety) return { language: "en", paragraphs: [], action: "safety_kit", handoff: "other", safety: true };
       messages.push({ role: "user", content: results });
       continue;
     }
@@ -137,7 +132,7 @@ export async function runHelp(
       console.error("[help] unparseable reply", { length: text.length });
       return null;
     }
-    return { ...reply, handoff, safety: false };
+    return reply;
   }
   return null;
 }

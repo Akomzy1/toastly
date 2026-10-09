@@ -2,39 +2,52 @@
 
 import * as React from "react";
 import Link from "next/link";
+import type { HelpAnswer, TeamReply } from "@/lib/help-answer";
+import type { CrisisLine } from "@/lib/crisis-lines";
+import type { EmergencyNumber } from "@/lib/safety";
 
 /**
  * Toastly Help — toastly-help.slim.html and toastly-help-handoff.slim.html.
  *
  * The AI label sits under the title every time it opens. No avatar, name or
  * persona: replies are labelled "Toastly Help · AI". A reply can carry one
- * teal action. It answers in the language you write in. Refunds, disputes
- * and appeals go to a person: one button passes it on, then a reference the
- * member can copy confirms it.
+ * teal action. It answers in the language you write in.
  *
- * NOT IN THE PROTOTYPES — flagged: the safety card (shown when a member
- * describes danger or distress) and the "Toastly Help" button that opens the
- * panel. Both are built from the panel's own cards and buttons.
+ * Hand-offs (owner, 9 October 2026) are decided by the server: when the
+ * member asks for a person, or the topic is one a person decides, the ticket
+ * is filed at once and the member sees the reference and the reply time.
+ * Safety topics show the safety tools straight away (self-harm: crisis lines
+ * first). After a few turns with no answer, a person is offered.
+ *
+ * NOT IN THE PROTOTYPES — flagged: the safety card, the crisis lines, the
+ * reply-time line, "From our team" replies, the "Toastly Help" button that
+ * opens the panel, and the hand-off filing without a button (the prototype
+ * shows a "Pass this to our team" tap; the new rule files it for the member).
+ * All are built from the panel's own cards and buttons.
  */
 
-type Action = "none" | "retry_selfie" | "check_id" | "payment" | "coins" | "safety_kit";
 type Lang = "en" | "pcm";
-type Reply = { paragraphs: string[]; action: Action; handoff: string | null; safety: boolean; language: Lang };
 
 type Item =
   | { kind: "member"; text: string }
-  | { kind: "reply"; reply: Reply }
-  | { kind: "offer"; category: string; lang: Lang }
-  | { kind: "passed"; reference: string }
-  | { kind: "safety" }
+  | { kind: "reply"; reply: HelpAnswer }
+  | { kind: "offer"; lang: Lang; reason: "asked" | "not_resolved"; category: string }
+  | { kind: "passed"; reference: string; sla: string; lang: Lang; paragraphs?: string[] }
+  | {
+      kind: "safety";
+      selfHarm: boolean;
+      crisis: CrisisLine[];
+      emergency: EmergencyNumber[];
+      reference: string | null;
+      sla: string | null;
+    }
   | { kind: "error"; text: string };
 
-const ACTIONS: Record<Exclude<Action, "none">, { href: string; en: string; pcm: string }> = {
+const ACTIONS: Record<Exclude<HelpAnswer["action"], "none">, { href: string; en: string; pcm: string }> = {
   retry_selfie: { href: "/verify", en: "Try the selfie again", pcm: "Try di selfie again" },
   check_id: { href: "/verify", en: "Check my ID", pcm: "Check my ID" },
   payment: { href: "/profile/plan", en: "Try the payment again", pcm: "Try di payment again" },
   coins: { href: "/coins", en: "See your coins", pcm: "Check your coins" },
-  safety_kit: { href: "/safety-kit", en: "Open your safety kit", pcm: "Open your safety kit" },
 };
 
 const STARTERS = [
@@ -49,6 +62,8 @@ const CARD = "grid gap-2.5 rounded-[6px_16px_16px_16px] border border-ink-900/[.
 const PARA = "m-0 text-ui leading-[1.6] text-ink-800";
 const TEAL =
   "mt-1 flex min-h-12 w-full items-center justify-center rounded-lg bg-green-500 px-4 py-3 text-center text-button text-white no-underline transition-colors duration-200 hover:bg-green-600 disabled:bg-grey-200 disabled:text-grey-600";
+const OUTLINE =
+  "flex min-h-12 w-full items-center justify-center rounded-lg border border-ink-900/20 bg-transparent px-4 py-3 text-center text-button text-ink-900 no-underline hover:border-green-500 hover:bg-green-50";
 const PERSON =
   "inline-flex min-h-11 items-center justify-self-start px-0.5 text-nav font-medium text-green-500 underline underline-offset-4";
 
@@ -56,17 +71,21 @@ export function HelpPanel({
   open,
   onClose,
   initialItems = [],
+  initialReplies,
 }: {
   open: boolean;
   onClose: () => void;
   /** For the /audit harness only. */
   initialItems?: Item[];
+  /** For the /audit harness only; otherwise fetched when the panel opens. */
+  initialReplies?: TeamReply[];
 }) {
   const [items, setItems] = React.useState<Item[]>(initialItems);
+  const [replies, setReplies] = React.useState<TeamReply[]>(initialReplies ?? []);
   const [draft, setDraft] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [conversationId, setConversationId] = React.useState<string | null>(null);
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const endRef = React.useRef<HTMLDivElement>(null);
 
@@ -78,6 +97,32 @@ export function HelpPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // Replies from the team: fetched each time the panel opens, then marked read.
+  React.useEffect(() => {
+    if (!open || initialReplies) return;
+    let live = true;
+    void (async () => {
+      try {
+        const res = await fetch("/api/help/replies", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as { replies?: TeamReply[] };
+        if (!live || !json.replies?.length) return;
+        setReplies(json.replies);
+        const unread = Array.from(new Set(json.replies.filter((r) => !r.read).map((r) => r.ticket_id)));
+        for (const ticket_id of unread) {
+          void fetch("/api/help/replies", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ticket_id }),
+          });
+        }
+      } catch {}
+    })();
+    return () => {
+      live = false;
+    };
+  }, [open, initialReplies]);
+
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [items]);
@@ -85,28 +130,46 @@ export function HelpPanel({
   if (!open) return null;
 
   const lastLang: Lang =
-    ([...items].reverse().find((i) => i.kind === "reply") as { reply: Reply } | undefined)?.reply.language ?? "en";
+    ([...items].reverse().find((i) => i.kind === "reply") as { reply: HelpAnswer } | undefined)?.reply.language ?? "en";
+  const handedOff = items.some((i) => i.kind === "passed" || (i.kind === "safety" && i.reference));
+
+  function itemsFor(a: HelpAnswer): Item[] {
+    if (a.safety) {
+      return [
+        {
+          kind: "safety",
+          selfHarm: a.category === "self_harm",
+          crisis: a.crisis ?? [],
+          emergency: a.emergency,
+          reference: a.ticket?.reference ?? null,
+          sla: a.ticket?.sla ?? null,
+        },
+      ];
+    }
+    if (a.ticket) return [{ kind: "passed", reference: a.ticket.reference, sla: a.ticket.sla, lang: a.language, paragraphs: a.paragraphs }];
+    const out: Item[] = [{ kind: "reply", reply: a }];
+    if (a.offer_person) out.push({ kind: "offer", lang: a.language, reason: "not_resolved", category: a.category });
+    return out;
+  }
 
   async function send(text: string) {
     const message = text.trim();
     if (!message || busy) return;
     setDraft("");
     setBusy(true);
-    setItems((prev) => [...prev, { kind: "member", text: message }]);
+    setItems((prev) => [...prev.filter((i) => i.kind !== "offer"), { kind: "member", text: message }]);
     try {
       const res = await fetch("/api/help", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversation_id: conversationId, message }),
       });
-      const json = (await res.json()) as { conversation_id?: string; reply?: Reply; error?: string };
+      const json = (await res.json()) as { conversation_id?: string; reply?: HelpAnswer; error?: string };
       if (json.conversation_id) setConversationId(json.conversation_id);
       if (!res.ok || !json.reply) {
         setItems((prev) => [...prev, { kind: "error", text: json.error ?? "Something went wrong. Please try again." }]);
-      } else if (json.reply.safety) {
-        setItems((prev) => [...prev, { kind: "safety" }]);
       } else {
-        setItems((prev) => [...prev, { kind: "reply", reply: json.reply! }]);
+        setItems((prev) => [...prev, ...itemsFor(json.reply!)]);
       }
     } catch {
       setItems((prev) => [...prev, { kind: "error", text: "You seem to be offline. Please try again." }]);
@@ -115,21 +178,23 @@ export function HelpPanel({
   }
 
   function offerPerson(category: string, lang: Lang) {
-    setItems((prev) => (prev.some((i) => i.kind === "offer" || i.kind === "passed") ? prev : [...prev, { kind: "offer", category, lang }]));
+    setItems((prev) => (prev.some((i) => i.kind === "offer") || handedOff ? prev : [...prev, { kind: "offer", lang, reason: "asked", category }]));
   }
 
-  async function passOn(category: string) {
+  async function passOn(category: string, reason: "asked" | "not_resolved", lang: Lang) {
     setBusy(true);
     try {
       const res = await fetch("/api/help/handoff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversation_id: conversationId, category }),
+        body: JSON.stringify({ conversation_id: conversationId, category, reason: reason === "not_resolved" ? "not_resolved" : "asked" }),
       });
-      const json = (await res.json()) as { reference?: string; error?: string };
+      const json = (await res.json()) as { reference?: string; sla?: string; error?: string };
       setItems((prev) => [
         ...prev.filter((i) => i.kind !== "offer"),
-        json.reference ? { kind: "passed", reference: json.reference } : { kind: "error", text: json.error ?? "We couldn't pass this on. Email support@trytoastly.com." },
+        json.reference
+          ? { kind: "passed", reference: json.reference, sla: json.sla ?? "", lang }
+          : { kind: "error", text: json.error ?? "We couldn't pass this on. Email support@trytoastly.com." },
       ]);
     } catch {
       setItems((prev) => [...prev, { kind: "error", text: "You seem to be offline. Please try again." }]);
@@ -141,11 +206,25 @@ export function HelpPanel({
     try {
       void navigator.clipboard?.writeText(reference);
     } catch {}
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    setCopied(reference);
+    window.setTimeout(() => setCopied(null), 2000);
   }
 
-  const handedOff = items.some((i) => i.kind === "passed");
+  const referenceBox = (reference: string) => (
+    <div className="flex items-center justify-between gap-2.5 rounded-lg bg-green-50 py-3 pl-3.5 pr-3">
+      <span className="grid min-w-0 gap-0.5">
+        <span className="font-sans text-chip font-semibold uppercase tracking-[0.12em] text-green-500">Reference</span>
+        <span className="text-[17px] font-semibold tabular-nums tracking-[0.04em] text-ink-900">{reference}</span>
+      </span>
+      <button
+        type="button"
+        onClick={() => copy(reference)}
+        className="min-h-11 flex-shrink-0 rounded-md border border-ink-900/20 bg-white px-3.5 py-2.5 text-nav font-semibold text-ink-900 hover:border-green-500"
+      >
+        {copied === reference ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-[60] flex justify-end bg-ink-900/40" onClick={onClose}>
@@ -177,6 +256,29 @@ export function HelpPanel({
         </div>
 
         <div className="grid flex-1 content-start gap-4 overflow-y-auto px-3.5 pb-6 pt-5">
+          {replies.length ? (
+            <section aria-label="From our team" className="grid gap-2.5">
+              {replies.map((r) => (
+                <div key={r.id} className="grid gap-1.5">
+                  <p className={LABEL}>
+                    Toastly team · a person{r.reference ? ` · ${r.reference}` : ""}
+                  </p>
+                  <div className="grid gap-2.5 rounded-[6px_16px_16px_16px] border border-green-500/[.35] bg-white p-3.5">
+                    {r.body.split(/\n{2,}/).map((p, j) => (
+                      <p key={j} className={`${PARA} whitespace-pre-line`}>
+                        {p}
+                      </p>
+                    ))}
+                    <p className="m-0 text-[12.5px] text-grey-600">
+                      {new Date(r.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      {r.read ? "" : " · New"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </section>
+          ) : null}
+
           {items.length === 0 ? (
             <div className="grid gap-4">
               <div className="grid gap-1.5 px-0.5">
@@ -223,14 +325,9 @@ export function HelpPanel({
                         {action[r.language]}
                       </Link>
                     ) : null}
-                    {r.handoff && !handedOff ? (
-                      <button type="button" disabled={busy} onClick={() => passOn(r.handoff!)} className={TEAL}>
-                        {r.language === "pcm" ? "Pass am give our team" : "Pass this to our team"}
-                      </button>
-                    ) : null}
                   </div>
-                  {!r.handoff && !handedOff ? (
-                    <button type="button" onClick={() => offerPerson("other", r.language)} className={PERSON}>
+                  {!handedOff && !r.offer_person ? (
+                    <button type="button" onClick={() => offerPerson(r.category, r.language)} className={PERSON}>
                       {r.language === "pcm" ? "Ask person for our team" : "Ask a person instead"}
                     </button>
                   ) : null}
@@ -243,11 +340,15 @@ export function HelpPanel({
                   <p className={LABEL}>Toastly Help · AI</p>
                   <div className={CARD}>
                     <p className={PARA}>
-                      {item.lang === "pcm"
-                        ? "Person for our team fit help you with dis one. I fit pass am give dem now, with wetin you don tell me here."
-                        : "A person on our team can help with this. I can pass it on now, with what you've told me here."}
+                      {item.reason === "not_resolved"
+                        ? item.lang === "pcm"
+                          ? "E be like say I never solve dis one for you. Person for our team fit help — I go pass am give dem with wetin you don tell me here."
+                          : "It looks like I haven't sorted this out for you. A person on our team can help — I'll pass it on with what you've told me here."
+                        : item.lang === "pcm"
+                          ? "Person for our team fit help you with dis one. I fit pass am give dem now, with wetin you don tell me here."
+                          : "A person on our team can help with this. I can pass it on now, with what you've told me here."}
                     </p>
-                    <button type="button" disabled={busy} onClick={() => passOn(item.category)} className={TEAL}>
+                    <button type="button" disabled={busy} onClick={() => passOn(item.category, item.reason, item.lang)} className={TEAL}>
                       {item.lang === "pcm" ? "Pass am give our team" : "Pass this to our team"}
                     </button>
                   </div>
@@ -260,55 +361,87 @@ export function HelpPanel({
                   <p className={LABEL}>Toastly Help · AI</p>
                   <div role="status" className="grid gap-3 rounded-[6px_16px_16px_16px] border border-green-500/[.35] bg-white p-3.5">
                     <p className="m-0 text-ui font-medium leading-[1.6] text-ink-900">
-                      I&rsquo;ve passed this to our team. You&rsquo;ll get a reply by email.
+                      {item.paragraphs?.[0] ?? (item.lang === "pcm" ? "I don pass am give our team." : "I've passed this to our team.")}
                     </p>
-                    <div className="flex items-center justify-between gap-2.5 rounded-lg bg-green-50 py-3 pl-3.5 pr-3">
-                      <span className="grid min-w-0 gap-0.5">
-                        <span className="font-sans text-chip font-semibold uppercase tracking-[0.12em] text-green-500">Reference</span>
-                        <span className="text-[17px] font-semibold tabular-nums tracking-[0.04em] text-ink-900">{item.reference}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => copy(item.reference)}
-                        className="min-h-11 flex-shrink-0 rounded-md border border-ink-900/20 bg-white px-3.5 py-2.5 text-nav font-semibold text-ink-900 hover:border-green-500"
-                      >
-                        {copied ? "Copied" : "Copy"}
-                      </button>
-                    </div>
+                    {item.sla ? <p className="m-0 text-ui font-semibold leading-[1.6] text-ink-900">{item.sla}</p> : null}
+                    {referenceBox(item.reference)}
                     <p className="m-0 text-[13.5px] leading-[1.55] text-grey-600">
-                      The reply goes to the email on your account. Quote this reference if you write to us about it.
+                      You&rsquo;ll see the reply here in Toastly Help, and by email. Quote this reference if you write to us about it.
                     </p>
+                    {item.paragraphs?.slice(1).map((p, j) => (
+                      <p key={j} className="m-0 text-[13.5px] leading-[1.55] text-grey-600">
+                        {p}
+                      </p>
+                    ))}
                   </div>
                 </div>
               );
             }
             if (item.kind === "safety") {
+              const ng = item.emergency.some((n) => n.number === "112");
+              const emergencyLine = ng
+                ? "If you’re in danger right now, call 112."
+                : item.emergency.length
+                  ? `If you’re in danger right now, call ${item.emergency[0].number}.`
+                  : "If you’re in danger right now, call your local emergency number.";
               return (
                 <div key={i} className="grid gap-1.5">
                   <p className={LABEL}>Toastly Help</p>
                   <div role="status" className={CARD}>
-                    <p className="m-0 text-ui font-semibold leading-[1.6] text-ink-900">Your safety comes first.</p>
-                    <p className={PARA}>
-                      If you&rsquo;re in danger right now, call 112 in Nigeria, or your local emergency number if
-                      you&rsquo;re abroad.
-                    </p>
-                    <p className={PARA}>
-                      Your safety kit has the panic button and share-your-date. A person on our team can also look
-                      at this with you.
-                    </p>
-                    <Link href="/safety-kit" className={TEAL} onClick={onClose}>
-                      Open your safety kit
-                    </Link>
-                    {!handedOff ? (
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => passOn("safety")}
-                        className="min-h-12 w-full rounded-lg border border-ink-900/20 bg-transparent px-4 py-3 text-button text-ink-900 hover:border-green-500 hover:bg-green-50"
-                      >
-                        Pass this to our team
-                      </button>
+                    {item.selfHarm ? (
+                      <div className="grid gap-2.5 border-b border-ink-900/[.12] pb-3.5">
+                        <p className="m-0 text-ui font-semibold leading-[1.6] text-ink-900">You don&rsquo;t have to deal with this alone.</p>
+                        {item.crisis.length ? (
+                          <>
+                            <p className={PARA}>You can talk to someone right now:</p>
+                            {item.crisis.map((l) => (
+                              <a key={l.name} href={l.href} className={OUTLINE}>
+                                <span className="grid gap-0.5 text-center">
+                                  <span className="font-semibold">{l.name}</span>
+                                  <span className="text-nav font-normal text-ink-800">
+                                    {l.how}: {l.contact}
+                                  </span>
+                                </span>
+                              </a>
+                            ))}
+                          </>
+                        ) : (
+                          <p className={PARA}>
+                            If you might act on these feelings, call{" "}
+                            {item.emergency.length ? item.emergency.map((n) => n.number).join(" or ") : "your local emergency number"} now, or
+                            go to the nearest hospital. If you can, tell someone you trust how you&rsquo;re feeling.
+                          </p>
+                        )}
+                      </div>
                     ) : null}
+                    <p className="m-0 text-ui font-semibold leading-[1.6] text-ink-900">Your safety comes first.</p>
+                    <p className={PARA}>{emergencyLine}</p>
+                    <Link href="/safety-kit" className={TEAL} onClick={onClose}>
+                      I don&rsquo;t feel safe
+                    </Link>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <Link href="/safety-kit#report-or-block" className={OUTLINE} onClick={onClose}>
+                        Block
+                      </Link>
+                      <Link href="/safety-kit#report-or-block" className={OUTLINE} onClick={onClose}>
+                        Report
+                      </Link>
+                    </div>
+                    {item.reference ? (
+                      <>
+                        <p className="m-0 mt-1 text-ui font-semibold leading-[1.6] text-ink-900">
+                          {item.sla ?? "A person from our team will reply soon."}
+                        </p>
+                        {referenceBox(item.reference)}
+                        <p className="m-0 text-[13.5px] leading-[1.55] text-grey-600">
+                          We&rsquo;ve passed this to a person already. You&rsquo;ll see the reply here in Toastly Help, and by email.
+                        </p>
+                      </>
+                    ) : (
+                      <p className="m-0 text-[13.5px] leading-[1.55] text-grey-600">
+                        If you don&rsquo;t hear from us, email support@trytoastly.com.
+                      </p>
+                    )}
                   </div>
                 </div>
               );

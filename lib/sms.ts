@@ -8,6 +8,11 @@
  *
  *   1. Confirming an emergency contact's number at setup (one code, once).
  *   2. Panic alerts and share-your-date messages to that confirmed contact.
+ *   3. Staff alerts (owner, 9 October 2026): an urgent Toastly Help ticket,
+ *      and its one re-alert, to the on-call phone (ONCALL_PHONE) — from
+ *      lib/support-alerts.ts only. The text is the ticket number, its
+ *      urgency and a console link, built by alertSms() in
+ *      lib/help-escalation.ts: never a member's name, number or words.
  *
  * WHAT IT IS NEVER FOR:
  *

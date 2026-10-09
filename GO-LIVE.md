@@ -573,7 +573,7 @@ machine; the check itself is missing and deliberately not faked.
 |---|---|---|
 | **Paystack** (NGN) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` | **Wired (0024)** — see §0a. Checkout, card renewals, 30-day passes, coin part-payment, webhook and return-page settlement. Off (with an in-app notice) while the key is unset, or a live key off production. |
 | **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | **Wired (0024)** — see §0a. Diaspora subscriptions and the dollar coin pack. |
-| **Vercel Cron** | `CRON_SECRET` | Plan-ending reminder emails (daily). Refuses every request while unset. |
+| **Vercel Cron** | `CRON_SECRET` | Plan-ending reminder emails (daily); Toastly Help urgent re-alerts (every 10 minutes) and the open-ticket digest (08:00 Lagos). Refuses every request while unset. |
 
 **Webhook URLs to register with each provider** — on `www`, because the bare
 domain answers with a redirect and payment providers don't follow redirects
@@ -634,20 +634,32 @@ reads `support_transcripts = 30` days.
 | Variable | Notes |
 |---|---|
 | `ANTHROPIC_API_KEY` | Set in `.env.local`; **set it in Vercel too** (server only). Without it, Answer Mirror's button is hidden and Toastly Help offers a person instead of answering. Live-tested on 3 October 2026 with Claude Haiku. |
-| `SUPPORT_INBOX` | Optional; defaults to `support@trytoastly.com`. Each hand-off emails it the reference and category — **only if Resend is configured** (section 4). Without Resend, hand-offs still land in `support_tickets`, and someone has to look. |
+| `SUPPORT_INBOX` | Optional; defaults to `support@trytoastly.com`. Each hand-off emails it the ticket number, urgency and a console link (never the category or words) — **only if Resend is configured** (section 4). Without Resend, tickets still appear in the console's Support tab. |
+| `ONCALL_PHONE` | **Required for urgent tickets** (0042). The on-call staff phone, E.164 (`+234…`). Urgent Toastly Help tickets text it through `sendSms` (Termii for +234, Twilio otherwise — section on SMS), plus one re-alert if nobody opens the ticket within its reply time. Unset: urgent tickets are emailed only, and the server logs it. |
 
 **Before launch:**
 - **Ask Anthropic for zero data retention** on the API organisation (PRD §5.9:
   "request zero data retention where eligible"). Haiku is eligible.
-- **Staff need a way to read hand-offs.** There is no staff screen: tickets
-  are rows in `support_tickets`, readable in the Supabase table editor. The
-  member is told "You'll get a reply by email", so someone must answer
-  within the 30-day retention window, after which their words are cleared.
-- **"Tonight on Toastly" (migration 0043).** The Home hero card is
-  hidden until 500 Verified Real members, then shows live counts (verified
-  members, Gist sessions that connected this week, couples in Couple Mode).
-  Home rebuilds hourly, so it appears within the hour of the 500th — no
-  deploy. The threshold is `site_config` 'tonight_min_verified_members'.
+- **Hand-offs to a person (migration 0042, release-6).** Tickets appear in
+  the review console's **Support** tab (`/staff/support`), urgent first.
+  Staff reply there; the member gets it in Toastly Help, as an in-app notice
+  and by email. Before launch:
+  - **Confirm the reply times** the member is promised: urgent 60 minutes,
+    normal 24 hours (`support_config`: `sla_urgent_minutes`,
+    `sla_normal_minutes`; change with an update, no deploy).
+  - **Set `ONCALL_PHONE`** and send a test urgent ticket from a test
+    account ("I don't feel safe") — the phone gets an SMS with the ticket
+    number and link only; open it in the console within the hour, or expect
+    exactly one re-alert.
+  - **Review the crisis lines** in `lib/crisis-lines.ts`. None is shown until
+    a person confirms the number on the service's own site and fills in
+    `reviewedBy` and `reviewedOn`. Until then a member who mentions
+    self-harm sees the emergency numbers (also "verify before launch",
+    `lib/safety.ts`) and "your local emergency number".
+  - **Vercel Cron**: `/api/cron/support-alerts` runs every 10 minutes (the
+    one re-alert) and `/api/cron/support-digest` at 07:00 UTC = 08:00 Lagos.
+    A 10-minute schedule needs a Vercel Pro team; on Hobby the deploy is
+    refused, so say so before merging.
 - **Run evals in Pidgin and Nigerian English** before relying on the
   assistant at volume. PRD §5.9 makes that the condition for staying
   Claude-only.

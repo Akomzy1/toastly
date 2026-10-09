@@ -61,7 +61,7 @@ export async function GET() {
     profile, birthdate, history, promptAnswers, photos, repliesSent,
     gistSessions, gistOutcomes, couples, dateCommitments, coins, payments,
     entitlements, reportsFiled, blocks, emergencyContact, genotype,
-    verification, helpMessages, helpTickets, consents, filters,
+    verification, helpMessages, helpTickets, helpReplies, consents, filters,
   ] = await Promise.all([
     read("profiles", "id"),
     read("profile_birthdates", "profile_id"),
@@ -82,7 +82,9 @@ export async function GET() {
     getOwnGenotypeForExport(),
     read("verification_sessions", "profile_id", "product, status, result_code, passed, created_at, completed_at"),
     read("support_messages", "profile_id", "conversation_id, role, content, created_at"),
-    read("support_tickets", "profile_id", "reference, category, summary, status, created_at"),
+    read("support_tickets", "profile_id", "reference, category, urgency, summary, transcript, status, created_at, replied_at, resolved_at"),
+    // The team's replies — never which staff member wrote one (0042).
+    read("support_ticket_replies", "profile_id", "ticket_id, body, created_at, read_at"),
     read("consents", "profile_id", "kind, version, agreed_at, withdrawn_at"),
     read("member_filters", "profile_id", "religions, religion_include_unsaid, tribes, tribe_include_unsaid, updated_at"),
   ]);
@@ -141,6 +143,7 @@ export async function GET() {
     your_filters: filters,
     toastly_help_conversations: helpMessages,
     requests_passed_to_our_team: helpTickets,
+    replies_from_our_team: helpReplies,
   };
 
   const day = new Date().toISOString().slice(0, 10);

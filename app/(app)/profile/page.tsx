@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 /** Profile as the hub — nav-profile-hub.slim.html. The long form lives at /profile/edit. */
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: { searchParams?: { help?: string } }) {
   const supabase = createClient();
   const {
     data: { user },
@@ -59,6 +59,7 @@ export default async function ProfilePage() {
         prompts={prompts}
         abroad={(profile.country_code ?? "NG") !== "NG"}
         live={isLive === true}
+        openHelp={searchParams?.help === "1"}
       />
     </>
   );
