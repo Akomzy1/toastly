@@ -330,7 +330,10 @@ The first Claude Design pass on the pricing page (below) got most of this right 
 | Time-zone aware scheduling | ✅ | ✅ |
 | Advanced filters | ✅ | ✅ |
 | Couple Mode + AriyaPlanner handoff | ✅ Free/universal, same as domestic | ✅ |
+| See-who-liked-you | Coin-purchasable | Included (decided 8 October 2026) — **listed only while `SEE_WHO_LIKED_ENABLED` is on** |
 | Priority support | ❌ | ✅ |
+
+**Plus plans at launch (decided 8 October 2026):** with live video in Phase 2 and incognito not built, Premium Plus and Diaspora Plus add only priority support over Premium and Diaspora (and see-who-liked-you once its flag is on). They stay at ₦7,000 and $20 as they are — not repriced or hidden.
 
 **Rationale for unlimited voice Gist on Diaspora ($10), not a numeric cap:** the original "10/month" placeholder created a hidden pricing inconsistency worth catching — domestic Premium at ₦3,500/mo already gets unlimited voice Gist, and Diaspora at $10/mo (from 8 October 2026; was $15) is still priced well above domestic Premium at current exchange rates, making it diaspora's *Premium* tier, not its *Starter* tier. Capping it below what domestic Premium gets meant a diaspora user would pay several times more for a strictly worse Gist allowance — undermining trust with exactly the users the ARPU model depends on most. Diaspora ($10) now has parity with domestic Premium on Gist; the only differentiation between Diaspora and Diaspora Plus is live video, consistent with the video-always-gated-at-top-tier rule used everywhere else.
 
