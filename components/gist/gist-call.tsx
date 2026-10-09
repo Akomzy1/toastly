@@ -114,8 +114,9 @@ export function GistCall({
   const [needsTap, setNeedsTap] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [reportOpen, setReportOpen] = React.useState(false);
-  // The one-time mobile-data notice: before asking, or before accepting.
-  const [dataSheet, setDataSheet] = React.useState<null | "ask" | "accept">(null);
+  // One-time notices before a member's camera first turns on: being
+  // recorded (once per member, 0041), then mobile data (once per device).
+  const [notice, setNotice] = React.useState<null | { kind: "recording" | "data"; then: "ask" | "accept" }>(null);
 
   const secondsLeft = clock?.ends_at ? Math.ceil((Date.parse(clock.ends_at) - now) / 1000) : null;
 
@@ -422,16 +423,40 @@ export function GistCall({
     else if (v.state === "requested") row = { kind: "waiting", onCancel: () => void videoAction("cancel") };
     else if (!askOpen) row = { kind: "locked", note: `Available after ${minutes} minute${minutes === 1 ? "" : "s"}` };
     else
-      row = {
-        kind: "ask",
-        busy,
-        onAsk: () => (onMobileData() && !dataNoticeSeen() ? setDataSheet("ask") : void videoAction("request")),
-      };
+      row = { kind: "ask", busy, onAsk: () => proceed("ask") };
   }
 
-  // Sheets: the one-time data notice first; then a request to answer.
+  // Before this member's camera first turns on — asking or accepting — the
+  // one-time notices: being recorded (once per member), then mobile data
+  // (once per device). "Stay on voice" keeps the Gist as voice for both.
+  function proceed(step: "ask" | "accept", passed: "recording" | "data" | null = null) {
+    if (passed === null && v && !v.notice_seen) return setNotice({ kind: "recording", then: step });
+    if (passed !== "data" && onMobileData() && !dataNoticeSeen()) return setNotice({ kind: "data", then: step });
+    setNotice(null);
+    void videoAction(step === "ask" ? "request" : "accept");
+  }
+  function stayOnVoice(step: "ask" | "accept") {
+    setNotice(null);
+    if (step === "accept") void videoAction("decline");
+  }
+
   let sheet: CallSheet | null = null;
-  if (dataSheet) {
+  if (notice?.kind === "recording") {
+    const step = notice.then;
+    sheet = {
+      title: "Before you turn on video",
+      body: "Toastly never records calls, but we can't stop someone recording their screen. Only turn on video if you're comfortable.",
+      yes: "Continue",
+      busy,
+      onYes: () => {
+        void fetch("/api/gist/video-notice", { method: "POST" }).catch(() => undefined);
+        if (clock?.video) setClock({ ...clock, video: { ...clock.video, notice_seen: true } });
+        proceed(step, "recording");
+      },
+      onNo: () => stayOnVoice(step),
+    };
+  } else if (notice?.kind === "data") {
+    const step = notice.then;
     sheet = {
       title: "Video uses about 5–10 MB a minute. Continue?",
       body: "You're on mobile data. We'll only ask this once.",
@@ -439,16 +464,9 @@ export function GistCall({
       busy,
       onYes: () => {
         markDataNoticeSeen();
-        const next = dataSheet;
-        setDataSheet(null);
-        void videoAction(next === "ask" ? "request" : "accept");
+        proceed(step, "data");
       },
-      // Stay on voice keeps the Gist as voice for both.
-      onNo: () => {
-        const next = dataSheet;
-        setDataSheet(null);
-        if (next === "accept") void videoAction("decline");
-      },
+      onNo: () => stayOnVoice(step),
     };
   } else if (v?.state === "requested" && !v.asked_by_you) {
     sheet = {
@@ -456,7 +474,7 @@ export function GistCall({
       body: "Both cameras go on together. Either of you can turn video off at any time.",
       yes: "Turn on video",
       busy,
-      onYes: () => (onMobileData() && !dataNoticeSeen() ? setDataSheet("accept") : void videoAction("accept")),
+      onYes: () => proceed("accept"),
       onNo: () => void videoAction("decline"),
     };
   }
@@ -516,6 +534,8 @@ export function GistCall({
           onTurnOffVideo={() => void videoAction("off", "turned_off")}
           onReport={() => setReportOpen(true)}
           extra={extra}
+          // The VIEWER's own first name and today's date — nothing else about anyone.
+          watermark={`${myName.split(" ")[0]} · ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
         />
         <div ref={audioRef} hidden />
       </div>

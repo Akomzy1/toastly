@@ -59,6 +59,8 @@ export const REPORT_REASONS = [
   { value: "harassment", label: "Rude or insulting" },
   // Goes to the top of the review queue (0034).
   { value: "threats_or_coercion", label: "Threatening or pressuring me" },
+  // Also urgent (0041, PRD §5.4): a web app can't stop screen recording.
+  { value: "recorded_or_shared", label: "They recorded or shared me" },
   { value: "scam_or_fraud", label: "Scam or fraud" },
   { value: "fake_profile", label: "Not who they say they are" },
   { value: "underage", label: "They seem underage" },

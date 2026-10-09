@@ -77,6 +77,7 @@ const ROUTES = [
   { route: "/audit/gist-call/h", label: "Gist call · H mobile data" },
   { route: "/audit/gist-call/i", label: "Gist call · I no video plan" },
   { route: "/audit/gist-call/j", label: "Gist call · J end of deck" },
+  { route: "/audit/gist-call/k", label: "Gist call · K recording notice" },
   // In-app navigation (nav-*.slim.html)
   { route: "/audit/nav/today", label: "Nav · today" },
   { route: "/audit/nav/today-no-badge", label: "Nav · today-no-badge" },

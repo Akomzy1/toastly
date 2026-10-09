@@ -1194,6 +1194,42 @@ check("no call is ever recorded", (s, f) =>
     ? "starts or configures a recording"
     : false,
 );
+// Being recorded (PRD §5.4, decided 9 October 2026). A web app can't block
+// screenshots or screen recording, so no copy may say or imply it can.
+// "Toastly never records calls" is true and allowed; "can't be recorded" is not.
+const NO_RECORDING_CLAIM =
+  /\bblock(s|ed|ing)?\s+(screenshots?|screen[- ]?(recording|capture|shots?)|recordings?)|\b(screenshots?|screen[- ]?(recording|capture)s?)\s+(are|is)\s+(blocked|disabled|prevented|not (possible|allowed))|\b(can'?t|cannot|can ?not|won'?t)\s+be\s+(screenshotted|screenshot|recorded|captured|screen[- ]?recorded)|\b(screenshot|record(ing)?)[- ]proof\b|\bno ?one can (record|screenshot)|\bimpossible to (record|screenshot)|\bprotected from (screenshots?|recording)/i;
+check("no copy says or implies calls can't be screenshotted or recorded", (s, f) => {
+  if (!/\.(tsx?)$/.test(f)) return false;
+  const m = NO_RECORDING_CLAIM.exec(s);
+  return m ? `claims "${m[0]}" — a web app can't stop screen recording` : false;
+});
+{
+  const name = "the video watermark is the viewer's own name and date, drawn on screen, never in the stream";
+  const hits = [];
+  const call = stripComments(fs.readFileSync("components/gist/gist-call.tsx", "utf8"), "x.tsx");
+  if (!/watermark=\{`\$\{myName\.split\(" "\)\[0\]\} · \$\{new Date\(\)/.test(call))
+    hits.push("components/gist/gist-call.tsx — the watermark isn't the viewer's own first name and today's date");
+  const screen = stripComments(fs.readFileSync("components/gist/call-screen.tsx", "utf8"), "x.tsx");
+  if (!/aria-hidden="true" className="pointer-events-none absolute inset-0[^"]*">\s*<span[^>]*animate-watermark/.test(screen))
+    hits.push("components/gist/call-screen.tsx — no moving watermark over the incoming video");
+  // Never into the stream: nothing draws on or re-encodes a video track.
+  for (const f of files.filter((x) => /components[\\/]gist[\\/]|lib[\\/](gist|livekit)/.test(x))) {
+    const s = stripComments(fs.readFileSync(f, "utf8"), f);
+    if (/captureStream|drawImage|MediaStreamTrackProcessor|TrackProcessor|insertableStreams|createEncodedStreams|setProcessor/.test(s))
+      hits.push(`${f} — processes a video stream; the watermark must stay on screen only`);
+  }
+  // Before a member's camera first turns on — asking or accepting — the
+  // one-time recording notice comes first.
+  if (!/if \(passed === null && v && !v\.notice_seen\) return setNotice\(\{ kind: "recording"/.test(call) ||
+      !/Toastly never records calls, but we can't stop someone recording their screen\. Only turn on video if you're comfortable\./.test(call))
+    hits.push("components/gist/gist-call.tsx — the one-time recording notice doesn't come before a member's first video");
+  if (!/value: "recorded_or_shared", label: "They recorded or shared me"/.test(fs.readFileSync("lib/safety.ts", "utf8")))
+    hits.push("lib/safety.ts — the report reason \"They recorded or shared me\" is missing");
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
 // No upgrade prompts during any call (PRD §5.4).
 check("no upgrade prompt on the call screens", (s, f) => {
   if (!/components[\\/]gist[\\/](gist-call|call-screen|deck-card)\.tsx$/.test(f)) return false;

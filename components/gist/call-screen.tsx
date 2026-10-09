@@ -13,6 +13,11 @@ import { DeckCard, type DeckCardQuestion } from "./deck-card";
  * control, no upsell, no locked icon). Report and End are on every state.
  * No upgrade prompt ever appears here.
  *
+ * Being recorded (PRD §5.4): a web app can't stop screen recording, so the
+ * screen never says it can. Over the incoming video, a faint watermark of the
+ * VIEWER's first name and the date wanders slowly — drawn here, on the
+ * viewer's own screen, never into the stream.
+ *
  * Addition, flagged: the "2:00 left — add 18 minutes" bar (the one-time
  * extension, both-clocks.slim.html) sits above the controls; the prototype
  * draws no extension state.
@@ -139,6 +144,7 @@ export function CallScreen({
   onTurnOffVideo,
   onReport,
   extra,
+  watermark,
 }: {
   peer: Person;
   me: Person;
@@ -162,6 +168,8 @@ export function CallScreen({
   onReport: () => void;
   /** Reconnecting, tap-to-hear, an error, the extension bar. */
   extra?: React.ReactNode;
+  /** The viewer's own first name and today's date, e.g. "Amaka · 9 Oct 2026". */
+  watermark?: string;
 }) {
   const first = peer.name.split(" ")[0];
   const ctrl = "grid h-[60px] w-[60px] place-items-center rounded-pill border-0 [@media(max-height:700px)]:h-[52px] [@media(max-height:700px)]:w-[52px]";
@@ -219,6 +227,14 @@ export function CallScreen({
           <div className="flex flex-1 px-3 pt-0.5">
             <div className="relative flex-1 overflow-hidden rounded-2xl bg-green-700">
               <div className="absolute inset-0">{remoteVideo}</div>
+              {watermark ? (
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none overflow-hidden">
+                  {/* Rests mid-frame when motion is reduced; otherwise wanders slowly. */}
+                  <span className="absolute left-[8%] top-[45%] whitespace-nowrap font-sans text-[13px] font-semibold tracking-[0.04em] text-white/[.16] motion-safe:animate-watermark">
+                    {watermark}
+                  </span>
+                </div>
+              ) : null}
               <span className="absolute left-3 top-3 flex items-baseline gap-1.5 rounded-pill bg-green-800/80 px-[11px] py-[7px]">
                 <span role="timer" className="font-serif text-[17px] font-bold text-white [font-variant-numeric:tabular-nums]">
                   {timeLeft}

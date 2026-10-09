@@ -157,10 +157,21 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(24px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        // The video watermark's slow wander (PRD §5.4): corner to corner,
+        // too slow to read as motion, so it can't sit still under a crop.
+        // Positions are of the video area (left/top), so it really travels.
+        "watermark-drift": {
+          "0%": { left: "8%", top: "38%" },
+          "25%": { left: "46%", top: "22%" },
+          "50%": { left: "14%", top: "62%" },
+          "75%": { left: "50%", top: "48%" },
+          "100%": { left: "8%", top: "38%" },
+        },
       },
       animation: {
         // Section reveals: 24px rise, 0.7s. Stagger 80ms at the call site.
         reveal: "reveal .7s cubic-bezier(.16,.84,.44,1) both",
+        watermark: "watermark-drift 90s ease-in-out infinite",
       },
     },
   },

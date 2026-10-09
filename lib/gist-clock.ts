@@ -48,6 +48,8 @@ export type GistVideo = {
   ask_from: string | null;
   /** The configured wait, for "Available after N minutes". */
   ask_after_seconds: number;
+  /** This member has seen the one-time recording notice (0041). */
+  notice_seen: boolean;
   off_reason: string | null;
 };
 
@@ -67,9 +69,10 @@ export async function readClock(
   const isProposer = s.proposer_id === userId;
   let video: GistVideo | null = null;
   if (featureFlags().videoGist) {
-    const [{ data: allowed }, { data: cfg }] = await Promise.all([
+    const [{ data: allowed }, { data: cfg }, { data: mine }] = await Promise.all([
       supabase.rpc("gist_video_allowed", { p_session_id: sessionId }),
       supabase.from("gist_config").select("video_ask_after_seconds").maybeSingle(),
+      supabase.from("profiles").select("video_notice_seen_at").eq("id", userId).maybeSingle(),
     ]);
     if (allowed === true) {
       const wait = (cfg?.video_ask_after_seconds as number | undefined) ?? 180;
@@ -79,6 +82,7 @@ export async function readClock(
         declined: Boolean(s.video_declined_at),
         ask_from: s.started_at ? new Date(Date.parse(s.started_at) + wait * 1000).toISOString() : null,
         ask_after_seconds: wait,
+        notice_seen: Boolean(mine?.video_notice_seen_at),
         off_reason: s.video_off_reason ?? null,
       };
     }

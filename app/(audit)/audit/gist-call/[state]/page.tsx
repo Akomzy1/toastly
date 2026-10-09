@@ -19,6 +19,8 @@ const CARDS = [
 ].map((text, i) => ({ position: i + 1, text }));
 
 type S = { time: string; index: number; row?: VideoRow | null; sheet?: CallSheet | null; video?: boolean; banner?: boolean; peer?: string };
+// K is the one-time recording notice (PRD §5.4, 9 October 2026) — not in
+// gist-video-call.html yet; built in the sheet's own pattern.
 const sheet = (title: string, body: string, yes: string): CallSheet => ({ title, body, yes, onYes: noop, onNo: noop });
 const STATES: Record<string, S> = {
   a: { time: "16:20", index: 0, row: { kind: "locked", note: "Available after 3 minutes" } },
@@ -31,6 +33,7 @@ const STATES: Record<string, S> = {
   h: { time: "14:38", index: 1, peer: "Kelechi Obi", sheet: sheet("Video uses about 5–10 MB a minute. Continue?", "You're on mobile data. We'll only ask this once.", "Continue") },
   i: { time: "14:52", index: 1, row: null },
   j: { time: "04:35", index: 6, row: { kind: "ask", onAsk: noop } },
+  k: { time: "14:50", index: 1, sheet: sheet("Before you turn on video", "Toastly never records calls, but we can't stop someone recording their screen. Only turn on video if you're comfortable.", "Continue") },
 };
 
 export default function AuditGistCallState({ params }: { params: { state: string } }) {
@@ -63,6 +66,7 @@ export default function AuditGistCallState({ params }: { params: { state: string
           onEnd={noop}
           onTurnOffVideo={noop}
           onReport={noop}
+          watermark={`${s.peer ? "Amaka" : "Kelechi"} · 9 Oct 2026`}
         />
       </div>
     </div>
