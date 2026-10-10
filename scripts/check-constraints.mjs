@@ -458,6 +458,30 @@ check("the Support tab reads only Toastly Help's own records", (s, f) => {
   return false;
 });
 
+// "Tonight on Toastly" (owner, 10 October 2026): hidden until 500 verified
+// members, then live counts only. The card renders only what
+// getTonightStats() returns (home_live_stats, 0043) — never a typed-in figure.
+check("Tonight on Toastly shows live counts only, behind the threshold", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (p.endsWith("app/(marketing)/page.tsx")) {
+    if (!/const tonight = await getTonightStats\(\)/.test(s)) return "the card isn't fed by getTonightStats()";
+    if (!/\{tonight \? \(\s*<Reveal>[\s\S]*?Tonight on Toastly/.test(s)) return "the card isn't hidden when there are no stats";
+    if (!/tonight\.map\(/.test(s) || /heroStats/.test(s)) return "the card renders figures that aren't live";
+    return false;
+  }
+  if (p.endsWith("lib/home-content.ts")) return /heroStats/.test(s) ? "typed-in hero figures are back" : false;
+  if (p.endsWith("lib/home-stats.ts")) {
+    if (!/rpc\("home_live_stats"\)/.test(s)) return "not read from home_live_stats";
+    return /value:\s*"/.test(s) ? "a typed-in figure" : false;
+  }
+  if (p.endsWith("0043_tonight_stats.sql")) {
+    if (!/if v_verified < coalesce\(v_min, 500\) then\s*return null;/.test(s)) return "the counts aren't withheld below the threshold";
+    if (!/\('tonight_min_verified_members', 500\)/.test(s)) return "the threshold isn't 500";
+    return false;
+  }
+  return false;
+});
+
 // --- Blind report and block -----------------------------------------------
 //
 // The whole point is that the reporting member never learns who sent it. A

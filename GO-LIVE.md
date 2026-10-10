@@ -656,6 +656,11 @@ reads `support_transcripts = 30` days.
     `reviewedBy` and `reviewedOn`. Until then a member who mentions
     self-harm sees the emergency numbers (also "verify before launch",
     `lib/safety.ts`) and "your local emergency number".
+  - **"Tonight on Toastly" (migration 0043).** The Home hero card is
+    hidden until 500 Verified Real members, then shows live counts (verified
+    members, Gist sessions that connected this week, couples in Couple Mode).
+    Home rebuilds hourly, so it appears within the hour of the 500th — no
+    deploy. The threshold is `site_config` 'tonight_min_verified_members'.
   - **Vercel Cron**: `/api/cron/support-alerts` runs every 10 minutes (the
     one re-alert) and `/api/cron/support-digest` at 07:00 UTC = 08:00 Lagos.
     A 10-minute schedule needs a Vercel Pro team; on Hobby the deploy is
