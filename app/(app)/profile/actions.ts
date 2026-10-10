@@ -9,6 +9,9 @@ export type ProfileState = { error?: string; ok?: string } | null;
 
 const VISIBILITIES = ["private", "on_match", "public"] as const;
 
+const CHILDREN_VALUES = ["none", "one", "two", "three_plus", "prefer_not_to_say"] as const;
+const WANTS_CHILDREN_VALUES = ["yes", "no", "open", "not_sure"] as const;
+
 function vis(formData: FormData, key: string, fallback: FieldVisibility) {
   const v = String(formData.get(key) ?? "");
   return (VISIBILITIES as readonly string[]).includes(v)
@@ -49,7 +52,8 @@ export async function saveProfile(
 
   const intent = String(formData.get("intent") ?? "");
   const history = String(formData.get("history") ?? "");
-  const hasChildren = String(formData.get("has_children") ?? "");
+  const children = String(formData.get("children") ?? "");
+  const wantsChildren = String(formData.get("wants_children") ?? "");
   const languages = String(formData.get("languages") ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -111,8 +115,13 @@ export async function saveProfile(
   const { error: historyError } = await supabase.from("profile_history").upsert({
     profile_id: user.id,
     history: history || null,
-    has_children: hasChildren === "" ? null : hasChildren === "yes",
+    // 0044: a count only (no names, ages or details), under the same
+    // setting as relationship history.
+    children: (CHILDREN_VALUES as readonly string[]).includes(children) ? children : null,
     visibility: vis(formData, "history_visibility", "on_match"),
+    // Its own setting; shown on the full profile unless hidden.
+    wants_children: (WANTS_CHILDREN_VALUES as readonly string[]).includes(wantsChildren) ? wantsChildren : null,
+    wants_children_visibility: vis(formData, "wants_children_visibility", "public"),
     updated_at: new Date().toISOString(),
   });
   if (historyError) return { error: historyError.message };

@@ -54,6 +54,8 @@ export const PHOTO_REVEAL_OPTIONS: {
 export const REPORT_REASONS = [
   // A first-class category (CLAUDE.md, PRD §5.1.2; 0029).
   { value: "photos_not_them", label: "These photos aren't them" },
+  // 0044: to a person in the review queue; nothing is removed automatically.
+  { value: "photo_of_child", label: "Photo shows a child" },
   { value: "user_is_married", label: "They're married" },
   { value: "asked_for_money", label: "They asked me for money" },
   { value: "harassment", label: "Rude or insulting" },

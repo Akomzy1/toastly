@@ -111,6 +111,7 @@ const ROUTES = [
   { route: "/audit/filters/christian", label: "Filters · christian" },
   { route: "/audit/filters/religion-open", label: "Filters · religion-open" },
   { route: "/audit/filters/tribe-open", label: "Filters · tribe-open" },
+  { route: "/audit/filters/wants-open", label: "Filters · wants-children open" },
   { route: "/audit/filters/locked", label: "Filters · locked" },
   // Gist invites — every state of prototypes 1–8 and Both Clocks
   { route: "/audit/gist-invite/reply-starter", label: "Gist invite · reply-starter" },

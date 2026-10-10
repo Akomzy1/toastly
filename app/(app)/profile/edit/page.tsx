@@ -42,14 +42,16 @@ export default async function EditProfilePage() {
   // Own row only — RLS on profile_history (0013) enforces who else may read it.
   const { data: historyRow } = await supabase
     .from("profile_history")
-    .select("history, has_children, visibility")
+    .select("history, children, visibility, wants_children, wants_children_visibility")
     .eq("profile_id", user.id)
     .maybeSingle<ProfileHistory>();
 
   const history: ProfileHistory = historyRow ?? {
     history: null,
-    has_children: null,
+    children: null,
     visibility: "on_match",
+    wants_children: null,
+    wants_children_visibility: "public",
   };
 
   // Closed cities are listed too. A member may pick a city that hasn't opened

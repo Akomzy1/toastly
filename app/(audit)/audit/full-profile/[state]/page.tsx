@@ -26,6 +26,9 @@ const ROWS = {
   profession: { label: "Profession", value: "Product manager", verified: true },
   education: { label: "Education", value: "BSc, University of Lagos" },
   history: { label: "Relationship history", value: "Single" },
+  // 0044: Children shows after a match by default; Wants children by default.
+  children: { label: "Children", value: "1 child" },
+  wants: { label: "Wants children", value: "Open to it" },
   genotype: { label: "Genotype", value: "AS" },
 };
 
@@ -42,13 +45,13 @@ const BASE: FullProfileView = {
   answers: ANSWERS,
   action: "reply",
   gistsLeft: null,
-  details: [ROWS.languages, ROWS.tribe, ROWS.faith, ROWS.profession, ROWS.education],
+  details: [ROWS.languages, ROWS.tribe, ROWS.faith, ROWS.profession, ROWS.education, ROWS.wants],
   invite: null,
 };
 
 const STATES: Record<string, { view: Partial<FullProfileView>; panel?: "menu" | "report" | "reported" | "block" | "blocked" }> = {
   six: { view: {} },
-  matched: { view: { origin: "matched", details: [...BASE.details, ROWS.history, ROWS.genotype] } },
+  matched: { view: { origin: "matched", details: [...BASE.details, ROWS.history, ROWS.children, ROWS.genotype] } },
   hidden: { view: { details: [ROWS.languages, ROWS.faith] } },
   starter: { view: { action: "gist", gistsLeft: 1 } },
   invite: { view: { origin: "invite", action: "none", gistsLeft: 1, invite: { sessionId: ID, starter: true } } },

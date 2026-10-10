@@ -86,7 +86,7 @@ export async function GET() {
     // The team's replies — never which staff member wrote one (0042).
     read("support_ticket_replies", "profile_id", "ticket_id, body, created_at, read_at"),
     read("consents", "profile_id", "kind, version, agreed_at, withdrawn_at"),
-    read("member_filters", "profile_id", "religions, religion_include_unsaid, tribes, tribe_include_unsaid, updated_at"),
+    read("member_filters", "profile_id", "religions, religion_include_unsaid, tribes, tribe_include_unsaid, wants_children, wants_children_include_unsaid, updated_at"),
   ]);
 
   // Messages: the member's own, always; messages sent TO them only when their

@@ -36,7 +36,7 @@ export default async function FiltersPage() {
     supabase.rpc("i_have_advanced_filters"),
     supabase
       .from("member_filters")
-      .select("religions, religion_include_unsaid, tribes, tribe_include_unsaid")
+      .select("religions, religion_include_unsaid, tribes, tribe_include_unsaid, wants_children, wants_children_include_unsaid")
       .eq("profile_id", user.id)
       .maybeSingle<MemberFilters>(),
     supabase.from("profiles").select("country_code").eq("id", user.id).maybeSingle(),

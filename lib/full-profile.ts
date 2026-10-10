@@ -5,7 +5,7 @@ import { shownFaithLine } from "@/lib/faith";
 import { genotypeForOthers } from "@/lib/genotype";
 import { getMemberProfile } from "@/lib/member-profile";
 import type { FullProfileOrigin, FullProfileView } from "@/lib/full-profile-view";
-import { HISTORY_LABELS, INTENT_LABELS, type Tier } from "@/lib/types/profile";
+import { CHILDREN_SHOWN, HISTORY_LABELS, INTENT_LABELS, WANTS_CHILDREN_LABELS, type Tier } from "@/lib/types/profile";
 
 /**
  * SERVER ONLY. Everything another member's full profile shows this viewer
@@ -73,6 +73,9 @@ export async function loadFullProfile(
   if (m.profession) details.push({ label: "Profession", value: m.profession, verified: m.profession_verified === true });
   if (m.education) details.push({ label: "Education", value: m.education });
   if (m.history) details.push({ label: "Relationship history", value: HISTORY_LABELS[m.history] });
+  // 0044: shown only if profile_for returned them for this viewer.
+  if (m.children) details.push({ label: "Children", value: CHILDREN_SHOWN[m.children] });
+  if (m.wants_children) details.push({ label: "Wants children", value: WANTS_CHILDREN_LABELS[m.wants_children] });
   if (m.genotype) details.push({ label: "Genotype", value: genotypeForOthers(m.genotype) });
 
   return {

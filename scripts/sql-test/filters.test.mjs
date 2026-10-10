@@ -160,14 +160,16 @@ test("filters are deleted with the account", async () => {
   assert.equal((await db.query("select 1 from member_filters where profile_id = $1", [m])).rows.length, 0);
 });
 
-test("only religion and tribe are filterable — never denomination, genotype or history", async () => {
+test("only religion, tribe and wants-children are filterable — never denomination, genotype, history or how many children", async () => {
   const { db } = await setup();
   const { rows } = await db.query(
     "select column_name from information_schema.columns where table_schema = 'public' and table_name = 'member_filters' order by column_name",
   );
   assert.deepEqual(rows.map((r) => r.column_name), [
     "profile_id", "religion_include_unsaid", "religions", "tribe_include_unsaid", "tribes", "updated_at",
-  ]);
+    // 0044 (owner, 10 October 2026): "Do you want children?". Never the count.
+    "wants_children", "wants_children_include_unsaid",
+  ].sort());
   await assert.rejects(
     db.query("insert into member_filters (profile_id, religions) values (gen_random_uuid(), '{Prefer not to say}')"),
     undefined,

@@ -7,8 +7,9 @@
  * each filter can include people who don't say. The rule itself lives in the
  * database (0031, passes_own_filters) — this module is the option lists.
  *
- * Never filterable: denomination, genotype, hidden relationship history, and
- * anything not in the §7.1 list.
+ * Never filterable: denomination, genotype, relationship history, the
+ * number of children, and anything not in the §7.1 list. "Do you want
+ * children?" is (0044), by the same rules as religion and tribe.
  */
 
 /** Religion filter values: the decided list, less "Prefer not to say". */
@@ -54,11 +55,21 @@ export const FILTER_TRIBES = [
   "Berom",
 ] as const;
 
+/** "Do you want children?" filter values (0044) — the answers, as stored. */
+export const FILTER_WANTS_CHILDREN = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "open", label: "Open to it" },
+  { value: "not_sure", label: "Not sure yet" },
+] as const;
+
 export type MemberFilters = {
   religions: string[];
   religion_include_unsaid: boolean;
   tribes: string[];
   tribe_include_unsaid: boolean;
+  wants_children: string[];
+  wants_children_include_unsaid: boolean;
 };
 
 export const NO_FILTERS: MemberFilters = {
@@ -66,6 +77,8 @@ export const NO_FILTERS: MemberFilters = {
   religion_include_unsaid: true,
   tribes: [],
   tribe_include_unsaid: true,
+  wants_children: [],
+  wants_children_include_unsaid: true,
 };
 
 /** "Only {n} people match your filters today." — the feed's line. */

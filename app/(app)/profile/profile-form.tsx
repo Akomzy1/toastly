@@ -12,8 +12,10 @@ import { CityPicker, type PickerCity } from "@/components/app/city-picker";
 import { TimeZoneField } from "@/components/app/time-zone-field";
 import { COUNTRY_NAME } from "@/lib/countries";
 import {
+  CHILDREN_OPTIONS,
   HISTORY_LABELS,
   INTENT_LABELS,
+  WANTS_CHILDREN_LABELS,
   VISIBILITY_LABELS,
   type Profile,
   type ProfileHistory,
@@ -277,33 +279,60 @@ export function ProfileForm({
             </Select>
           </Label>
 
-          <Label htmlFor="has_children">
+          {/* 0044: a count only — never names, ages or details. Never
+              filterable, never used in matching. */}
+          <Label htmlFor="children">
             <span className="flex items-center gap-2">
               Children <Badge variant="optional">Optional</Badge>
             </span>
             <Select
-              id="has_children"
-              name="has_children"
-              defaultValue={
-                history.has_children === null
-                  ? ""
-                  : history.has_children
-                    ? "yes"
-                    : "no"
-              }
+              id="children"
+              name="children"
+              defaultValue={history.children ?? ""}
             >
-              <option value="">Rather not say</option>
-              <option value="yes">I have children</option>
-              <option value="no">No children</option>
+              <option value="">Not answered</option>
+              {CHILDREN_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
             </Select>
           </Label>
         </div>
 
-        {/* Defaults to on_match. "public" is offered, never preselected. */}
+        {/* Defaults to on_match. "public" is offered, never preselected.
+            Covers relationship history and children together. */}
         <Visibility
           name="history_visibility"
           value={history.visibility}
         />
+
+        <div className="grid gap-3 border-t border-ink-900/10 pt-5">
+          <Label htmlFor="wants_children">
+            <span className="flex items-center gap-2">
+              Do you want children? <Badge variant="optional">Optional</Badge>
+            </span>
+            <Select
+              id="wants_children"
+              name="wants_children"
+              defaultValue={history.wants_children ?? ""}
+            >
+              <option value="">Not answered</option>
+              {(["yes", "no", "open", "not_sure"] as const).map((w) => (
+                <option key={w} value={w}>
+                  {WANTS_CHILDREN_LABELS[w]}
+                </option>
+              ))}
+            </Select>
+          </Label>
+          {/* Shown on your full profile unless you hide it; never on your
+              match card. Paid plans can filter their own search by it, only
+              when it's shown to everyone. */}
+          <Visibility
+            name="wants_children_visibility"
+            value={history.wants_children_visibility}
+          />
+        </div>
       </Card>
 
       <Submit />

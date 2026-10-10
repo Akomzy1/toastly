@@ -54,7 +54,8 @@ const NG_TIERS: Tier[] = [
       // CORRECTED (decided 6 October 2026, PRD §5.2.4): the prototype promised
       // "city, language, intentions" — none is built. Launch filters are
       // religion and tribe; pricing never promises one that isn't built.
-      "Advanced filters — religion and tribe",
+      // 0044 adds "Do you want children?" (owner, 10 October 2026).
+      "Advanced filters — religion, tribe and whether they want children",
     ],
     cta: "Choose Premium",
     flag: "Most chosen",

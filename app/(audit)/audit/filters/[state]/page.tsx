@@ -12,11 +12,12 @@ export const dynamic = "force-dynamic";
  * with mock data — any, Christian chosen, the religion list open, the tribe
  * list open, and Starter's locked state.
  */
-const STATES: Record<string, { filters?: Partial<MemberFilters>; open?: "religion" | "tribe"; locked?: boolean }> = {
+const STATES: Record<string, { filters?: Partial<MemberFilters>; open?: "religion" | "tribe" | "wants"; locked?: boolean }> = {
   any: {},
   christian: { filters: { religions: ["Christian"] } },
   "religion-open": { filters: { religions: ["Christian", "Muslim"] }, open: "religion" },
   "tribe-open": { filters: { tribes: ["Igbo"], tribe_include_unsaid: false }, open: "tribe" },
+  "wants-open": { filters: { wants_children: ["yes", "open"] }, open: "wants" },
   locked: { locked: true },
 };
 

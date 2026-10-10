@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FaithFields } from "@/lib/faith";
 import type { GenotypeValue } from "@/lib/genotype";
-import type { IntentLevel, RelationshipHistory, VerificationStage } from "@/lib/types/profile";
+import type { ChildrenCount, IntentLevel, RelationshipHistory, VerificationStage, WantsChildren } from "@/lib/types/profile";
 
 /**
  * Another member's profile, as the database gives it to this viewer
@@ -29,6 +29,9 @@ export type MemberProfile = {
   profession_verified?: true;
   education?: string;
   history?: RelationshipHistory;
+  /** Never "prefer_not_to_say": profile_for leaves that out. */
+  children?: Exclude<ChildrenCount, "prefer_not_to_say">;
+  wants_children?: WantsChildren;
   genotype?: GenotypeValue;
   /** Only between two people with a Gist between them. */
   time_zone?: string;

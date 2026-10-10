@@ -21,6 +21,11 @@ export type RelationshipHistory =
 
 export type FieldVisibility = "private" | "on_match" | "public";
 
+/** How many children (0044). Never filterable, never read by matching or ranking. */
+export type ChildrenCount = "none" | "one" | "two" | "three_plus" | "prefer_not_to_say";
+/** Whether they want children (0044). Filterable by its owner's own choice to show it. */
+export type WantsChildren = "yes" | "no" | "open" | "not_sure";
+
 export type Tier =
   | "starter"
   | "premium"
@@ -92,14 +97,17 @@ export type Profile = {
 
 /** The "Verified Real" badge: phone + liveness. NIN/BVN is a second ring. */
 /**
- * Relationship history and children — in their own table since 0013, because
- * `profiles` rows are readable by every verified member. RLS there enforces
- * `visibility`; it defaults to on_match, never public.
+ * Relationship history and children — in their own table since 0013, owner
+ * only (other members see what profile_for returns). `visibility` covers
+ * history AND the number of children, defaulting to on_match, never public.
+ * Whether they want children has its own setting, default public (0044).
  */
 export type ProfileHistory = {
   history: RelationshipHistory | null;
-  has_children: boolean | null;
+  children: ChildrenCount | null;
   visibility: FieldVisibility;
+  wants_children: WantsChildren | null;
+  wants_children_visibility: FieldVisibility;
 };
 
 export function isVerifiedReal(p: Pick<Profile, "stage">): boolean {
@@ -119,7 +127,8 @@ export const OPTIONAL_FIELDS = [
   "tribe",
   "languages",
   "history",
-  "has_children",
+  "children",
+  "wants_children",
   "profession",
   "education",
 ] as const;
@@ -138,6 +147,28 @@ export const HISTORY_LABELS: Record<RelationshipHistory, string> = {
   divorced: "Divorced",
   widowed: "Widowed",
   single_parent: "Single parent",
+};
+
+/** The editor's options. No names, ages or details — only a count. */
+export const CHILDREN_OPTIONS: { value: ChildrenCount; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "one", label: "1" },
+  { value: "two", label: "2" },
+  { value: "three_plus", label: "3 or more" },
+  { value: "prefer_not_to_say", label: "Prefer not to say" },
+];
+/** As another member reads it. "Prefer not to say" is never shown to others. */
+export const CHILDREN_SHOWN: Record<Exclude<ChildrenCount, "prefer_not_to_say">, string> = {
+  none: "No children",
+  one: "1 child",
+  two: "2 children",
+  three_plus: "3 or more",
+};
+export const WANTS_CHILDREN_LABELS: Record<WantsChildren, string> = {
+  yes: "Yes",
+  no: "No",
+  open: "Open to it",
+  not_sure: "Not sure yet",
 };
 
 export const VISIBILITY_LABELS: Record<FieldVisibility, string> = {

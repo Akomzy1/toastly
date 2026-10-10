@@ -399,6 +399,12 @@ export function PhotosEditor(props: {
         <p className="mx-0.5 text-[13px] leading-[1.6] text-grey-600">
           Only upload photos of yourself, as you are. No filters that change your face, and no AI-generated photos.
         </p>
+        {/* 0044 (owner, 10 October 2026). Reported photos go to a person —
+            nothing is removed automatically. */}
+        <p className="mx-0.5 text-[13px] leading-[1.6] text-grey-600">
+          Please don&rsquo;t upload photos of children on their own. If a child is in a photo with you, consider
+          cropping or covering their face.
+        </p>
 
         <label
           className={cn(

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
-import { FILTER_RELIGIONS, FILTER_TRIBES, type MemberFilters } from "@/lib/filters";
+import { FILTER_RELIGIONS, FILTER_TRIBES, FILTER_WANTS_CHILDREN, type MemberFilters } from "@/lib/filters";
 import { saveFilters } from "@/app/(app)/profile/filters/actions";
 
 /**
@@ -13,6 +13,9 @@ import { saveFilters } from "@/app/(app)/profile/filters/actions";
  *   "Your search": Religion (multi-select, "Any" when none) with "Filters only
  *   change your own search. They never change who sees you." directly under
  *   it; then Tribe. There is no denomination filter, ever.
+ *
+ *   "Do you want children?" (0044) follows Tribe, built the same way —
+ *   NOT IN THE PROTOTYPE, flagged; to follow the prototype when it arrives.
  *
  * Saves on each change. Additions, flagged: the Tribe row opens a
  * multi-select like Religion's (the prototype draws it closed, "Any ›"); each
@@ -83,9 +86,17 @@ function summary(chosen: string[]) {
   return `${chosen.length} chosen`;
 }
 
-export function FiltersScreen({ initial, preview }: { initial: MemberFilters; preview?: { open?: "religion" | "tribe" } }) {
-  const [f, setF] = React.useState<MemberFilters>(initial);
-  const [open, setOpen] = React.useState<"religion" | "tribe" | null>(preview?.open ?? null);
+type Section = "religion" | "tribe" | "wants";
+
+export function FiltersScreen({ initial, preview }: { initial: MemberFilters; preview?: { open?: Section } }) {
+  // A row saved before 0044 has no children answer yet.
+  const [f, setF] = React.useState<MemberFilters>({
+    ...initial,
+    wants_children: initial.wants_children ?? [],
+    wants_children_include_unsaid: initial.wants_children_include_unsaid ?? true,
+  });
+  const [open, setOpen] = React.useState<Section | null>(preview?.open ?? null);
+  const wantsLabel = (v: string) => FILTER_WANTS_CHILDREN.find((w) => w.value === v)?.label ?? v;
   const [error, setError] = React.useState<string | null>(null);
 
   async function update(next: MemberFilters) {
@@ -152,6 +163,37 @@ export function FiltersScreen({ initial, preview }: { initial: MemberFilters; pr
             </div>
           ) : null}
         </div>
+
+        <div className={`grid ${RULE}`}>
+          <button
+            type="button"
+            aria-expanded={open === "wants"}
+            aria-controls="flt-wants-list"
+            onClick={() => setOpen(open === "wants" ? null : "wants")}
+            className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-[15px] py-3 text-left font-sans"
+          >
+            <span className="text-ui font-medium text-ink-900">Do you want children?</span>
+            <span className="flex min-w-0 items-center gap-2 text-right text-[14px] text-grey-600">
+              {summary(f.wants_children.map(wantsLabel))} <Chevron open={open === "wants"} />
+            </span>
+          </button>
+          {open === "wants" ? (
+            <div id="flt-wants-list" role="group" aria-label="Do you want children?" className="grid gap-2 px-[15px] pb-[15px]">
+              {FILTER_WANTS_CHILDREN.map((w) => (
+                <Check
+                  key={w.value}
+                  label={w.label}
+                  on={f.wants_children.includes(w.value)}
+                  onToggle={() => update({ ...f, wants_children: toggle(f.wants_children, w.value) })}
+                />
+              ))}
+              <Unsaid
+                on={f.wants_children_include_unsaid}
+                onToggle={() => update({ ...f, wants_children_include_unsaid: !f.wants_children_include_unsaid })}
+              />
+            </div>
+          ) : null}
+        </div>
       </div>
       {error ? <Notice tone="error">{error}</Notice> : null}
     </div>
@@ -165,7 +207,8 @@ export function FiltersScreen({ initial, preview }: { initial: MemberFilters; pr
 export function FiltersLocked({ offer }: { offer: { plan: string; price: string } }) {
   return (
     <Notice tone="info" title="Filters come with a paid plan">
-      {offer.plan} ({offer.price}) and the plans above it can filter their own six by religion and tribe. Filters only
+      {offer.plan} ({offer.price}) and the plans above it can filter their own six by religion, tribe and whether
+      someone wants children. Filters only
       change your own search — they never change who sees you.
       <span className="mt-1 flex flex-wrap gap-x-4">
         <Link href="/profile/plan" className="flex min-h-11 items-center font-semibold underline">

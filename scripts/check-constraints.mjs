@@ -126,6 +126,8 @@ check("feed query does not filter on optional display-only fields", (s, f) => {
     "languages",
     "history",
     "has_children",
+    "children",
+    "wants_children",
     "profession",
     "education",
   ].filter((c) => new RegExp(`\\b${c}\\b`).test(where));
@@ -226,6 +228,9 @@ const GENOTYPE_DISPLAY_PATH = [
   // can_see_genotype's "all matches" rule, and profile_for handing a
   // permitted viewer the value to display — and nothing else (checked below).
   "supabase/migrations/0033_fields_for_the_viewer.sql",
+  // 0044 redefines profile_for (adding the children fields); genotype stays
+  // exactly as 0033 serves it (checked below).
+  "supabase/migrations/0044_children_fields.sql",
   "lib/genotype.ts",
   "lib/genotype-actions.ts",
   "components/genotype/",
@@ -244,11 +249,13 @@ check("genotype is read only on the display path", (s, f) => {
   return hit ? `found ${hit[0]} outside the display path` : false;
 });
 
-// 0033 is on the display path for two functions only.
-check("0033 touches genotype only in can_see_genotype and profile_for", (s, f) => {
-  if (!/0033_fields_for_the_viewer\.sql$/.test(f.replace(/\\/g, "/"))) return false;
+// 0033 is on the display path for two functions only; 0044 for profile_for only.
+check("0033 and 0044 touch genotype only in can_see_genotype and profile_for", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  const fns = /0033_fields_for_the_viewer\.sql$/.test(p) ? ["can_see_genotype", "profile_for"] : /0044_children_fields\.sql$/.test(p) ? ["profile_for"] : null;
+  if (!fns) return false;
   let rest = s;
-  for (const name of ["can_see_genotype", "profile_for"]) {
+  for (const name of fns) {
     rest = rest.replace(new RegExp(`create or replace function public\\.${name}\\([\\s\\S]*?\\n\\$\\$;`), "");
     rest = rest.replace(new RegExp(`revoke all on function public\\.${name}\\([^;]*;`, "g"), "");
   }
@@ -484,6 +491,37 @@ check("Toastly Help's safety card always names 112 for Nigeria", (s, f) => {
   if (!f.replace(/\\/g, "/").endsWith("components/help/help-panel.tsx")) return false;
   const hits = (s.match(/112 if you’re in Nigeria/g) ?? []).length;
   return hits >= 2 ? false : "the danger line or the self-harm line abroad doesn't name 112 for Nigeria";
+});
+
+// Children (owner, 10 October 2026; 0044). The NUMBER of children is never
+// read by matching or ranking: no SQL function other than profile_for (which
+// applies the owner's visibility) and the 0044 migration itself touches the
+// column, and no TS matching code does either. Whether they want children is
+// read only by profile_for and the self-applied filter. Neither is ever on
+// the feed card. And there are no columns for children's names, ages or
+// details — anywhere.
+check("the number of children is never read by matching or ranking", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const fns = [...stripComments(s, f).matchAll(/create or replace function public\.(\w+)\(([\s\S]*?)\n\$\$;/g)];
+  for (const [, name, body] of fns) {
+    if (name === "profile_for") continue;
+    if (/(?<![\w.])(h|ph|profile_history)\.children\b|\bchildren_count\b/.test(body)) return `${name} reads the number of children`;
+    if (/wants_children/.test(body) && !["profile_for", "passes_own_filters", "my_filters_active"].includes(name)) return `${name} reads wants_children`;
+  }
+  return false;
+});
+
+check("children never appear on the feed card", (s, f) => {
+  const p = f.replace(/\\/g, "/");
+  if (!/app\/\(app\)\/feed\//.test(p) && !/lib\/feed\.ts$/.test(p)) return false;
+  return /\bchildren\b|wants_children|CHILDREN_SHOWN|WANTS_CHILDREN_LABELS/.test(stripComments(s, f)) ? "the feed shows children" : false;
+});
+
+check("no names, ages or details of members' children are stored", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  return /\b(child|children|kid|kids)_(name|names|age|ages|dob|birth\w*|detail\w*|gender|school)\b/i.test(stripComments(s, f))
+    ? "a column for a child's details"
+    : false;
 });
 
 // "Tonight on Toastly" (owner, 10 October 2026): hidden until 500 verified
@@ -991,7 +1029,7 @@ check("agents never read protected attributes, chats or biometrics", (s, f) => {
   if (!isAgentFile(f)) return false;
   const code = stripComments(s, f);
   const sel = [...code.matchAll(/\.select\(\s*"([^"]*)"/g)].map((m) => m[1]).join(",");
-  const hit = /\b(religion|tribe|languages|history|has_children|profession|education|genotype\w*|pool|city|diaspora\w*|date_of_birth|gender|display_name|bio|id_hash|job_id)\b/.exec(sel);
+  const hit = /\b(religion|tribe|languages|history|has_children|children|wants_children|profession|education|genotype\w*|pool|city|diaspora\w*|date_of_birth|gender|display_name|bio|id_hash|job_id)\b/.exec(sel);
   if (hit) return `selects ${hit[1]}`;
   if (/\.from\(\s*"(messages|replies|message_attachments|gist_sessions|threads|profile_history|member_genotypes|genotype\w*|profile_birthdates|phone_identities)"/.test(code)) return "reads a forbidden table";
   if (/image_links|selfie_image|id_number/.test(code)) return "touches selfie or ID data";
@@ -1896,6 +1934,10 @@ check("a filter reads only its owner's filters and only shown values", (s, f) =>
   // Each value is compared only inside the branch that has checked it is shown.
   if (!/when c\.religion_visibility = 'public'[^]*?then c\.religion = any/.test(b)) return "religion is matched without checking it is shown";
   if (!/when c\.tribe_visibility = 'public'[^]*?then lower\(btrim\(c\.tribe\)\)/.test(b)) return "tribe is matched without checking it is shown";
+  // 0044: "Do you want children?" only when shown to everyone.
+  if (/wants_children/.test(b) && !/when h\.wants_children_visibility = 'public'[^]*?then h\.wants_children::text = any/.test(b)) return "wants-children is matched without checking it is shown";
+  // The NUMBER of children is never a filter (\b keeps wants_children apart).
+  if (/\bchildren\b/.test(b)) return "filters on the number of children";
   if (/\b(denomination|genotype|history|has_children|languages|profession|education)\b/.test(b)) return "filters on something outside the §7.1 list";
   return false;
 });
