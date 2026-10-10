@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { capture } from "@/lib/analytics";
 import { dateOfBirthProblem } from "@/lib/age";
 import { parseGender } from "@/lib/gender-options";
+import { safeNext } from "@/lib/safe-next";
 
 export type AuthState = { error?: string } | null;
 
@@ -80,7 +81,9 @@ export async function signIn(
   if (error) return { error: "That email and password don't match an account." };
 
   revalidatePath("/", "layout");
-  redirect("/verify");
+  // Back to where sign-in was asked for (e.g. a ticket link from a staff
+  // alert) — a path on this site only; otherwise the usual start.
+  redirect(safeNext(formData.get("next")));
 }
 
 export async function signOut() {

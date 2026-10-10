@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -19,7 +20,11 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // Signed out: sign in, then straight back here (the alert links land on a ticket).
+  if (!user) {
+    const path = headers().get("x-pathname") ?? "/staff";
+    redirect(`/login?next=${encodeURIComponent(path.startsWith("/staff") ? path : "/staff")}`);
+  }
   const { data: staff } = await supabase.rpc("is_staff");
   if (staff !== true) notFound();
 

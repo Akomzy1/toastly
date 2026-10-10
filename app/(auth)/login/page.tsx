@@ -17,8 +17,10 @@ function Submit() {
   );
 }
 
-export default function LoginPage() {
+export default function LoginPage({ searchParams }: { searchParams?: { next?: string } }) {
   const [state, action] = useFormState(signIn, null);
+  // Where to return after signing in; the server checks it's a path on this site.
+  const next = typeof searchParams?.next === "string" ? searchParams.next : "";
 
   return (
     <>
@@ -32,6 +34,7 @@ export default function LoginPage() {
       <Card className="p-[26px]">
         <form action={action} className="grid gap-5">
           {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
+          {next ? <input type="hidden" name="next" value={next} /> : null}
 
           <Label htmlFor="email">
             Email
