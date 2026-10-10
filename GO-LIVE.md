@@ -573,7 +573,7 @@ machine; the check itself is missing and deliberately not faked.
 |---|---|---|
 | **Paystack** (NGN) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` | **Wired (0024)** — see §0a. Checkout, card renewals, 30-day passes, coin part-payment, webhook and return-page settlement. Off (with an in-app notice) while the key is unset, or a live key off production. |
 | **Stripe** (USD) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | **Wired (0024)** — see §0a. Diaspora subscriptions and the dollar coin pack. |
-| **Vercel Cron** | `CRON_SECRET` | Plan-ending reminder emails (daily); Toastly Help urgent re-alerts (every 10 minutes) and the open-ticket digest (08:00 Lagos). Refuses every request while unset. |
+| **Vercel Cron** | `CRON_SECRET` | Plan-ending reminder emails (daily); the Toastly Help open-ticket digest (08:00 Lagos). The urgent re-alert is called by the database (pg_cron + pg_net) with the same secret, stored in Vault as `cron_secret`. Refuses every request while unset. |
 
 **Webhook URLs to register with each provider** — on `www`, because the bare
 domain answers with a redirect and payment providers don't follow redirects
@@ -651,6 +651,14 @@ reads `support_transcripts = 30` days.
     account ("I don't feel safe") — the phone gets an SMS with the ticket
     number and link only; open it in the console within the hour, or expect
     exactly one re-alert.
+  - **The re-alert runs in the database** (Vercel is on Hobby: crons at most
+    daily). 0042 schedules pg_cron job `toastly-support-realert` every 10
+    minutes and tries to enable **pg_net**; if the apply warns that it
+    couldn't, enable pg_net in Supabase → Database → Extensions. Then, in the
+    Supabase SQL editor (never in a chat), store the **same value as Vercel's
+    `CRON_SECRET`**: `select vault.create_secret('<CRON_SECRET>', 'cron_secret');`
+    Without it the job logs a warning and no re-alert is sent (the first
+    alert still goes at once).
   - **Review the crisis lines** in `lib/crisis-lines.ts`. None is shown until
     a person confirms the number on the service's own site and fills in
     `reviewedBy` and `reviewedOn`. Until then a member who mentions
@@ -661,10 +669,9 @@ reads `support_transcripts = 30` days.
     members, Gist sessions that connected this week, couples in Couple Mode).
     Home rebuilds hourly, so it appears within the hour of the 500th — no
     deploy. The threshold is `site_config` 'tonight_min_verified_members'.
-  - **Vercel Cron**: `/api/cron/support-alerts` runs every 10 minutes (the
-    one re-alert) and `/api/cron/support-digest` at 07:00 UTC = 08:00 Lagos.
-    A 10-minute schedule needs a Vercel Pro team; on Hobby the deploy is
-    refused, so say so before merging.
+  - **Vercel Cron** (Hobby: daily only, and Vercel may run it any time
+    within the scheduled hour): `/api/cron/support-digest` at 07:00 UTC, so
+    the digest lands between 08:00 and 09:00 Lagos.
 - **Run evals in Pidgin and Nigerian English** before relying on the
   assistant at volume. PRD §5.9 makes that the condition for staying
   Claude-only.

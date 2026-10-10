@@ -398,6 +398,58 @@ $$;
 revoke all on function public.support_tickets_to_realert() from public, anon, authenticated;
 grant execute on function public.support_tickets_to_realert() to service_role;
 
+-- The re-alert clock runs in the DATABASE (pg_cron, every 10 minutes), not in
+-- Vercel Cron: on Vercel's Hobby plan a cron runs at most once a day (owner,
+-- 10 October 2026: no Pro for now). When an urgent ticket is past its reply
+-- time and unopened, this calls the app's /api/cron/support-alerts through
+-- pg_net with the CRON_SECRET kept in Vault ('cron_secret'); the route sends
+-- the SMS and email and stamps the ticket, so it is re-alerted once. With
+-- nothing due it does nothing. Returns what it did, for the logs and tests.
+create or replace function public.support_realert_ping()
+returns text language plpgsql security definer set search_path = public as $$
+declare
+  v_secret text;
+  v_base text;
+begin
+  if not exists (
+    select 1 from support_tickets t
+     where t.urgency = 'urgent' and t.status <> 'resolved'
+       and t.first_opened_at is null and t.realerted_at is null
+       and t.sla_due_at < now()
+  ) then
+    return 'nothing due';
+  end if;
+  if to_regprocedure('net.http_get(text,jsonb,jsonb,integer)') is null then
+    raise warning 'support_realert_ping: pg_net is not enabled; urgent re-alert not sent';
+    return 'no pg_net';
+  end if;
+  select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'cron_secret';
+  if v_secret is null then
+    raise warning 'support_realert_ping: Vault secret cron_secret is not set; urgent re-alert not sent';
+    return 'no secret';
+  end if;
+  select decrypted_secret into v_base from vault.decrypted_secrets where name = 'site_url';
+  v_base := rtrim(coalesce(v_base, 'https://www.trytoastly.com'), '/');
+  execute 'select net.http_get($1, ''{}''::jsonb, $2, 10000)'
+    using v_base || '/api/cron/support-alerts', jsonb_build_object('Authorization', 'Bearer ' || v_secret);
+  return 'called';
+end;
+$$;
+revoke all on function public.support_realert_ping() from public, anon, authenticated;
+
+do $$
+begin
+  begin
+    create extension if not exists pg_net;
+  exception when others then
+    raise warning 'pg_net could not be enabled here (%); enable it in Supabase → Database → Extensions', sqlerrm;
+  end;
+  if to_regclass('cron.job') is not null then
+    perform cron.unschedule('toastly-support-realert') where exists (select 1 from cron.job where jobname = 'toastly-support-realert');
+    perform cron.schedule('toastly-support-realert', '*/10 * * * *', 'select public.support_realert_ping()');
+  end if;
+end $$;
+
 -- The morning digest: every ticket waiting on the team, oldest first.
 create or replace function public.support_open_digest()
 returns table (reference text, urgency text, created_at timestamptz, opened boolean)

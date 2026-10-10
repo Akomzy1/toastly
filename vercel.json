@@ -1,7 +1,6 @@
 {
   "crons": [
     { "path": "/api/cron/plan-reminders", "schedule": "0 8 * * *" },
-    { "path": "/api/cron/support-alerts", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/support-digest", "schedule": "0 7 * * *" }
   ]
 }

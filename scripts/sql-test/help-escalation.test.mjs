@@ -213,6 +213,46 @@ test("an urgent ticket nobody opens within its reply time is re-alerted exactly 
   void notYet;
 });
 
+test("the database's 10-minute job calls the re-alert route only when an urgent ticket is due", async () => {
+  const { db, me, member, staff, conversation, file } = await setup();
+  // The job is scheduled in the database (Vercel Hobby runs crons daily at most).
+  const job = (await db.query("select schedule, command from cron.job where jobname = 'toastly-support-realert'")).rows[0];
+  assert.deepEqual(job, { schedule: "*/10 * * * *", command: "select public.support_realert_ping()" });
+
+  // A stand-in for pg_net that records what would be requested.
+  await db.exec(`
+    create schema if not exists net;
+    create table net.calls (url text, headers jsonb);
+    create function net.http_get(url text, params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds integer default 5000)
+    returns bigint language sql as $f$ insert into net.calls values (url, headers); select 1::bigint; $f$;
+  `);
+  const ping = async () => (await db.query("select support_realert_ping() as r")).rows[0].r;
+  const calls = async () => (await db.query("select url, headers from net.calls")).rows;
+
+  const amaka = await member("Amaka");
+  const s = await staff();
+  assert.equal(await ping(), "nothing due");
+  const normal = await file(amaka, await conversation(amaka), "refund", "normal");
+  const urgent = await file(amaka, await conversation(amaka), "threat", "urgent", "safety");
+  await db.query("update support_tickets set sla_due_at = now() - interval '1 minute' where id = $1", [normal.id]);
+  assert.equal(await ping(), "nothing due", "a normal ticket past its time doesn't page anyone; the urgent one isn't due yet");
+
+  await db.query("update support_tickets set sla_due_at = now() - interval '1 minute' where id = $1", [urgent.id]);
+  assert.equal(await ping(), "no secret", "without the Vault secret it warns and sends nothing");
+  assert.deepEqual(await calls(), []);
+
+  await db.query("select vault.create_secret('s3cret-value', 'cron_secret')");
+  assert.equal(await ping(), "called");
+  assert.deepEqual(await calls(), [
+    { url: "https://www.trytoastly.com/api/cron/support-alerts", headers: { Authorization: "Bearer s3cret-value" } },
+  ]);
+
+  // Once the route has stamped it (or staff opened it), the job goes quiet.
+  await me(s, "select staff_support_ticket($1)", [urgent.reference]);
+  assert.equal(await ping(), "nothing due");
+  await assert.rejects(me(amaka, "select support_realert_ping()"), /permission denied/);
+});
+
 test("the morning digest: open tickets, oldest first, numbers and urgency only", async () => {
   const { db, me, svc, member, staff, conversation, file } = await setup();
   const amaka = await member("Amaka");

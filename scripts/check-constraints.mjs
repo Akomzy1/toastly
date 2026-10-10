@@ -458,6 +458,19 @@ check("the Support tab reads only Toastly Help's own records", (s, f) => {
   return false;
 });
 
+// Vercel Hobby (owner, 10 October 2026: no Pro for now) runs a cron at most
+// once a day, and refuses a deploy that asks for more. Anything more frequent
+// runs in the database (pg_cron), like the urgent re-alert (0042).
+{
+  const name = "Vercel crons run at most once a day (Hobby plan)";
+  const crons = JSON.parse(fs.readFileSync("vercel.json", "utf8")).crons ?? [];
+  const hits = crons
+    .filter((c) => !/^\d{1,2} \d{1,2} \* \* [*\d,-]+$/.test(c.schedule))
+    .map((c) => `vercel.json — ${c.path} runs "${c.schedule}", more often than daily`);
+  if (hits.length) failures.push({ name, hits });
+  console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
+}
+
 // "Tonight on Toastly" (owner, 10 October 2026): hidden until 500 verified
 // members, then live counts only. The card renders only what
 // getTonightStats() returns (home_live_stats, 0043) — never a typed-in figure.

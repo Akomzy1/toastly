@@ -5,7 +5,7 @@ import { sendDigest } from "@/lib/support-alerts";
 
 /**
  * Daily at 08:00 Lagos time (07:00 UTC in vercel.json; Nigeria has no
- * daylight saving): every open Toastly Help ticket, oldest first, to the
+ * daylight saving; on Vercel Hobby it may run any time in that hour): every open Toastly Help ticket, oldest first, to the
  * support inbox. Ticket numbers, urgency and console links only.
  */
 export const dynamic = "force-dynamic";
