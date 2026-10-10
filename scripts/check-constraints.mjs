@@ -471,6 +471,13 @@ check("the Support tab reads only Toastly Help's own records", (s, f) => {
   console.log(`${hits.length ? "FAIL" : "ok  "}  ${name}`);
 }
 
+// The company (owner, 10 October 2026): "Toastly, operated by Ariya Planner
+// Ltd" — the name in privacy policy section 1. "Toastly Technologies Ltd"
+// doesn't exist and must not appear anywhere.
+check("the operator is Ariya Planner Ltd, never Toastly Technologies", (s) =>
+  /Toastly\s+Technologies/i.test(s) ? "names Toastly Technologies" : false,
+);
+
 // "Tonight on Toastly" (owner, 10 October 2026): hidden until 500 verified
 // members, then live counts only. The card renders only what
 // getTonightStats() returns (home_live_stats, 0043) — never a typed-in figure.
