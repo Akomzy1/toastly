@@ -8,11 +8,7 @@ import { VIDEO_COMING, type FeatureFlags } from "@/lib/features";
  * CLAUDE.md the PRD wording ships instead; each case is marked CORRECTED.
  */
 
-export const heroStats = [
-  { label: "Verified members", value: "42,180" },
-  { label: "Gist sessions this week", value: "9,340" },
-  { label: "Couples in Couple Mode", value: "1,206" },
-];
+// "Tonight on Toastly" figures are live counts now (lib/home-stats.ts, 0043).
 
 export const verifySteps = [
   {

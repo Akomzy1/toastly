@@ -643,6 +643,11 @@ reads `support_transcripts = 30` days.
   are rows in `support_tickets`, readable in the Supabase table editor. The
   member is told "You'll get a reply by email", so someone must answer
   within the 30-day retention window, after which their words are cleared.
+- **"Tonight on Toastly" (migration 0043).** The Home hero card is
+  hidden until 500 Verified Real members, then shows live counts (verified
+  members, Gist sessions that connected this week, couples in Couple Mode).
+  Home rebuilds hourly, so it appears within the hour of the 500th — no
+  deploy. The threshold is `site_config` 'tonight_min_verified_members'.
 - **Run evals in Pidgin and Nigerian English** before relying on the
   assistant at volume. PRD §5.9 makes that the condition for staying
   Claude-only.

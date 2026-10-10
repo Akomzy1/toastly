@@ -15,7 +15,6 @@ import {
   coinCards,
   coinNote,
   gistPrompts,
-  heroStats,
   journey,
   posts,
   profileChips,
@@ -28,10 +27,15 @@ import {
   gistPointsFor,
 } from "@/lib/home-content";
 import { featureFlags } from "@/lib/features";
+import { getTonightStats } from "@/lib/home-stats";
 
 // Video lines follow VIDEO_GIST_ENABLED (lib/features.ts).
 const flags = featureFlags();
 const steps = stepsFor(flags);
+
+// Rebuilt hourly, so "Tonight on Toastly" appears by itself once the
+// platform reaches 500 verified members (0043), and its counts stay current.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   // `absolute` bypasses the root "%s · Toastly" template — without it the
@@ -54,7 +58,8 @@ const SPLIT_400 =
  * Coin deposit, How it works, Matching, Optional fields, Who it's for, PWA,
  * CTA mid, Diaspora, Journey, AI pledge, Testimonials, Blog, Final CTA.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const tonight = await getTonightStats();
   return (
     <>
       {/* 1 — Hero. The video is the prototype's; it stays. */}
@@ -94,12 +99,15 @@ export default function HomePage() {
             </p>
           </Reveal>
 
-          {/* 2 — Tonight on Toastly: a glass card inside the hero. */}
+          {/* 2 — Tonight on Toastly: a glass card inside the hero. Hidden
+              until 500 verified members (owner, 10 October 2026); then live
+              counts only — never typed-in figures. */}
+          {tonight ? (
           <Reveal>
             <div className="grid gap-[18px] rounded-xl border border-champagne/[.24] bg-green-700/[.55] p-[26px] backdrop-blur-[6px]">
               <Eyebrow tone="champagne">Tonight on Toastly</Eyebrow>
               <dl className="grid gap-[18px]">
-                {heroStats.map((s) => (
+                {tonight.map((s) => (
                   <div
                     key={s.label}
                     className="flex items-baseline justify-between gap-5 border-b border-white/10 pb-3.5"
@@ -114,11 +122,12 @@ export default function HomePage() {
                 ))}
               </dl>
               <p className="text-caption font-normal tracking-normal text-white/50">
-                Numbers refresh weekly. No bots, no imported profiles, no ghost
-                accounts.
+                Live counts, updated every hour. No bots, no imported
+                profiles, no ghost accounts.
               </p>
             </div>
           </Reveal>
+          ) : null}
         </div>
       </section>
 
