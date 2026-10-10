@@ -29,7 +29,8 @@ export function organizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Toastly",
-    legalName: "Toastly Technologies Ltd",
+    // The company behind Toastly (privacy policy section 1).
+    legalName: "Ariya Planner Ltd",
     url: SITE_URL,
     logo: `${SITE_URL}/icons/icon-512.png`,
     image: `${SITE_URL}/og-1200x630.png`,

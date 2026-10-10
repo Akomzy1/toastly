@@ -97,8 +97,8 @@ export function SiteFooter() {
 
       <div className="mx-auto flex max-w-container flex-wrap items-center justify-between gap-4 border-t border-white/[.08] px-5 py-6 md:px-10">
         <p className="text-nav text-white/60">
-          &copy; {new Date().getFullYear()} Toastly Technologies Ltd. Lagos,
-          Nigeria.
+          &copy; {new Date().getFullYear()} Toastly, operated by Ariya Planner
+          Ltd. Lagos, Nigeria.
         </p>
         <ul className="flex list-none flex-wrap gap-x-5 p-0">
           {LEGAL.map((l) => (

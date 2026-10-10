@@ -24,7 +24,7 @@ export function llmsBody(f: FeatureFlags): string {
 
 > A verification-first dating-to-marriage platform for Nigerians — Nigeria-domestic-led, with a bridge for Nigerians in the diaspora. Every profile is verified before it goes live, matching is prompt-based with no swipe mechanic, conversations start as structured voice sessions, and the path continues through Couple Mode into wedding planning with AriyaPlanner.
 
-Built in Lagos by Toastly Technologies Ltd. Installs from the browser as a ~4MB progressive web app with no app store account, because most members are on low-end Android over metered data.
+Built in Lagos; Toastly is operated by Ariya Planner Ltd. Installs from the browser as a ~4MB progressive web app with no app store account, because most members are on low-end Android over metered data.
 
 ## How it actually works
 
