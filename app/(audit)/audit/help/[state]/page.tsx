@@ -120,6 +120,12 @@ const STATES: Record<string, { items: HelpItem[]; replies?: TeamReply[] }> = {
       { kind: "safety", selfHarm: true, crisis: [], emergency: EMERGENCY_NG, reference: "TH-40119", sla: "A person from our team will reply within 1 hour." },
     ],
   },
+  "safety-abroad": {
+    items: [
+      { kind: "member", text: "I don't want to be alive anymore." },
+      { kind: "safety", selfHarm: true, crisis: [], emergency: [{ label: "Emergency", number: "999" }], reference: "TH-55147", sla: "A person from our team will reply within 1 hour." },
+    ],
+  },
   replies: { items: [], replies: REPLIES },
 };
 

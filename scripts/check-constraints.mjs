@@ -478,6 +478,14 @@ check("the operator is Ariya Planner Ltd, never Toastly Technologies", (s) =>
   /Toastly\s+Technologies/i.test(s) ? "names Toastly Technologies" : false,
 );
 
+// Toastly Help's safety card always names Nigeria's 112 (owner, 10 October
+// 2026): a member whose profile says abroad may be in Nigeria right now.
+check("Toastly Help's safety card always names 112 for Nigeria", (s, f) => {
+  if (!f.replace(/\\/g, "/").endsWith("components/help/help-panel.tsx")) return false;
+  const hits = (s.match(/112 if you’re in Nigeria/g) ?? []).length;
+  return hits >= 2 ? false : "the danger line or the self-harm line abroad doesn't name 112 for Nigeria";
+});
+
 // "Tonight on Toastly" (owner, 10 October 2026): hidden until 500 verified
 // members, then live counts only. The card renders only what
 // getTonightStats() returns (home_live_stats, 0043) — never a typed-in figure.

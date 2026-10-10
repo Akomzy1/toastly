@@ -146,6 +146,7 @@ const ROUTES = [
   { route: "/audit/help/self-harm", label: "Help · self-harm, crisis lines" },
   { route: "/audit/help/self-harm-unreviewed", label: "Help · self-harm, no reviewed lines" },
   { route: "/audit/help/replies", label: "Help · reply from the team" },
+  { route: "/audit/help/safety-abroad", label: "Help · safety, member abroad (999 and 112)" },
   { route: "/audit/answer-mirror/before", label: "Answer Mirror · before" },
   { route: "/audit/answer-mirror/great", label: "Answer Mirror · great" },
   { route: "/audit/answer-mirror/specific", label: "Answer Mirror · specific" },

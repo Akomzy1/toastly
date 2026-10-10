@@ -378,12 +378,16 @@ export function HelpPanel({
               );
             }
             if (item.kind === "safety") {
+              // Nigeria's 112 is always named (owner, 10 October 2026): a
+              // member abroad by profile may be in Nigeria right now.
               const ng = item.emergency.some((n) => n.number === "112");
+              const local = item.emergency.length ? item.emergency[0].number : "your local emergency number";
               const emergencyLine = ng
                 ? "If you’re in danger right now, call 112."
-                : item.emergency.length
-                  ? `If you’re in danger right now, call ${item.emergency[0].number}.`
-                  : "If you’re in danger right now, call your local emergency number.";
+                : `If you’re in danger right now, call ${local} — or 112 if you’re in Nigeria.`;
+              const crisisCall = ng
+                ? item.emergency.map((n) => n.number).join(" or ")
+                : `${local} (112 if you’re in Nigeria)`;
               return (
                 <div key={i} className="grid gap-1.5">
                   <p className={LABEL}>Toastly Help</p>
@@ -407,8 +411,7 @@ export function HelpPanel({
                           </>
                         ) : (
                           <p className={PARA}>
-                            If you might act on these feelings, call{" "}
-                            {item.emergency.length ? item.emergency.map((n) => n.number).join(" or ") : "your local emergency number"} now, or
+                            If you might act on these feelings, call {crisisCall} now, or
                             go to the nearest hospital. If you can, tell someone you trust how you&rsquo;re feeling.
                           </p>
                         )}
