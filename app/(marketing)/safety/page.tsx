@@ -43,6 +43,26 @@ export default function SafetyPage() {
               exists. Trust is not a feature we added — it is the thing the app
               is built out of.
             </p>
+            {/* Emergency notice (owner, 10 October 2026). NOT IN THE
+                PROTOTYPE (safety.slim.html) — flagged; built from the hero's
+                on-dark card and button. 112 is Nigeria's emergency number. */}
+            <div
+              role="note"
+              aria-labelledby="emergency-title"
+              className="mt-3 grid gap-3 rounded-xl border border-champagne/[.34] bg-green-700/[.55] p-5"
+            >
+              <p id="emergency-title" className="text-nav-lg font-semibold text-white">
+                In immediate danger?
+              </p>
+              <p className="text-ui text-white/[.82]">
+                Call 112 if you&rsquo;re in Nigeria, or your local emergency
+                number if you&rsquo;re abroad. You can also go to the nearest
+                police station. Your safety comes first.
+              </p>
+              <Button variant="onDarkSecondary" asChild className="justify-self-start">
+                <a href="tel:112">Call 112</a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
