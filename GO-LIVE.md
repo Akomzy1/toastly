@@ -644,9 +644,11 @@ reads `support_transcripts = 30` days.
   the review console's **Support** tab (`/staff/support`), urgent first.
   Staff reply there; the member gets it in Toastly Help, as an in-app notice
   and by email. Before launch:
-  - **Confirm the reply times** the member is promised: urgent 60 minutes,
-    normal 24 hours (`support_config`: `sla_urgent_minutes`,
-    `sla_normal_minutes`; change with an update, no deploy).
+  - **Reply times (confirmed 10 October 2026):** urgent 1 hour, normal 24
+    hours — what the member is promised, so staff must keep them: someone
+    answers the on-call SMS within the hour, day or night, and checks the
+    Support tab daily. Change them in `support_config`
+    (`sla_urgent_minutes`, `sla_normal_minutes`) with an update, no deploy.
   - **Set `ONCALL_PHONE`** and send a test urgent ticket from a test
     account ("I don't feel safe") — the phone gets an SMS with the ticket
     number and link only; open it in the console within the hour, or expect
