@@ -9,6 +9,7 @@ import { respondToInvite } from "@/app/(app)/gist/actions";
 import { Notice } from "@/components/ui/notice";
 import { SafetyPill } from "@/components/app/nav";
 import { ReportReasons } from "@/components/safety/report-reasons";
+import { NotForMe } from "@/components/feed/not-for-me";
 import { originSub, type FullProfileView } from "@/lib/full-profile-view";
 
 /**
@@ -294,6 +295,15 @@ export function FullProfile({
                 ))}
               </dl>
             </div>
+          </div>
+        ) : null}
+
+        {/* "Not for me" (PRD §5.2.5): a quiet text action, only for someone in
+            the member's six. Separate from Block and Report in the ⋯ menu.
+            Plain version until the design arrives. */}
+        {view.origin === "six" ? (
+          <div className="grid justify-items-start px-0.5">
+            <NotForMe memberId={view.id} name={view.first} />
           </div>
         ) : null}
       </div>

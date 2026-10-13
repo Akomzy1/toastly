@@ -2113,7 +2113,7 @@ check("a plan is never a score input in today's six", (s, f) => {
   if (!/function public\._feed_pick/.test(raw)) return false;
   const bad = raw.split(/\r?\n/).filter((l) => /-- term:/.test(l))
     .map((l) => l.replace(/--.*$/, ""))
-    .filter((l) => /tier|entitle|subscription|premium|pool|diaspora|religion|tribe|language|history|child|genotype|profession|education|photo/i.test(l));
+    .filter((l) => /tier|entitle|subscription|premium|pool|diaspora|country|religion|tribe|language|history|child|genotype|profession|education|photo/i.test(l));
   return bad.length ? `a score term reads ${bad[0].trim().slice(0, 80)}` : false;
 });
 
@@ -2127,6 +2127,40 @@ check("today's six keeps its mutual gender and age rules", (s, f) => {
     if (!new RegExp(`-- rule:${r}(?![\\w])`).test(body)) return `the rule:${r} line is missing`;
   }
   return false;
+});
+
+// When someone was last active (the presence heartbeat) is used to pick the
+// six and, as a yes/no, for "online now" inside an accepted Gist — and nowhere
+// else. No app code touches the table; only these functions read it.
+check("last-active is read only by the heartbeat, the Gist online-now yes/no and the feed selection", (s, f) => {
+  if (f.endsWith(".sql")) {
+    const allowed = /^(touch_presence|gist_partner_online|_feed_pick)$/;
+    const bad = [];
+    for (const m of s.matchAll(/create or replace function public\.(\w+)[\s\S]*?\$\$([\s\S]*?)\$\$/g)) {
+      if (/\bmember_presence\b/.test(m[2]) && !allowed.test(m[1])) bad.push(m[1]);
+    }
+    return bad.length ? `reads member_presence in ${bad.join(", ")}` : false;
+  }
+  return /\bmember_presence\b/.test(s) ? "app code reads when someone was last active" : false;
+});
+
+// "Not for me" (PRD §5.2.5): the passes are the passing member's own.
+check("a pass is readable and deletable only by the member who made it", (s, f) => {
+  if (!f.endsWith(".sql") || !/on public\.feed_passes/.test(s)) return false;
+  const policies = [...s.matchAll(/create policy "[^"]*" on public\.feed_passes for (\w+)[\s\S]*?;/g)];
+  for (const [text, kind] of policies) {
+    if (!/select|delete/.test(kind)) return `a ${kind} policy on feed_passes`;
+    if (!/auth\.uid\(\) = profile_id/.test(text)) return "a feed_passes policy that isn't the owner's";
+  }
+  return policies.length ? false : "feed_passes has no owner policy";
+});
+
+check("Not for me reads no plan and is no swipe", (s, f) => {
+  const n = f.replace(/\\/g, "/");
+  if (!/lib\/pass-actions\.ts$|components\/feed\/(not-for-me|passed-list)\.tsx$/.test(n)) return false;
+  return /current_tier|capabilities\(|entitlement|\btier\b|onTouch|onPointer|onDrag|swipe/i.test(stripStrings(s))
+    ? "reads a plan or listens for a swipe"
+    : false;
 });
 
 console.log("");

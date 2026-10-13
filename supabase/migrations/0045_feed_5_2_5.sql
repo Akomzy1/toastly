@@ -36,8 +36,7 @@ insert into public.feed_config (key, value, note) values
   ('w_intent_step1',     0.3, 'One step apart on casual / open to serious / serious / marriage-minded.'),
   ('w_intent_step2',     0,   'Two steps apart.'),
   ('w_intent_opposite', -0.3, 'Opposite ends. Nothing is added when either side has no intent set.'),
-  ('w_city',             0.4, 'Same city.'),
-  ('w_country',          0,   'Same country, when not the same city. SEEDED AT 0: +0.1 would rank members abroad below members in Nigeria, i.e. diaspora status as a score input (PRD §5.6). Set to 0.1 only on an explicit ruling.'),
+  ('w_city',             0.4, 'Same city. There is deliberately NO same-country term: it would rank members abroad below members in Nigeria, i.e. diaspora status as a score input (PRD §5.2.5, §5.6; decided 13 October 2026).'),
   ('active_hot_days',    2,   'Seen within this many days ...'),
   ('w_active_hot',       0.3, '... earns this.'),
   ('active_warm_days',   7,   'Seen within this many days ...'),
@@ -111,6 +110,15 @@ alter table public.feed_shown enable row level security;
 alter table public.feed_passes enable row level security;
 alter table public.feed_state enable row level security;
 revoke all on public.feed_shown, public.feed_passes, public.feed_state from anon, authenticated;
+
+-- A pass belongs to the member who made it. Only they can read or delete their
+-- own rows; nobody can insert directly (pass_on is the only way in), and the
+-- person passed on can never see that a row exists.
+grant select, delete on public.feed_passes to authenticated;
+drop policy if exists "own passes readable" on public.feed_passes;
+create policy "own passes readable" on public.feed_passes for select using (auth.uid() = profile_id);
+drop policy if exists "own passes deletable" on public.feed_passes;
+create policy "own passes deletable" on public.feed_passes for delete using (auth.uid() = profile_id);
 
 create index if not exists daily_feed_candidate_day_idx on public.daily_feed (candidate_id, feed_date);
 create index if not exists replies_pair_idx on public.replies (sender_id, recipient_id);
@@ -202,7 +210,6 @@ declare
   w_two numeric := _fc('w_intent_step2');
   w_opp numeric := _fc('w_intent_opposite');
   w_city numeric := _fc('w_city');
-  w_country numeric := _fc('w_country');
   d_hot numeric := _fc('active_hot_days');
   w_hot numeric := _fc('w_active_hot');
   d_warm numeric := _fc('active_warm_days');
@@ -242,7 +249,6 @@ begin
   with cheap as materialized (
     select p.id,
            p.city as c_city,
-           p.country_code as c_country,
            p.first_live_at as c_first_live,
            _intent_rank(p.intent) as c_intent,
            mp.seen_at as c_seen,
@@ -295,7 +301,7 @@ begin
          (
            case when v_intent is null or c.c_intent is null then 0
                 else case abs(c.c_intent - v_intent) when 0 then w_same when 1 then w_one when 2 then w_two else w_opp end end  -- term:intent
-           + case when v_city is not null and lower(btrim(c.c_city)) = lower(btrim(v_city)) then w_city when c.c_country = v_country then w_country else 0 end  -- term:place
+           + case when v_city is not null and lower(btrim(c.c_city)) = lower(btrim(v_city)) then w_city else 0 end  -- term:place
            + case when c.c_seen >= p_now - make_interval(days => d_hot::integer) then w_hot when c.c_seen >= p_now - make_interval(days => d_warm::integer) then w_warm else 0 end  -- term:active
            + least(c.c_answers, k_prompt) * w_prompt  -- term:prompts
            + case when c.c_first_live >= p_now - make_interval(days => d_new::integer) then w_new else 0 end  -- term:new_member
@@ -435,3 +441,75 @@ end;
 $$;
 revoke all on function public.pass_on(uuid) from public, anon;
 grant execute on function public.pass_on(uuid) to authenticated;
+
+-- Settings → "People you passed on". Only the caller's own passes; a name and a
+-- city (what a card already showed), never anything else about the person.
+create or replace function public.my_passes()
+returns table (candidate_id uuid, display_name text, city text, passed_at timestamptz)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select fp.candidate_id, p.display_name, p.city, fp.passed_at
+    from feed_passes fp
+    join profiles p on p.id = fp.candidate_id
+   where fp.profile_id = auth.uid()
+   order by fp.passed_at desc;
+$$;
+revoke all on function public.my_passes() from public, anon;
+grant execute on function public.my_passes() to authenticated;
+
+-- "Bring back" (and the ten-second undo): the person may appear in a future six
+-- again, after the usual cool-down. Nothing tells them either way.
+create or replace function public.bring_back(p_candidate uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from feed_passes where profile_id = auth.uid() and candidate_id = p_candidate;
+$$;
+revoke all on function public.bring_back(uuid) from public, anon;
+grant execute on function public.bring_back(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 7. Staff: how many Gist requests women receive (PRD §5.2.5, monitoring)
+-- ---------------------------------------------------------------------------
+--
+-- Women get about 2.4x the exposure of men (the simulation), so they may
+-- receive more Gist requests. This lets staff see whether that becomes a
+-- burden: invitations received per woman, per day. Counts only; no names, no
+-- message text. Staff only.
+
+create or replace function public.staff_gist_requests_per_woman(p_days integer default 30)
+returns table (day date, women integer, requests integer, per_woman numeric, max_for_one_woman integer)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  perform _require_staff();
+  return query
+  with days as (
+    select d::date as day from generate_series(current_date - (greatest(p_days, 1) - 1), current_date, interval '1 day') d
+  ), women as (
+    select count(*)::integer as n from profiles where gender = 'woman' and first_live_at is not null
+  ), per as (
+    select g.created_at::date as day, g.invitee_id, count(*)::integer as n
+      from gist_sessions g join profiles p on p.id = g.invitee_id and p.gender = 'woman'
+     where g.created_at::date >= current_date - (greatest(p_days, 1) - 1)
+     group by 1, 2
+  )
+  select d.day,
+         (select n from women),
+         coalesce(sum(per.n), 0)::integer,
+         round(coalesce(sum(per.n), 0)::numeric / nullif((select n from women), 0), 2),
+         coalesce(max(per.n), 0)::integer
+    from days d left join per on per.day = d.day
+   group by d.day order by d.day desc;
+end;
+$$;
+revoke all on function public.staff_gist_requests_per_woman(integer) from public, anon;
+grant execute on function public.staff_gist_requests_per_woman(integer) to authenticated;

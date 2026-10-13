@@ -41,6 +41,14 @@ export function SettingsList({ phone, home, abroad }: { phone: string | null; ho
           </span>
           {chevron}
         </Link>
+        {/* PRD §5.2.5: plain version until the design arrives. */}
+        <Link href="/profile/passes" className={`${ROW} border-t border-ink-900/10 hover:bg-paper`}>
+          <span className="grid min-w-0 gap-0.5">
+            <span className="text-[15px] font-medium text-ink-900">People you passed on</span>
+            <span className="text-[13.5px] leading-[1.45] text-grey-600">See them again, or leave it</span>
+          </span>
+          {chevron}
+        </Link>
       </div>
     </div>
   );

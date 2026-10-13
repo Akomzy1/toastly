@@ -29,7 +29,7 @@ Built in Lagos; Toastly is operated by Ariya Planner Ltd. Installs from the brow
 ## How it actually works
 
 - **Verification is the front door, not a badge.** Phone plus a three-second selfie liveness check, mandatory for every account, before the profile is visible to anyone. NIN or BVN is optional and adds a second ring to the seal; the number itself is never displayed.
-- **No swiping.** The feed is six people a day, ranked on prompt answers, intentions and location. Six is fixed on every tier — paying can improve how well those six are matched to you, it never buys more of them, and nothing a member buys inserts them into someone else's feed.
+- **No swiping.** Every member gets six people a day, chosen by the same rules. Paid plans add filters. Six is fixed on every tier, and nothing a member buys inserts them into someone else's feed.
 - **Gist sessions are voice-first.** A scheduled call with guided prompts drawn from both profiles, 18 minutes by default. ${f.videoGist ? "Live video unlocks on Premium Plus, by mutual consent." : "Live video is coming to Premium Plus."}
 - **Dates carry a mutual stake.** Both people put down a few coins when a date is confirmed; both showing up returns both stakes, and cancelling with notice costs nothing. It is framed as a promise, not a penalty.
 - **Couple Mode and the AriyaPlanner handoff are free on every tier, including the free one.** They are not an upsell.

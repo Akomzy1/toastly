@@ -75,7 +75,7 @@ export function MatchCard({
 
       {/* Report and block, on every card, for every member. This component
           takes no plan and must never be given one. */}
-      <SafetyActions memberId={candidate.id} name={candidate.display_name} />
+      <SafetyActions memberId={candidate.id} name={candidate.display_name} pass />
     </Card>
   );
 }

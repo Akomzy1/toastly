@@ -244,7 +244,7 @@ const WHY_PAY = [
   },
   {
     title: "Nobody buys your place in the six",
-    body: "The feed is six people a day on every tier. Paying can improve how well those six are matched to you — it never buys you more of them.",
+    body: "The feed is six people a day on every tier, chosen by the same rules. Paid plans add your own filters — they never add people or move anyone up.",
   },
 ];
 

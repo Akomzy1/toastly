@@ -35,8 +35,8 @@ export default function AuditFeedFallback() {
 
       <Notice tone="info">
         Everybody gets {DAILY_MATCH_COUNT} a day — free or paid, the number
-        never changes. Paying improves how well the {DAILY_MATCH_COUNT} are
-        matched to you, never how many there are.
+        never changes. Paid plans let you filter your six. They never add people
+        or move anyone up.
       </Notice>
 
       <FeedFallbackNotice city="London" />

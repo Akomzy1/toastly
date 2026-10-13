@@ -201,7 +201,7 @@ test("you can only pass on someone in today's six", async () => {
   await assert.rejects(as(db, viewer, (tx) => tx.query("select pass_on($1)", [stranger])), /today's six/);
   await as(db, viewer, (tx) => tx.query("select pass_on($1)", [inSix]));
   // Nobody else can read the pass.
-  await assert.rejects(as(db, inSix, (tx) => tx.query("select * from feed_passes")), /permission denied/);
+  assert.equal((await as(db, inSix, (tx) => tx.query("select * from feed_passes"))).rows.length, 0);
 });
 
 // --- Other exclusions -------------------------------------------------------------
@@ -270,11 +270,11 @@ test("score terms and weights (random off)", async () => {
   const noIntent = await member("No Intent", "woman", { age: 29, intent: null, city: "Lagos", ...wide });
   near(await score(noIntent), 0.4 + 0.3 + 0.05 + 0.2, "no intent set: nothing added or taken");
 
+  // There is no same-country term at all (PRD §5.2.5): it would rank members
+  // abroad below members in Nigeria. A different city earns nothing.
+  assert.equal((await db.query("select count(*)::int as n from feed_config where key ilike '%country%'")).rows[0].n, 0);
   const elsewhere = await member("Abuja", "woman", { age: 29, intent: "serious", city: "Abuja", ...wide });
-  near(await score(elsewhere), 0.6 + 0 + 0.3 + 0.05 + 0.2, "different city, same country: w_country is 0 as shipped");
-  await config("w_country", 0.1);
-  near(await score(elsewhere), 0.6 + 0.1 + 0.3 + 0.05 + 0.2, "w_country is a setting");
-  await config("w_country", 0);
+  near(await score(elsewhere), 0.6 + 0 + 0.3 + 0.05 + 0.2, "different city: no place bonus");
 
   // Recency.
   const warm = await member("Warm", "woman", { age: 29, intent: "serious", city: "Lagos", seenDaysAgo: 5, ...wide });
@@ -405,6 +405,7 @@ test("no score term reads a plan, a pool, diaspora status or an optional field",
   const { fnDef } = await setup();
   const termLines = (await fnDef(SIX_FN)).split("\n").filter((l) => /-- term:/.test(l)).map((l) => l.replace(/--.*$/, ""));
   assert.equal(termLines.length, 7, "seven terms");
+  assert.ok(!termLines.some((l) => /country/i.test(l)), "no country term");
   for (const l of termLines) {
     assert.ok(!/tier|entitle|pool|diaspora|subscription|premium|filter/i.test(l), `score term reads only what the rule allows: ${l.trim()}`);
   }
@@ -524,4 +525,115 @@ test("members can run build_daily_feed for themselves only", async () => {
   await assert.rejects(as(db, viewer, (tx) => tx.query("select * from build_daily_feed($1)", [other])), /own feed/);
   await assert.rejects(as(db, viewer, (tx) => tx.query("select * from _feed_pick($1, now(), 6)", [viewer])), /permission denied/);
   await assert.rejects(as(db, viewer, (tx) => tx.query("select * from feed_config")), /permission denied/);
+});
+
+// --- "Not for me" ---------------------------------------------------------------
+
+test("a pass is private to the member who made it, and changes nothing for the person passed on", async () => {
+  const { db, member, wide, sixOn, touchAll } = await setup();
+  const passer = await member("Passer", "man", { age: 30, ...wide });
+  const passed = await member("Passed Woman", "woman", { age: 29, ...wide });
+  const other = await member("Another Man", "man", { age: 31, ...wide });
+  await sixOn(passer);
+  await sixOn(passed);
+
+  // Everything that exists about the passed member, apart from the pass itself.
+  const snapshot = async () => JSON.stringify({
+    profile: (await db.query("select * from profiles where id = $1", [passed])).rows,
+    six: (await db.query("select position, candidate_id from daily_feed where profile_id = $1 order by position", [passed])).rows,
+    impressions: (await db.query("select count(*)::int as n from daily_feed where candidate_id = $1", [passed])).rows,
+    presence: (await db.query("select * from member_presence where profile_id = $1", [passed])).rows,
+    shown: (await db.query("select candidate_id, shown_at from feed_shown where profile_id = $1 order by 1", [passed])).rows,
+    state: (await db.query("select * from feed_state where profile_id = $1", [passed])).rows,
+  });
+  const before = await snapshot();
+  await as(db, passer, (tx) => tx.query("select pass_on($1)", [passed]));
+  assert.equal(await snapshot(), before, "the passed member's six, profile, presence and exposure are untouched");
+
+  // Reading and deleting: only the member who passed.
+  const mine = (await as(db, passer, (tx) => tx.query("select candidate_id from feed_passes"))).rows;
+  assert.deepEqual(mine.map((r) => r.candidate_id), [passed]);
+  assert.equal((await as(db, passed, (tx) => tx.query("select * from feed_passes"))).rows.length, 0, "the passed member can't see it");
+  assert.equal((await as(db, other, (tx) => tx.query("select * from feed_passes"))).rows.length, 0, "nobody else can");
+  assert.equal((await as(db, passed, (tx) => tx.query("delete from feed_passes where candidate_id = $1 returning 1", [passed]))).rows.length, 0, "and can't delete it");
+  await assert.rejects(as(db, passer, (tx) => tx.query("insert into feed_passes (profile_id, candidate_id) values ($1, $2)", [passer, other])), /permission denied|row-level security/, "no direct insert");
+  await assert.rejects(as(db, passer, (tx) => tx.query("update feed_passes set candidate_id = $1", [other])), /permission denied/, "no update");
+
+  // The list shows a name and a city, nothing else.
+  const list = (await as(db, passer, (tx) => tx.query("select * from my_passes()"))).rows;
+  assert.deepEqual(Object.keys(list[0]).sort(), ["candidate_id", "city", "display_name", "passed_at"]);
+  assert.equal(list[0].display_name, "Passed Woman");
+  assert.equal((await as(db, passed, (tx) => tx.query("select * from my_passes()"))).rows.length, 0);
+
+  // Never in the passer's six again.
+  for (const day of [31, 90, 400]) {
+    await touchAll(day);
+    assert.ok(!(await sixOn(passer, day)).includes(passed), `day ${day}`);
+  }
+
+  // Bring back: the person can be shown again (after the cool-down), and only the owner can do it.
+  await as(db, other, (tx) => tx.query("select bring_back($1)", [passed]));
+  assert.equal((await db.query("select count(*)::int as n from feed_passes where profile_id = $1", [passer])).rows[0].n, 1, "someone else's bring_back does nothing");
+  await as(db, passer, (tx) => tx.query("select bring_back($1)", [passed]));
+  assert.equal((await as(db, passer, (tx) => tx.query("select * from my_passes()"))).rows.length, 0);
+  await touchAll(500);
+  assert.ok((await sixOn(passer, 500)).includes(passed), "brought back: eligible again");
+});
+
+// --- Presence stays private ----------------------------------------------------
+
+test("when someone was last active is never shown to another member", async () => {
+  const { db, member, wide, sixOn } = await setup();
+  const viewer = await member("Viewer", "man", { age: 30, ...wide });
+  const woman = await member("Woman", "woman", { age: 29, ...wide });
+  await sixOn(viewer);
+
+  // 1. No member can read the table, nor any feed table.
+  for (const t of ["member_presence", "feed_state", "feed_shown", "feed_config"]) {
+    await assert.rejects(as(db, viewer, (tx) => tx.query(`select * from ${t}`)), /permission denied/, t);
+  }
+  // 2. The one read of another member (profile_for) carries no activity at all.
+  const pf = (await as(db, viewer, (tx) => tx.query("select profile_for($1) as p", [woman]))).rows[0].p;
+  assert.ok(pf, "the profile opens (so this isn't vacuous)");
+  const text = JSON.stringify(pf).toLowerCase();
+  for (const word of ["seen_at", "last_active", "last_seen", "presence", "online", "active_at"]) {
+    assert.ok(!text.includes(word), `profile_for carries no ${word}`);
+  }
+  // 3. Only these functions read member_presence — the heartbeat, the Gist
+  //    "online now" yes/no, and the feed selection.
+  const readers = (await db.query(
+    "select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosrc ilike '%member_presence%' order by 1")).rows.map((r) => r.proname);
+  assert.deepEqual(readers, ["_feed_pick", "gist_partner_online", "touch_presence"]);
+  // 4. The only thing a member can learn is a yes/no, about a Gist partner, in an accepted Gist.
+  const ret = (await db.query("select pg_get_function_result('gist_partner_online(uuid)'::regprocedure) as r")).rows[0].r;
+  assert.equal(ret, "boolean");
+  // 5. Nothing in the feed's output carries it.
+  const cols = (await db.query("select column_name from information_schema.columns where table_name = 'daily_feed'")).rows.map((r) => r.column_name).sort();
+  assert.deepEqual(cols, ["candidate_id", "created_at", "feed_date", "position", "profile_id"]);
+});
+
+// --- Staff metric -------------------------------------------------------------------
+
+test("staff see Gist requests per woman per day; nobody else can", async () => {
+  const { db, member, wide } = await setup();
+  const w1 = await member("Woman One", "woman", { age: 29, ...wide });
+  const w2 = await member("Woman Two", "woman", { age: 28, ...wide });
+  const m1 = await member("Man One", "man", { age: 30, ...wide });
+  const m2 = await member("Man Two", "man", { age: 31, ...wide });
+  const m3 = await member("Man Three", "man", { age: 32, ...wide });
+  for (const m of [m1, m2, m3]) await db.query("insert into gist_sessions (proposer_id, invitee_id) values ($1, $2)", [m, w1]);
+  await db.query("insert into gist_sessions (proposer_id, invitee_id) values ($1, $2)", [m1, w2]);
+  await db.query("insert into gist_sessions (proposer_id, invitee_id) values ($1, $2)", [w1, m1]); // not an inbound request to a woman
+
+  await assert.rejects(as(db, m1, (tx) => tx.query("select * from staff_gist_requests_per_woman(7)")), /Not available/);
+  await assert.rejects(as(db, w1, (tx) => tx.query("select * from staff_gist_requests_per_woman(7)")), /Not available/);
+  await db.query("insert into staff_members (profile_id) values ($1)", [m3]);
+  const rows = (await as(db, m3, (tx) => tx.query("select day::text, women, requests, per_woman::float8, max_for_one_woman from staff_gist_requests_per_woman(3)"))).rows;
+  assert.equal(rows.length, 3);
+  const today = rows[0];
+  assert.equal(today.women, 2);
+  assert.equal(today.requests, 4);
+  assert.equal(today.per_woman, 2);
+  assert.equal(today.max_for_one_woman, 3);
+  assert.equal(rows[1].requests, 0);
 });
