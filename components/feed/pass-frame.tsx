@@ -87,10 +87,10 @@ export function PassFrame({
         </div>
         <div className={`grid transition-[grid-template-rows] duration-[350ms] motion-reduce:transition-none ${passed ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
           <div className="min-h-0 overflow-hidden">
-            {/* Wording pending a decision: the design's line promises a
-                replacement later today, which a pass does not trigger. */}
+            {/* A pass never refills the slot the same day (PRD §5.2.5, decided
+                13 October 2026): six a day means six people seen a day. */}
             <p className="m-0 flex min-h-[82px] items-center rounded-[14px] border border-dashed border-ink-900/[.18] px-4 py-3.5 text-[14px] leading-normal text-grey-600">
-              You passed on {first}. They won&rsquo;t appear in your six again.
+              Your next six arrive tomorrow.
             </p>
           </div>
         </div>

@@ -561,7 +561,7 @@ test("a pass is private to the member who made it, and changes nothing for the p
 
   // The list shows a name and a city, nothing else.
   const list = (await as(db, passer, (tx) => tx.query("select * from my_passes()"))).rows;
-  assert.deepEqual(Object.keys(list[0]).sort(), ["candidate_id", "city", "display_name", "passed_at"]);
+  assert.deepEqual(Object.keys(list[0]).sort(), ["candidate_id", "city", "display_name", "passed_at", "photo_path"]);
   assert.equal(list[0].display_name, "Passed Woman");
   assert.equal((await as(db, passed, (tx) => tx.query("select * from my_passes()"))).rows.length, 0);
 
@@ -636,4 +636,53 @@ test("staff see Gist requests per woman per day; nobody else can", async () => {
   assert.equal(today.per_woman, 2);
   assert.equal(today.max_for_one_woman, 3);
   assert.equal(rows[1].requests, 0);
+});
+
+test("the passed list drops anyone no longer live, paused, deleted, or who blocked the member; the photo follows the same rule as the six", async () => {
+  const { db, member, wide, sixOn } = await setup();
+  const viewer = await member("Viewer", "man", { age: 30, ...wide });
+  const people = {};
+  for (const n of ["Stays", "Unlive", "Paused", "BlockedMe", "IBlocked", "Deleted"]) {
+    people[n] = await member(`${n} Woman`, "woman", { age: 29, ...wide });
+  }
+  await sixOn(viewer);
+  for (const id of Object.values(people)) await as(db, viewer, (tx) => tx.query("select pass_on($1)", [id]));
+  const list = async () => (await as(db, viewer, (tx) => tx.query("select * from my_passes()"))).rows;
+  const names = async () => (await list()).map((r) => r.display_name.replace(" Woman", "")).sort();
+  assert.deepEqual(await names(), Object.keys(people).sort(), "everyone is on the list to begin with");
+
+  // The main photo is returned where the owner's reveal choice allows it, and is the main photo.
+  const stays = (await list()).find((r) => r.candidate_id === people.Stays);
+  const mainPath = (await db.query("select ph.storage_path from profile_photos ph join profiles p on p.main_photo_id = ph.id where p.id = $1", [people.Stays])).rows[0].storage_path;
+  assert.equal(stays.photo_path, mainPath, "default reveal: the main photo's path");
+
+  // Reveal set to "after a Gist": no photo for a member who hasn't had one, but still listed.
+  await db.query("update profiles set photo_reveal = 'after_gist' where id = $1", [people.Stays]);
+  const hidden = (await list()).find((r) => r.candidate_id === people.Stays);
+  assert.ok(hidden, "still listed");
+  assert.equal(hidden.photo_path, null, "the owner's reveal choice is respected: no photo, initial shown");
+  await db.query("update profiles set photo_reveal = 'verified_members' where id = $1", [people.Stays]);
+
+  // No longer live (a profile with no prompt answer is not live, 0036).
+  await db.query("delete from prompt_answers where profile_id = $1", [people.Unlive]);
+  assert.ok(!(await names()).includes("Unlive"), "no longer live: drops off");
+  // Paused.
+  await db.query("update profiles set paused = true where id = $1", [people.Paused]);
+  assert.ok(!(await names()).includes("Paused"), "paused: drops off");
+  // They blocked the member.
+  await db.query("insert into blocks (blocker_id, blocked_id) values ($1, $2)", [people.BlockedMe, viewer]);
+  assert.ok(!(await names()).includes("BlockedMe"), "they blocked me: drops off");
+  // The member blocked them.
+  await db.query("insert into blocks (blocker_id, blocked_id) values ($1, $2)", [viewer, people.IBlocked]);
+  assert.ok(!(await names()).includes("IBlocked"), "I blocked them: drops off");
+  // Deleted account: the pass row goes with it.
+  await db.query("delete from profiles where id = $1", [people.Deleted]);
+  assert.ok(!(await names()).includes("Deleted"), "deleted account: drops off");
+  assert.equal((await db.query("select count(*)::int as n from feed_passes where candidate_id = $1", [people.Deleted])).rows[0].n, 0);
+
+  assert.deepEqual(await names(), ["Stays"], "only the one who is still live, visible and unblocked remains");
+
+  // Bring-back on someone who dropped off still works (the row is the member's own).
+  await as(db, viewer, (tx) => tx.query("select bring_back($1)", [people.Unlive]));
+  assert.equal((await db.query("select count(*)::int as n from feed_passes where profile_id = $1 and candidate_id = $2", [viewer, people.Unlive])).rows[0].n, 0);
 });

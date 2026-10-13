@@ -4,17 +4,15 @@ import * as React from "react";
 import { bringBack } from "@/lib/pass-actions";
 import { UndoToast } from "./undo-toast";
 
-type Row = { candidate_id: string; display_name: string; passed_on: string };
+type Row = { candidate_id: string; display_name: string; passed_on: string; photo_url: string | null };
 
 /**
  * Settings → "People you passed on" (design/prototype/not-for-me.html, states
  * E and F). First name, the date passed, and Bring back on each. Only the
  * member who passed ever sees this list; the people on it are never told.
  *
- * Photos: the design shows a main photo here. Another member's photo is read
- * only through profile_for, and a person no longer in anyone's six isn't
- * openable, so this shows the design's initial in a circle until a decision is
- * made about letting a member see photos of people they passed on.
+ * The small main photo comes from the database only where the member may see it
+ * (the same rule as the six); otherwise the design's initial in a circle.
  */
 export function PassedList({ rows }: { rows: Row[] }) {
   const [gone, setGone] = React.useState<Set<string>>(new Set());
@@ -57,7 +55,12 @@ export function PassedList({ rows }: { rows: Row[] }) {
               return (
                 <li key={r.candidate_id} className={`flex min-h-[72px] items-center gap-3 py-3 pl-3.5 pr-3 ${i ? "border-t border-ink-900/10" : ""}`}>
                   <span aria-hidden="true" className="grid h-12 w-12 flex-shrink-0 place-items-center overflow-hidden rounded-pill bg-green-50 font-serif text-[19px] font-bold text-green-550">
-                    {first.charAt(0)}
+                    {r.photo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                      <img src={r.photo_url} alt="" className="block h-full w-full object-cover" />
+                    ) : (
+                      first.charAt(0)
+                    )}
                   </span>
                   <span className="grid min-w-0 flex-1 gap-0.5">
                     <span className="text-[15px] font-semibold text-ink-900">{first}</span>

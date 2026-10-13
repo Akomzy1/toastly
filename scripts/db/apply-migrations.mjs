@@ -51,6 +51,14 @@ const EXPECT = {
     // 0046 (an index for profile_is_live) isn't applied yet.
     "select to_regclass('public.profile_photos_profile_idx') is null",
   ],
+  // 0047 (the passed list shows a main photo): 0045 is in, and my_passes()
+  // doesn't return a photo path yet. Independent of 0046.
+  "0047": [
+    "select to_regprocedure('public.my_passes()') is not null",
+    "select pg_get_function_result('public.my_passes()'::regprocedure) not like '%photo_path%'",
+  ],
+  // 0047's mark.
+  "0048": ["select pg_get_function_result('public.my_passes()'::regprocedure) like '%photo_path%'"],
 };
 
 try {
