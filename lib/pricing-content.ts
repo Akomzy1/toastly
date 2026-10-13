@@ -50,7 +50,7 @@ const NG_TIERS: Tier[] = [
     features: [
       "Everything in Starter, plus:",
       "Unlimited Gist sessions",
-      "Priority match feed — still 6 a day, just better matched",
+      "Filter your six — still 6 a day, same rules for everyone",
       // CORRECTED (decided 6 October 2026, PRD §5.2.4): the prototype promised
       // "city, language, intentions" — none is built. Launch filters are
       // religion and tribe; pricing never promises one that isn't built.
@@ -231,7 +231,7 @@ export const coinPacks = [
 const WHY_PAY = [
   {
     title: "Premium buys pace",
-    body: "Unlimited Gist sessions and a priority feed, for the months when you are genuinely looking.",
+    body: "Unlimited Gist sessions and your own filters, for the months when you are genuinely looking.",
   },
   {
     // CORRECTED: the prototype read "Live video, Couple Mode and the

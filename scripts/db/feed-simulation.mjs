@@ -241,6 +241,39 @@ try {
   psql(url, SEED);
   psql(url, PROCEDURE);
   psql(url, "analyze");
+  if (args.includes("--profile-live")) {
+    // Where do profile_is_live's milliseconds go? Time each of its inputs over every member.
+    const idx = psql(url, "select tablename || '.' || indexname from pg_indexes where schemaname = 'public' and tablename in ('profile_photos','prompt_answers','account_restrictions','profiles') order by 1", { capture: true });
+    console.log("indexes on the tables it reads:\n" + idx);
+    const t = psql(url, `
+      \\timing on
+      select count(*) from profiles p where profile_is_live(p.id);
+      select count(*) from profiles p where p.phone_verified_at is not null and p.stage in ('verified_real','id_confirmed');
+      select count(*) from profiles p where is_restricted(p.id);
+      select count(*) from profiles p where exists (select 1 from profile_photos m where m.id = p.main_photo_id and m.face_match = 'matched');
+      select count(*) from profiles p where visible_photo_count(p.id) >= min_live_photos();
+      select count(*) from profiles p where visible_photo_count(p.id) >= 4;
+      select count(*) from profiles p where min_live_photos() >= 0;
+      select count(*) from profiles p where is_gender_option(p.gender);
+      select count(*) from profiles p where exists (select 1 from prompt_answers a where a.profile_id = p.id);
+      -- the same rule with its three helper calls written inline (an experiment, not shipped):
+      create function pg_temp.live_inline(p_id uuid) returns boolean language sql stable security definer set search_path = public as $f$
+        select coalesce((select p.phone_verified_at is not null
+           and p.stage in ('verified_real', 'id_confirmed')
+           and not exists (select 1 from account_restrictions r where r.profile_id = p.id and r.lifted_at is null)
+           and p.main_photo_id is not null
+           and exists (select 1 from profile_photos m where m.id = p.main_photo_id and m.face_match = 'matched')
+           and (select count(*) from profile_photos ph where ph.profile_id = p.id and ph.id is distinct from p.pending_main_photo_id and ph.face_match <> 'mismatch') >= coalesce((select photos_min from match_config), 4)
+           and p.gender in ('woman', 'man')
+           and exists (select 1 from prompt_answers a where a.profile_id = p.id)
+          from profiles p where p.id = p_id), false);
+      $f$;
+      select count(*) from profiles p where pg_temp.live_inline(p.id);
+      select count(*) filter (where pg_temp.live_inline(p.id) is distinct from profile_is_live(p.id)) as disagreements from profiles p;
+    `, { capture: true });
+    console.log(t);
+    throw new Error("profile only");
+  }
   if (args.includes("--profile")) {
     // Time the pieces of one selection, for tuning the function itself.
     const probe = psql(url, `

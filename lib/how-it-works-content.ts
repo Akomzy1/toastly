@@ -149,7 +149,7 @@ const FAQS: [string, string][] = [
   ],
   [
     "How does matching work if there's no swiping?",
-    "Six profiles a day, ranked on prompt-answer compatibility, intentions and location. You reply to an answer to start a conversation; profiles you don't act on simply pass.",
+    "Your six are chosen by the same rules for everyone: people you're open to and who are open to you, then how close your intentions are, your city, who's been active and who's new. Nobody pays to be shown. People you don't act on can come back after 30 days; people you pass on with \"Not for me\" don't.",
   ],
   [
     "What is a Gist session exactly?",

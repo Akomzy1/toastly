@@ -82,7 +82,7 @@ export function softwareApplicationSchema(f: FeatureFlags = featureFlags()) {
         name: "Premium",
         price: "3500",
         priceCurrency: "NGN",
-        description: "Unlimited voice Gist sessions, priority match feed, advanced filters.",
+        description: "Unlimited voice Gist sessions and match filters.",
       },
       {
         "@type": "Offer",

@@ -37,6 +37,20 @@ const EXPECT = {
   "0032": ["select to_regclass('public.member_filters') is not null", "select to_regprocedure('public.profile_open_to(uuid,uuid)') is null"],
   "0033": ["select to_regprocedure('public.profile_open_to(uuid,uuid)') is not null", "select to_regprocedure('public.profile_for(uuid)') is null"],
   "0034": ["select to_regprocedure('public.profile_for(uuid)') is not null", "select not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'review_items' and column_name = 'urgent')"],
+  // 0045 (today's six, PRD 5.2.5): 0044 is in (children fields), and 0045's own
+  // objects are not: no feed_state / feed_passes / _feed_pick yet, and the old
+  // seen_candidates list still exists for 0045 to move.
+  "0045": [
+    "select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profile_history' and column_name = 'wants_children_visibility') and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'member_filters' and column_name = 'wants_children')",
+    "select to_regclass('public.feed_state') is null and to_regclass('public.feed_passes') is null and to_regclass('public.feed_shown') is null and to_regprocedure('public._feed_pick(uuid,timestamptz,integer)') is null and to_regclass('public.seen_candidates') is not null",
+  ],
+  // 0045's mark, so --yes verifies it landed: the selection and passes exist,
+  // and the old seen list is gone.
+  "0046": [
+    "select to_regprocedure('public._feed_pick(uuid,timestamptz,integer)') is not null and to_regclass('public.feed_passes') is not null and to_regclass('public.feed_shown') is not null and to_regclass('public.seen_candidates') is null",
+    // 0046 (an index for profile_is_live) isn't applied yet.
+    "select to_regclass('public.profile_photos_profile_idx') is null",
+  ],
 };
 
 try {

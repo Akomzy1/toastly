@@ -186,7 +186,7 @@ Rules and a simple score in the database — **not an AI model, not random**. Bu
 
 **Step 1 — eligibility (all must be true, both ways where marked):**
 - Candidate is live (verified, face-matched main photo, enough photos, good standing) and not paused; not the member; neither has blocked the other; the member hasn't reported them.
-- **Mutual preferences (both ways):** each is someone the other wants to meet (gender and "who you'd like to meet", §7.3), and each falls inside the other's age range.
+- **Mutual preferences (both ways):** each passes the other's gender rule as the app builds it (CLAUDE.md), and each falls inside the other's age range. There is no separate "who you'd like to meet" setting; one would only come with a decision on the gender options list.
 - Pool rules (§5.6) as built: Nigeria pool, back-home, diaspora-to-diaspora (Diaspora plans, open cities), "Open to people living abroad".
 - The member's own paid filters, if set (religion, tribe, wants children — §5.2.4), shown values only, "Include people who don't say" on by default.
 - Not already in contact in any way: no Gist of any outcome, no couple record, no reply in either direction, not passed on ("Not for me").
@@ -204,7 +204,7 @@ Rules and a simple score in the database — **not an AI model, not random**. Bu
 
 **Never used:** religion, denomination, tribe, language, genotype, number of children, relationship history, profession, education, faith or anything from Our Gidi — except the member's *own* filters in Step 1. Never photos, looks or "attractiveness". Plan tier is never a score term.
 
-**What a paid plan changes:** only the member's own filters (and diaspora pool access, §5.6). That is how "paying can improve how well those six are matched to you" is true. It never adds candidates, never boosts anyone's placement in another member's six, and the viewer's tier is not a ranking factor.
+**What a paid plan changes:** only the member's own filters (and diaspora pool access, §5.6). Copy says exactly that: "Paid plans let you filter your six. They never add people or move anyone up." Never say paying makes the six "better matched" or gives a "priority feed" (retired 13 Oct 2026). It never adds candidates, never boosts anyone's placement in another member's six, and the viewer's tier is not a ranking factor.
 
 **When someone becomes unavailable during the day** (pauses, goes un-live): refill that slot once from the same day's next-best eligible candidate. **When fewer than six qualify:** show what there is with an honest line ("Only 4 people fit today — Lagos is still growing"); a short six fills up during the day as more people qualify or the member widens their filters, never past six; never relax mutual preferences or age range to fill the gap. A full six is fixed for the day.
 
@@ -403,11 +403,11 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 4. Unlocking see-who-liked-you (the user's own data about themselves — it changes nothing in another user's feed)
 5. Paying for a **domestic naira subscription** (Premium or Premium Plus) — never a diaspora dollar subscription (§5.5)
 
-**Shipped Pricing copy (ratified):** *"Nobody buys your place in the six… paying can improve how well those six are matched to you, it never buys you more of them."* This is now literally true. Nothing a user buys inserts them into another user's six. *(Updated 13 October 2026, §5.2.5: plan tier is never a score input; paying buys your own filters and, on Diaspora plans, the diaspora pools. The shipped Pricing wording was changed to match.)*
+**Pricing copy (updated 13 Oct 2026):** *"Nobody buys your place in the six."* The six is six people a day on every plan, chosen by the same rules. Paid plans add the member's own filters (§5.2.4) and, on Diaspora plans, the diaspora pools; they never add people or move anyone up. The earlier lines "paying can improve how well those six are matched to you", "better matched" and "priority match feed" are retired: plan tier is never a ranking factor, and nothing a user buys inserts them into another user's six.
 
 **Corrections made to the first design pass:**
 1. **Couple Mode + AriyaPlanner handoff must be free/universal, not locked behind Premium Plus / Diaspora Plus.** This is Toastly's core differentiator and its actual LTV engine (Part 4 of the strategy doc) — gating the entry point to the wedding funnel behind the top subscription tier means a couple who falls for each other on Starter or base Premium never reaches AriyaPlanner unless they happen to upgrade at exactly the right moment. If a paywall belongs anywhere near this feature, it goes on *enhanced* Couple Mode extras, never on the bridge itself.
-2. **"6 matches a day" must not become "more matches for higher tiers."** The scarcity (6, once daily, gone if unused) is a stated brand principle, not a limitation to upsell against — Premium's "priority match feed" should mean better placement/visibility within the same 6, not a larger daily count. Confirm this explicitly in copy so it can't be read as "pay for more matches."
+2. **"6 matches a day" must not become "more matches for higher tiers."** The scarcity (6, once daily, gone if unused) is a stated brand principle, not a limitation to upsell against — Premium's feed line is "Filter your six" (the retired "priority match feed" wording must not come back): the member's own filters shape their six (§5.2.5) — never placement in anyone else's six, never a ranking boost, never a larger daily count. Confirm this explicitly in copy so it can't be read as "pay for more matches."
 3. **Premium's card must state "Everything in Starter, plus:"** — as written, it's ambiguous whether subscribing to Premium keeps Verified Real, the daily feed, and coin-deposit dates, or replaces them.
 4. **Session-cap numbers are now decided: Starter = 1 started Gist a month (8 October 2026; earlier 2, and before that the 8/5/10 placeholders, are superseded), Diaspora = unlimited** — see §7.1.
 5. **Read receipts need a deliberate yes/no, not a default inclusion** — flagged as a possible tone mismatch, not rejected outright.

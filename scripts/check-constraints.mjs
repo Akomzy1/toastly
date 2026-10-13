@@ -2163,6 +2163,18 @@ check("Not for me reads no plan and is no swipe", (s, f) => {
     : false;
 });
 
+// Retired wording (decided 13 October 2026, PRD §5.2.5 / §7): plan tier is never
+// a ranking factor, so no copy may say paying makes the six "better matched" or
+// gives a "priority feed". Paid plans buy the member's own filters and, on
+// Diaspora plans, the diaspora pools. ("Included, with your filters" lives only
+// in the How It Works PDF's comparison table, never in the app.)
+check("no copy says paying gets better matches or a priority feed", (s, f) => {
+  const n = f.replace(/\\/g, "/");
+  if (!/^(app|lib|content)\//.test(n)) return false;
+  const hit = /better[- ]matched|better matches|priority (match )?feed|Included, with your filters/i.exec(s);
+  return hit ? `says "${hit[0]}"` : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");
