@@ -288,7 +288,7 @@ export function FullProfile({
           </div>
         ) : null}
 
-        {view.details.length ? (
+        {view.details.length || view.chips.length ? (
           <div className="grid gap-1.5">
             <p className="m-0 px-0.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-grey-600">Details</p>
             <div className="rounded-xl border border-ink-900/[.12] bg-white px-[15px] py-0.5">
@@ -308,6 +308,16 @@ export function FullProfile({
                   </div>
                 ))}
               </dl>
+              {/* Height and star sign, as chips under the details (design/prototype/profile-fields.html). */}
+              {view.chips.length ? (
+                <div className={`flex flex-wrap gap-2 pb-3.5 pt-3 ${view.details.length ? "border-t border-ink-900/10" : ""}`}>
+                  {view.chips.map((c) => (
+                    <span key={c} className="rounded-pill bg-grey-100 px-3 py-1.5 text-[13.5px] font-medium text-ink-800">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}

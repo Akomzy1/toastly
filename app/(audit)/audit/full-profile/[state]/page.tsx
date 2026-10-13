@@ -46,12 +46,14 @@ const BASE: FullProfileView = {
   action: "reply",
   gistsLeft: null,
   details: [ROWS.languages, ROWS.tribe, ROWS.faith, ROWS.profession, ROWS.education, ROWS.wants],
+  // Height and star sign, as chips under the details (profile-fields.html).
+  chips: ["5′7″ · 170 cm", "Leo"],
   invite: null,
 };
 
 const STATES: Record<string, { view: Partial<FullProfileView>; panel?: "menu" | "report" | "reported" | "block" | "blocked" }> = {
   six: { view: {} },
-  matched: { view: { origin: "matched", details: [...BASE.details, ROWS.history, ROWS.children, ROWS.genotype] } },
+  matched: { view: { origin: "matched", details: [...BASE.details, ROWS.children, ROWS.history, ROWS.genotype] } },
   hidden: { view: { details: [ROWS.languages, ROWS.faith] } },
   starter: { view: { action: "gist", gistsLeft: 1 } },
   invite: { view: { origin: "invite", action: "none", gistsLeft: 1, invite: { sessionId: ID, starter: true } } },

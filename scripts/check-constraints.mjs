@@ -2201,14 +2201,14 @@ check("height, star sign and open_to_children stay out of the card, filters, mod
   const n = f.replace(/\\/g, "/");
   if (f.endsWith(".sql")) return false;
   if (!/\b(height_cm|show_star_sign|star_sign|open_to_children|heightCm|starSign|openToChildren)\b/.test(s)) return false;
-  const allowed = /^(app\/\(app\)\/profile\/(profile-form|actions)\.tsx?|app\/\(app\)\/profile\/edit\/page\.tsx|components\/profile\/(height-field|full-profile)\.tsx|lib\/(height|full-profile|member-profile)\.ts|lib\/types\/profile\.ts)$/;
+  const allowed = /^(app\/\(app\)\/profile\/(profile-form|actions)\.tsx?|app\/\(app\)\/profile\/edit\/page\.tsx|components\/profile\/(height-field|star-sign-field|open-to-children-panel|full-profile)\.tsx|lib\/(height|full-profile|member-profile)\.ts|lib\/types\/profile\.ts)$/;
   return allowed.test(n) ? false : "a profile field that is display-only or private is used outside the profile screens";
 });
 
 check("open_to_children is only ever read by its owner's edit screen", (s, f) => {
   const n = f.replace(/\\/g, "/");
   if (f.endsWith(".sql") || !/\bopen_to_children\b/.test(s)) return false;
-  return /^(app\/\(app\)\/profile\/(profile-form|actions)\.tsx?|lib\/types\/profile\.ts)$/.test(n) ? false : "open_to_children is touched outside the owner's own profile form";
+  return /^(app\/\(app\)\/profile\/(profile-form|actions)\.tsx?|components\/profile\/open-to-children-panel\.tsx|lib\/types\/profile\.ts)$/.test(n) ? false : "open_to_children is touched outside the owner's own profile form";
 });
 
 check("a member filter or score term never reads height, star sign or open_to_children", (s, f) => {

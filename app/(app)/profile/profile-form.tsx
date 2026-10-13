@@ -12,6 +12,8 @@ import { CityPicker, type PickerCity } from "@/components/app/city-picker";
 import { TimeZoneField } from "@/components/app/time-zone-field";
 import { COUNTRY_NAME } from "@/lib/countries";
 import { HeightField } from "@/components/profile/height-field";
+import { StarSignField } from "@/components/profile/star-sign-field";
+import { OpenToChildrenPanel } from "@/components/profile/open-to-children-panel";
 import {
   CHILDREN_OPTIONS,
   HISTORY_LABELS,
@@ -244,23 +246,12 @@ export function ProfileForm({
           </div>
         </div>
 
-        {/* Height and star sign (PRD §5.2, 13 October 2026). PLAIN VERSION, NOT
-            IN THE PROTOTYPE — flagged; restyled when the Claude Design screens
-            arrive. Both are display-only: on the full profile, never on the
-            card, never a filter, never a score term. */}
-        <div className="grid gap-5 border-t border-ink-900/10 pt-5 sm:grid-cols-2">
+        {/* Height and star sign (PRD §5.2; design/prototype/profile-fields.html):
+            one grouped block of rows. Both are display-only — on the full
+            profile, never on the card, never a filter, never a score term. */}
+        <div className="overflow-hidden rounded-2xl border border-ink-900/[.12] bg-white">
           <HeightField defaultCm={profile.height_cm} />
-
-          <div className="grid content-start gap-2">
-            <label htmlFor="show_star_sign" className="flex min-h-11 cursor-pointer items-center gap-3 text-ui font-medium text-ink-900">
-              <input id="show_star_sign" name="show_star_sign" type="checkbox" defaultChecked={profile.show_star_sign} className="h-5 w-5 accent-green-500" />
-              Show my star sign
-            </label>
-            <span className="text-caption text-grey-600">
-              {starSign ? `Yours is ${starSign}, worked out from your date of birth. ` : ""}
-              Off unless you turn it on. Only the sign is ever shown, never your date of birth.
-            </span>
-          </div>
+          <StarSignField defaultOn={profile.show_star_sign} sign={starSign} />
         </div>
 
         {/* A verified profession badge is a quiet secondary mark. It unlocks
@@ -341,25 +332,6 @@ export function ProfileForm({
           </Notice>
         ) : null}
 
-        {/* PRIVATE (PRD §5.2, 13 October 2026): nobody else can ever read this —
-            not on any profile or card, not in any screen. Free on every plan. */}
-        <fieldset className="grid gap-2 border-t border-ink-900/10 pt-5">
-          <legend className="flex items-center gap-2 text-ui font-medium text-ink-900">
-            Open to dating someone who has children? <Badge variant="optional">Only you see this</Badge>
-          </legend>
-          <div className="flex gap-6">
-            {(["yes", "no"] as const).map((v) => (
-              <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-ink-900">
-                <input type="radio" name="open_to_children" value={v} defaultChecked={(profile.open_to_children ?? "yes") === v} className="h-5 w-5 accent-green-500" />
-                {v === "yes" ? "Yes" : "No"}
-              </label>
-            ))}
-          </div>
-          <span className="text-caption text-grey-600">
-            If you say No, people who have children aren&rsquo;t shown to you, and you aren&rsquo;t shown to them. Nobody sees
-            your answer, or who it kept out.
-          </span>
-        </fieldset>
 
         <div className="grid gap-3 border-t border-ink-900/10 pt-5">
           <Label htmlFor="wants_children">
@@ -388,6 +360,10 @@ export function ProfileForm({
           />
         </div>
       </Card>
+
+      {/* PRIVATE (PRD §5.2): the panel from design/prototype/profile-fields.html.
+          Neither answer is selected until the member chooses; no answer = Yes. */}
+      <OpenToChildrenPanel value={profile.open_to_children} />
 
       <Submit />
     </form>

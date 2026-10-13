@@ -19,6 +19,8 @@ export type FullProfileView = {
   /** What each answer offers: a text reply (paid), a Gist (Starter, from the six), or nothing. */
   action: "reply" | "gist" | "none";
   gistsLeft: number | null;
+  /** Height and star sign, drawn as chips under the details (profile-fields.html). */
+  chips: string[];
   details: { label: string; value: string; verified?: boolean }[];
   /** An open invitation from this member to the viewer. */
   invite: { sessionId: string; starter: boolean } | null;

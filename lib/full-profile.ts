@@ -66,6 +66,9 @@ export async function loadFullProfile(
       .filter((x) => x.url);
   }
 
+  // The order drawn in design/prototype/profile-fields.html: the rows the owner
+  // shows this viewer, then Children, Wants children and Relationship history
+  // (each only if profile_for returned it), then genotype where it is shared.
   const details: FullProfileView["details"] = [];
   if (m.languages?.length) details.push({ label: "Languages", value: m.languages.join(" · ") });
   if (m.tribe) details.push({ label: "Tribe", value: m.tribe });
@@ -73,15 +76,16 @@ export async function loadFullProfile(
   if (faith) details.push({ label: "Faith", value: faith });
   if (m.profession) details.push({ label: "Profession", value: m.profession, verified: m.profession_verified === true });
   if (m.education) details.push({ label: "Education", value: m.education });
-  // 0048: height (cm and ft/in) and, only if the owner turned it on, the sign.
-  // Full profile only — neither is ever on the feed card.
-  if (typeof m.height_cm === "number") details.push({ label: "Height", value: formatHeight(m.height_cm) });
-  if (m.star_sign) details.push({ label: "Star sign", value: m.star_sign });
-  if (m.history) details.push({ label: "Relationship history", value: HISTORY_LABELS[m.history] });
-  // 0044: shown only if profile_for returned them for this viewer.
   if (m.children) details.push({ label: "Children", value: CHILDREN_SHOWN[m.children] });
   if (m.wants_children) details.push({ label: "Wants children", value: WANTS_CHILDREN_LABELS[m.wants_children] });
+  if (m.history) details.push({ label: "Relationship history", value: HISTORY_LABELS[m.history] });
   if (m.genotype) details.push({ label: "Genotype", value: genotypeForOthers(m.genotype) });
+
+  // Height ("5′7″ · 170 cm") and, only if the owner turned it on, the star
+  // sign: chips under the details. Full profile only — never on the feed card.
+  const chips: string[] = [];
+  if (typeof m.height_cm === "number") chips.push(formatHeight(m.height_cm));
+  if (m.star_sign) chips.push(m.star_sign);
 
   return {
     id: m.id,
@@ -102,6 +106,7 @@ export async function loadFullProfile(
     action: openInvite ? "none" : paid ? "reply" : inSix ? "gist" : "none",
     gistsLeft: paid ? null : Math.max(0, STARTER_MONTHLY_GISTS - ((used as number | null) ?? 0)),
     details,
+    chips,
     invite: openInvite ? { sessionId: openInvite.id, starter: !paid } : null,
   };
 }
