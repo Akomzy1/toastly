@@ -14,6 +14,7 @@ import { COUNTRY_NAME } from "@/lib/countries";
 import { HeightField } from "@/components/profile/height-field";
 import { StarSignField } from "@/components/profile/star-sign-field";
 import { OpenToChildrenPanel } from "@/components/profile/open-to-children-panel";
+import { VisibilityRow } from "@/components/profile/visibility-row";
 import {
   CHILDREN_OPTIONS,
   HISTORY_LABELS,
@@ -84,6 +85,8 @@ export function ProfileForm({
 }) {
   const [state, action] = useFormState(saveProfile, null);
   const [children, setChildren] = React.useState<string>(history.children ?? "");
+  const [historyVal, setHistoryVal] = React.useState<string>(history.history ?? "");
+  const [wants, setWants] = React.useState<string>(history.wants_children ?? "");
   const country = profile.country_code || "NG";
 
   return (
@@ -281,7 +284,8 @@ export function ProfileForm({
             <Select
               id="history"
               name="history"
-              defaultValue={history.history ?? ""}
+              value={historyVal}
+              onChange={(e) => setHistoryVal(e.target.value)}
             >
               <option value="">Rather not say</option>
               {(["single", "divorced", "widowed", "single_parent"] as const).map(
@@ -316,13 +320,6 @@ export function ProfileForm({
           </Label>
         </div>
 
-        {/* Defaults to on_match. "public" is offered, never preselected.
-            Covers relationship history and children together. */}
-        <Visibility
-          name="history_visibility"
-          value={history.visibility}
-        />
-
         {/* The two-way children rule, said out loud where the answer is given
             (PRD §5.2). Only when a number of 1 or more is chosen. */}
         {["one", "two", "three_plus"].includes(children) ? (
@@ -332,6 +329,22 @@ export function ProfileForm({
           </Notice>
         ) : null}
 
+        {/* Children and relationship history share ONE choice (PRD §5.2;
+            design/prototype/profile-fields.html), default "Revealed when we
+            match". Enforced in the database (profile_for): "Only me" shows it to
+            nobody, though the two-way rule above still uses a Children answer.
+            Disabled until there is something to show — a Children answer other
+            than "Prefer not to say", or a relationship history — so the choice
+            for history is never out of reach. */}
+        <div className="overflow-hidden rounded-2xl border border-ink-900/[.12] bg-white">
+          <VisibilityRow
+            name="history_visibility"
+            defaultValue={history.visibility}
+            disabled={!((children !== "" && children !== "prefer_not_to_say") || historyVal !== "")}
+            ariaLabel="Who can see your children and relationship history answers"
+            note="Also applies to relationship history."
+          />
+        </div>
 
         <div className="grid gap-3 border-t border-ink-900/10 pt-5">
           <Label htmlFor="wants_children">
@@ -341,7 +354,8 @@ export function ProfileForm({
             <Select
               id="wants_children"
               name="wants_children"
-              defaultValue={history.wants_children ?? ""}
+              value={wants}
+              onChange={(e) => setWants(e.target.value)}
             >
               <option value="">Not answered</option>
               {(["yes", "no", "open", "not_sure"] as const).map((w) => (
@@ -351,13 +365,17 @@ export function ProfileForm({
               ))}
             </Select>
           </Label>
-          {/* Shown on your full profile unless you hide it; never on your
+          {/* Its own choice, default "On my profile" (PRD §5.2). Never on your
               match card. Paid plans can filter their own search by it, only
               when it's shown to everyone. */}
-          <Visibility
-            name="wants_children_visibility"
-            value={history.wants_children_visibility}
-          />
+          <div className="overflow-hidden rounded-2xl border border-ink-900/[.12] bg-white">
+            <VisibilityRow
+              name="wants_children_visibility"
+              defaultValue={history.wants_children_visibility}
+              disabled={wants === ""}
+              ariaLabel="Who can see your answer to do you want children"
+            />
+          </div>
         </div>
       </Card>
 

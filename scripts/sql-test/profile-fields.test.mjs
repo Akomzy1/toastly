@@ -22,15 +22,16 @@ function dobForAge(age) {
 
 async function setup() {
   const db = await freshDb();
-  async function member(name, gender, { age = 30, dob = null, children = undefined, openToChildren = null, height = null, showStar = false } = {}) {
+  async function member(name, gender, { age = 30, dob = null, children = undefined, childrenVis = "on_match", openToChildren = null, height = null, showStar = false } = {}) {
     const id = await makeUser(db, { name, email: `${crypto.randomUUID()}@example.com`, gender, dob: dob ?? dobForAge(age) });
     await goLive(db, id);
     await db.query("update profiles set age_min = 18, age_max = 70, open_to_children = $2, height_cm = $3, show_star_sign = $4 where id = $1", [id, openToChildren, height, showStar]);
     if (children !== undefined) {
-      await db.query("insert into profile_history (profile_id, children) values ($1, $2) on conflict (profile_id) do update set children = excluded.children", [id, children]);
+      await db.query("insert into profile_history (profile_id, children, visibility) values ($1, $2, $3) on conflict (profile_id) do update set children = excluded.children, visibility = excluded.visibility", [id, children, childrenVis]);
     }
     return id;
   }
+  const match = (a, b) => db.query("insert into gist_sessions (proposer_id, invitee_id, status) values ($1, $2, 'accepted')", [a, b]);
   const reset = () => db.exec("delete from daily_feed; delete from feed_state; delete from feed_shown; delete from feed_passes;");
   const sixOn = async (id, days = 0) =>
     (await db.query("select candidate_id from _build_feed_for($1, now() + make_interval(days => $2::int))", [id, days])).rows.map((r) => r.candidate_id);
@@ -51,7 +52,7 @@ async function setup() {
   const SIX = "_feed_pick(uuid,timestamptz,integer)";
   const withRuleOff = (rule, fn) => withEdited(SIX, (d) => d.split("\n").map((l) =>
     l.includes(`-- rule:${rule}`) ? l.replace(/^(\s*and\s+).*?(\s*-- rule:\w+\s*)$/, "$1true$2") : l).join("\n"), fn);
-  return { db, member, reset, sixOn, inSix, profileFor, fnDef, withEdited, withRuleOff, SIX };
+  return { db, member, match, reset, sixOn, inSix, profileFor, fnDef, withEdited, withRuleOff, SIX };
 }
 
 // --- 1. "Open to dating someone who has children?" is private --------------------
@@ -284,4 +285,97 @@ test("no filter or score term reads height, star sign or open_to_children", asyn
     });
   }
   assert.ok(!TOKENS.test(strip(await fnDef(SIX)).replace(/_children_rule_ok/g, "")), "restored");
+});
+
+// --- "Who can see this" on Children and Do you want children? (PRD §5.2) -----------
+
+const FIELD_SHOWN = "field_shown_to(uuid,uuid,field_visibility)";
+
+test("a non-match never sees a 'Revealed when we match' answer; a match does", async () => {
+  const { db, member, inSix, match, profileFor, withEdited } = await setup();
+  const viewer = await member("Viewer", "man");
+  const owner = await member("Owner Woman", "woman", { children: "two", childrenVis: "on_match" });
+  await db.query("update profile_history set wants_children = 'yes', wants_children_visibility = 'on_match' where profile_id = $1", [owner]);
+  await inSix(viewer, owner);
+
+  // Not a match: nothing, for either field.
+  let pf = await profileFor(viewer, owner);
+  assert.ok(pf, "the profile opens (in the six), so this isn't vacuous");
+  assert.ok(!("children" in pf) && !("wants_children" in pf), "a non-match sees neither");
+
+  // Planted violation: on_match is treated as public. The same check catches it.
+  await withEdited(FIELD_SHOWN, (d) => d.replace("(p_visibility = 'on_match' and viewer_matched(p_viewer, p_owner))", "p_visibility = 'on_match'"), async () => {
+    const leaked = await profileFor(viewer, owner);
+    assert.equal(leaked.children, "two", "the planted leak is visible to this test");
+  });
+  pf = await profileFor(viewer, owner);
+  assert.ok(!("children" in pf), "restored");
+
+  // A match: the answer shows, with the owner's own visibility respected per field.
+  await match(viewer, owner);
+  pf = await profileFor(viewer, owner);
+  assert.equal(pf.children, "two");
+  assert.equal(pf.wants_children, "yes");
+});
+
+test("nobody but the owner ever sees an 'Only me' answer, by any route", async () => {
+  const { db, member, inSix, match, profileFor, sixOn, withEdited } = await setup();
+  const stranger = await member("Stranger", "man");
+  const matched = await member("Matched", "man");
+  const owner = await member("Owner Woman", "woman", { children: "three_plus", childrenVis: "private" });
+  await db.query("update profile_history set wants_children = 'no', wants_children_visibility = 'private', history = 'divorced' where profile_id = $1", [owner]);
+  await inSix(stranger, owner);
+  await inSix(matched, owner);
+  await match(matched, owner);
+
+  for (const [who, label] of [[stranger, "a stranger in the six"], [matched, "a match"]]) {
+    const pf = await profileFor(who, owner);
+    assert.ok(pf, `${label}: the profile opens`);
+    for (const key of ["children", "wants_children", "history"]) assert.ok(!(key in pf), `${label} never gets ${key}`);
+  }
+  // Not through the table, nor the six.
+  for (const who of [stranger, matched]) {
+    const rows = await as(db, who, (tx) => tx.query("select * from profile_history where profile_id = $1", [owner]));
+    assert.equal(rows.rows.length, 0, "no direct read of another member's history row");
+  }
+  await sixOn(stranger);
+  // The only functions that read the stored answer are profile_for and the rule.
+  const readers = (await db.query(
+    `select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.prosrc ~ '(^|[^a-z_.])(h|ph|profile_history)\\.children\\M' order by 1`)).rows.map((r) => r.proname);
+  assert.deepEqual(readers, ["_children_rule_ok", "profile_for"]);
+  // The owner reads their own.
+  const own = await as(db, owner, (tx) => tx.query("select children, visibility from profile_history where profile_id = $1", [owner]));
+  assert.deepEqual(own.rows[0], { children: "three_plus", visibility: "private" });
+
+  // Planted violation: "Only me" is treated as public. This test catches it.
+  await withEdited(FIELD_SHOWN, (d) => d.replace("select p_visibility = 'public' or", "select p_visibility in ('public', 'private') or"), async () => {
+    const leaked = await profileFor(stranger, owner);
+    assert.equal(leaked.children, "three_plus", "the planted leak is visible to this test");
+  });
+  assert.ok(!("children" in (await profileFor(stranger, owner))), "restored");
+});
+
+test("an 'Only me' Children answer still triggers the two-way rule", async () => {
+  const { db, member, sixOn, reset, withEdited } = await setup();
+  const no = await member("Says No", "man", { openToChildren: "no" });
+  const hidden = await member("Only Me Children", "woman", { children: "two", childrenVis: "private" });
+  const shown = await member("Public Children", "woman", { children: "two", childrenVis: "public" });
+  const none = await member("No Children", "woman", { children: "none", childrenVis: "private" });
+
+  const his = await sixOn(no);
+  assert.ok(!his.includes(hidden), "'Only me' is hidden from everyone, but the rule still keeps her out of his six");
+  assert.ok(!his.includes(shown), "and so does a public answer");
+  assert.ok(his.includes(none), "a hidden 'None' is no reason");
+  await reset();
+  assert.ok(!(await sixOn(hidden)).includes(no), "and he is kept out of hers");
+
+  // Planted violation: the rule starts respecting "Only me". This test catches it.
+  await withEdited("_children_rule_ok(uuid,uuid)", (d) => d.replaceAll("where h.profile_id = p_b)", "where h.profile_id = p_b and h.visibility <> 'private')").replaceAll("where h.profile_id = p_a)", "where h.profile_id = p_a and h.visibility <> 'private')"), async () => {
+    await reset();
+    assert.ok((await sixOn(no)).includes(hidden), "the planted change lets her through");
+  });
+  await reset();
+  assert.ok(!(await sixOn(no)).includes(hidden), "restored");
+  void db;
 });
