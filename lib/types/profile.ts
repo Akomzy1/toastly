@@ -80,6 +80,16 @@ export type Profile = {
   profession: string | null;
   education: string | null;
 
+  /** cm, 120–220. Self-reported, display only (full profile). 0048. */
+  height_cm: number | null;
+  /** Off by default; the sign is worked out from the date of birth. 0048. */
+  show_star_sign: boolean;
+  /**
+   * PRIVATE. yes / no / null (not set = yes). Only the owner ever reads it;
+   * its one use is the two-way children rule in today's six. 0048.
+   */
+  open_to_children: "yes" | "no" | null;
+
   religion_visibility: FieldVisibility;
   tribe_visibility: FieldVisibility;
   languages_visibility: FieldVisibility;

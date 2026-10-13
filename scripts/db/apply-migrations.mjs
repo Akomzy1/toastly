@@ -57,8 +57,14 @@ const EXPECT = {
     "select to_regprocedure('public.my_passes()') is not null",
     "select pg_get_function_result('public.my_passes()'::regprocedure) not like '%photo_path%'",
   ],
-  // 0047's mark.
-  "0048": ["select pg_get_function_result('public.my_passes()'::regprocedure) like '%photo_path%'"],
+  // 0048 (height, star sign, the children rule): 0047 is in, and 0048's own
+  // columns and rule are not there yet.
+  "0048": [
+    "select pg_get_function_result('public.my_passes()'::regprocedure) like '%photo_path%'",
+    "select not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name in ('height_cm', 'show_star_sign', 'open_to_children')) and to_regprocedure('public._children_rule_ok(uuid,uuid)') is null",
+  ],
+  // 0048's mark.
+  "0049": ["select (select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name in ('height_cm', 'show_star_sign', 'open_to_children')) = 3 and to_regprocedure('public._children_rule_ok(uuid,uuid)') is not null and to_regprocedure('public._star_sign(date)') is not null"],
 };
 
 try {

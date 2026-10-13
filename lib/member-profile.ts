@@ -21,6 +21,10 @@ export type MemberProfile = {
   stage: VerificationStage;
   intent?: IntentLevel;
   age?: number;
+  /** cm. Self-reported, full profile only (0048). */
+  height_cm?: number;
+  /** Present only if the owner turned it on; worked out in the database (0048). */
+  star_sign?: string;
   /** Matched as this viewer may know it (viewer_matched, 0032). */
   matched: boolean;
   languages?: string[];

@@ -54,6 +54,9 @@ export default async function EditProfilePage() {
     wants_children_visibility: "public",
   };
 
+  // The member's own sign, from their own date of birth, for the preview.
+  const { data: starSign } = await supabase.rpc("my_star_sign");
+
   // Closed cities are listed too. A member may pick a city that hasn't opened
   // yet — the option is honest about it, and the feed explains the fallback
   // rather than the choice quietly doing nothing.
@@ -101,7 +104,7 @@ export default async function EditProfilePage() {
             ›
           </span>
         </Link>
-        <ProfileForm profile={profile} history={history} cities={cityOptions} />
+        <ProfileForm profile={profile} history={history} cities={cityOptions} starSign={(starSign as string | null) ?? null} />
         {/* Separate from the form: Faith saves as the member picks, with its
             own consent sheet (faith-editor.slim.html; PRD §5.2.3). */}
         <FaithSection

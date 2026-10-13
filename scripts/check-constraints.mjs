@@ -230,6 +230,7 @@ const GENOTYPE_DISPLAY_PATH = [
   "supabase/migrations/0033_fields_for_the_viewer.sql",
   // 0044 redefines profile_for (adding the children fields); genotype stays
   // exactly as 0033 serves it (checked below).
+  "supabase/migrations/0048_height_star_sign_children_rule.sql",
   "supabase/migrations/0044_children_fields.sql",
   "lib/genotype.ts",
   "lib/genotype-actions.ts",
@@ -252,7 +253,7 @@ check("genotype is read only on the display path", (s, f) => {
 // 0033 is on the display path for two functions only; 0044 for profile_for only.
 check("0033 and 0044 touch genotype only in can_see_genotype and profile_for", (s, f) => {
   const p = f.replace(/\\/g, "/");
-  const fns = /0033_fields_for_the_viewer\.sql$/.test(p) ? ["can_see_genotype", "profile_for"] : /0044_children_fields\.sql$/.test(p) ? ["profile_for"] : null;
+  const fns = /0033_fields_for_the_viewer\.sql$/.test(p) ? ["can_see_genotype", "profile_for"] : /0044_children_fields\.sql$|0048_height_star_sign_children_rule\.sql$/.test(p) ? ["profile_for"] : null;
   if (!fns) return false;
   let rest = s;
   for (const name of fns) {
@@ -505,6 +506,8 @@ check("the number of children is never read by matching or ranking", (s, f) => {
   const fns = [...stripComments(s, f).matchAll(/create or replace function public\.(\w+)\(([\s\S]*?)\n\$\$;/g)];
   for (const [, name, body] of fns) {
     if (name === "profile_for") continue;
+    // 0048: the private two-way rule in today's six is the one other reader (PRD §5.2.5 Step 1).
+    if (name === "_children_rule_ok") continue;
     if (/(?<![\w.])(h|ph|profile_history)\.children\b|\bchildren_count\b/.test(body)) return `${name} reads the number of children`;
     if (/wants_children/.test(body) && !["profile_for", "passes_own_filters", "my_filters_active"].includes(name)) return `${name} reads wants_children`;
   }
@@ -2173,6 +2176,57 @@ check("no copy says paying gets better matches or a priority feed", (s, f) => {
   if (!/^(app|lib|content)\//.test(n)) return false;
   const hit = /better[- ]matched|better matches|priority (match )?feed|Included, with your filters/i.exec(s);
   return hit ? `says "${hit[0]}"` : false;
+});
+
+// --- Height, star sign and "Open to dating someone who has children?" (0048) ----
+// PRD §5.2: display-only (height, star sign) and private (open_to_children).
+// Nothing ranks, filters, models, tracks or hands them off.
+const PF_SQL_READERS = {
+  open_to_children: ["_children_rule_ok"],
+  height_cm: ["profile_for"],
+  show_star_sign: ["profile_for"],
+  star_sign: ["profile_for", "my_star_sign", "_star_sign"],
+};
+check("height, star sign and open_to_children are read only where they should be (SQL)", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  for (const [, name, body] of s.matchAll(/create or replace function public\.(\w+)\(([\s\S]*?)\n\$\$;/g)) {
+    for (const [col, allowed] of Object.entries(PF_SQL_READERS)) {
+      if (new RegExp(`\\b${col}\\b`).test(body) && !allowed.includes(name)) return `${name} reads ${col}`;
+    }
+  }
+  return false;
+});
+
+check("height, star sign and open_to_children stay out of the card, filters, models, analytics and the handoff", (s, f) => {
+  const n = f.replace(/\\/g, "/");
+  if (f.endsWith(".sql")) return false;
+  if (!/\b(height_cm|show_star_sign|star_sign|open_to_children|heightCm|starSign|openToChildren)\b/.test(s)) return false;
+  const allowed = /^(app\/\(app\)\/profile\/(profile-form|actions)\.tsx?|app\/\(app\)\/profile\/edit\/page\.tsx|components\/profile\/(height-field|full-profile)\.tsx|lib\/(height|full-profile|member-profile)\.ts|lib\/types\/profile\.ts)$/;
+  return allowed.test(n) ? false : "a profile field that is display-only or private is used outside the profile screens";
+});
+
+check("open_to_children is only ever read by its owner's edit screen", (s, f) => {
+  const n = f.replace(/\\/g, "/");
+  if (f.endsWith(".sql") || !/\bopen_to_children\b/.test(s)) return false;
+  return /^(app\/\(app\)\/profile\/(profile-form|actions)\.tsx?|lib\/types\/profile\.ts)$/.test(n) ? false : "open_to_children is touched outside the owner's own profile form";
+});
+
+check("a member filter or score term never reads height, star sign or open_to_children", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  for (const [, name, body] of s.matchAll(/create or replace function public\.(\w+)\(([\s\S]*?)\n\$\$;/g)) {
+    if (!/^(passes_own_filters|_viewer_filters_set|my_filters_active)$/.test(name)) continue;
+    if (/height|star_sign|open_to_children/.test(body)) return `${name} reads one of them`;
+  }
+  const raw = fs.readFileSync(f, "utf8");
+  const bad = raw.split(/\r?\n/).filter((l) => /-- term:/.test(l)).map((l) => l.replace(/--.*$/, "")).filter((l) => /height|star_sign|open_to_children/.test(l));
+  return bad.length ? `a score term reads ${bad[0].trim().slice(0, 70)}` : false;
+});
+
+check("member_filters has no column for height, star sign or the children rule", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const m = [...s.matchAll(/alter table public\.member_filters([\s\S]*?);/gi)].map((x) => x[1]).join(" ") +
+    (/create table (?:if not exists )?public\.member_filters\s*\(([\s\S]*?)\n\);/i.exec(s)?.[1] ?? "");
+  return /height|star_sign|open_to_children/.test(m) ? "member_filters gets a column for one of them" : false;
 });
 
 console.log("");

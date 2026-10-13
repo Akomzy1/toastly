@@ -11,6 +11,7 @@ import { Notice } from "@/components/ui/notice";
 import { CityPicker, type PickerCity } from "@/components/app/city-picker";
 import { TimeZoneField } from "@/components/app/time-zone-field";
 import { COUNTRY_NAME } from "@/lib/countries";
+import { HeightField } from "@/components/profile/height-field";
 import {
   CHILDREN_OPTIONS,
   HISTORY_LABELS,
@@ -71,12 +72,16 @@ export function ProfileForm({
   profile,
   history,
   cities,
+  starSign,
 }: {
   profile: Profile;
   history: ProfileHistory;
   cities: PickerCity[];
+  /** The member's own sign, from their date of birth (my_star_sign), for the preview. */
+  starSign: string | null;
 }) {
   const [state, action] = useFormState(saveProfile, null);
+  const [children, setChildren] = React.useState<string>(history.children ?? "");
   const country = profile.country_code || "NG";
 
   return (
@@ -239,6 +244,25 @@ export function ProfileForm({
           </div>
         </div>
 
+        {/* Height and star sign (PRD §5.2, 13 October 2026). PLAIN VERSION, NOT
+            IN THE PROTOTYPE — flagged; restyled when the Claude Design screens
+            arrive. Both are display-only: on the full profile, never on the
+            card, never a filter, never a score term. */}
+        <div className="grid gap-5 border-t border-ink-900/10 pt-5 sm:grid-cols-2">
+          <HeightField defaultCm={profile.height_cm} />
+
+          <div className="grid content-start gap-2">
+            <label htmlFor="show_star_sign" className="flex min-h-11 cursor-pointer items-center gap-3 text-ui font-medium text-ink-900">
+              <input id="show_star_sign" name="show_star_sign" type="checkbox" defaultChecked={profile.show_star_sign} className="h-5 w-5 accent-green-500" />
+              Show my star sign
+            </label>
+            <span className="text-caption text-grey-600">
+              {starSign ? `Yours is ${starSign}, worked out from your date of birth. ` : ""}
+              Off unless you turn it on. Only the sign is ever shown, never your date of birth.
+            </span>
+          </div>
+        </div>
+
         {/* A verified profession badge is a quiet secondary mark. It unlocks
             nothing, is never a prestige marker, and nobody is hidden or
             down-ranked for leaving these blank. */}
@@ -288,7 +312,8 @@ export function ProfileForm({
             <Select
               id="children"
               name="children"
-              defaultValue={history.children ?? ""}
+              value={children}
+              onChange={(e) => setChildren(e.target.value)}
             >
               <option value="">Not answered</option>
               {CHILDREN_OPTIONS.map((c) => (
@@ -306,6 +331,35 @@ export function ProfileForm({
           name="history_visibility"
           value={history.visibility}
         />
+
+        {/* The two-way children rule, said out loud where the answer is given
+            (PRD §5.2). Only when a number of 1 or more is chosen. */}
+        {["one", "two", "three_plus"].includes(children) ? (
+          <Notice tone="info">
+            If you add this, people who aren&rsquo;t open to dating someone with children won&rsquo;t be shown to you, and
+            you won&rsquo;t be shown to them. Your answer stays hidden until you match.
+          </Notice>
+        ) : null}
+
+        {/* PRIVATE (PRD §5.2, 13 October 2026): nobody else can ever read this —
+            not on any profile or card, not in any screen. Free on every plan. */}
+        <fieldset className="grid gap-2 border-t border-ink-900/10 pt-5">
+          <legend className="flex items-center gap-2 text-ui font-medium text-ink-900">
+            Open to dating someone who has children? <Badge variant="optional">Only you see this</Badge>
+          </legend>
+          <div className="flex gap-6">
+            {(["yes", "no"] as const).map((v) => (
+              <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-ink-900">
+                <input type="radio" name="open_to_children" value={v} defaultChecked={(profile.open_to_children ?? "yes") === v} className="h-5 w-5 accent-green-500" />
+                {v === "yes" ? "Yes" : "No"}
+              </label>
+            ))}
+          </div>
+          <span className="text-caption text-grey-600">
+            If you say No, people who have children aren&rsquo;t shown to you, and you aren&rsquo;t shown to them. Nobody sees
+            your answer, or who it kept out.
+          </span>
+        </fieldset>
 
         <div className="grid gap-3 border-t border-ink-900/10 pt-5">
           <Label htmlFor="wants_children">

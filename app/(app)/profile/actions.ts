@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isLiveCountry } from "@/lib/countries";
 import type { FieldVisibility } from "@/lib/types/profile";
+import { HEIGHT_MAX_CM, HEIGHT_MIN_CM, heightInRange } from "@/lib/height";
 
 export type ProfileState = { error?: string; ok?: string } | null;
 
@@ -49,6 +50,18 @@ export async function saveProfile(
   if (displayName.length < 2) {
     return { error: "Your name needs at least two characters." };
   }
+
+  // Height is stored in cm and is optional; the database refuses anything
+  // outside 120–220 too (0048). Never sent anywhere but the profile row.
+  const heightRaw = String(formData.get("height_cm") ?? "").trim();
+  const height = heightRaw === "" ? null : Number(heightRaw);
+  if (height !== null && !heightInRange(height)) {
+    return { error: `Height needs to be between ${HEIGHT_MIN_CM} and ${HEIGHT_MAX_CM} cm.` };
+  }
+  // PRIVATE (0048): "Open to dating someone who has children?" — only ever
+  // written here and read by its owner and the matching rule.
+  const openToChildrenRaw = String(formData.get("open_to_children") ?? "");
+  const openToChildren = openToChildrenRaw === "yes" || openToChildrenRaw === "no" ? openToChildrenRaw : null;
 
   const intent = String(formData.get("intent") ?? "");
   const history = String(formData.get("history") ?? "");
@@ -97,6 +110,10 @@ export async function saveProfile(
       languages,
       profession: optional(formData, "profession"),
       education: optional(formData, "education"),
+
+      height_cm: height,
+      show_star_sign: formData.get("show_star_sign") === "on",
+      open_to_children: openToChildren,
 
       tribe_visibility: vis(formData, "tribe_visibility", "public"),
       languages_visibility: vis(formData, "languages_visibility", "public"),

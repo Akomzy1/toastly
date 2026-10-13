@@ -165,20 +165,20 @@ test("Starter has no filter access", async () => {
   assert.equal(await passes(starter, noShown), true);
 });
 
-test("the number of children can't be filtered, or read by matching or ranking", async () => {
+test("the number of children can't be filtered or ranked on; its one matching use is the private two-way rule (0048)", async () => {
   const { db } = await setup();
   // No filter column for it, and no value it could take.
   const cols = (await db.query("select column_name from information_schema.columns where table_name = 'member_filters'")).rows.map((r) => r.column_name);
   assert.deepEqual(cols.filter((c) => /child/.test(c)).sort(), ["wants_children", "wants_children_include_unsaid"]);
 
-  // No database function but profile_for reads the column.
+  // No database function but profile_for and the two-way rule (0048) reads the column.
   const readers = (await db.query(
     `select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.prosrc ~ '(^|[^a-z_.])(h|ph|profile_history)\\.children\\M'`,
   )).rows.map((r) => r.proname);
-  assert.deepEqual(readers, ["profile_for"]);
+  assert.deepEqual(readers, ["_children_rule_ok", "profile_for"]);
 
-  // And it changes nothing: the same people, the same filter verdicts and
+  // And, for a viewer who hasn't said No, it changes nothing: the same people, the same filter verdicts and
   // the same six, in two worlds that differ only in the counts.
   async function world(countA, countB) {
     const w = await setup();

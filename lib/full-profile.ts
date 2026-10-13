@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { canSendText } from "@/lib/feed";
 import { shownFaithLine } from "@/lib/faith";
 import { genotypeForOthers } from "@/lib/genotype";
+import { formatHeight } from "@/lib/height";
 import { getMemberProfile } from "@/lib/member-profile";
 import type { FullProfileOrigin, FullProfileView } from "@/lib/full-profile-view";
 import { CHILDREN_SHOWN, HISTORY_LABELS, INTENT_LABELS, WANTS_CHILDREN_LABELS, type Tier } from "@/lib/types/profile";
@@ -72,6 +73,10 @@ export async function loadFullProfile(
   if (faith) details.push({ label: "Faith", value: faith });
   if (m.profession) details.push({ label: "Profession", value: m.profession, verified: m.profession_verified === true });
   if (m.education) details.push({ label: "Education", value: m.education });
+  // 0048: height (cm and ft/in) and, only if the owner turned it on, the sign.
+  // Full profile only — neither is ever on the feed card.
+  if (typeof m.height_cm === "number") details.push({ label: "Height", value: formatHeight(m.height_cm) });
+  if (m.star_sign) details.push({ label: "Star sign", value: m.star_sign });
   if (m.history) details.push({ label: "Relationship history", value: HISTORY_LABELS[m.history] });
   // 0044: shown only if profile_for returned them for this viewer.
   if (m.children) details.push({ label: "Children", value: CHILDREN_SHOWN[m.children] });

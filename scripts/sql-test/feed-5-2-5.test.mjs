@@ -353,7 +353,7 @@ const FORBIDDEN = /religion|tribe|language|denomination|history|children|genotyp
 // Two helpers are reached by design and are not descended into:
 //   profile_is_live, assert_live — the live-profile gate (PRD §5.1.2), which looks at photos to decide LIVE.
 //   passes_own_filters, _viewer_filters_set — the viewer's own opt-in filters (PRD §5.2.4).
-const SANCTIONED = new Set(["profile_is_live", "passes_own_filters", "_viewer_filters_set", "assert_live"]);
+const SANCTIONED = new Set(["profile_is_live", "passes_own_filters", "_viewer_filters_set", "assert_live", "_children_rule_ok"]);
 
 async function reachableReads(db, roots) {
   const procs = (await db.query(
@@ -365,7 +365,8 @@ async function reachableReads(db, roots) {
   const walk = (name) => {
     if (seen.has(name) || !bySrc.has(name)) return;
     seen.add(name);
-    const src = strip(bySrc.get(name));
+    // The two-way children rule (0048) is a separate, sanctioned helper: its name is not a read.
+    const src = strip(bySrc.get(name)).replace(/_children_rule_ok/g, "");
     const m = src.match(FORBIDDEN);
     if (m) hits.push(`${name}: ${m[0]}`);
     for (const other of bySrc.keys()) {
