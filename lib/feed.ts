@@ -12,6 +12,17 @@ import type { Tier } from "@/lib/types/profile";
  */
 export const DAILY_MATCH_COUNT = 6;
 
+/**
+ * Fewer than six qualified today (PRD §5.2.5). Said plainly; the rules —
+ * a man and a woman, each inside the other's age range — are never relaxed to
+ * fill the six.
+ */
+export function fewFitLine(n: number): string {
+  return n === 1
+    ? "Only 1 person fits today — Lagos is still growing."
+    : `Only ${n} people fit today — Lagos is still growing.`;
+}
+
 export type FeedCandidate = {
   id: string;
   display_name: string;

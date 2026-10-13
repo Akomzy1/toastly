@@ -662,7 +662,7 @@ check("diaspora-to-diaspora is per-city and off by default", (s, f) => {
 // Pools change who the six are drawn from. They must never change the six.
 check("pool choice never changes the daily count", (s, f) => {
   if (!f.endsWith(".sql") || !/build_daily_feed/.test(s)) return false;
-  return /limit daily_match_count\(\)/.test(s)
+  return /limit daily_match_count\(\)|_feed_pick\([^;]*daily_match_count\(\)(\s*-\s*\w+)?\)/.test(s)
     ? false
     : "the feed limit is not daily_match_count()";
 });
@@ -1587,7 +1587,9 @@ const LATEST_FEED = fs.readdirSync("supabase/migrations").filter((m) => /\.sql$/
   .filter((m) => /create or replace function public\.build_daily_feed/.test(fs.readFileSync(`supabase/migrations/${m}`, "utf8"))).pop();
 check("'Open to people living abroad' works both ways in the feed", (s, f) => {
   if (!LATEST_FEED || !norm(f).endsWith(LATEST_FEED)) return false;
-  const body = s.slice(s.indexOf("create or replace function public.build_daily_feed"));
+  // 0045 moved the selection into _feed_pick.
+  const start = s.indexOf("create or replace function public._feed_pick");
+  const body = s.slice(start >= 0 ? start : s.indexOf("create or replace function public.build_daily_feed"));
   if (!/p\.country_code = 'NG' and \(v_country = 'NG' or p\.open_to_abroad\)/.test(body)) return "members abroad still see members who switched it off";
   if (!/v_country = 'NG' and v_open\b/.test(body)) return "the member's own switch no longer filters their six";
   return false;
@@ -1943,11 +1945,11 @@ check("a filter reads only its owner's filters and only shown values", (s, f) =>
 });
 
 check("the feed applies only the member's own filters, to their own six", (s, f) => {
-  const fn = latestSqlFn("build_daily_feed");
+  const fn = latestSqlFn("_feed_pick") ?? latestSqlFn("build_daily_feed");
   if (!fn || !norm(f).endsWith(fn.file)) return false;
   const calls = [...fn.body.matchAll(/passes_own_filters\(([^)]*)\)/g)].map((m) => m[1].replace(/\s+/g, ""));
   if (calls.length !== 1) return "the feed doesn't apply the member's own filters exactly once";
-  return calls[0] === "p_profile_id,p.id" ? false : `passes_own_filters(${calls[0]}) — a filter would change who sees its owner`;
+  return /^(p_profile_id|p_viewer),p\.id$/.test(calls[0]) ? false : `passes_own_filters(${calls[0]}) — a filter would change who sees its owner`;
 });
 
 check("member filters are read only by their owner's screens and the rule", (s, f) => {
@@ -1955,7 +1957,7 @@ check("member filters are read only by their owner's screens and the rule", (s, 
   if (n.endsWith(".sql")) {
     const bad = [];
     for (const m of s.matchAll(/create or replace function public\.(\w+)[\s\S]*?\$\$([\s\S]*?)\$\$/g)) {
-      if (/\bmember_filters\b/.test(m[2]) && !/^(passes_own_filters|my_filters_active)$/.test(m[1])) bad.push(m[1]);
+      if (/\bmember_filters\b/.test(m[2]) && !/^(passes_own_filters|my_filters_active|_viewer_filters_set)$/.test(m[1])) bad.push(m[1]);
     }
     return bad.length ? `reads member_filters in ${bad.join(", ")}` : false;
   }
@@ -2100,6 +2102,32 @@ check("threat reports stay at the top of the review queue", (s, f) => {
 check("no profile view is recorded — no 'who viewed you'", (s) =>
   /profile_views?\b|viewed_(by|you|me|at)\b|who.?viewed|profile_viewed|views_count/i.test(s),
 );
+
+// --- Today's six: selection and score (PRD §5.2.5; 0045) -------------------
+// Plan tier is never a score input. Every score line in _feed_pick is tagged
+// `-- term:<name>`; none may read a plan, pool, diaspora status, filter or
+// optional field. (Comments are stripped by check(), so read the raw file.)
+check("a plan is never a score input in today's six", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const raw = fs.readFileSync(f, "utf8");
+  if (!/function public\._feed_pick/.test(raw)) return false;
+  const bad = raw.split(/\r?\n/).filter((l) => /-- term:/.test(l))
+    .map((l) => l.replace(/--.*$/, ""))
+    .filter((l) => /tier|entitle|subscription|premium|pool|diaspora|religion|tribe|language|history|child|genotype|profession|education|photo/i.test(l));
+  return bad.length ? `a score term reads ${bad[0].trim().slice(0, 80)}` : false;
+});
+
+check("today's six keeps its mutual gender and age rules", (s, f) => {
+  if (!f.endsWith(".sql")) return false;
+  const raw = fs.readFileSync(f, "utf8");
+  const i = raw.lastIndexOf("function public._feed_pick");
+  if (i < 0 || raw.indexOf("function public._feed_pick") !== i) return false;
+  const body = raw.slice(i, raw.indexOf("$$;", i + 40));
+  for (const r of ["gender", "age_mine", "age_theirs", "blocked", "reported", "passed", "cooldown", "active", "live"]) {
+    if (!new RegExp(`-- rule:${r}(?![\\w])`).test(body)) return `the rule:${r} line is missing`;
+  }
+  return false;
+});
 
 console.log("");
 if (failures.length) {

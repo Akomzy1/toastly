@@ -31,7 +31,7 @@ async function member(name, { country = "NG", pool = "back_home", diasporaPlan =
 const feed = async (id) => (await as(db, id, (tx) => tx.query("select candidate_id from build_daily_feed($1)", [id]))).rows.map((r) => r.candidate_id);
 const svc = (sql, params) => asService(db, (tx) => tx.query(sql, params));
 const asStaff = (sql, params) => as(db, staff, (tx) => tx.query(sql, params));
-const reset = () => db.exec("delete from daily_feed; delete from seen_candidates;");
+const reset = () => db.exec("delete from daily_feed; delete from feed_state; delete from feed_shown;");
 
 // --- PRD §5.6 ------------------------------------------------------------------
 

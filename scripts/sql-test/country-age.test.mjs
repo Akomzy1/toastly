@@ -28,9 +28,9 @@ const me = (id, sql, params) => as(db, id, (tx) => tx.query(sql, params));
 const row = async (id) => (await db.query("select * from profiles where id = $1", [id])).rows[0];
 const signals = async (id) => (await db.query("select signal::text, detail from integrity_reviews where profile_id = $1 order by created_at", [id])).rows;
 const feed = async (id) => (await me(id, "select candidate_id from build_daily_feed($1)", [id])).rows.map((r) => r.candidate_id);
-const reset = () => db.exec("delete from daily_feed; delete from seen_candidates;");
+const reset = () => db.exec("delete from daily_feed; delete from feed_state; delete from feed_shown;");
 // Only these members are new to the viewer, so the six can't be crowded by chance.
-const only = (viewer, ids) => db.query("insert into seen_candidates (profile_id, candidate_id) select $1, id from profiles where id <> $1 and not (id = any($2::uuid[])) on conflict do nothing", [viewer, ids]);
+const only = (viewer, ids) => db.query("insert into feed_shown (profile_id, candidate_id) select $1, id from profiles where id <> $1 and not (id = any($2::uuid[])) on conflict do nothing", [viewer, ids]);
 
 // --- Where you live -------------------------------------------------------------
 
@@ -170,7 +170,7 @@ test("the age range defaults around the member's own age, from config", async ()
   await db.query("update match_config set age_below = 4, age_above = 5, age_min_span = 9");
 });
 
-test("the age range filters only the member's own six, on every plan, and 70 means 70+", async () => {
+test("the age range limits the member's own six and who they are shown to, on every plan, and 70 means 70+", async () => {
   await reset();
   const thisYear = new Date().getUTCFullYear();
   const viewer = await member("Viewer 30", { dob: `${thisYear - 30}-01-01` });
@@ -187,11 +187,13 @@ test("the age range filters only the member's own six, on every plan, and 70 mea
   await reset();
   await me(tooOld, "update profiles set age_min = 18, age_max = 70 where id = $1", [tooOld]);
   await only(tooOld, [viewer]);
-  assert.ok((await feed(tooOld)).includes(viewer), "the filter is the viewer's own; others still see them");
+  // Mutual (PRD §5.2.5): her range takes him, but his range excludes her, so
+  // she is not shown to him — and he is not shown to her.
+  assert.ok(!(await feed(tooOld)).includes(viewer), "the range is mutual: he is outside none of hers, she is outside his");
   await reset();
   await me(viewer, "update profiles set age_min = 25, age_max = 70 where id = $1", [viewer]);
   await only(viewer, [inRange, tooOld]);
-  assert.ok((await feed(viewer)).includes(tooOld), "70 is 70+");
+  assert.ok((await feed(viewer)).includes(tooOld), "70 is 70+ (and she has widened hers too)");
   await assert.rejects(me(viewer, "update profiles set age_min = 17, age_max = 30 where id = $1", [viewer]));
   await assert.rejects(me(viewer, "update profiles set age_min = 30, age_max = 30 where id = $1", [viewer]));
 });

@@ -180,6 +180,29 @@ Toastly is non-religious: faith is something members may show, never something t
 - **What shows depends on the viewer:** each field renders per its own visibility rule for that viewer: relationship history only after a match unless the owner chose otherwise; genotype only where the owner chose to share with that viewer; faith only if shown. Hidden fields show nothing — no placeholder.
 - It carries the photos, Verified Real seal, prompt answers (the thing a member replies to), intent and the details block. No field appears that the PRD doesn't define. **Children** and **Wants children** are defined fields since 10 October 2026 (§5.2): each shows only per its own visibility for that viewer — Children after a match unless the owner chose otherwise, Wants children unless the owner hid it.
 
+### 5.2.5 How today's six are chosen (decided 12 October 2026; migration 0045)
+
+The six is chosen by one database function, not by the app. Eligibility is a set of hard rules; ordering is a score with its weights in a table (`feed_config`) so they can be tuned without a deploy.
+
+**Who can be in a member's six — all of these, every time.**
+- **Live, not paused, not themselves** — and no block either way, and not someone the member has reported.
+- **Mutual.** A man and a woman only (§7.3), and **each is inside the other's age range**. The member's own range applies to the candidate (as before) and the candidate's range now applies to the member — so nobody is shown to someone whose range excludes them. A member whose age isn't on record is never filtered out by age. There is no "who you'd like to meet" setting.
+- **Pool rules unchanged** (§5.6): Nigeria pool, "Open to people living abroad" both ways, diaspora-to-diaspora only for Diaspora plans in an open city.
+- **The member's own filters** (§5.2.4), shown values only, "Include people who don't say" on by default. Nothing else about a candidate's religion, tribe, language, history, children, profession, education, genotype or photos is read.
+- **Not already acted on:** not matched, not in a Gist together (any outcome), not replied to or from, and **not someone the member passed on**. A pass is permanent and private.
+- **Not shown too recently:** a member shown to you is not shown again for `seen_cooldown_days` (default 30). Ignoring someone is not a "no" — they can come back; passing is.
+- **Recently active:** seen in the app within `active_window_days` (default 14), from the presence heartbeat.
+
+**Order within the eligible — the score.** Weights as shipped, all in `feed_config`:
+intent closeness (same +0.6, one step +0.3, two steps 0, opposite ends −0.3, nothing when either side hasn't said); same city +0.4 (same country +0.1 is wired but **shipped at 0**, see below); seen within 2 days +0.3, within 7 days +0.15; +0.05 per prompt answer, counted up to 3; new member (first 7 days live) +0.2; exposure −(impressions today ÷ 50), capped at −0.5; random 0–0.2 as a tie-break.
+- **Plan tier is never a score input** — not the viewer's, not the candidate's. Paying changes which pools you can be in and whether your own filters apply; it never changes where anyone ranks. (This supersedes the "paid tiers may improve ordering" wording in §7.2; the shipped Pricing line "paying can improve how well those six are matched to you" needs a decision — see §11.)
+- **Never a score input:** diaspora status, religion, tribe, language, relationship history, children, profession, education, genotype, photos. Intent and city are the member's own stated preferences about matching, not protected attributes.
+- The exposure term spreads attention: a member already shown to many people today ranks lower for the next viewer.
+
+**Building the six.** Built the first time a member opens the app each day. A full six is fixed for that day; a short one fills as more people qualify (or the member widens their own filters), never past six. If someone in it stops being live or pauses, **their place is refilled once that day**, from the same rules. **If fewer than six qualify, fewer are shown — never relaxed to fill** — with: "Only {n} people fit today — Lagos is still growing."
+
+**Tests and the numbers.** Each rule is tested against a planted violation (the rule is removed and the wrong person must appear), and a 30-day simulation on synthetic members reports fill rate, how evenly attention spreads by gender, and who never appears in anyone's six. Weights are tuned from those numbers, then from real data.
+
 ### 5.3 Intent Spectrum (critical constraint)
 - Do not hard-gate on marriage at signup. Stated preference on a spectrum: *Just vibing → Getting to know people → Something serious → Marriage-minded.*
 - Users filter on it; brand leans intentional without amputating top-of-funnel liquidity.
@@ -257,7 +280,7 @@ Toastly is non-religious: faith is something members may show, never something t
 - **Diaspora members choose their pool explicitly** — back home, my diaspora, or either — among the pools their plan allows.
 - **Nigeria-based members get a setting: "Open to people living abroad"** — on by default, easy to switch off. Plenty of members want someone local and no long-distance or japa relationship. **It works both ways (decided 5 October 2026):** switched off, the member doesn't see members abroad and members abroad don't see them, so nobody abroad spends a Gist on someone who has said no to distance. It is still the member's own choice about their own matching; diaspora status must never be a ranking or scoring input.
 - **Where a member lives is asked at sign-up, right after the phone code** (decided 5 October 2026): pre-selected from the phone's country code, always confirmed by the member; members abroad then choose their city. It changes in settings at most once every 30 days, and every change is logged. A paid plan runs to the end of its period, then renews on the new country's plans. Members who joined before the step existed are asked once, on their next visit.
-- **Age range (decided 5 October 2026):** every member, free on every plan, sets the age range of their own six. It starts from a configurable range around the member's own age (four years below, five above, at least nine wide, on a scale of 18 to 70+). A member whose age isn't on record is never filtered out.
+- **Age range (decided 5 October 2026; made mutual 12 October 2026, §5.2.5):** every member, free on every plan, sets the age range of their own six — and, since 12 October, is not shown to anyone whose range excludes them. It starts from a configurable range around the member's own age (four years below, five above, at least nine wide, on a scale of 18 to 70+). A member whose age isn't on record is never filtered out.
 - **Diaspora location claims get extra scrutiny.** "I live abroad" is one of the oldest romance-scam cover stories (the oil-rig engineer, the soldier overseas, the customs fee). Profile country is checked against the phone's country code, the connection country at payment and the card's country, and mismatches go to the review queue as signals, never automatic action. The Safety Check (§5.1.1) asks *"Have they claimed an emergency abroad?"* Verified Real and the face-matched main photo do the heavy lifting; this is the backstop.
 
 ### 5.7 Couple Mode & AriyaPlanner Handoff
@@ -371,7 +394,7 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 4. Unlocking see-who-liked-you (the user's own data about themselves — it changes nothing in another user's feed)
 5. Paying for a **domestic naira subscription** (Premium or Premium Plus) — never a diaspora dollar subscription (§5.5)
 
-**Shipped Pricing copy (ratified):** *"Nobody buys your place in the six… paying can improve how well those six are matched to you, it never buys you more of them."* This is now literally true. Paid tiers may improve **match quality and ordering within a user's own six**; nothing a user buys inserts them into another user's six.
+**Shipped Pricing copy (ratified):** *"Nobody buys your place in the six… paying can improve how well those six are matched to you, it never buys you more of them."* This is now literally true. Nothing a user buys inserts them into another user's six. *(12 October 2026, §5.2.5: plan tier is no longer a score input, so "ordering" is not something a plan buys; the shipped line above awaits a decision, §11.)*
 
 **Corrections made to the first design pass:**
 1. **Couple Mode + AriyaPlanner handoff must be free/universal, not locked behind Premium Plus / Diaspora Plus.** This is Toastly's core differentiator and its actual LTV engine (Part 4 of the strategy doc) — gating the entry point to the wedding funnel behind the top subscription tier means a couple who falls for each other on Starter or base Premium never reaches AriyaPlanner unless they happen to upgrade at exactly the right moment. If a paywall belongs anywhere near this feature, it goes on *enhanced* Couple Mode extras, never on the bridge itself.
@@ -440,3 +463,7 @@ Earlier drafts of §7.1 listed Boosts and Super Likes as coin purchases. **That 
 - ~~Free-tier limit on voice Gist sessions~~ — **decided:** Starter = 1 started Gist a month (accepting is free), Diaspora = unlimited (see §7.1).
 - Handoff-conversion rate assumptions for the AriyaPlanner funnel (strategic thesis, not yet evidenced — validate with first cohort).
 - Exact city-unlock threshold for diaspora-to-diaspora matching and for Phase 2 live-streaming.
+- **Shipped "paying improves how well the six are matched" copy (12 October 2026, §5.2.5):** plan tier is no longer a score input, so the line on Pricing, the feed notice, `lib/llms.ts` and the audit page is no longer literally true. Either reword it to what paying does buy (pools, your own filters) or restore a tier-based ordering rule by explicit decision. Not edited yet.
+- **Same-country score weight (§5.2.5):** the brief asked for +0.1 for the same country. For a member in Nigeria that ranks members abroad below members in Nigeria, which is diaspora status as a score input (§5.6). Shipped at 0 until ruled on.
+- **Presence as a ranking input (§5.2.5):** the heartbeat table was introduced for "online now" inside an accepted Gist. Feeding it into the six keeps every timestamp inside the database, but it is a new use of that signal; confirm it, and say so in the privacy notice if it stays.
+

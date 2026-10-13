@@ -10,7 +10,7 @@ import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
 import { PoolPlanNotice } from "@/components/app/pool-plan-notice";
 import { getVisibleGenotypes } from "@/components/genotype/genotype-data";
 import { MatchCard } from "./match-card";
-import { DAILY_MATCH_COUNT, type FeedCandidate } from "@/lib/feed";
+import { DAILY_MATCH_COUNT, fewFitLine, type FeedCandidate } from "@/lib/feed";
 import { tooFewLine } from "@/lib/filters";
 import {
   isVerifiedReal,
@@ -165,6 +165,12 @@ export default async function FeedPage() {
             Your filters
           </Link>
         </Notice>
+      ) : null}
+
+      {/* Fewer than six qualified for a reason other than the member's own
+          filters: said honestly, and the rules are not relaxed (PRD §5.2.5). */}
+      {filtersActive !== true && cards.length > 0 && cards.length < DAILY_MATCH_COUNT ? (
+        <Notice tone="info">{fewFitLine(cards.length)}</Notice>
       ) : null}
 
       {cards.length === 0 && filtersActive === true ? null : cards.length === 0 ? (

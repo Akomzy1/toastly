@@ -154,6 +154,9 @@ export async function goLive(db, id, { phoneHash } = {}) {
   }
   await db.query("update profiles set pending_main_photo_id = $2 where id = $1", [id, photos[0]]);
   await db.query("select record_main_photo_match($1, 'matched')", [photos[0]]);
+  // 0045: only members seen in the app recently are shown. A live test member
+  // has just been in the app, as a live member would have been.
+  await db.query("insert into member_presence (profile_id, seen_at) values ($1, now()) on conflict (profile_id) do update set seen_at = excluded.seen_at", [id]);
   return photos;
 }
 
