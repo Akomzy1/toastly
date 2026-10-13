@@ -337,7 +337,7 @@ export function ProfileForm({
         {["one", "two", "three_plus"].includes(children) ? (
           <Notice tone="info">
             If you add this, people who aren&rsquo;t open to dating someone with children won&rsquo;t be shown to you, and
-            you won&rsquo;t be shown to them. Your answer stays hidden until you match.
+            you won&rsquo;t be shown to them. You choose who sees your answer.
           </Notice>
         ) : null}
 
