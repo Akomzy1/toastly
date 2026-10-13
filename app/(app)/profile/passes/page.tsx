@@ -8,9 +8,9 @@ export const metadata: Metadata = { title: "People you passed on", robots: { ind
 export const dynamic = "force-dynamic";
 
 /**
- * Settings → "People you passed on" (PRD §5.2.5). PLAIN VERSION, NOT IN THE
- * PROTOTYPE — flagged. Only the member's own passes: a name and a city, read
- * through my_passes(). Nobody else can see this list, and the people on it are
+ * Settings → "People you passed on" (PRD §5.2.5; design/prototype/not-for-me.html,
+ * states E and F). Only the member's own passes, read through my_passes(): a
+ * first name and when. Nobody else can see this list, and the people on it are
  * never told.
  */
 export default async function PassedPage() {
@@ -20,16 +20,17 @@ export default async function PassedPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const { data } = await supabase.rpc("my_passes");
-  const rows = (data ?? []) as { candidate_id: string; display_name: string; city: string | null }[];
+  const fmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Africa/Lagos" });
+  const rows = ((data ?? []) as { candidate_id: string; display_name: string; passed_at: string }[]).map((r) => ({
+    candidate_id: r.candidate_id,
+    display_name: r.display_name,
+    passed_on: fmt.format(new Date(r.passed_at)),
+  }));
 
   return (
     <>
-      <ScreenBand title="People you passed on" back="/profile/settings" />
-      <div className="mx-auto grid w-full max-w-[680px] content-start gap-3 px-3.5 pb-6 pt-[18px]">
-        <p className="m-0 text-ui text-grey-600">
-          They won&rsquo;t appear in your six. They&rsquo;re never told, and passing isn&rsquo;t a block or a report. Bring
-          someone back and they can appear again in a future six.
-        </p>
+      <ScreenBand title="People you passed on" sub="Settings" back="/profile/settings" />
+      <div className="mx-auto grid w-full max-w-[680px] content-start gap-3 px-3.5 pb-24 pt-4">
         <PassedList rows={rows} />
       </div>
     </>

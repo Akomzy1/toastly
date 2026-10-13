@@ -9,7 +9,7 @@ import { respondToInvite } from "@/app/(app)/gist/actions";
 import { Notice } from "@/components/ui/notice";
 import { SafetyPill } from "@/components/app/nav";
 import { ReportReasons } from "@/components/safety/report-reasons";
-import { NotForMe } from "@/components/feed/not-for-me";
+import { passOn } from "@/lib/pass-actions";
 import { originSub, type FullProfileView } from "@/lib/full-profile-view";
 
 /**
@@ -123,6 +123,20 @@ export function FullProfile({
     setBusy(false);
     if (res?.error) return setError(res.error);
     setPanel("blocked");
+  }
+
+  // "Not for me" (PRD §5.2.5): only for someone in the member's six. The
+  // person is never told; back on Today's six the card is closed, with an Undo.
+  async function pass() {
+    setBusy(true);
+    setError(null);
+    setPanel(null);
+    const res = await passOn(view.id);
+    if (!res.ok) {
+      setBusy(false);
+      return setError(res.error);
+    }
+    router.push(`/feed?passed=${view.id}`);
   }
 
   async function accept() {
@@ -298,12 +312,19 @@ export function FullProfile({
           </div>
         ) : null}
 
-        {/* "Not for me" (PRD §5.2.5): a quiet text action, only for someone in
-            the member's six. Separate from Block and Report in the ⋯ menu.
-            Plain version until the design arrives. */}
+        {/* "Not for me" (PRD §5.2.5; design/prototype/not-for-me.html): a plain
+            text link under the main action. No icon, no red. Only for someone
+            in the member's six; separate from Block and Report in the ⋯ menu. */}
         {view.origin === "six" ? (
-          <div className="grid justify-items-start px-0.5">
-            <NotForMe memberId={view.id} name={view.first} />
+          <div className="grid justify-items-center pt-1">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={pass}
+              className="min-h-11 border-0 bg-transparent px-4 py-2.5 text-[14px] font-medium text-grey-600 underline decoration-grey-600/40 underline-offset-[3px] hover:text-ink-900 hover:decoration-ink-900"
+            >
+              Not for me
+            </button>
           </div>
         ) : null}
       </div>
@@ -329,13 +350,21 @@ export function FullProfile({
       {panel ? <div onClick={close} aria-hidden="true" className="fixed inset-0 z-[60] bg-ink-900/[.42]" /> : null}
 
       {panel === "menu" ? (
-        <div role="menu" className="fixed right-2.5 top-[58px] z-[70] grid w-[220px] overflow-hidden rounded-lg border border-ink-900/[.12] bg-white shadow-[0_18px_40px_-20px_rgba(5,3,9,0.6)] lg:right-[calc(50%-270px)]">
-          <button type="button" role="menuitem" onClick={() => setPanel("report")} className="min-h-12 border-0 bg-transparent px-4 py-3 text-left text-[15px] font-medium text-ink-900 hover:bg-paper">
-            Report {first}
-          </button>
-          <button type="button" role="menuitem" onClick={() => setPanel("block")} className="min-h-12 border-0 border-t border-ink-900/10 bg-transparent px-4 py-3 text-left text-[15px] font-medium text-error hover:bg-paper">
-            Block {first}
-          </button>
+        <div role="menu" className="fixed right-2.5 top-[58px] z-[70] grid w-60 overflow-hidden rounded-xl border border-ink-900/[.12] bg-white shadow-[0_18px_40px_-20px_rgba(5,3,9,0.6)] lg:right-[calc(50%-270px)]">
+          {view.origin === "six" ? (
+            <button type="button" role="menuitem" disabled={busy} onClick={pass} className="grid min-h-[60px] gap-0.5 border-0 bg-transparent px-4 py-[11px] text-left hover:bg-paper">
+              <span className="text-[15px] font-medium text-ink-900">Not for me</span>
+              <span className="text-[13px] text-grey-600">{first} isn&rsquo;t told.</span>
+            </button>
+          ) : null}
+          <div className={`grid ${view.origin === "six" ? "border-t border-ink-900/[.14]" : ""}`}>
+            <button type="button" role="menuitem" onClick={() => setPanel("block")} className="min-h-12 border-0 bg-transparent px-4 py-3 text-left text-[15px] font-medium text-error hover:bg-paper">
+              Block
+            </button>
+            <button type="button" role="menuitem" onClick={() => setPanel("report")} className="min-h-12 border-0 border-t border-ink-900/10 bg-transparent px-4 py-3 text-left text-[15px] font-medium text-ink-900 hover:bg-paper">
+              Report
+            </button>
+          </div>
         </div>
       ) : null}
 

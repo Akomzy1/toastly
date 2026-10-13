@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { SafetyActions } from "@/components/safety/safety-actions";
+import { CardMenu } from "@/components/feed/card-menu";
 import type { FeedCandidate } from "@/lib/feed";
 import { GenotypeChip } from "@/components/genotype/genotype-chip";
 
@@ -27,8 +27,8 @@ export function MatchCard({
   candidate: FeedCandidate;
 }) {
   return (
-    <Card className="grid content-start gap-5 p-[26px]">
-      <div className="flex flex-wrap items-center gap-3">
+    <Card className="relative grid content-start gap-5 p-[26px]">
+      <div className="flex flex-wrap items-center gap-3 pr-9">
         <h2 className="text-h5 text-ink-900">{candidate.display_name}</h2>
         <Badge variant="verified">Verified Real</Badge>
         {candidate.stage === "id_confirmed" ? (
@@ -73,9 +73,10 @@ export function MatchCard({
         </div>
       ) : null}
 
-      {/* Report and block, on every card, for every member. This component
-          takes no plan and must never be given one. */}
-      <SafetyActions memberId={candidate.id} name={candidate.display_name} pass />
+      {/* The ⋯ menu (design/prototype/not-for-me.html): "Not for me" first,
+          then Block and Report as their own items — free for every member.
+          This component takes no plan and must never be given one. */}
+      <CardMenu memberId={candidate.id} name={candidate.display_name} />
     </Card>
   );
 }

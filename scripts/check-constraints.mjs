@@ -2157,7 +2157,7 @@ check("a pass is readable and deletable only by the member who made it", (s, f) 
 
 check("Not for me reads no plan and is no swipe", (s, f) => {
   const n = f.replace(/\\/g, "/");
-  if (!/lib\/pass-actions\.ts$|components\/feed\/(not-for-me|passed-list)\.tsx$/.test(n)) return false;
+  if (!/lib\/pass-actions\.ts$|components\/feed\/(pass-frame|card-menu|undo-toast|passed-list)\.tsx$/.test(n)) return false;
   return /current_tier|capabilities\(|entitlement|\btier\b|onTouch|onPointer|onDrag|swipe/i.test(stripStrings(s))
     ? "reads a plan or listens for a swipe"
     : false;

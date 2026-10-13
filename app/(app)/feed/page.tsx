@@ -10,6 +10,7 @@ import { FeedFallbackNotice } from "@/components/app/feed-fallback-notice";
 import { PoolPlanNotice } from "@/components/app/pool-plan-notice";
 import { getVisibleGenotypes } from "@/components/genotype/genotype-data";
 import { MatchCard } from "./match-card";
+import { PassFrame } from "@/components/feed/pass-frame";
 import { DAILY_MATCH_COUNT, fewFitLine, type FeedCandidate } from "@/lib/feed";
 import { tooFewLine } from "@/lib/filters";
 import {
@@ -41,7 +42,7 @@ function visibleTags(p: MemberProfile | undefined): string[] {
   return out;
 }
 
-export default async function FeedPage() {
+export default async function FeedPage({ searchParams }: { searchParams: { passed?: string } }) {
   const supabase = createClient();
   const {
     data: { user },
@@ -93,6 +94,13 @@ export default async function FeedPage() {
   const needsDiasporaPlan = poolRestriction === "tier" && (myCountry?.country_code ?? "NG") !== "NG";
 
   const ids = (feed ?? []).map((f: { candidate_id: string }) => f.candidate_id);
+
+  // Who in today's six the member has passed on ("Not for me", PRD §5.2.5):
+  // their own rows only (RLS). Those cards stay closed for the rest of the day.
+  const { data: passRows } = ids.length
+    ? await supabase.from("feed_passes").select("candidate_id").in("candidate_id", ids)
+    : { data: [] };
+  const passedIds = new Set((passRows ?? []).map((r: { candidate_id: string }) => r.candidate_id));
 
   // Another member is read only through profile_for (0033).
   const candidates = await getMemberProfiles(supabase, ids);
@@ -189,7 +197,15 @@ export default async function FeedPage() {
       ) : (
         <div className="grid gap-5">
           {cards.map((c) => (
-            <MatchCard key={c.id} candidate={c} />
+            <PassFrame
+              key={c.id}
+              memberId={c.id}
+              first={c.display_name.split(" ")[0]}
+              passed={passedIds.has(c.id)}
+              toastOnMount={searchParams.passed === c.id}
+            >
+              <MatchCard candidate={c} />
+            </PassFrame>
           ))}
         </div>
       )}
