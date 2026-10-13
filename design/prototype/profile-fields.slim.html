@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="assets/b15888ba-6f06-4e98-883e-20082be44470.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Aleo;src:url("assets/e0c67297-2341-49de-b9cf-09558d576688.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/a5e9d795-ffec-481a-bc52-21058b3f88d5.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/197e592a-c918-4099-b76a-ce9ac95bd3f5.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url("assets/7ded6ac0-471d-4163-8c9c-588782258909.woff2") format("woff2");font-weight:600;font-display:swap}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F6F2EA;font-family:Inter,system-ui,sans-serif;color:#050309;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#00695C}
+a:hover{color:#005449}
+</style>
+</helmet>
+
+
+<div style="min-height:100vh;padding:32px 16px 72px;display:flex;flex-direction:column;align-items:center;gap:24px">
+
+  <div style="width:100%;max-width:820px;display:grid;gap:10px">
+    <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#00695C">In-app surface · Profile fields</p>
+    <h1 style="margin:0;font-family:Aleo,Georgia,serif;font-size:clamp(24px,3vw,30px);font-weight:700;line-height:1.18">Height, star sign, and children</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#504E52;max-width:64ch;text-wrap:pretty">Height is optional, picked in cm or ft-in. Star sign is off by default and worked out from date of birth. Choosing 1, 2 or 3 or more children brings up a note about who you'll be shown to. Children and "Do you want children?" each have a "Who can see this" choice. "Open to dating someone who has children?" sits on its own, private card below Family. On the full profile, height and star sign appear as quiet chips with the other details; neither appears on the Today's six card.</p>
+    <div data-screen-label="Status note" style="margin-top:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+      <div style="padding:14px 16px;border-radius:14px;background:#E5F0EE;display:grid;gap:6px;align-content:start">
+        <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#00695C">Drawn on this page</p>
+        <p style="margin:0;font-size:14.5px;line-height:1.55;color:#1E1C21;text-wrap:pretty">Height, Star sign, the Family group, full-profile details.</p>
+      </div>
+      <div style="padding:14px 16px;border-radius:14px;background:#FFFFFF;border:1px solid rgba(5,3,9,0.12);display:grid;gap:6px;align-content:start">
+        <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Not drawn here</p>
+        <p style="margin:0;font-size:14.5px;line-height:1.55;color:#1E1C21;text-wrap:pretty">Name, city, about you, intent, profession, education, relationship history, time zone, diaspora city, genotype, and the per-field visibility on Tribe and Languages. Those keep their existing screens.</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="5">
+        <button type="button" sc-camel-on-click="{{ s.pick }}" style="padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:32px">
+
+    <div style="width:390px;max-width:100%;display:grid;gap:10px">
+      <p style="margin:0 4px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Profile edit</p>
+      <div data-screen-label="Profile edit" style="position:relative;width:100%;min-height:760px;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:hidden;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+
+        <div style="background:#001F1B;padding:20px 16px 18px;display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+          <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Edit profile</p>
+        </div>
+
+        <div style="padding:18px 14px 40px;display:grid;gap:10px;align-content:start">
+          <p style="margin:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Profile details</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+            <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <span style="font-size:15px;font-weight:500;color:#050309">Languages</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0">Igbo, English <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+            </div>
+            <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+              <span style="font-size:15px;font-weight:500;color:#050309">Tribe</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0">Igbo <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+            </div>
+
+            <button type="button" aria-expanded="{{ hOpen }}" aria-controls="height-picker" sc-camel-on-click="{{ toggleH }}" style="width:100%;min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;font-family:Inter,sans-serif;text-align:left;cursor:pointer">
+              <span style="display:grid;gap:3px;min-width:0">
+                <span style="font-size:15px;font-weight:500;color:#050309">Height</span>
+                <span style="font-size:13.5px;line-height:1.5;color:#504E52">Optional.</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0;text-align:right">{{ hValue }} <span aria-hidden="true" style="display:inline-block;color:#828184;font-size:16px;transform:rotate({{ hRot }});transition:transform .18s ease">›</span></span>
+            </button>
+            <sc-if value="{{ hOpen }}">
+              <div id="height-picker" style="padding:2px 15px 15px;display:grid;gap:12px">
+                <div role="radiogroup" aria-label="Height unit" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:#F2F2F2">
+                  <sc-for list="{{ units }}" as="u" hint-placeholder-count="2">
+                    <button type="button" role="radio" aria-checked="{{ u.on }}" sc-camel-on-click="{{ u.pick }}" style="min-height:44px;border:{{ u.border }};border-radius:10px;background:{{ u.bg }};color:{{ u.fg }};font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer">{{ u.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="position:relative;height:220px;border:1px solid rgba(5,3,9,0.12);border-radius:12px;overflow:hidden">
+                  <div aria-hidden="true" style="position:absolute;left:8px;right:8px;top:88px;height:44px;border-radius:10px;background:#E5F0EE;border:2px solid #00695C;pointer-events:none"></div>
+                  <div id="height-listbox" sc-camel-on-scroll="{{ onPick }}" role="listbox" aria-label="Height" sc-camel-tab-index="0" style="position:relative;height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:88px 0">
+                    <sc-for list="{{ hItems }}" as="h" hint-placeholder-count="5">
+                      <div role="option" aria-selected="{{ h.sel }}" sc-camel-on-click="{{ h.pick }}" style="height:44px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;font-size:{{ h.size }};font-weight:{{ h.weight }};color:{{ h.color }};font-variant-numeric:tabular-nums;cursor:pointer">{{ h.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+                  <button type="button" sc-camel-on-click="{{ clearH }}" style="min-height:44px;padding:0 2px;border:0;background:transparent;font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#00695C;text-decoration:underline;text-underline-offset:4px;cursor:pointer">Remove height</button>
+                  <button type="button" sc-camel-on-click="{{ doneH }}" style="min-height:44px;padding:10px 18px;border:0;border-radius:10px;background:#FFB300;color:#001F1B;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#FFC94C">Done</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <button type="button" role="switch" aria-checked="{{ starSw.on }}" sc-camel-on-click="{{ starSw.toggle }}" style="width:100%;min-height:64px;padding:14px 15px;display:flex;align-items:center;gap:14px;text-align:left;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;font-family:Inter,sans-serif;cursor:pointer">
+              <span style="flex:1;min-width:0;display:grid;gap:3px">
+                <span style="font-size:15px;font-weight:500;color:#050309">Show my star sign</span>
+                <span style="font-size:13.5px;line-height:1.5;color:#504E52;text-wrap:pretty">Worked out from your date of birth.</span>
+              </span>
+              <span aria-hidden="true" style="flex-shrink:0;position:relative;width:48px;height:28px;border-radius:999px;background:{{ starSw.track }};transition:background .18s ease">
+                <span style="position:absolute;top:3px;left:{{ starSw.knob }};width:22px;height:22px;border-radius:999px;background:#FFFFFF;box-shadow:0 1px 3px rgba(5,3,9,0.3);transition:left .18s ease"></span>
+              </span>
+            </button>
+            <sc-if value="{{ starOn }}">
+              <div aria-live="polite" style="padding:0 15px 14px;display:flex">
+                <span style="padding:6px 12px;border-radius:999px;background:#FFEFCC;color:#4C3500;font-size:13.5px;font-weight:600">You're a Leo</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <p style="margin:12px 2px 0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Faith</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+            <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <span style="font-size:15px;font-weight:500;color:#050309">Religion</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52">Christian <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+            </div>
+            <div style="min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(5,3,9,0.1)">
+              <span style="display:grid;gap:3px">
+                <span style="font-size:15px;font-weight:500;color:#050309">Denomination</span>
+                <span style="font-size:13.5px;line-height:1.5;color:#504E52">Optional</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52">Pentecostal <span aria-hidden="true" style="color:#828184;font-size:16px">›</span></span>
+            </div>
+            <div style="min-height:64px;padding:14px 15px;display:flex;align-items:center;gap:14px;border-top:1px solid rgba(5,3,9,0.1)">
+              <span style="flex:1;font-size:15px;font-weight:500;color:#050309">Show on my profile</span>
+              <span aria-hidden="true" style="flex-shrink:0;position:relative;width:48px;height:28px;border-radius:999px;background:#00695C">
+                <span style="position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:999px;background:#FFFFFF;box-shadow:0 1px 3px rgba(5,3,9,0.3)"></span>
+              </span>
+            </div>
+          </div>
+          <p style="margin:2px 2px 0;font-size:13.5px;line-height:1.55;color:#504E52;text-wrap:pretty">Optional. Toastly never uses it to decide who sees you.</p>
+
+          <p style="margin:12px 2px 0;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Family</p>
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;display:grid;overflow:hidden">
+            <button type="button" aria-expanded="{{ kidsOpen }}" aria-controls="fam-kids-list" sc-camel-on-click="{{ toggleKids }}" style="width:100%;min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:transparent;font-family:Inter,sans-serif;text-align:left;cursor:pointer">
+              <span style="display:grid;gap:3px;min-width:0">
+                <span style="font-size:15px;font-weight:500;color:#050309">Children</span>
+                <span style="font-size:13.5px;line-height:1.5;color:#504E52">Optional</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0;text-align:right">{{ kidsValue }} <span aria-hidden="true" style="display:inline-block;color:#828184;font-size:16px;transform:rotate({{ kidsRot }});transition:transform .18s ease">›</span></span>
+            </button>
+            <sc-if value="{{ kidsOpen }}">
+              <div id="fam-kids-list" role="radiogroup" aria-label="Children" style="padding:2px 15px 15px;display:grid;gap:8px">
+                <sc-for list="{{ kidsOptions }}" as="o" hint-placeholder-count="5">
+                  <button type="button" role="radio" aria-checked="{{ o.selected }}" sc-camel-on-click="{{ o.pick }}" style="width:100%;min-height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:{{ o.border }};border-radius:12px;background:{{ o.bg }};font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#050309;text-align:left;cursor:pointer" style-hover="border-color:#00695C">
+                    <span>{{ o.label }}</span>
+                    <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;border-radius:999px;border:1.5px solid {{ o.ring }};display:grid;place-items:center">
+                      <span style="width:12px;height:12px;border-radius:999px;background:{{ o.dot }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ kidsNote }}">
+              <div aria-live="polite" style="padding:0 15px 14px">
+                <p style="margin:0;padding:12px 13px;border-radius:12px;background:#F6F2EA;font-size:13.5px;line-height:1.55;color:#1E1C21;text-wrap:pretty">If you add this, people who aren't open to dating someone with children won't be shown to you, and you won't be shown to them. You choose who sees your answer.</p>
+              </div>
+            </sc-if>
+            <button type="button" aria-expanded="{{ kidsVisOpen }}" aria-controls="fam-kids-vis" disabled="{{ kidsVis.disabled }}" sc-camel-on-click="{{ toggleKidsVis }}" style="width:100%;min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;font-family:Inter,sans-serif;text-align:left;cursor:{{ kidsVis.cursor }};opacity:{{ kidsVis.opacity }}">
+              <span style="font-size:15px;font-weight:500;color:#050309">Who can see this</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0;text-align:right">{{ kidsVis.value }} <span aria-hidden="true" style="display:inline-block;color:#828184;font-size:16px;transform:rotate({{ kidsVis.rot }});transition:transform .18s ease">›</span></span>
+            </button>
+            <sc-if value="{{ kidsVisOpen }}">
+              <div id="fam-kids-vis" role="radiogroup" aria-label="Who can see children" style="padding:2px 15px 15px;display:grid;gap:8px">
+                <sc-for list="{{ kidsVisOptions }}" as="o" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ o.selected }}" sc-camel-on-click="{{ o.pick }}" style="width:100%;min-height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:{{ o.border }};border-radius:12px;background:{{ o.bg }};font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#050309;text-align:left;cursor:pointer" style-hover="border-color:#00695C">
+                    <span>{{ o.label }}</span>
+                    <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;border-radius:999px;border:1.5px solid {{ o.ring }};display:grid;place-items:center">
+                      <span style="width:12px;height:12px;border-radius:999px;background:{{ o.dot }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <p style="margin:0;padding:0 15px 14px;font-size:13.5px;line-height:1.5;color:#504E52">Also applies to relationship history.</p>
+
+            <button type="button" aria-expanded="{{ wantOpen }}" aria-controls="fam-want-list" sc-camel-on-click="{{ toggleWant }}" style="width:100%;min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;font-family:Inter,sans-serif;text-align:left;cursor:pointer">
+              <span style="display:grid;gap:3px;min-width:0">
+                <span style="font-size:15px;font-weight:500;color:#050309">Do you want children?</span>
+                <span style="font-size:13.5px;line-height:1.5;color:#504E52">Optional</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0;text-align:right">{{ wantValue }} <span aria-hidden="true" style="display:inline-block;color:#828184;font-size:16px;transform:rotate({{ wantRot }});transition:transform .18s ease">›</span></span>
+            </button>
+            <sc-if value="{{ wantOpen }}">
+              <div id="fam-want-list" role="radiogroup" aria-label="Do you want children?" style="padding:2px 15px 15px;display:grid;gap:8px">
+                <sc-for list="{{ wantOptions }}" as="o" hint-placeholder-count="4">
+                  <button type="button" role="radio" aria-checked="{{ o.selected }}" sc-camel-on-click="{{ o.pick }}" style="width:100%;min-height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:{{ o.border }};border-radius:12px;background:{{ o.bg }};font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#050309;text-align:left;cursor:pointer" style-hover="border-color:#00695C">
+                    <span>{{ o.label }}</span>
+                    <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;border-radius:999px;border:1.5px solid {{ o.ring }};display:grid;place-items:center">
+                      <span style="width:12px;height:12px;border-radius:999px;background:{{ o.dot }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <button type="button" aria-expanded="{{ wantVisOpen }}" aria-controls="fam-want-vis" disabled="{{ wantVis.disabled }}" sc-camel-on-click="{{ toggleWantVis }}" style="width:100%;min-height:56px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-top:1px solid rgba(5,3,9,0.1);background:transparent;font-family:Inter,sans-serif;text-align:left;cursor:{{ wantVis.cursor }};opacity:{{ wantVis.opacity }}">
+              <span style="font-size:15px;font-weight:500;color:#050309">Who can see this</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:14px;color:#504E52;min-width:0;text-align:right">{{ wantVis.value }} <span aria-hidden="true" style="display:inline-block;color:#828184;font-size:16px;transform:rotate({{ wantVis.rot }});transition:transform .18s ease">›</span></span>
+            </button>
+            <sc-if value="{{ wantVisOpen }}">
+              <div id="fam-want-vis" role="radiogroup" aria-label="Who can see your answer" style="padding:2px 15px 15px;display:grid;gap:8px">
+                <sc-for list="{{ wantVisOptions }}" as="o" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ o.selected }}" sc-camel-on-click="{{ o.pick }}" style="width:100%;min-height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:{{ o.border }};border-radius:12px;background:{{ o.bg }};font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#050309;text-align:left;cursor:pointer" style-hover="border-color:#00695C">
+                    <span>{{ o.label }}</span>
+                    <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;border-radius:999px;border:1.5px solid {{ o.ring }};display:grid;place-items:center">
+                      <span style="width:12px;height:12px;border-radius:999px;background:{{ o.dot }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+
+          <div role="group" aria-labelledby="open-kids-q" style="margin-top:6px;border-radius:16px;background:#E5F0EE;padding:15px;display:grid;gap:12px">
+            <div style="display:grid;gap:5px">
+              <p id="open-kids-q" style="margin:0;font-size:15px;font-weight:500;line-height:1.4;color:#050309">Open to dating someone who has children?</p>
+              <p style="margin:0;display:flex;align-items:center;gap:6px;font-size:13.5px;color:#504E52">
+                <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" stroke="#504E52" stroke-width="1.8"></rect><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="#504E52" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                Only you see this.
+              </p>
+            </div>
+            <div role="radiogroup" aria-labelledby="open-kids-q" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+              <sc-for list="{{ openOptions }}" as="o" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{ o.selected }}" sc-camel-on-click="{{ o.pick }}" style="min-height:48px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:{{ o.border }};border-radius:12px;background:#FFFFFF;font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#050309;cursor:pointer" style-hover="border-color:#00695C">
+                  <span>{{ o.label }}</span>
+                  <span aria-hidden="true" style="flex-shrink:0;width:20px;height:20px;border-radius:999px;border:1.5px solid {{ o.ring }};display:grid;place-items:center">
+                    <span style="width:10px;height:10px;border-radius:999px;background:{{ o.dot }}"></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display:grid;gap:2px">
+              <p style="margin:0;font-size:13.5px;line-height:1.5;color:#1E1C21">If you don't answer, it counts as Yes.</p>
+              <p style="margin:0;font-size:13.5px;line-height:1.5;color:#504E52">Nobody sees your answer, or who it kept out.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+    <div style="width:390px;max-width:100%;display:grid;gap:10px">
+      <p style="margin:0 4px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">{{ f.title }}</p>
+      <div data-screen-label="{{ f.label }}" style="position:relative;width:100%;border:1px solid rgba(5,3,9,0.12);border-radius:20px;overflow:clip;background:#F6F2EA;box-shadow:0 24px 60px -40px rgba(5,3,9,0.55)">
+        <div style="background:#001F1B;padding:12px 6px 12px 16px;display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="color:#EBD9AE;font-size:20px;line-height:1">‹</span>
+          <div style="flex:1;min-width:0;display:grid;gap:2px">
+            <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:19px;font-weight:700;color:#FFFFFF">Amaka's profile</p>
+            <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.66)">{{ f.origin }}</p>
+          </div>
+          <span aria-hidden="true" style="flex-shrink:0;width:44px;height:44px;display:grid;place-items:center">
+            <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none"><circle cx="5.5" cy="12" r="1.6" fill="#EBD9AE"></circle><circle cx="12" cy="12" r="1.6" fill="#EBD9AE"></circle><circle cx="18.5" cy="12" r="1.6" fill="#EBD9AE"></circle></svg>
+          </span>
+        </div>
+
+        <div style="padding:14px 14px 28px;display:grid;gap:22px;align-content:start">
+          <div style="display:grid;gap:10px">
+            <div style="aspect-ratio:4/5;border-radius:16px;overflow:hidden;background:#E5F0EE">
+              <img src="assets/9ad909c3-99ef-42ae-8469-a8f9acae44f0.jpg" alt="Amaka, main photo" style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
+            <div aria-hidden="true" style="display:flex;justify-content:center;gap:8px;padding:7px 0">
+              <span style="width:18px;height:7px;border-radius:999px;background:#001F1B"></span>
+              <span style="width:7px;height:7px;border-radius:999px;background:#D9D9DA"></span>
+              <span style="width:7px;height:7px;border-radius:999px;background:#D9D9DA"></span>
+              <span style="width:7px;height:7px;border-radius:999px;background:#D9D9DA"></span>
+              <span style="width:7px;height:7px;border-radius:999px;background:#D9D9DA"></span>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:14px;padding:0 2px">
+            <div style="display:grid;gap:4px">
+              <h2 style="margin:0;font-family:Aleo,Georgia,serif;font-size:24px;font-weight:700;line-height:1.2;color:#050309">Amaka, 29</h2>
+              <p style="margin:0;font-size:14px;color:#504E52">Victoria Island, Lagos</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span aria-hidden="true" style="flex-shrink:0;width:36px;height:36px;border-radius:999px;background:#001F1B;display:grid;place-items:center">
+                <svg width="26" height="26" sc-camel-view-box="-1.5 -1.5 27 27" fill="none"><circle cx="12" cy="12" r="12.2" stroke="#EBD9AE" stroke-width="0.9"></circle><path d="M12 2.5 14.1 4l2.5-.5.9 2.4 2.2 1.3-.6 2.5 1.5 2.1-1.5 2.1.6 2.5-2.2 1.3-.9 2.4-2.5-.5L12 21.5 9.9 20l-2.5.5-.9-2.4-2.2-1.3.6-2.5L3.4 12l1.5-2.1-.6-2.5 2.2-1.3.9-2.4 2.5.5z" stroke="#FFB300" stroke-width="1.3" stroke-linejoin="round"></path><path d="m8.6 12.2 2.3 2.3 4.5-4.8" stroke="#FFB300" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </span>
+              <span style="display:grid;gap:1px;min-width:0">
+                <span style="font-size:14px;font-weight:600;color:#050309">Verified Real</span>
+                <span style="font-size:13px;line-height:1.4;color:#504E52">Photos match their selfie · ID checked</span>
+              </span>
+            </div>
+            <p style="margin:0;font-size:14.5px;color:#504E52">Something serious</p>
+          </div>
+
+          <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:16px 14px 14px;display:grid;gap:14px">
+            <div style="display:grid;gap:6px">
+              <p style="margin:0;font-family:Aleo,Georgia,serif;font-size:18px;font-weight:700;line-height:1.3;color:#050309;text-wrap:balance">A Sunday that feels like me…</p>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#1E1C21;text-wrap:pretty">“Jollof at my aunty's in Surulere, a long call with my brother in Leeds, then choir practice I pretend not to enjoy.”</p>
+            </div>
+            <button type="button" style="min-height:44px;padding:10px 14px;border:1px solid rgba(5,3,9,0.2);border-radius:10px;background:transparent;color:#050309;font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer" style-hover="border-color:#00695C;background:#E5F0EE">Reply to this</button>
+          </div>
+
+          <div style="display:grid;gap:6px">
+            <p style="margin:0;padding:0 2px;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#504E52">Details</p>
+            <div style="border:1px solid rgba(5,3,9,0.12);border-radius:16px;background:#FFFFFF;padding:2px 15px">
+              <dl style="margin:0;display:grid">
+                <sc-for list="{{ f.details }}" as="r" hint-placeholder-count="8">
+                  <div style="min-height:44px;padding:10px 0;display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-top:{{ r.rule }}">
+                    <dt style="flex-shrink:0;font-size:13.5px;color:#504E52">{{ r.label }}</dt>
+                    <dd style="margin:0;display:grid;justify-items:end;gap:3px;text-align:right">
+                      <span style="font-size:14.5px;font-weight:500;color:#1E1C21">{{ r.value }}</span>
+                      <sc-if value="{{ r.verified }}">
+                        <span style="display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:#00695C">
+                          <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="#00695C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                          Verified
+                        </span>
+                      </sc-if>
+                    </dd>
+                  </div>
+                </sc-for>
+              </dl>
+              <sc-if value="{{ f.hasChips }}">
+                <div style="padding:12px 0 14px;border-top:1px solid rgba(5,3,9,0.1);display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="2">
+                    <span style="padding:6px 12px;border-radius:999px;background:#F2F2F2;color:#1E1C21;font-size:13.5px;font-weight:500">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:880,&quot;height&quot;:1200}}">
+const KIDS = ["None", "1", "2", "3 or more", "Prefer not to say"];
+const KIDS_PNS = 4;
+const WANT = ["Yes", "No", "Open to it", "Not sure yet"];
+const OPEN = ["Yes", "No"];
+const VIS = ["Revealed when we match", "On my profile", "Only me"];
+const MIN = 120, MAX = 220, ROW = 44;
+const ftIn = cm => { const t = Math.round(cm / 2.54); return Math.floor(t / 12) + "′" + (t % 12) + "″"; };
+const BASE = { unit: "cm", height: null, open: null, star: false, kids: null, want: 2, kidsVis: 0, wantVis: 1, openKids: null };
+const PRESETS = {
+  empty: { ...BASE },
+  picker: { ...BASE, height: 170, open: "h" },
+  ftin: { ...BASE, height: 170, open: "h", unit: "ft" },
+  star: { ...BASE, height: 170, star: true },
+  kids: { ...BASE, height: 170, star: true, kids: 2 },
+  vis: { ...BASE, height: 170, star: true, kids: 2, open: "kidsVis" }
+};
+class Component extends DCLogic {
+  state = { preset: "kids", ...PRESETS.kids };
+  pickEl = null;
+  opts(unit) {
+    if (unit === "cm") { const a = []; for (let cm = MIN; cm <= MAX; cm++) a.push({ cm, label: cm + " cm" }); return a; }
+    const a = []; for (let t = Math.round(MIN / 2.54); t <= Math.round(MAX / 2.54); t++) a.push({ cm: Math.min(MAX, Math.max(MIN, Math.round(t * 2.54))), label: Math.floor(t / 12) + "′" + (t % 12) + "″" });
+    return a;
+  }
+  idxFor(unit, cm) {
+    const o = this.opts(unit); let best = 0;
+    o.forEach((x, i) => { if (Math.abs(x.cm - cm) < Math.abs(o[best].cm - cm)) best = i; });
+    return best;
+  }
+  syncScroll() {
+    const tok = (this._tok = (this._tok || 0) + 1);
+    let tries = 0;
+    const step = () => {
+      if (tok !== this._tok || this.state.open !== "h") return;
+      const el = document.getElementById("height-listbox");
+      const top = this.idxFor(this.state.unit, this.state.height ?? 165) * ROW;
+      if ((!el || el.scrollHeight - el.clientHeight < top) && tries++ < 40) return setTimeout(step, 16);
+      if (!el) return;
+      this._quietUntil = Date.now() + 250;
+      this._userScrolled = false;
+      el.scrollTop = top;
+    };
+    setTimeout(step, 0);
+  }
+  componentDidMount() { if (this.state.open === "h") this.syncScroll(); }
+  chip(label, active, pick) {
+    return { label, pick, bg: active ? "#001F1B" : "#FFFFFF", fg: active ? "#FFFFFF" : "#504E52", border: active ? "#001F1B" : "rgba(5,3,9,0.18)" };
+  }
+  radio(label, sel, pick) {
+    return { label, selected: sel, pick, border: sel ? "2px solid #00695C" : "1px solid rgba(5,3,9,0.18)", bg: sel ? "#E5F0EE" : "#FFFFFF", ring: sel ? "#00695C" : "#828184", dot: sel ? "#00695C" : "transparent" };
+  }
+  sw(on, enabled, toggle) {
+    const v = enabled && on;
+    return { on: v, disabled: !enabled, cursor: enabled ? "pointer" : "default", opacity: enabled ? 1 : 0.5, track: v ? "#00695C" : "#828184", knob: v ? "23px" : "3px", toggle: () => enabled && toggle() };
+  }
+  act(p) { this.setState({ preset: null, ...p }); }
+  renderVals() {
+    const s = this.state;
+    const hOpen = s.open === "h";
+    const fmt = cm => s.unit === "cm" ? cm + " cm" : ftIn(cm);
+    const selIdx = this.idxFor(s.unit, s.height ?? 165);
+    const items = this.opts(s.unit).map((o, i) => {
+      const sel = i === selIdx;
+      return { label: o.label, sel, size: sel ? "17px" : "15px", weight: sel ? 600 : 400, color: sel ? "#050309" : "#828184",
+        pick: () => { this.act({ height: o.cm }); this.syncScroll(); } };
+    });
+    const ROWS = {
+      languages: ["Languages", "Igbo · English"], tribe: ["Tribe", "Igbo"],
+      height: ["Height", s.height !== null ? ftIn(s.height) + " · " + s.height + " cm" : ""], star: ["Star sign", "Leo"],
+      faith: ["Faith", "Christian · Pentecostal"], profession: ["Profession", "Product manager", true],
+      education: ["Education", "BSc, University of Lagos"], kids: ["Children", s.kids !== null ? KIDS[s.kids] : ""],
+      want: ["Wants children", s.want !== null ? WANT[s.want] : ""], history: ["Relationship history", "Never married"]
+    };
+    const kidsAns = s.kids !== null && s.kids !== KIDS_PNS;
+    const allow = (v, match) => v === 0 ? match : v === 1;
+    const visObj = (k, enabled, v) => ({ disabled: !enabled, cursor: enabled ? "pointer" : "default", opacity: enabled ? 1 : 0.5, value: VIS[v], rot: s.open === k && enabled ? "90deg" : "0deg" });
+    const frame = match => {
+      const keys = ["languages", "tribe", "faith", "profession", "education"];
+      if (kidsAns && allow(s.kidsVis, match)) keys.push("kids");
+      if (s.want !== null && allow(s.wantVis, match)) keys.push("want");
+      if (allow(s.kidsVis, match)) keys.push("history");
+      return { origin: match ? "Matched" : "Today's six", title: match ? "Full profile · as a match sees it" : "Full profile · as a non-match sees it", label: match ? "Full profile · match" : "Full profile · non-match",
+        chips: [s.height !== null ? ftIn(s.height) + " · " + s.height + " cm" : null, s.star ? "Leo" : null].filter(Boolean).map(label => ({ label })),
+        hasChips: s.height !== null || s.star,
+        details: keys.map((k, i) => ({ label: ROWS[k][0], value: ROWS[k][1], verified: !!ROWS[k][2], rule: i ? "1px solid rgba(5,3,9,0.1)" : "0" })) };
+    };
+    return {
+      states: [["empty", "Nothing added"], ["picker", "Height picker · cm"], ["ftin", "Height picker · ft-in"], ["star", "Star sign on"], ["kids", "Children: 2 · note"], ["vis", "Who can see this"]]
+        .map(([k, l]) => this.chip(l, s.preset === k, () => { this.setState({ preset: k, ...PRESETS[k] }); if (PRESETS[k].open === "h") this.syncScroll(); })),
+      hOpen, hRot: hOpen ? "90deg" : "0deg",
+      hValue: s.height === null ? "Not added" : fmt(s.height),
+      toggleH: () => { this.act({ open: hOpen ? null : "h", height: s.height ?? (hOpen ? null : 165) }); if (!hOpen) this.syncScroll(); },
+      units: [["cm", "cm"], ["ft", "ft-in"]].map(([k, l]) => ({ label: l, on: s.unit === k, pick: () => { this.act({ unit: k }); this.syncScroll(); },
+        bg: s.unit === k ? "#FFFFFF" : "transparent", fg: s.unit === k ? "#050309" : "#504E52", border: s.unit === k ? "1px solid rgba(5,3,9,0.12)" : "1px solid transparent" })),
+      hItems: items,
+      onPick: e => {
+        const el = e.currentTarget;
+        if (Date.now() < (this._quietUntil || 0)) return;
+        const o = this.opts(this.state.unit);
+        const i = Math.min(o.length - 1, Math.max(0, Math.round(el.scrollTop / ROW)));
+        if (i === this.idxFor(this.state.unit, this.state.height ?? 165)) return;
+        if (!this._userScrolled && el.scrollTop < 2) return;
+        this._userScrolled = true;
+        this._tok = (this._tok || 0) + 1;
+        if (o[i].cm !== this.state.height) this.act({ height: o[i].cm });
+      },
+      clearH: () => this.act({ height: null, open: null }),
+      doneH: () => this.act({ open: null }),
+      starSw: this.sw(s.star, true, () => this.act({ star: !s.star })),
+      starOn: s.star,
+      kidsOpen: s.open === "kids", wantOpen: s.open === "want",
+      kidsRot: s.open === "kids" ? "90deg" : "0deg", wantRot: s.open === "want" ? "90deg" : "0deg",
+      toggleKids: () => this.act({ open: s.open === "kids" ? null : "kids" }),
+      toggleWant: () => this.act({ open: s.open === "want" ? null : "want" }),
+      kidsValue: s.kids === null ? "Not added" : KIDS[s.kids],
+      wantValue: s.want === null ? "Not added" : WANT[s.want],
+      kidsOptions: KIDS.map((l, i) => this.radio(l, s.kids === i, () => this.act({ kids: i, open: null }))),
+      wantOptions: WANT.map((l, i) => this.radio(l, s.want === i, () => this.act({ want: i, open: null }))),
+      kidsNote: s.kids === 1 || s.kids === 2 || s.kids === 3,
+      kidsVisOpen: s.open === "kidsVis" && kidsAns, wantVisOpen: s.open === "wantVis" && s.want !== null,
+      kidsVis: visObj("kidsVis", kidsAns, s.kidsVis), wantVis: visObj("wantVis", s.want !== null, s.wantVis),
+      toggleKidsVis: () => kidsAns && this.act({ open: s.open === "kidsVis" ? null : "kidsVis" }),
+      toggleWantVis: () => s.want !== null && this.act({ open: s.open === "wantVis" ? null : "wantVis" }),
+      kidsVisOptions: VIS.map((l, i) => this.radio(l, s.kidsVis === i, () => this.act({ kidsVis: i, open: null }))),
+      wantVisOptions: VIS.map((l, i) => this.radio(l, s.wantVis === i, () => this.act({ wantVis: i, open: null }))),
+      openOptions: OPEN.map((l, i) => this.radio(l, s.openKids === i, () => this.act({ openKids: i }))),
+      frames: [frame(true), frame(false)]
+    };
+  }
+}
+</script>
+
+
+</body></html>
