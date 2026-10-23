@@ -2251,7 +2251,8 @@ check("code SMS is sent on the dnd channel only, from the environment", (s, f) =
   if (!/channel: "dnd"/.test(code)) return "the channel is not dnd";
   if (/channel:\s*"(?!dnd")/.test(code)) return "another channel is used";
   if (!/from,\s*\n?\s*sms: codeSmsText\(code\)/.test(code) && !/from,/.test(code)) return "the sender isn't from the environment";
-  if (!/env\.TERMII_SENDER_ID/.test(code) || !/env\.TERMII_API_KEY/.test(code)) return "the Termii sender or key isn't read from the environment";
+  if (!/env\.TERMII_CODE_SENDER_ID/.test(code) || !/env\.TERMII_API_KEY/.test(code)) return "the Termii code sender or key isn't read from the environment";
+  if (/env\.TERMII_SENDER_ID/.test(code)) return "the code SMS uses the emergency sender variable";
   if (/"OE Alert"|'OE Alert'/.test(code)) return "the sender is hard-coded";
   if (!/return env\.VERCEL_ENV === "production";/.test(code)) return "real SMS isn't limited to the production deploy";
   return false;

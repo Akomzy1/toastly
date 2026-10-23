@@ -76,6 +76,9 @@ export type CodeSendResult = { ok: boolean; reason?: "not_configured" | "termii_
  * /api/sms/send, channel "dnd", type "plain", `to` in international format
  * without the "+", sender and key from the environment.
  *
+ * The sender is TERMII_CODE_SENDER_ID, used only here; TERMII_SENDER_ID stays
+ * for the emergency and on-call texts (lib/sms.ts), which nothing here changes.
+ *
  * Never throws; never returns or logs the number, the code or Termii's body.
  */
 export async function sendCodeViaTermii(
@@ -89,7 +92,8 @@ export async function sendCodeViaTermii(
     return { ok: true, reason: "not_sent_outside_production" };
   }
   const apiKey = env.TERMII_API_KEY;
-  const from = env.TERMII_SENDER_ID;
+  // Its own sender ID: TERMII_SENDER_ID stays for the emergency and on-call texts.
+  const from = env.TERMII_CODE_SENDER_ID;
   if (!apiKey || !from) {
     log("code not sent", { provider: "termii", reason: "not configured" });
     return { ok: false, reason: "not_configured" };
@@ -182,11 +186,37 @@ const refusal = (status: number, message: string): HookResponse => ({
   body: { error: { http_code: status, message } },
 });
 
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
 /**
- * Supabase calls this with { user: { phone, new_phone, … }, sms: { otp } }.
- * The destination is the number the code is for: a pending new_phone (first
- * confirmation, or a change) when there is one, otherwise phone.
+ * The Send SMS hook's input, read strictly. What each field rests on:
+ *
+ *  - `sms.otp`: the six-digit code. The Supabase docs ("Send SMS Hook", the
+ *    input schema) give `sms` as "Metadata specific to the SMS sending process.
+ *    Includes the OTP.", with the pattern ^[0-9]{6}$.
+ *  - the number the code is FOR: the docs' own example sends to `user.phone`,
+ *    but the docs don't say which field carries it for a phone change or a
+ *    first confirmation. The auth server's source (supabase/auth,
+ *    internal/api/phone.go sendPhoneConfirmation, and internal/hooks/v0hooks
+ *    SMS struct) passes the target as `sms.phone` (`json:"phone,omitempty"`),
+ *    and for a phone change sets user.PhoneChange (`new_phone`) to it while
+ *    user.Phone keeps its old value. So: sms.phone, else user.new_phone, else
+ *    user.phone. Never identities[].identity_data.phone (the docs' sample
+ *    shows a different number there).
+ *
+ * Anything else — not an object, no six-digit code, no number, a number that
+ * isn't a number — is an unexpected shape: no SMS, a clear failure, and the
+ * payload is never logged.
  */
+export function readHookPayload(payload: unknown): { e164: string; otp: string } | null {
+  if (!isObject(payload) || !isObject(payload.user) || !isObject(payload.sms)) return null;
+  const otp = payload.sms.otp;
+  if (typeof otp !== "string" || !/^\d{6}$/.test(otp)) return null;
+  const chosen = [payload.sms.phone, payload.user.new_phone, payload.user.phone].find((v) => typeof v === "string" && v.trim() !== "");
+  const e164 = normaliseE164(chosen);
+  return e164 ? { e164, otp } : null;
+}
+
 export async function handleSendSms(rawBody: string, headers: HeaderGetter, deps: HookDeps): Promise<HookResponse> {
   const { env, log } = deps;
   const secret = env.SEND_SMS_HOOK_SECRET;
@@ -207,19 +237,18 @@ export async function handleSendSms(rawBody: string, headers: HeaderGetter, deps
     return refusal(401, "unauthorized");
   }
 
-  let payload: { user?: { phone?: unknown; new_phone?: unknown }; sms?: { otp?: unknown } };
+  let body: unknown;
   try {
-    payload = JSON.parse(rawBody);
+    body = JSON.parse(rawBody);
   } catch {
-    log("hook refused", { reason: "bad body" });
-    return refusal(400, "bad_request");
+    body = null;
   }
-  const e164 = normaliseE164(payload.user?.new_phone || payload.user?.phone);
-  const otp = payload.sms?.otp;
-  if (!e164 || typeof otp !== "string" || !/^\d{4,10}$/.test(otp)) {
-    log("hook refused", { reason: "bad body" });
-    return refusal(400, "bad_request");
+  const parsed = readHookPayload(body);
+  if (!parsed) {
+    log("hook refused", { reason: "unexpected payload" });
+    return refusal(400, "unexpected_payload");
   }
+  const { e164, otp } = parsed;
 
   // Delivery route only: the phone's country never decides anything else, and
   // diaspora status comes from the profile country.

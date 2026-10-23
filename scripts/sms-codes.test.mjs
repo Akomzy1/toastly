@@ -38,7 +38,7 @@ const APPROVED_SHA256 = crypto.createHash("sha256").update(APPROVED).digest("hex
 
 const PHONE = "+2348031234567";
 const OTP = "482913";
-const ENV_PROD = { VERCEL_ENV: "production", TERMII_API_KEY: "tk_live_SECRET_VALUE", TERMII_SENDER_ID: "OE Alert", SEND_SMS_HOOK_SECRET: "v1,whsec_" + Buffer.from("hook-secret-bytes-0123456789abcd").toString("base64"), PHONE_HASH_PEPPER: "pepper-for-tests" };
+const ENV_PROD = { VERCEL_ENV: "production", TERMII_API_KEY: "tk_live_SECRET_VALUE", TERMII_CODE_SENDER_ID: "OE Alert", TERMII_SENDER_ID: "Toastly", SEND_SMS_HOOK_SECRET: "v1,whsec_" + Buffer.from("hook-secret-bytes-0123456789abcd").toString("base64"), PHONE_HASH_PEPPER: "pepper-for-tests" };
 
 /** A fetch that records what it was asked, and answers. */
 function spyFetch(answer = { ok: true, status: 200 }) {
@@ -105,13 +105,18 @@ test("the channel is always dnd, with the approved parameters", async () => {
   assert.equal(result.ok, true);
   assert.equal(termiiProblem(calls), null);
 
-  // The sender is read from the environment, not hard-coded.
+  // The sender is TERMII_CODE_SENDER_ID, read from the environment, not hard-coded;
+  // TERMII_SENDER_ID (the emergency and on-call sender) is never used for a code.
   const other = spyFetch();
-  await real.sendCodeViaTermii(PHONE, OTP, { env: { ...ENV_PROD, TERMII_SENDER_ID: "Another" }, fetchImpl: other.fetchImpl, log: recorder().log });
+  await real.sendCodeViaTermii(PHONE, OTP, { env: { ...ENV_PROD, TERMII_CODE_SENDER_ID: "Another" }, fetchImpl: other.fetchImpl, log: recorder().log });
   assert.equal(other.calls[0].body.from, "Another");
+  const noCodeSender = spyFetch();
+  const missing = await real.sendCodeViaTermii(PHONE, OTP, { env: { ...ENV_PROD, TERMII_CODE_SENDER_ID: undefined }, fetchImpl: noCodeSender.fetchImpl, log: recorder().log });
+  assert.equal(missing.ok, false, "without its own sender nothing is sent");
+  assert.equal(noCodeSender.calls.length, 0, "and it never falls back to TERMII_SENDER_ID");
 
   // Planted violations.
-  for (const edit of [['channel: "dnd"', 'channel: "generic"'], ['type: "plain"', 'type: "unicode"'], ["to: e164.replace(/^\\+/, \"\")", "to: e164"]]) {
+  for (const edit of [['channel: "dnd"', 'channel: "generic"'], ['type: "plain"', 'type: "unicode"'], ["env.TERMII_CODE_SENDER_ID;", "env.TERMII_SENDER_ID;"], ["to: e164.replace(/^\\+/, \"\")", "to: e164"]]) {
     const bad = await broken([edit]);
     const spy = spyFetch();
     await bad.sendCodeViaTermii(PHONE, OTP, { env: ENV_PROD, fetchImpl: spy.fetchImpl, log: recorder().log });
@@ -162,7 +167,7 @@ test("no phone number, code or key ever appears in a log", async () => {
   for (const edit of [
     ['log("code sent", { provider: "termii" });', 'log("code sent to " + e164, { provider: "termii" });'],
     ['log("code not sent", { provider: "termii", reason: "network" });', 'log("code not sent " + code, { provider: "termii", reason: "network" });'],
-    ['log("code not sent", { reason: "country not enabled" });', 'log("code not sent " + payload.user?.phone, { reason: "country not enabled" });'],
+    ['log("code not sent", { reason: "country not enabled" });', 'log("code not sent " + e164, { reason: "country not enabled" });'],
   ]) {
     const bad = await broken([edit]);
     assert.notEqual(await logProblem(bad), null, `caught: ${edit[1].slice(0, 40)}`);
@@ -272,4 +277,88 @@ test("a Termii failure shows the member nothing of Termii's; our rate limit appl
   assert.match(key, /^[0-9a-f]{64}$/);
   assert.ok(!key.includes("8031234567"));
   assert.notEqual(key, real.phoneKey(PHONE, "another-pepper"));
+});
+
+// --- the payload, exactly as Supabase documents and ships it ---------------------------------
+
+// The Supabase "Send SMS Hook" docs' input: user (with phone, phone_change_sent_at and
+// identities carrying a DIFFERENT phone) and sms with the six-digit otp. No new_phone, no sms.phone.
+const DOCS_PAYLOAD = {
+  user: {
+    id: "6a1b2c3d-0000-4000-8000-000000000001", aud: "authenticated", role: "authenticated", email: "member@example.com",
+    phone: "+2348031234567", phone_confirmed_at: "2026-10-01T10:00:00Z", confirmation_sent_at: "2026-10-23T09:00:00Z",
+    confirmed_at: "2026-10-01T10:00:00Z", phone_change_sent_at: "2026-10-23T09:00:00Z", last_sign_in_at: "2026-10-23T09:00:00Z",
+    app_metadata: { provider: "phone", providers: ["phone"] }, user_metadata: {},
+    identities: [{ identity_id: "i1", id: "6a1b2c3d", user_id: "6a1b2c3d", identity_data: { phone: "+447700900999", phone_verified: false }, provider: "phone" }],
+    created_at: "2026-10-01T10:00:00Z", updated_at: "2026-10-23T09:00:00Z", is_anonymous: false,
+  },
+  sms: { otp: "482913" },
+};
+// What the auth server (supabase/auth master) sends: the same, plus metadata and sms.phone / sms.sms_type.
+const SERVER_PAYLOAD = {
+  metadata: { uuid: "1e8c6c0e-0000-4000-8000-000000000002", time: "2026-10-23T09:00:00Z", name: "send-sms", ip_address: "203.0.113.9" },
+  ...DOCS_PAYLOAD,
+  sms: { otp: "482913", sms_type: "sms", phone: "2348031234567" },
+};
+
+const run = async (obj, over = {}) => {
+  const raw = typeof obj === "string" ? obj : JSON.stringify(obj);
+  const spy = spyFetch();
+  const r = recorder();
+  const res = await real.handleSendSms(raw, signed(raw), { env: ENV_PROD, fetchImpl: spy.fetchImpl, allow: async () => true, log: r.log, ...over });
+  return { res, spy, r };
+};
+
+test("the hook reads the exact payload shape Supabase documents, and the one the auth server sends", async () => {
+  // The docs' shape: the number is user.phone; the identity's different number is never used.
+  const docs = await run(DOCS_PAYLOAD);
+  assert.equal(docs.res.status, 200);
+  assert.equal(docs.spy.calls.length, 1);
+  assert.equal(docs.spy.calls[0].body.to, "2348031234567");
+  assert.equal(docs.spy.calls[0].body.sms, APPROVED);
+
+  // The auth server's shape: sms.phone is the target, even if user.phone is an older number.
+  const server = await run({ ...SERVER_PAYLOAD, user: { ...SERVER_PAYLOAD.user, phone: "+2348099999999" } });
+  assert.equal(server.res.status, 200);
+  assert.equal(server.spy.calls[0].body.to, "2348031234567", "sms.phone wins");
+
+  // A phone change: user.phone keeps the old number, new_phone is the target (auth server source).
+  const change = await run({ user: { ...DOCS_PAYLOAD.user, phone: "+2348099999999", new_phone: "2348031234567" }, sms: { otp: "482913" } });
+  assert.equal(change.spy.calls[0].body.to, "2348031234567", "new_phone beats the old phone");
+
+  // The identity's number is never used, even when it is all there is.
+  const onlyIdentity = await run({ user: { ...DOCS_PAYLOAD.user, phone: "" }, sms: { otp: "482913" } });
+  assert.equal(onlyIdentity.res.status, 400);
+  assert.equal(onlyIdentity.spy.calls.length, 0);
+
+  // Planted violation: reading the wrong field (the identity) is caught.
+  const bad = await broken([["const chosen = [payload.sms.phone, payload.user.new_phone, payload.user.phone]", "const chosen = [(payload.user as any).identities?.[0]?.identity_data?.phone]"]]);
+  const raw = JSON.stringify(DOCS_PAYLOAD);
+  const spy = spyFetch();
+  await bad.handleSendSms(raw, signed(raw), { env: ENV_PROD, fetchImpl: spy.fetchImpl, allow: async () => true, log: recorder().log });
+  assert.notEqual(spy.calls[0]?.body.to, "2348031234567", "the planted wrong field would have texted another number");
+});
+
+test("an unexpected payload is a clear failure, sends nothing, and is never logged", async () => {
+  const bads = [
+    ["not JSON", "this is not json"],
+    ["an array", "[]"],
+    ["no sms", JSON.stringify({ user: DOCS_PAYLOAD.user })],
+    ["no user", JSON.stringify({ sms: { otp: "482913" } })],
+    ["otp not six digits", JSON.stringify({ user: DOCS_PAYLOAD.user, sms: { otp: "4829" } })],
+    ["otp a number", JSON.stringify({ user: DOCS_PAYLOAD.user, sms: { otp: 482913 } })],
+    ["no phone anywhere", JSON.stringify({ user: { ...DOCS_PAYLOAD.user, phone: undefined }, sms: { otp: "482913" } })],
+    ["a phone that isn't one", JSON.stringify({ user: DOCS_PAYLOAD.user, sms: { otp: "482913", phone: "not-a-number" } })],
+  ];
+  for (const [label, raw] of bads) {
+    const { res, spy, r } = await run(raw);
+    assert.equal(res.status, 400, label);
+    assert.deepEqual(res.body, { error: { http_code: 400, message: "unexpected_payload" } }, `${label}: a clear, generic failure`);
+    assert.equal(spy.calls.length, 0, `${label}: nothing sent`);
+    const logged = r.lines.join("\n");
+    assert.ok(logged.includes("unexpected payload"), `${label}: the reason is logged`);
+    for (const secret of [OTP, "2348031234567", "member@example.com", "447700900999", "not-a-number"]) {
+      assert.ok(!logged.includes(secret), `${label}: the payload is not logged (${secret.slice(0, 4)}…)`);
+    }
+  }
 });
