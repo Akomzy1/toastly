@@ -64,7 +64,12 @@ const EXPECT = {
     "select not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name in ('height_cm', 'show_star_sign', 'open_to_children')) and to_regprocedure('public._children_rule_ok(uuid,uuid)') is null",
   ],
   // 0048's mark.
-  "0049": ["select (select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name in ('height_cm', 'show_star_sign', 'open_to_children')) = 3 and to_regprocedure('public._children_rule_ok(uuid,uuid)') is not null and to_regprocedure('public._star_sign(date)') is not null"],
+  "0049": ["select (select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name in ('height_cm', 'show_star_sign', 'open_to_children')) = 3 and to_regprocedure('public._children_rule_ok(uuid,uuid)') is not null and to_regprocedure('public._star_sign(date)') is not null",
+    // 0049 (our rate limit on verification-code SMS) isn't there yet.
+    "select to_regclass('public.sms_code_sends') is null and to_regprocedure('public.sms_code_allow(text)') is null",
+  ],
+  // 0049's mark.
+  "0050": ["select to_regprocedure('public.sms_code_allow(text)') is not null and to_regclass('public.sms_limits') is not null"],
 };
 
 try {

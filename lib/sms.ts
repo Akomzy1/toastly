@@ -13,6 +13,11 @@
  *      lib/support-alerts.ts only. The text is the ticket number, its
  *      urgency and a console link, built by alertSms() in
  *      lib/help-escalation.ts: never a member's name, number or words.
+ *   4. Verification codes (owner, 15 October 2026): sign-in, new device, phone
+ *      change and account deletion. These do NOT go through sendSms(): Supabase
+ *      makes the code and calls its Send SMS hook, and lib/sms-codes.ts
+ *      delivers it — Termii for +234, with one approved wording and channel
+ *      "dnd" — under its own rules and tests.
  *
  * WHAT IT IS NEVER FOR:
  *

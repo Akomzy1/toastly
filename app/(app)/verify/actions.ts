@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { CODE_COUNTRY_UNAVAILABLE, CODE_SEND_FAILED, isNigerianNumber } from "@/lib/sms-codes";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
@@ -59,6 +60,15 @@ export async function startPhoneVerification(
     return { error: "Enter a phone number we can reach, including the code." };
   }
 
+  // Once codes go through the Send SMS hook (SMS_CODES_VIA_HOOK=true, set the
+  // moment the hook is switched on in Supabase), only +234 numbers can be sent
+  // one until the Twilio Verify route ships. Said here, before Supabase is
+  // asked, so a member abroad gets a plain message and not a failed send. This
+  // is the delivery route only: diaspora status comes from the profile country.
+  if (process.env.SMS_CODES_VIA_HOOK === "true" && !isNigerianNumber(phone)) {
+    return { error: CODE_COUNTRY_UNAVAILABLE };
+  }
+
   const supabase = createClient();
   const {
     data: { user },
@@ -96,7 +106,7 @@ export async function startPhoneVerification(
     // Most often: no SMS provider configured in Supabase Auth. The raw
     // message is for the logs, not the member.
     console.error("[verify] sending phone code failed:", error.message);
-    return { error: "We couldn't send a code right now. Please try again later." };
+    return { error: CODE_SEND_FAILED };
   }
 
   return { ok: "We've sent you a code." };

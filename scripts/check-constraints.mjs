@@ -436,7 +436,10 @@ check("SMS is never reachable from the call path", (s, f) => {
 check("SMS is sent only for emergency contacts and on-call staff alerts", (s, f) => {
   const p = f.replace(/\\/g, "/");
   if (p.endsWith("lib/sms.ts") || p.endsWith("lib/emergency-actions.ts") || p.endsWith("lib/support-alerts.ts")) return false;
-  return /@\/lib\/sms\b|from "\.\.?\/[^"]*sms"/.test(stripComments(s, f)) ? "a new SMS sender" : false;
+  // Verification codes (owner, 15 October 2026): lib/sms-codes.ts, its Send SMS
+  // hook route, and the phone step that reports a code can't be sent.
+  if (p.endsWith("lib/sms-codes.ts") || p.endsWith("app/api/auth/send-sms/route.ts") || p.endsWith("app/(app)/verify/actions.ts")) return false;
+  return /@\/lib\/sms(-codes)?\b|from "\.\.?\/[^"]*sms(-codes)?"/.test(stripComments(s, f)) ? "a new SMS sender" : false;
 });
 
 // Staff alerts carry the ticket number, its urgency and a console link —
@@ -2227,6 +2230,45 @@ check("member_filters has no column for height, star sign or the children rule",
   const m = [...s.matchAll(/alter table public\.member_filters([\s\S]*?);/gi)].map((x) => x[1]).join(" ") +
     (/create table (?:if not exists )?public\.member_filters\s*\(([\s\S]*?)\n\);/i.exec(s)?.[1] ?? "");
   return /height|star_sign|open_to_children/.test(m) ? "member_filters gets a column for one of them" : false;
+});
+
+// --- Verification-code SMS (owner, 15 October 2026; lib/sms-codes.ts) --------------
+// One approved wording (Termii matches it exactly), channel "dnd" only, nothing
+// identifying in a log, and only production sends. The unit tests prove each
+// against a broken copy; these keep the files honest.
+const CODE_SMS_FILES = /(^|\/)(lib\/sms-codes\.ts|app\/api\/auth\/send-sms\/route\.ts)$/;
+check("the approved code SMS wording lives in one place", (s, f) => {
+  const n = f.replace(/\\/g, "/");
+  if (n.endsWith("lib/sms-codes.ts")) {
+    return /"Your Toastly verification code is \{code\}\. This code expires in 10 minutes\. Do not share it with anyone\."/.test(s) ? false : "the approved wording changed";
+  }
+  return /verification code is/i.test(stripComments(s, f)) && /\.(ts|tsx)$/.test(n) ? "a second copy of the code SMS wording" : false;
+});
+
+check("code SMS is sent on the dnd channel only, from the environment", (s, f) => {
+  if (!f.replace(/\\/g, "/").endsWith("lib/sms-codes.ts")) return false;
+  const code = stripComments(s, f);
+  if (!/channel: "dnd"/.test(code)) return "the channel is not dnd";
+  if (/channel:\s*"(?!dnd")/.test(code)) return "another channel is used";
+  if (!/from,\s*\n?\s*sms: codeSmsText\(code\)/.test(code) && !/from,/.test(code)) return "the sender isn't from the environment";
+  if (!/env\.TERMII_SENDER_ID/.test(code) || !/env\.TERMII_API_KEY/.test(code)) return "the Termii sender or key isn't read from the environment";
+  if (/"OE Alert"|'OE Alert'/.test(code)) return "the sender is hard-coded";
+  if (!/return env\.VERCEL_ENV === "production";/.test(code)) return "real SMS isn't limited to the production deploy";
+  return false;
+});
+
+check("no phone number, code or key reaches a log in the code SMS files", (s, f) => {
+  if (!CODE_SMS_FILES.test(f.replace(/\\/g, "/"))) return false;
+  for (const m of stripComments(s, f).matchAll(/\b(console\.(?:log|info|warn|error|debug)|log)\(([^;]*?)\)(?=;|\s*\n)/g)) {
+    const args = stripStrings(m[2]).replace(/\bprovider|reason|status|mode\b/g, "");
+    const bad = /\b(e164|phone|otp|code|to|body|payload|user|key|secret|token|apiKey|pepper|raw|digits)\b/.exec(args);
+    if (bad) return `a log call mentions ${bad[0]}`;
+  }
+  return false;
+});
+
+check("the Termii and hook secrets are never public", (s, f) => {
+  return /NEXT_PUBLIC_(TERMII|TWILIO|SEND_SMS)/i.test(s) ? "a code-SMS secret is exposed to the browser" : false;
 });
 
 console.log("");
