@@ -1,11 +1,13 @@
 # Toastly — founding-members beta: screens to design
 
 For Claude Design. The build is ready for these screens (migration 0050, `lib/beta.ts`,
-`POST /api/beta/apply`, the staff functions, `submit_beta_feedback`). **No UI has been built
-for any of them** — none is in `design/prototype/`, and the build does not invent UI. Please
-design them in the approved Toastly system (deep green / black / gold, editorial serif
-headline + clean sans body, subtle motion, no swipe / flame / heart clichés), then drop the
-HTML into `design/prototype/` and the build will follow it exactly.
+`POST /api/beta/apply`, the staff functions, `submit_beta_feedback`). **Plain placeholder
+versions are built** (existing components only, each marked `PLACEHOLDER — pending the Claude
+Design prototype (beta.html)` at the top of its file); none of these screens is in
+`design/prototype/` yet. Please design them in the approved Toastly system (deep green / black /
+gold, editorial serif headline + clean sans body, subtle motion, no swipe / flame / heart
+clichés), then drop the HTML into `design/prototype/` (as `beta.html`) and the build will be
+restyled to it exactly. The internal staff screens (§3, §6) are plain and need no design round.
 
 Decisions already made (owner, 25 October 2026): 200 founding members, Lagos only for now,
 3 months of Premium free from the day Toastly opens to everyone, applications open 27 October.
