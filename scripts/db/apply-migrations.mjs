@@ -68,8 +68,13 @@ const EXPECT = {
     // 0049 (our rate limit on verification-code SMS) isn't there yet.
     "select to_regclass('public.sms_code_sends') is null and to_regprocedure('public.sms_code_allow(text)') is null",
   ],
-  // 0049's mark.
-  "0050": ["select to_regprocedure('public.sms_code_allow(text)') is not null and to_regclass('public.sms_limits') is not null"],
+  // 0049's mark; 0050 (the founding-members beta) isn't there yet.
+  "0050": [
+    "select to_regprocedure('public.sms_code_allow(text)') is not null and to_regclass('public.sms_limits') is not null",
+    "select to_regclass('public.beta_applications') is null and to_regclass('public.founding_members') is null and to_regprocedure('public.beta_number_approved(text)') is null",
+  ],
+  // 0050's mark.
+  "0051": ["select to_regclass('public.beta_applications') is not null and to_regclass('public.founding_members') is not null and to_regprocedure('public.beta_number_approved(text)') is not null and to_regprocedure('public.start_founding_perk(date)') is not null"],
 };
 
 try {

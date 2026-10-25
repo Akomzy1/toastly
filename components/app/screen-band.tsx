@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SafetyPill } from "./nav";
+import { BetaLabel } from "./beta-label";
 
 /**
  * The top of every in-app screen (nav-*.slim.html).
@@ -33,6 +34,8 @@ export function ScreenBand({
           <h1 className="m-0 font-serif text-[19px] font-bold text-white">{title}</h1>
           {sub ? <p className="m-0 text-[13px] text-white/[.66]">{sub}</p> : null}
         </div>
+        {/* Placeholder until the Claude Design prototype (beta.html) arrives. */}
+        <BetaLabel />
         {safety ? <SafetyPill /> : null}
       </div>
       <div className="mx-auto hidden w-full max-w-[680px] items-baseline justify-between gap-3 px-6 pb-1.5 pt-8 lg:flex">

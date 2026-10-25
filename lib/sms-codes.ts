@@ -177,6 +177,13 @@ export type HookDeps = {
   fetchImpl: FetchLike;
   /** Records a send for this number and says whether it is allowed (our own rate limit). */
   allow: (key: string) => Promise<boolean>;
+  /**
+   * The beta's invite-only gate (lib/beta.ts checkBetaGate), asked before the
+   * rate limit and before Termii. Required while BETA_INVITE_ONLY=true: the
+   * sign-up screen asks it first, but a browser can ask Supabase for a code
+   * directly, so this is the check that holds.
+   */
+  inviteGate?: (e164: string) => Promise<"ok" | "invite_only" | "unavailable">;
   log: Logger;
   now?: () => number;
 };
@@ -249,6 +256,24 @@ export async function handleSendSms(rawBody: string, headers: HeaderGetter, deps
     return refusal(400, "unexpected_payload");
   }
   const { e164, otp } = parsed;
+
+  // The beta is invite-only: a number that isn't approved gets no code. Before
+  // the rate limit and before Termii, so it costs nothing. Fails closed. Today
+  // the only code anyone is sent is the phone-verification code at sign-up; a
+  // later flow that sends a code to an existing member (sign-in, step-up) must
+  // extend this check to let a verified member's own number through.
+  if (env.BETA_INVITE_ONLY === "true") {
+    let verdict: "ok" | "invite_only" | "unavailable" = "unavailable";
+    try {
+      if (deps.inviteGate) verdict = await deps.inviteGate(e164);
+    } catch {
+      verdict = "unavailable";
+    }
+    if (verdict !== "ok") {
+      log("code not sent", { reason: verdict === "invite_only" ? "not invited" : "invite check unavailable" });
+      return verdict === "invite_only" ? refusal(403, "invite_only") : refusal(500, "send_failed");
+    }
+  }
 
   // Delivery route only: the phone's country never decides anything else, and
   // diaspora status comes from the profile country.

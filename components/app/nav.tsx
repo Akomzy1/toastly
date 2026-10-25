@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandLockup } from "@/components/brand-mark";
+import { BetaLabel } from "@/components/app/beta-label";
 import { signOut } from "@/app/(auth)/actions";
 
 /**
@@ -171,6 +172,8 @@ export function AppHeader({ counts: fixed, active: forced }: { counts?: NavCount
       <Link href="/feed" className="flex min-h-11 flex-shrink-0 items-center no-underline">
         <BrandLockup tone="dark" size={22} />
       </Link>
+      {/* Placeholder until the Claude Design prototype (beta.html) arrives. */}
+      <BetaLabel />
       <nav aria-label="Main" className="flex min-w-0 flex-1 items-center gap-1">
         {TABS.map((t) => {
           const on = t.key === active;

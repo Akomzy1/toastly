@@ -5,7 +5,7 @@ import Link from "next/link";
  * console is reachable at tablet and desktop widths (and still works on a
  * phone, at a squeeze).
  */
-export function ConsoleHeader({ active, name, role }: { active: "queue" | "history" | "support"; name: string; role: string }) {
+export function ConsoleHeader({ active, name, role }: { active: "queue" | "history" | "support" | "beta" | "beta-feedback"; name: string; role: string }) {
   const tab = (href: string, label: string, on: boolean) => (
     <Link
       href={href}
@@ -33,6 +33,9 @@ export function ConsoleHeader({ active, name, role }: { active: "queue" | "histo
         {tab("/staff/history", "Decision history", active === "history")}
         {/* Toastly Help tickets (0042). Not in review-queue.slim.html — flagged. */}
         {tab("/staff/support", "Support", active === "support")}
+        {/* The founding-members beta (0050). Internal screens; no design round. */}
+        {tab("/staff/beta", "Beta", active === "beta")}
+        {tab("/staff/beta/feedback", "Beta feedback", active === "beta-feedback")}
       </nav>
       <span className="ml-auto text-nav text-white/[.72]">
         {name} · {role}

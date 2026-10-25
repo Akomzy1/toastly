@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleSendSms, type Logger } from "@/lib/sms-codes";
+import { checkBetaGate } from "@/lib/beta";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -32,6 +33,20 @@ export async function POST(request: Request) {
       const { data, error } = await admin.rpc("sms_code_allow", { p_phone_key: key });
       if (error) throw new Error("limiter failed");
       return data === true;
+    },
+    // The beta's invite-only gate (BETA_INVITE_ONLY=true): no code for a number
+    // that isn't approved. See lib/beta.ts.
+    inviteGate: async (e164) => {
+      const gate = await checkBetaGate(e164, {
+        env: process.env,
+        isApproved: async (phoneKey) => {
+          if (!admin) throw new Error("not configured");
+          const { data, error } = await admin.rpc("beta_number_approved", { p_phone_key: phoneKey });
+          if (error) throw new Error("gate failed");
+          return data === true;
+        },
+      });
+      return gate.allowed ? "ok" : gate.reason;
     },
   });
   return NextResponse.json(res.body, { status: res.status });

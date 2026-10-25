@@ -2272,6 +2272,125 @@ check("the Termii and hook secrets are never public", (s, f) => {
   return /NEXT_PUBLIC_(TERMII|TWILIO|SEND_SMS)/i.test(s) ? "a code-SMS secret is exposed to the browser" : false;
 });
 
+// ---------------------------------------------------------------------------
+// The founding-members beta (owner, 25 October 2026; migration 0050, lib/beta.ts)
+// ---------------------------------------------------------------------------
+
+const posix = (f) => f.replace(/\\/g, "/");
+const BETA_FILES = /(^|\/)(lib\/beta\.ts|app\/api\/beta\/apply\/route\.ts|app\/\(staff\)\/staff\/beta\/[^/]+|app\/\(app\)\/profile\/settings\/feedback-actions\.ts)$/;
+
+check("beta applications are written only through beta_apply, and nothing reads the table from the app", (s, f) => {
+  if (f.endsWith(".sql")) return false;
+  const code = stripComments(s, f);
+  if (/from\(\s*["'`]beta_(applications|settings|audit_log|apply_attempts)["'`]/.test(code)) return "the app reads or writes a beta table directly";
+  const p = posix(f);
+  if (/rpc\(\s*["']beta_apply["']/.test(code) && !p.endsWith("app/api/beta/apply/route.ts")) return "beta_apply is called outside the application route";
+  return false;
+});
+
+check("the application route has the honeypot and the rate limit in front of the insert", (s, f) => {
+  const p = posix(f);
+  if (p.endsWith("app/api/beta/apply/route.ts")) {
+    const code = stripComments(s, f);
+    if (!/handleApply\(/.test(code) || !/beta_apply_allow/.test(code)) return "the route doesn't go through handleApply with the address limit";
+    if (/createClient\(/.test(code)) return "the route uses a member session";
+  }
+  if (p.endsWith("lib/beta.ts")) {
+    const code = stripComments(s, f);
+    const body = code.slice(code.indexOf("export async function handleApply"));
+    const honeypot = body.indexOf("BETA_HONEYPOT_FIELD");
+    const limit = body.indexOf("deps.allowAddress(");
+    const store = body.indexOf("deps.store(");
+    if (honeypot < 0 || limit < 0 || store < 0) return "handleApply is missing the honeypot, the limit or the store";
+    if (!(honeypot < limit && limit < store)) return "handleApply must check the honeypot, then the limit, then store";
+  }
+  return false;
+});
+
+check("an application collects only the listed fields", (s, f) => {
+  if (!f.endsWith("0050_beta_gate.sql")) return false;
+  const code = stripComments(s, f);
+  const block = (code.match(/create table if not exists public\.beta_applications \(([\s\S]*?)\n\);/) ?? [])[1] ?? "";
+  if (!block) return "can't find the beta_applications table";
+  const banned = /\b(photo|image|selfie|ethnic\w*|tribe|religio\w*|denomination|health|genotype|income|salary|email|instagram|handle|bvn|nin|height|profession|employer|relationship\w*)\s+(text|integer|boolean|timestamptz|jsonb|uuid)\b/i.exec(block);
+  return banned ? `an application column called ${banned[1]}` : false;
+});
+
+check("the invite-only sentence lives in one place, and the gate runs before any SMS", (s, f) => {
+  const p = posix(f);
+  const code = stripComments(s, f);
+  if (!p.endsWith("lib/beta.ts") && /invite-only for now/i.test(code)) return "the invite-only sentence is written outside lib/beta.ts";
+  if (p.endsWith("app/(app)/verify/actions.ts")) {
+    const start = code.indexOf("export async function startPhoneVerification");
+    const end = code.indexOf("export async function confirmPhoneCode");
+    const fn = code.slice(start, end);
+    const gate = fn.indexOf("checkBetaGate(");
+    const send = fn.indexOf("auth.updateUser");
+    if (gate < 0) return "the phone step doesn't ask the invite-only gate";
+    if (send < 0 || gate > send) return "the gate must be asked before Supabase is asked to send a code";
+    if (!/gate\.reason === "invite_only" \? BETA_INVITE_ONLY_MESSAGE : PHONE_UNAVAILABLE/.test(fn)) return "a refusal isn't the one fixed sentence";
+    // The reply must not depend on WHY a number isn't approved.
+    if (/waitlist|pending|declined|applied|beta_applications/i.test(stripStrings(fn))) return "the phone step looks at an application's state";
+  }
+  if (p.endsWith("app/api/auth/send-sms/route.ts") && !/inviteGate:/.test(code)) return "the Send SMS hook doesn't ask the gate";
+  return false;
+});
+
+check("founding membership is never read by the feed, a profile, a model, analytics or the handoff", (s, f) => {
+  const p = posix(f);
+  if (f.endsWith(".sql")) {
+    // Only 0050 may name the table. A later migration (the launch billing
+    // step) must be added here on purpose.
+    return !p.endsWith("0050_beta_gate.sql") && /\bfounding_members\b/i.test(stripComments(s, f)) ? "a migration other than 0050 reads founding_members" : false;
+  }
+  const code = stripComments(s, f);
+  if (/\bfounding_members\b/.test(code)) return "app code reads founding_members";
+  if (/(^|\/)(lib\/(feed|member-profile|full-profile|full-profile-view|filters|analytics|couple)\.ts|lib\/ai\/|lib\/concierge\/|app\/\(app\)\/|components\/(app|feed|members|profile)\/)/.test(p) && /\bfounding\b/i.test(stripStrings(code))) {
+    return "founding membership is mentioned where members, ranking or models are";
+  }
+  return false;
+});
+
+check("beta feedback never reaches analytics or a model", (s, f) => {
+  const p = posix(f);
+  const code = stripComments(s, f);
+  if (p.endsWith("profile/settings/feedback-actions.ts") && /analytics|capture\(|posthog|anthropic|@\/lib\/ai|@\/lib\/concierge|answer-mirror/i.test(code)) return "the feedback action can reach analytics or a model";
+  if (/(^|\/)(lib\/analytics\.ts|lib\/ai\/|lib\/concierge\/|lib\/answer-mirror\.ts)/.test(p) && /beta_feedback|submit_beta_feedback|sendFeedback|feedback-actions/.test(code)) return "analytics or an agent reads beta feedback";
+  return false;
+});
+
+check("the beta approval screen has no export and sends no message", (s, f) => {
+  if (!/(^|\/)(app\/\(staff\)\/staff\/beta\/|lib\/beta\.ts$)/.test(posix(f))) return false;
+  const code = stripComments(s, f);
+  if (/text\/csv|\.csv|Content-Disposition|createObjectURL|\bjson2csv\b/i.test(code)) return "an export in the beta approval screen";
+  if (/@\/lib\/(email|sms|sms-codes|emergency-actions|support-alerts)|sendEmail|sendSms|wa\.me|api\.whatsapp/i.test(code)) return "the beta code can send a message";
+  return false;
+});
+
+check("no phone number, name or address reaches a log in the beta files", (s, f) => {
+  if (!BETA_FILES.test(posix(f))) return false;
+  for (const m of stripComments(s, f).matchAll(/\b(console\.(?:log|info|warn|error|debug)|log)\(([^;]*?)\)(?=;|\s*\n)/g)) {
+    const args = stripStrings(m[2]).replace(/\breason|status|field\b/g, "");
+    const bad = /\b(e164|phone|first_name|age|row|input|ip|key|pepper|body|raw|name|other_location)\b/.exec(args);
+    if (bad) return `a log call mentions ${bad[0]}`;
+  }
+  return false;
+});
+
+check("beta switches and settings are never public", (s) => {
+  return /NEXT_PUBLIC_BETA|NEXT_PUBLIC_.*INVITE_ONLY/i.test(s) ? "a beta switch is exposed to the browser" : false;
+});
+
+// The plain screens are placeholders: the Claude Design prototype (beta.html)
+// is the source of truth and replaces them. Each says so at the top of its
+// file, so nobody mistakes one for the approved design.
+check("each plain beta screen says it is a placeholder pending the prototype", (s, f) => {
+  const p = posix(f);
+  if (!/(^|\/)(app\/\(marketing\)\/beta\/(page|beta-form)\.tsx|components\/app\/beta-label\.tsx|app\/\(app\)\/profile\/settings\/feedback\/(page|feedback-form)\.tsx)$/.test(p)) return false;
+  const head = fs.readFileSync(f, "utf8").split("\n").slice(0, 12).join("\n");
+  return /PLACEHOLDER — pending the Claude Design prototype \(beta\.html\)/.test(head) ? false : "no placeholder note at the top of the file";
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

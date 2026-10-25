@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CODE_COUNTRY_UNAVAILABLE, CODE_SEND_FAILED, isNigerianNumber } from "@/lib/sms-codes";
+import { BETA_INVITE_ONLY_MESSAGE, betaPepper, betaPhoneKey, checkBetaGate } from "@/lib/beta";
 
 export type VerifyState = { error?: string; ok?: string } | null;
 
@@ -58,6 +59,26 @@ export async function startPhoneVerification(
   const phone = normalisePhone(String(formData.get("phone") ?? ""));
   if (!phone) {
     return { error: "Enter a phone number we can reach, including the code." };
+  }
+
+  // The beta is invite-only (BETA_INVITE_ONLY=true): a number that isn't an
+  // approved application gets no code, and is told so in one fixed sentence
+  // whatever the reason — never applied, waiting, waitlisted — so it can't be
+  // used to find out whether a number applied. Asked first, before Supabase
+  // is, so an unapproved number never reaches the SMS provider. (The Send SMS
+  // hook asks again: a browser can ask Supabase for a code directly.)
+  const gate = await checkBetaGate(phone, {
+    env: process.env,
+    isApproved: async (phoneKey) => {
+      const admin = createAdminClient();
+      if (!admin) throw new Error("not configured");
+      const { data, error } = await admin.rpc("beta_number_approved", { p_phone_key: phoneKey });
+      if (error) throw new Error("gate failed");
+      return data === true;
+    },
+  });
+  if (!gate.allowed) {
+    return { error: gate.reason === "invite_only" ? BETA_INVITE_ONLY_MESSAGE : PHONE_UNAVAILABLE };
   }
 
   // Once codes go through the Send SMS hook (SMS_CODES_VIA_HOOK=true, set the
@@ -148,9 +169,14 @@ export async function confirmPhoneCode(
     console.error("[verify] SUPABASE_SERVICE_ROLE_KEY is not set; can't bind the phone number.");
     return { error: PHONE_UNAVAILABLE };
   }
-  const { data: bound, error: bindError } = await admin.rpc("record_phone_verified", {
+  // In the same transaction: if this number is an approved beta application,
+  // mark it used and (while the beta is open) make the member a founding
+  // member (0050). Nothing about it reaches the member, the feed or analytics.
+  const pepper = betaPepper(process.env);
+  const { data: bound, error: bindError } = await admin.rpc("record_phone_verified_beta", {
     p_profile: user.id,
     p_hash: phoneHash,
+    p_beta_key: pepper ? betaPhoneKey(phone, pepper) : null,
   });
   if (bindError) {
     console.error("[verify] binding the phone failed:", bindError.message);

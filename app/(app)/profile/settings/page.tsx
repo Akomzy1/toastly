@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScreenBand } from "@/components/app/screen-band";
@@ -31,6 +32,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: { s
     <>
       <ScreenBand title="Settings" back="/profile" />
       <SettingsList phone={maskPhone(user.phone)} home={home} abroad={me.country_code !== "NG"} />
+      {/* Beta: a plain link until the Claude Design prototype (beta.html) places it. */}
+      <div className="mx-auto w-full max-w-[680px] px-4 py-4 lg:px-6">
+        <Link href="/profile/settings/feedback" className="text-ui font-semibold text-green-500">
+          Send feedback
+        </Link>
+      </div>
       {searchParams.saved === "where-you-live" ? <SavedToast text={`Saved. Where you live is now ${home}.`} /> : null}
     </>
   );
