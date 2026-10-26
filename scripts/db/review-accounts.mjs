@@ -78,6 +78,12 @@ export function checkSpec(spec, photosDir) {
     if (!(age >= 18 && age < 60)) problems.push(`${p.key}: age ${age}`);
     if (!["casual", "open_to_serious", "serious", "marriage_minded"].includes(p.intent)) problems.push(`${p.key}: intent`);
     if (!p.answers?.length) problems.push(`${p.key}: needs a prompt answer`);
+    // The six's default age window is two-way (match_config: 4 below, 5 above),
+    // so a companion more than 4 years from the reviewer never reaches her six.
+    if (p !== spec.reviewer) {
+      const gap = Math.abs(Date.parse(p.date_of_birth) - Date.parse(spec.reviewer.date_of_birth)) / (365.25 * 864e5);
+      if (gap > 4) problems.push(`${p.key}: ${gap.toFixed(1)} years from the reviewer; the two-way age window allows 4`);
+    }
     if (photosDir) {
       const dir = path.join(photosDir, p.key);
       const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort() : [];
@@ -237,7 +243,7 @@ async function create(admin, env, yes) {
     console.log(`  sign-in email:    ${local}+reviewer@${domain}`);
     console.log(`  sign-in password: ${r.password}`);
     console.log(`\nSet in Vercel (Production): ANALYTICS_EXCLUDE_IDS=${out.map((o) => o.id).join(",")}`);
-    console.log("Then: Supabase → Authentication → Sign In / Providers → Phone → Test Phone Numbers and OTPs (see docs/meta-review-account.md).");
+    console.log("Then: Supabase → Authentication → Sign In / Providers → Phone → Test Phone Numbers and OTPs (GO-LIVE.md §0l, step 5).");
   } catch (e) {
     console.error(`\nFAILED: ${e.message}\nRemoving the ${created.length} account(s) made in this run…`);
     for (const id of created) {

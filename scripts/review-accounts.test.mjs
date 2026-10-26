@@ -54,6 +54,10 @@ test("the fictional spec is ready, and a protected field or a wrong gender is re
   const problems = script.checkSpec(bad, null);
   assert.ok(problems.some((p) => /religion is a protected field/.test(p)));
   assert.ok(problems.some((p) => /reviewer must be a woman/.test(p)));
+
+  const far = structuredClone(spec);
+  far.companions[0].date_of_birth = "1990-01-01";
+  assert.ok(script.checkSpec(far, null).some((p) => /two-way age window/.test(p)), "a companion the reviewer could never be shown");
 });
 
 test("the spec never holds a phone number or an email", () => {
