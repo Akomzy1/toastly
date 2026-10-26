@@ -233,6 +233,18 @@ async function create(admin, env, yes) {
       if (isReviewer) {
         await rpc(admin, "review_account_allow_number", { p_profile: made.id, p_phone_key: betaPhoneKey(e164, pepper) });
         await rpc(admin, "review_account_grant", { p_profile: made.id, p_tier: "premium_plus", p_until: until.toISOString() });
+        // As a member who confirmed the code: the number on her sign-in
+        // (Settings shows it masked; no code is sent), and where she lives,
+        // answered as her — otherwise the "Where do you live?" sheet covers
+        // every screen the reviewer opens.
+        const { error: phErr } = await admin.auth.admin.updateUserById(made.id, { phone: e164.replace(/^\+/, ""), phone_confirm: true });
+        if (phErr) throw new Error(`reviewer phone on sign-in: ${phErr.message}`);
+        const her = clients(env);
+        const { error: inErr } = await her.auth.signInWithPassword({ email: `${local}+${p.key}@${domain}`, password: made.password });
+        if (inErr) throw new Error(`signing in as the reviewer: ${inErr.message}`);
+        const { error: cErr } = await her.rpc("confirm_country", { p_country: "NG", p_city: null });
+        await her.auth.signOut({ scope: "local" });
+        if (cErr) throw new Error(`confirming the reviewer's country: ${cErr.message}`);
       }
       out.push({ ...made, p, isReviewer });
       console.log(`  created ${p.key} (${made.id})`);
