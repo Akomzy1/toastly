@@ -2391,6 +2391,30 @@ check("each plain beta screen says it is a placeholder pending the prototype", (
   return /PLACEHOLDER — pending the Claude Design prototype \(beta\.html\)/.test(head) ? false : "no placeholder note at the top of the file";
 });
 
+// --- Review accounts (0051) ---------------------------------------------------
+
+// A review account (the Meta reviewer and its companions) never meets a
+// member: the pair rule every feed, profile, reply, invite and date path goes
+// through keeps the review line, and so does the message policy.
+check("review accounts never meet members", (s, f) => {
+  if (!/lib\/countries\.ts$/.test(norm(f))) return false; // run once
+  if (!/a\.review_account = b\.review_account/.test(latestFn("can_meet") ?? "")) return "can_meet() lost the review line";
+  let send = "";
+  for (const { sql } of MIGS) {
+    const clean = sql.replace(/--[^\n]*/g, "");
+    for (const x of clean.matchAll(/create policy "entitled members send"\s+on public\.messages([\s\S]*?);/g)) send = x[1];
+  }
+  return /can_meet_with\(/.test(send) ? false : "the message policy doesn't check the pair";
+});
+
+// Going live without Smile ID, retiring and the rest are the server script's
+// only (scripts/db/review-accounts.mjs): no screen, route or action calls them.
+check("the review-account functions are never reachable from the app", (s, f) => {
+  if (!/\.(tsx?)$/.test(f)) return false;
+  return /review_account_(mark|go_live|allow_number|grant)|review_accounts_(refresh|retire)/.test(s)
+    ? "calls a review-account function from app code" : false;
+});
+
 console.log("");
 if (failures.length) {
   console.log("CONSTRAINT VIOLATIONS:\n");

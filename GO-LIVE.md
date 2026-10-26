@@ -11,6 +11,58 @@ Nothing here is a secret you should paste into a chat, a ticket, or a commit.
 
 ---
 
+## 0l. Meta review account (migration 0051) — NOT APPLIED
+
+A test account for Meta's dating-advertiser review: a fictional woman, live and
+verified for review only, with six fictional companions so her Today's six isn't
+empty. Review accounts never meet a member, in either direction (`can_meet`), and
+take none of the 200 beta places. Each step below waits for the owner's go-ahead.
+
+**1. Migration.** `node scripts/db/backup.mjs` → `node scripts/db/restore-check.mjs`
+(must pass) → `node scripts/db/apply-migrations.mjs --env .env.production.local --from 0051`
+(check only) → the same with `--yes`. Then push the code (it reads the new column).
+
+**2. Photos.** Four or more photos per person, in `<dir>/reviewer/`, `<dir>/c1/` …
+`<dir>/c6/`: photoreal pictures of **fictional** people (generated, not anyone real).
+
+**3. Create.** `.env.production.local` needs `NEXT_PUBLIC_SUPABASE_URL`,
+`SUPABASE_SERVICE_ROLE_KEY` and the production `PHONE_HASH_PEPPER`.
+
+    node scripts/db/review-accounts.mjs create --env .env.production.local \
+      --phone +234XXXXXXXXXX --email <a mailbox Toastly controls> \
+      --photos <dir> --grant-until <YYYY-MM-DD, within 120 days>      # check only
+    … the same with --yes
+
+It prints the reviewer's sign-in email and password once (for Meta's form only)
+and the `ANALYTICS_EXCLUDE_IDS` line.
+
+**4. Vercel (Production).** Set `ANALYTICS_EXCLUDE_IDS` to the printed ids; redeploy.
+
+**5. The fixed test code (only needed if Meta is asked to confirm the phone).**
+Supabase → **Authentication → Sign In / Providers → Phone → Test Phone Numbers and
+OTPs**: add `234XXXXXXXXXX=NNNNNN` (no `+`; a random six digits, not 123456) and
+set **Test OTPs Valid Until** to a few days after Meta's deadline. Supabase then
+uses that code for that number and calls neither the Send SMS hook nor any SMS
+provider (auth server, `internal/api/phone.go` `sendPhoneConfirmation`). After the
+date it expires on its own; the number is a Toastly-held SIM, so a real code
+could only ever reach Toastly.
+
+**Before the reviewer looks again** (the six cools down for 30 days and shows only
+people seen in 14): `node scripts/db/review-accounts.mjs refresh --env .env.production.local --yes`.
+
+**6. Retire — one step, after Meta's decision.**
+
+    node scripts/db/review-accounts.mjs retire --env .env.production.local --phone +234XXXXXXXXXX        # check only
+    … the same with --yes
+
+Pauses every review account for good, ends the grant, takes the number out of the
+invite-only gate, bans every review sign-in, and — if `SUPABASE_ACCESS_TOKEN` (a
+personal access token) is in the env file — removes the number's test code from
+Supabase Auth, leaving any other test numbers. Without the token it says to remove
+it by hand at the place in step 5. `status` shows where everything stands.
+
+---
+
 ## 0. Prompt 17, coin balance (migration 0023)
 
 **The legal check in PRD §11 is confirmed** (owner, 4 October 2026: CBN

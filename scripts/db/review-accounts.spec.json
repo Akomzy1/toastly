@@ -1,0 +1,103 @@
+{
+  "_note": "Fictional people for the Meta review account (0051). No real person's name, details or likeness. Only optional, non-protected fields: no religion, tribe, language, profession, education, genotype or relationship history. Photos come from --photos <dir>/<key>/ (four or more JPEG or PNG each); the number and the email are given on the command line, never stored here.",
+  "reviewer": {
+    "key": "reviewer",
+    "display_name": "Adaeze",
+    "gender": "woman",
+    "date_of_birth": "1999-03-14",
+    "city": "Lekki",
+    "intent": "serious",
+    "height_cm": 168,
+    "bio": "Weekend market runs, long brunches and a book I keep promising to finish. Looking for someone kind who shows up.",
+    "answers": [
+      { "sort_order": 10, "answer": "A slow breakfast, a long walk, then jollof with my cousins." },
+      { "sort_order": 70, "answer": "Remember the small things I mention once. That is it, that is the secret." }
+    ]
+  },
+  "companions": [
+    {
+      "key": "c1",
+      "display_name": "Tobenna",
+      "gender": "man",
+      "date_of_birth": "1996-08-02",
+      "city": "Yaba",
+      "intent": "serious",
+      "height_cm": 180,
+      "bio": "Engineer by day, amateur suya critic by night. I cook a mean pepper soup.",
+      "answers": [
+        { "sort_order": 30, "answer": "Acts of service. I will fix your wobbly table before you finish complaining about it." },
+        { "sort_order": 90, "answer": "That I will turn any outing into a food tour." }
+      ]
+    },
+    {
+      "key": "c2",
+      "display_name": "Femi",
+      "gender": "man",
+      "date_of_birth": "1995-11-21",
+      "city": "Ikeja",
+      "intent": "marriage_minded",
+      "height_cm": 176,
+      "bio": "Early riser, Sunday footballer, believer in calling instead of texting.",
+      "answers": [
+        { "sort_order": 10, "answer": "Five-a-side in the morning, then a long lunch with whoever is free." },
+        { "sort_order": 100, "answer": "Honesty, even when it is awkward." }
+      ]
+    },
+    {
+      "key": "c3",
+      "display_name": "Kunle",
+      "gender": "man",
+      "date_of_birth": "1997-02-09",
+      "city": "Surulere",
+      "intent": "serious",
+      "height_cm": 183,
+      "bio": "I teach maths and run a small reading club. Ask me about the best bole in Lagos.",
+      "answers": [
+        { "sort_order": 50, "answer": "Lagos for now, but somewhere with a garden and a quiet porch in five years." },
+        { "sort_order": 60, "answer": "Someone checking that I ate, and meaning it." }
+      ]
+    },
+    {
+      "key": "c4",
+      "display_name": "Ifeanyi",
+      "gender": "man",
+      "date_of_birth": "1994-06-30",
+      "city": "Victoria Island",
+      "intent": "marriage_minded",
+      "height_cm": 178,
+      "bio": "Architect. I sketch buildings on napkins and plan trips I sometimes actually take.",
+      "answers": [
+        { "sort_order": 40, "answer": "Everyone eats together on Sunday, phones face down." },
+        { "sort_order": 80, "answer": "I budget, I save, and I still buy the good bread." }
+      ]
+    },
+    {
+      "key": "c5",
+      "display_name": "Seun",
+      "gender": "man",
+      "date_of_birth": "1998-01-17",
+      "city": "Ikoyi",
+      "intent": "serious",
+      "height_cm": 175,
+      "bio": "Product designer, Afrobeats playlist curator, terrible at keeping plants alive.",
+      "answers": [
+        { "sort_order": 20, "answer": "Someone to build a calm, funny life with." },
+        { "sort_order": 70, "answer": "Good music and an honest conversation." }
+      ]
+    },
+    {
+      "key": "c6",
+      "display_name": "Chidi",
+      "gender": "man",
+      "date_of_birth": "1996-04-05",
+      "city": "Lekki",
+      "intent": "open_to_serious",
+      "height_cm": 181,
+      "bio": "Doctor in training. When I am not on call I am at the beach or at a friend's owambe.",
+      "answers": [
+        { "sort_order": 10, "answer": "Sleep, then the beach, then suya with friends." },
+        { "sort_order": 30, "answer": "Quality time. Show up, put the phone down, stay a while." }
+      ]
+    }
+  ]
+}

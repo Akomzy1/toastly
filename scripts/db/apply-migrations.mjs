@@ -73,8 +73,13 @@ const EXPECT = {
     "select to_regprocedure('public.sms_code_allow(text)') is not null and to_regclass('public.sms_limits') is not null",
     "select to_regclass('public.beta_applications') is null and to_regclass('public.founding_members') is null and to_regprocedure('public.beta_number_approved(text)') is null",
   ],
-  // 0050's mark.
-  "0051": ["select to_regclass('public.beta_applications') is not null and to_regclass('public.founding_members') is not null and to_regprocedure('public.beta_number_approved(text)') is not null and to_regprocedure('public.start_founding_perk(date)') is not null"],
+  // 0050's mark; 0051 (review accounts) isn't there yet.
+  "0051": [
+    "select to_regclass('public.beta_applications') is not null and to_regclass('public.founding_members') is not null and to_regprocedure('public.beta_number_approved(text)') is not null and to_regprocedure('public.start_founding_perk(date)') is not null",
+    "select not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'review_account') and to_regclass('public.review_numbers') is null",
+  ],
+  // 0051's mark.
+  "0052": ["select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'review_account') and to_regclass('public.review_numbers') is not null and to_regprocedure('public.review_accounts_retire()') is not null"],
 };
 
 try {

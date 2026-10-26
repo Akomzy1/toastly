@@ -52,6 +52,16 @@ const FORBIDDEN_PROPERTIES = [
   "phone", "phone_number", "email", "display_name", "name",
 ];
 
+/**
+ * Review accounts (0051: the Meta reviewer and its companions) are never
+ * counted. Their profile ids, comma-separated, in ANALYTICS_EXCLUDE_IDS
+ * (printed by scripts/db/review-accounts.mjs).
+ */
+export function excludedFromAnalytics(distinctId: string, env: Record<string, string | undefined> = process.env): boolean {
+  const ids = (env.ANALYTICS_EXCLUDE_IDS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  return ids.includes(distinctId);
+}
+
 export function analyticsConfigured(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
 }
@@ -86,6 +96,7 @@ export async function capture(
 ): Promise<boolean> {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!key || !distinctId) return false;
+  if (excludedFromAnalytics(distinctId)) return false;
 
   try {
     const res = await fetch(`${host()}/i/v0/e/`, {
