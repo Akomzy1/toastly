@@ -28,6 +28,7 @@ const NAV = [
 export function SiteHeader() {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
+  const isBeta = pathname === "/beta";
 
   // Close the panel on navigation, so a route change never leaves it hanging.
   React.useEffect(() => setOpen(false), [pathname]);
@@ -80,28 +81,28 @@ export function SiteHeader() {
           >
             Sign in
           </Link>
-          <Link
+          {!isBeta ? <Link
             href="/verify"
             className="flex min-h-11 items-center gap-[7px] text-nav font-medium text-champagne no-underline transition-opacity duration-200 hover:opacity-75"
           >
             <VerifiedSeal />
             Get verified
-          </Link>
+          </Link> : null}
           <Link
-            href="/signup"
+            href={isBeta ? "/beta#application" : "/signup"}
             className="inline-flex min-h-11 items-center rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline transition-colors duration-200 hover:bg-gold-300"
           >
-            Join Toastly
+            {isBeta ? "Apply for the beta" : "Join Toastly"}
           </Link>
         </div>
 
         {/* Mobile actions */}
         <div className="ml-auto flex flex-shrink-0 items-center gap-3 lg:hidden">
           <Link
-            href="/signup"
+            href={isBeta ? "/beta#application" : "/signup"}
             className="inline-flex min-h-11 items-center rounded-lg bg-gold-500 px-4 py-2.5 text-nav font-semibold text-green-800 no-underline"
           >
-            Get verified
+            {isBeta ? "Apply" : "Get verified"}
           </Link>
           <button
             type="button"

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 /**
  * The women's launch offer bar, from home.slim.html.
@@ -17,6 +18,7 @@ import Link from "next/link";
 const KEY = "toastly-women-announce-dismissed";
 
 export function AnnounceBar() {
+  const pathname = usePathname();
   const [dismissed, setDismissed] = React.useState(true);
 
   React.useEffect(() => {
@@ -27,7 +29,8 @@ export function AnnounceBar() {
     }
   }, []);
 
-  if (dismissed) return null;
+  // The founding grant replaces this offer; do not advertise both on /beta.
+  if (dismissed || pathname === "/beta") return null;
 
   return (
     <div className="relative bg-green-700 px-12 py-2.5">

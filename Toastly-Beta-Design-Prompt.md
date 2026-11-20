@@ -1,5 +1,29 @@
 # Toastly — founding-members beta: screens to design
 
+## Application-page implementation — 20 November 2026
+
+The owner explicitly authorised Codex to design and implement the application page
+directly. Section 1 now has an implemented design in `app/(marketing)/beta/`;
+it no longer waits for `beta.html`. The other member-facing screens below retain
+their existing design status. This exception applies to this application page only.
+
+The page uses Toastly's existing Aleo/Inter typography and green, champagne, paper
+and amber tokens. `public/img/beta/lagos-evening.webp` is a 39 KB still extracted
+from the owner's supplied 30-second founding-members film (2 seconds in), used as
+decorative campaign imagery, not as a real member or testimonial. No video autoloads.
+Desktop pairs the introduction and perk with the form; mobile stacks them with a
+direct application anchor. The beta header leads to that anchor and the separate
+women's offer announcement is suppressed on `/beta` only, since offers do not stack.
+
+The fields, endpoint, server validation, consent and success wording are unchanged.
+Error focus, accessible field descriptions, pending-submit protection, connection
+failure recovery and a privacy-policy link are included. The closed-applications
+message no longer hard-codes the historical 27 October opening date; the database
+still decides whether applications are open. No admissions settings, benefits,
+production migrations or deployment changes are part of this design update.
+
+---
+
 For Claude Design. The build is ready for these screens (migration 0050, `lib/beta.ts`,
 `POST /api/beta/apply`, the staff functions, `submit_beta_feedback`). **Plain placeholder
 versions are built** (existing components only, each marked `PLACEHOLDER — pending the Claude

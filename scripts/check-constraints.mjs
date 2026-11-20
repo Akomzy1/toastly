@@ -2381,12 +2381,12 @@ check("beta switches and settings are never public", (s) => {
   return /NEXT_PUBLIC_BETA|NEXT_PUBLIC_.*INVITE_ONLY/i.test(s) ? "a beta switch is exposed to the browser" : false;
 });
 
-// The plain screens are placeholders: the Claude Design prototype (beta.html)
-// is the source of truth and replaces them. Each says so at the top of its
-// file, so nobody mistakes one for the approved design.
+// The remaining plain screens await the Claude Design prototype (beta.html).
+// The owner authorised direct design of the public application page on
+// 20 November 2026; only that page and its form are no longer placeholders.
 check("each plain beta screen says it is a placeholder pending the prototype", (s, f) => {
   const p = posix(f);
-  if (!/(^|\/)(app\/\(marketing\)\/beta\/(page|beta-form)\.tsx|components\/app\/beta-label\.tsx|app\/\(app\)\/profile\/settings\/feedback\/(page|feedback-form)\.tsx)$/.test(p)) return false;
+  if (!/(^|\/)(components\/app\/beta-label\.tsx|app\/\(app\)\/profile\/settings\/feedback\/(page|feedback-form)\.tsx)$/.test(p)) return false;
   const head = fs.readFileSync(f, "utf8").split("\n").slice(0, 12).join("\n");
   return /PLACEHOLDER — pending the Claude Design prototype \(beta\.html\)/.test(head) ? false : "no placeholder note at the top of the file";
 });
